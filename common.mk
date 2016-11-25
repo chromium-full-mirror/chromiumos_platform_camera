@@ -1,4 +1,4 @@
-# Copyright 2012 The Chromium OS Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
@@ -125,7 +125,7 @@ export SRC ?= $(CURDIR)
 # If BASE_VER is not set, read the libchrome revision number from
 # common-mk/BASE_VER file.
 ifeq ($(strip $(BASE_VER)),)
-BASE_VER := $(shell cat $(SRC)/../common-mk/BASE_VER)
+BASE_VER := $(shell cat $(SRC)/../../platform2/common-mk/BASE_VER)
 endif
 $(info Using BASE_VER=$(BASE_VER))
 
