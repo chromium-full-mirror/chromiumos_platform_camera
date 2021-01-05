@@ -1827,7 +1827,6 @@ bool ia_css_process_group_has_vp(const ia_css_process_group_t *process_group)
         process = ia_css_process_group_get_process(process_group, i);
         cell_id = ia_css_process_get_cell(process);
 
-
         if (VIED_NCI_VP_TYPE_ID == vied_nci_cell_get_type(cell_id)) {
             has_vp = true;
             break;

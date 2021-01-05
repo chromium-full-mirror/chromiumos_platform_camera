@@ -510,7 +510,6 @@ EXIT:
     return stride;
 }
 
-
 static int ia_css_program_param_init(
         ia_css_program_param_t *program_param,
         int32_t offset)

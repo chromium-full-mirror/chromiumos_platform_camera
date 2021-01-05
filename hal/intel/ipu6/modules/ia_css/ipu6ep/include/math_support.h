@@ -321,7 +321,6 @@ STORAGE_CLASS_INLINE unsigned int OP_asp_slor(int a, int b, int c)
 #endif /* !defined(__VIED_CELL) */
 
 #endif /* !defined(PIPE_GENERATION) */
-
 #if !defined(__KERNEL__)
 #define clamp(a, min_val, max_val) MIN(MAX((a), (min_val)), (max_val))
 #endif /* !defined(__KERNEL__) */

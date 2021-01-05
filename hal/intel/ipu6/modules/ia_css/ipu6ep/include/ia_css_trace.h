@@ -686,7 +686,6 @@
     PRINT("[" SOURCE "]:[" module "]:[" severity "]: " format, a1, a2, a3, a4, a5, a6, a7)
 
 #endif
-
 #elif defined(IA_CSS_TRACE_PLATFORM_HOST)
     #include "print_support.h"
 

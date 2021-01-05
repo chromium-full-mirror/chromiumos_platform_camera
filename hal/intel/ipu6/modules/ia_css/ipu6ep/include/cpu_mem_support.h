@@ -236,5 +236,4 @@ ia_css_cpu_mem_cache_invalidate(void *ptr, unsigned int size)
 }
 
 #endif
-
 #endif /* __CPU_MEM_SUPPORT_H */

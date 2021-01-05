@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 #include <ia_css_psys_program_manifest.h>
 #include <ia_css_psys_program_group_manifest.h>
 /* for ia_css_kernel_bitmap_t, ia_css_kernel_bitmap_print */
@@ -971,4 +970,3 @@ EXIT:
 }
 
 #endif /* !defined(__HIVECC) */
-

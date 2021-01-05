@@ -1006,7 +1006,6 @@ int ia_css_process_set_cell_dependency(
         (uint8_t *)process + process->cell_dependencies_offset +
                dep_index*sizeof(vied_nci_resource_id_t);
 
-
     *process_dep_ptr = id;
     retval = 0;
 EXIT:
@@ -1037,4 +1036,3 @@ EXIT:
 }
 
 #endif /* !defined(__HIVECC) */
-

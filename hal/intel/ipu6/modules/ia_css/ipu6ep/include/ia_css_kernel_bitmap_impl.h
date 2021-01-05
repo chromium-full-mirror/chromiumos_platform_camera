@@ -48,7 +48,6 @@ int ia_css_kernel_bitmap_compute_weight(
     return weight;
 }
 
-
 IA_CSS_KERNEL_BITMAP_STORAGE_CLASS_C
 bool ia_css_is_kernel_bitmap_intersection_empty(
     const ia_css_kernel_bitmap_t            bitmap0,

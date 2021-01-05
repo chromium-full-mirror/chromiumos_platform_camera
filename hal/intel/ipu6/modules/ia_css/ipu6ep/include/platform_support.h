@@ -165,8 +165,6 @@ STORAGE_CLASS_INLINE void ia_css_sleep_msec(unsigned int long delay_time_ms)
 #endif
 
 #endif
-
-
 #include <string.h>
 #endif
 

@@ -17,7 +17,6 @@
 #ifndef __IA_CSS_TERMINAL_DEFS_H
 #define __IA_CSS_TERMINAL_DEFS_H
 
-
 #include "type_support.h"
 
 /**
@@ -28,8 +27,6 @@
 #define IA_CSS_TERMINAL_ID_BITS        8
 typedef uint8_t                ia_css_terminal_ID_t;
 #define IA_CSS_TERMINAL_INVALID_ID    ((ia_css_terminal_ID_t)(-1))
-
-
 
 /**
  * Terminal category
@@ -208,6 +205,5 @@ typedef enum ia_css_stream2gen_link_id {
 } ia_css_stream2gen_link_id_t;
 
 #endif /* #ifndef PIPE_GENERATION */
-
 /** @} */
 #endif /* __IA_CSS_TERMINAL_DEFS_H */

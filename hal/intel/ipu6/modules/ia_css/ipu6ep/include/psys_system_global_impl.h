@@ -103,7 +103,6 @@ vied_nci_resource_bitmap_t vied_nci_bitmap_set_bitfield(
     return ret;
 }
 
-
 IA_CSS_PSYS_SIM_STORAGE_CLASS_C
 vied_nci_resource_bitmap_t vied_nci_bitmap_set_unique(
     const vied_nci_resource_bitmap_t        bitmap,

@@ -293,7 +293,6 @@ typedef uint32_t            vied_nci_resource_bitmap_t;
 #define IA_CSS_PROCESS_INVALID_OFFSET        ((vied_nci_resource_size_t)(-1))
 #define IA_CSS_PROCESS_MAX_CELLS        1
 
-
 #define IA_CSS_MAX_INPUT_DEC_RESOURCES        4
 #define IA_CSS_MAX_OUTPUT_DEC_RESOURCES        4
 /*
@@ -348,7 +347,6 @@ struct vied_nci_resource_spec_s {
     vied_nci_resource_spec_dev_chn_t dev_chn[VIED_NCI_N_DEV_CHN_ID];
 };
 
-
 typedef struct vied_nci_resource_spec_s vied_nci_resource_spec_t;
 
 #ifndef PIPE_GENERATION
@@ -376,5 +374,4 @@ uint32_t vied_nci_mem_is_ext_type(const vied_nci_mem_type_ID_t mem_type_id)
 }
 
 #endif /* PIPE_GENERATION */
-
 #endif /* __VIED_NCI_PSYS_RESOURCE_MODEL_H */

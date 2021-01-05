@@ -219,7 +219,6 @@ void __camera_hal_log(bool condition, int prio, const char *tag, const char *fmt
 #define LOGV(...) icamera::__camera_hal_log(true, ANDROID_LOG_VERBOSE, LOG_TAG, __VA_ARGS__)
 
 #endif
-
 #define HAL_TRACE_NAME(level, name) ScopedTrace ___tracer(level, name )
 #define HAL_TRACE_CALL(level) HAL_TRACE_NAME(level, __PRETTY_FUNCTION__)
 

@@ -170,7 +170,9 @@ public:
     CpfStore(const std::string& sensorName, const std::string& camCfgDir,
              const std::vector<TuningConfig>& tuningCfg,
              const std::vector<LardTagConfig>& lardTagCfg,
-             const std::string& aiqbNameFromModule, ia_binary_data* nvmData);
+             const std::string& nvmPath,
+             std::unordered_map<std::string, std::string> camModuleToAiqbMap,
+             ia_binary_data* nvmData);
     virtual ~CpfStore();
 
     /**
@@ -193,6 +195,7 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(CpfStore);
 
+    int getCameraModuleFromEEPROM(const std::string& nvmPath, std::string* cameraModule);
     int findConfigFile(const std::string& camCfgDir, std::string* cpfPathName);
     int loadConf(const std::string& camCfgDir, const std::string& aiqbName);
 
@@ -212,11 +215,9 @@ class AiqInitData {
                 const std::vector<TuningConfig>& tuningCfg,
                 const std::vector<LardTagConfig>& lardTagCfg,
                 const std::string& nvmDir,
-                int maxNvmSize, std::string* camModuleName,
-                std::unordered_map<std::string, std::string>& camModuleToAiqbMap);
+                int maxNvmSize,
+                const std::unordered_map<std::string, std::string>& camModuleToAiqbMap);
     ~AiqInitData();
-
-    int getCameraModuleFromEEPROM(const std::string& nvmPath, std::string* cameraModule);
 
     // cpf and cmc
     int getCpfAndCmc(ia_binary_data* ispData,
@@ -251,7 +252,9 @@ class AiqInitData {
     std::vector<LardTagConfig> mLardTagCfg;
     CpfStore* mCpfStore;
 
-    std::string mAiqbNameFromModule;
+    /* key: camera module info, value: aiqb name */
+    std::unordered_map<std::string, std::string> mCameraModuleToAiqbMap;
+
     // NVM data
     std::unique_ptr <char[]> mNvmDataBuf;
     ia_binary_data mNvmData;

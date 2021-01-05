@@ -129,6 +129,3 @@ extern ia_css_program_group_manifest_t *ia_css_program_group_manifest_free(
     ia_css_program_group_manifest_t *manifest);
 
 #endif /* __IA_CSS_PSYS_PROGRAM_GROUP_MANIFEST_SIM_H */
-
-
-

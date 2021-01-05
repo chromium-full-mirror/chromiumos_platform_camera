@@ -293,6 +293,3 @@ extern int ia_css_terminal_param_set_stride(
     const uint32_t stride);
 
 #endif /* __IA_CSS_PROGRAM_GROUP_PARAM_H */
-
-
-

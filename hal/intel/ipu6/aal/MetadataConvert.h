@@ -83,9 +83,9 @@ class MetadataConvert {
     static int convertControlMetadata(const android::CameraMetadata& settings,
                                       icamera::Parameters* parameter);
     static int convertEdgeMetadata(const android::CameraMetadata& settings,
-                                   icamera::Parameters* parameter, int intent);
+                                   icamera::Parameters* parameter);
     static int convertNoiseReductionMetadata(const android::CameraMetadata& settings,
-                                             icamera::Parameters* parameter, int intent);
+                                             icamera::Parameters* parameter);
     static int convertTonemapMetadata(const android::CameraMetadata& settings,
                                       icamera::Parameters* parameter);
     static int convertJpegMetadata(const android::CameraMetadata& settings,

@@ -56,7 +56,6 @@ int ia_css_param_terminal_create(
     const uint16_t is_input_terminal
 );
 
-
 IA_CSS_PARAMETERS_STORAGE_CLASS_H
 unsigned int ia_css_spatial_param_terminal_get_descriptor_size(
     const unsigned int nof_frame_param_sections,
@@ -86,7 +85,6 @@ int ia_css_spatial_param_terminal_create(
     const unsigned int nof_fragments,
     const uint32_t kernel_id
 );
-
 
 IA_CSS_PARAMETERS_STORAGE_CLASS_H
 unsigned int ia_css_sliced_param_terminal_get_descriptor_size(
@@ -123,7 +121,6 @@ int ia_css_sliced_param_terminal_create(
     const unsigned int nof_fragments,
     const uint32_t kernel_id
 );
-
 
 IA_CSS_PARAMETERS_STORAGE_CLASS_H
 unsigned int ia_css_program_terminal_get_descriptor_size(

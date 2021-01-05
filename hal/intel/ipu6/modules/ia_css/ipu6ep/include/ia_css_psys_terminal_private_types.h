@@ -99,5 +99,4 @@ struct ia_css_data_terminal_s {
 };
 /* ========================== Data terminal - END ========================== */
 
-
 #endif /* __IA_CSS_PSYS_TERMINAL_PRIVATE_TYPES_H */

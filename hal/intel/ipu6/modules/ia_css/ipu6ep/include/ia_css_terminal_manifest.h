@@ -142,7 +142,6 @@ ia_css_program_terminal_manifest_get_kernel_frgmnt_seq_info_desc(
     const unsigned int info_index
 );
 
-
 /*! Getter for kernel id
 
   The function return the kernel id
@@ -199,7 +198,6 @@ IA_CSS_PARAMETERS_STORAGE_CLASS_C
 uint8_t ia_css_fragment_param_manifest_section_desc_get_kernel_id(
     const ia_css_fragment_param_manifest_section_desc_t *section);
 
-
 /*! Getter for  region_id
 
   The function return the region_id
@@ -213,7 +211,6 @@ uint8_t ia_css_fragment_param_manifest_section_desc_get_kernel_id(
 IA_CSS_PARAMETERS_STORAGE_CLASS_C
 uint8_t ia_css_fragment_param_manifest_section_desc_get_region_id(
     const ia_css_fragment_param_manifest_section_desc_t *section);
-
 
 /*! Getter for mem_type_id
 

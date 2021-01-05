@@ -44,7 +44,6 @@ typedef struct ia_css_terminal_manifest_attributes_t {
     + IA_CSS_TERMINAL_ID_BITS \
     + (N_PADDING_UINT8_IN_TERMINAL_MAN_STRUCT*IA_CSS_UINT8_T_BITS))
 
-
 /* ==================== Base Terminal Manifest - START ==================== */
 struct ia_css_terminal_manifest_s {
     ia_css_terminal_type_t                terminal_type;        /**< Type ia_css_terminal_type_t */
@@ -74,4 +73,3 @@ typedef struct ia_css_terminal_manifest_s
 /** @} */
 
 #endif /* __IA_CSS_TERMINAL_MANIFEST_BASE_TYPES_H */
-

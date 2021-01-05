@@ -76,6 +76,3 @@ extern bool ia_css_is_program_group_manifest_valid(
     const ia_css_program_group_manifest_t *manifest);
 
 #endif /* __IA_CSS_PSYS_PROGRAM_GROUP_MANIFEST_HSYS_USER_H */
-
-
-

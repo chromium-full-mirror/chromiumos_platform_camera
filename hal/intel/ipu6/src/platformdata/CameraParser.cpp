@@ -483,8 +483,6 @@ void CameraParser::handleSensor(CameraParser *profiles, const char *name, const 
     } else if (strcmp(name, "tnrExtraFrameNum") == 0) {
         int val = atoi(atts[1]);
         pCurrentCam->mTnrExtraFrameNum = val > 0 ? val : DEFAULT_TNR_EXTRA_FRAME_NUM;
-    } else if (strcmp(name, "saturationFactor") == 0) {
-        pCurrentCam->mSaturationFactor = atof(atts[1]);
     }
 }
 
@@ -1614,7 +1612,7 @@ void CameraParser::handleStaticMetaData(CameraParser *profiles, const char *name
         mMetadata.update(INTEL_INFO_SENSOR_MOUNT_TYPE, &mountType, 1);
         LOGXML("@%s, sensor mount type: %d", __func__, mountType);
     } else if (strcmp(name, "StaticMetadata") != 0) { // Make sure it doesn't reach the end of StaticMetadata.
-        handleGenericStaticMetaData(name, atts[1], &mMetadata);
+        handleGenericStaticMetaData(name, atts[1]);
     }
 }
 
@@ -1623,12 +1621,9 @@ void CameraParser::handleStaticMetaData(CameraParser *profiles, const char *name
  *
  * \param name: the element's name.
  * \param src: the element's value, only include data and separator 'x' or ','.
- * \param metadata: used to save metadata
  */
-void CameraParser::handleGenericStaticMetaData(const char* name, const char* src,
-                                               CameraMetadata* metadata)
+void CameraParser::handleGenericStaticMetaData(const char *name, const char *src)
 {
-    CheckError(!metadata, VOID_VALUE, "metadata is nullptr");
     uint32_t tag = -1;
     if (mGenericStaticMetadataToTag.find(name) != mGenericStaticMetadataToTag.end()) {
         tag = mGenericStaticMetadataToTag[name];
@@ -1688,22 +1683,22 @@ void CameraParser::handleGenericStaticMetaData(const char* name, const char* src
 
     switch (tagType) {
     case ICAMERA_TYPE_BYTE:
-        metadata->update(tag, data.u8, index);
+        mMetadata.update(tag, data.u8, index);
         break;
     case ICAMERA_TYPE_INT32:
-        metadata->update(tag, data.i32, index);
+        mMetadata.update(tag, data.i32, index);
         break;
     case ICAMERA_TYPE_INT64:
-        metadata->update(tag, data.i64, index);
+        mMetadata.update(tag, data.i64, index);
         break;
     case ICAMERA_TYPE_FLOAT:
-        metadata->update(tag, data.f, index);
+        mMetadata.update(tag, data.f, index);
         break;
     case ICAMERA_TYPE_DOUBLE:
-        metadata->update(tag, data.d, index);
+        mMetadata.update(tag, data.d, index);
         break;
     case ICAMERA_TYPE_RATIONAL:
-        metadata->update(tag, data.r, index / 2);
+        mMetadata.update(tag, data.r, index / 2);
         break;
     }
 }
@@ -1733,11 +1728,6 @@ void CameraParser::startParseElement(void *userData, const char *name, const cha
             } else if (strcmp(name, "StaticMetadata") == 0) {
                 profiles->mInStaticMetadata = true;
                 LOGXML("@%s %s, mInStaticMetadata is set to true", __func__, name);
-            } else if (strncmp(name, "CameraModuleInfo_", strlen("CameraModuleInfo_")) == 0) {
-                // tag name like this: CameraModuleInfo_XXX
-                std::string tagName(name);
-                profiles->mCameraModuleName = tagName.substr(strlen("CameraModuleInfo_"));
-                LOGXML("@%s, mCameraModuleInfo %s is set", __func__, name);
             }
 
             if (profiles->mInMediaCtlCfg) {
@@ -1746,9 +1736,6 @@ void CameraParser::startParseElement(void *userData, const char *name, const cha
             } else if (profiles->mInStaticMetadata) {
                 // The StaticMetadata belongs to the sensor segments
                 profiles->handleStaticMetaData(profiles, name, atts);
-            } else if (!profiles->mCameraModuleName.empty()) {
-                // The CameraModuleInfo belongs to the sensor segments
-                profiles->handleGenericStaticMetaData(name, atts[1], &profiles->mCameraModuleMetadata);
             } else {
                 profiles->handleSensor(profiles, name, atts);
             }
@@ -1809,15 +1796,6 @@ void CameraParser::endParseElement(void *userData, const char *name)
     if (strcmp(name, "StaticMetadata") == 0) {
         LOGXML("@%s %s, mInStaticMetadata is set to false", __func__, name);
         profiles->mInStaticMetadata = false;
-    }
-
-    if (strncmp(name, "CameraModuleInfo_", strlen("CameraModuleInfo_")) == 0) {
-        LOGXML("@%s Camera Module Name is %s", __func__, name);
-        if (!profiles->mCameraModuleName.empty()) {
-            profiles->pCurrentCam->mCameraModuleInfoMap[profiles->mCameraModuleName]
-                = mCameraModuleMetadata;
-            profiles->mCameraModuleName.clear();
-        }
     }
 
     if (strcmp(name, "Common") == 0)

@@ -219,7 +219,6 @@ extern void ia_css_program_manifest_set_input_terminal_id(
     uint8_t                    idx,
     uint8_t                    val);
 
-
 /*!
  * Get compression input MMU stream id [val] at [idx]
  *
@@ -477,7 +476,6 @@ extern int ia_css_program_manifest_set_dev_chn_offset(
     const vied_nci_dev_chn_ID_t            dev_chn_id,
     const vied_nci_resource_size_t            dev_chn_offset);
 
-
 /*! Set the memory resource (offset) specification for a memory
  that does not belong to the cell where the program will be mapped
 
@@ -548,7 +546,6 @@ IA_CSS_PSYS_STATIC_STORAGE_CLASS_H
 vied_nci_resource_size_t ia_css_program_manifest_get_ext_mem_offset(
     const ia_css_program_manifest_t            *manifest,
     const vied_nci_mem_type_ID_t            mem_type_id);
-
 
 /*! Get the kernel composition of the program manifest object
 

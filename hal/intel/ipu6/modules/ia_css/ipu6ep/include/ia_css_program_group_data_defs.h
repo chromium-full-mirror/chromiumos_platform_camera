@@ -241,5 +241,4 @@ typedef enum ia_css_frame_format_type {
     IA_CSS_N_FRAME_FORMAT_TYPES
 } ia_css_frame_format_type_t;
 
-
 #endif /* __IA_CSS_PROGRAM_GROUP_DATA_DEFS_H */

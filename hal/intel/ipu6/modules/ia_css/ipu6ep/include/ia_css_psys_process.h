@@ -76,7 +76,6 @@ vied_nci_resource_size_t ia_css_process_get_int_mem_offset(
     const ia_css_process_t *process,
     const vied_nci_mem_type_ID_t mem_id);
 
-
 /*! Get the external memory offset of the process object
 
  @param    process[in]    process object
@@ -89,7 +88,6 @@ IA_CSS_PSYS_DYNAMIC_STORAGE_CLASS_H
 vied_nci_resource_size_t ia_css_process_get_ext_mem_offset(
     const ia_css_process_t *process,
     const vied_nci_mem_type_ID_t mem_type_id);
-
 
 /*! Get the stored size of the process object
 
@@ -269,7 +267,6 @@ int ia_css_process_set_dfm_port_bitmap(
     const vied_nci_dev_dfm_id_t dfm_dev_id,
     const vied_nci_resource_bitmap_t bitmap);
 
-
 /*! Sets the active dfm ports bitmap of
  * the process object
 
@@ -283,7 +280,6 @@ int ia_css_process_set_dfm_active_port_bitmap(
     ia_css_process_t *process,
     const vied_nci_dev_dfm_id_t dfm_dev_id,
     const vied_nci_resource_bitmap_t bitmap);
-
 
 #if HAS_DFM
 /*! Get the dfm port bitmap of the the process object
@@ -310,7 +306,6 @@ IA_CSS_PSYS_DYNAMIC_STORAGE_CLASS_H
 vied_nci_resource_bitmap_t ia_css_process_get_dfm_active_port_bitmap(
     const ia_css_process_t *process,
     vied_nci_dev_dfm_id_t  dfm_res_id);
-
 
 /*! Sets the cells bitmap of
  * the process object
@@ -348,7 +343,6 @@ IA_CSS_PSYS_DYNAMIC_STORAGE_CLASS_H
 vied_nci_mem_ID_t ia_css_process_get_ext_mem_id(
     const ia_css_process_t *process,
     const vied_nci_mem_type_ID_t mem_type);
-
 
 /*! Sets the device channel id-n resource allocation offset of
  * the process object

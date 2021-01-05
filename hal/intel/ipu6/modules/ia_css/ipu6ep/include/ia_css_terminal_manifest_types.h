@@ -17,7 +17,6 @@
 #ifndef __IA_CSS_TERMINAL_MANIFEST_TYPES_H
 #define __IA_CSS_TERMINAL_MANIFEST_TYPES_H
 
-
 #include "ia_css_terminal_defs.h"
 #include "type_support.h"
 #include "ia_css_base_types.h"
@@ -56,7 +55,6 @@ struct ia_css_param_manifest_section_desc_s {
 typedef struct ia_css_param_manifest_section_desc_s
     ia_css_param_manifest_section_desc_t;
 
-
 #define N_PADDING_UINT8_IN_PARAM_TERMINAL_MAN_STRUCT 4
 #define SIZE_OF_PARAM_TERMINAL_MANIFEST_STRUCT_IN_BITS \
     (SIZE_OF_TERMINAL_MANIFEST_STRUCT_IN_BITS \
@@ -88,7 +86,6 @@ struct ia_css_param_terminal_manifest_s {
 typedef struct ia_css_param_terminal_manifest_s
     ia_css_param_terminal_manifest_t;
 /* ================= Cached Param Terminal Manifest - End ================ */
-
 
 /* ================= Spatial Param Terminal Manifest - START ============= */
 

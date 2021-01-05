@@ -144,4 +144,3 @@ ia_css_rbm_get_mux_value(
 #endif /* __IA_CSS_RBM_MANIFEST_INLINE__ */
 
 #endif /* __IA_CSS_RBM_MANIFEST_H */
-

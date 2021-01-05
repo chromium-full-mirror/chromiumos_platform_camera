@@ -74,7 +74,6 @@ typedef unsigned long long uint64_t;
 #define HOST_ADDRESS(x) (unsigned long)(x)
 
 #endif
-
 #if !defined(PIPE_GENERATION) && !defined(IO_GENERATION)
 /* genpipe cannot handle the void* syntax */
 typedef void *HANDLE;

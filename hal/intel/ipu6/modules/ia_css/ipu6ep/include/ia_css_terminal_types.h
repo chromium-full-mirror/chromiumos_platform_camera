@@ -21,7 +21,6 @@
 #include "ia_css_base_types.h"
 #include "ia_css_terminal_base_types.h"
 
-
 typedef struct ia_css_program_control_init_load_section_desc_s
     ia_css_program_control_init_load_section_desc_t;
 typedef struct ia_css_program_control_init_connect_section_desc_s
@@ -85,7 +84,6 @@ struct ia_css_param_payload_s {
 };
 /* =================== Generic Parameter Payload - End ==================== */
 
-
 /* ==================== Cached Param Terminal - START ==================== */
 #define N_UINT32_IN_PARAM_SEC_STRUCT 2
 
@@ -122,7 +120,6 @@ struct ia_css_param_terminal_s {
     uint8_t padding[N_PADDING_UINT8_IN_PARAM_TERMINAL_STRUCT];
 };
 /* ==================== Cached Param Terminal - End ==================== */
-
 
 /* ==================== Spatial Param Terminal - START ==================== */
 #define N_UINT16_IN_FRAG_GRID_STRUCT (2 * IA_CSS_N_DATA_DIMENSION)
@@ -213,7 +210,6 @@ struct ia_css_spatial_param_terminal_s {
     uint16_t fragment_grid_desc_offset;
 };
 /* ==================== Spatial Param Terminal - END ==================== */
-
 
 /* ==================== Sliced Param Terminal - START ==================== */
 #define N_UINT32_IN_SLICE_PARAM_SECTION_DESC_STRUCT 2

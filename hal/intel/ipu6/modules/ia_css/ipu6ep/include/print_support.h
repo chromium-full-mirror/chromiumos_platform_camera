@@ -59,7 +59,6 @@ extern void FwTracePrintPFATAL(const char *fmt, ...);
 #define PFATAL(format, ...)
 
 #endif /* _KERNEL_MODE */
-
 #elif defined(__HIVECC)
 #include <hive/support.h>
 /* To be revised
@@ -76,7 +75,6 @@ extern void FwTracePrintPFATAL(const char *fmt, ...);
 #elif defined(__KERNEL__)
 #include <linux/kernel.h>
 #include <linux/printk.h>
-
 
 #define PWARN(format, arguments...)    pr_debug(format, ##arguments)
 #define PRINT(format, arguments...)    pr_debug(format, ##arguments)
@@ -117,10 +115,7 @@ extern void FwTracePrintPFATAL(const char *fmt, ...);
 #define PDEBUG(...) PRINT_HELPER("debug: ", __VA_ARGS__, "")
 
 #endif
-
-
 #define PRINTSTRING(str) PRINT(str)
 
 #endif
-
 #endif /* __PRINT_SUPPORT_H */

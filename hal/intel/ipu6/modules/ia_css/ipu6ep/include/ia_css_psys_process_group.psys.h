@@ -58,5 +58,4 @@ extern int ia_css_process_group_run(
 extern int ia_css_process_group_stop(
     ia_css_process_group_t                    *process_group);
 
-
 #endif /* __IA_CSS_PSYS_PROCESS_GROUP_PSYS_H */

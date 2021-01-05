@@ -96,6 +96,3 @@ typedef struct ia_css_process_ext_s    ia_css_process_ext_t;
 typedef struct ia_css_data_terminal_s    ia_css_data_terminal_t;
 
 #endif /* __IA_CSS_PSYS_PROCESS_TYPES_H */
-
-
-

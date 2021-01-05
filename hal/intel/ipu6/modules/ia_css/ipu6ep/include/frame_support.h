@@ -60,7 +60,4 @@ enum bayer_planar_frame_types_planes {
 };
 
 #endif /* PIPE_GENERATION */
-
 #endif    /* __FRAME_SUPPORT_H */
-
-

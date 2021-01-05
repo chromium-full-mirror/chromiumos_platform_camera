@@ -70,7 +70,6 @@ IA_CSS_PSYS_DYNAMIC_STORAGE_CLASS_H
 uint16_t ia_css_process_group_get_fragment_count(
     const ia_css_process_group_t        *process_group);
 
-
 /*! Get the fragment state on the process group
 
  @param     process_group[in]        process group object
@@ -127,7 +126,6 @@ uint8_t ia_css_process_group_get_terminal_count(
 IA_CSS_PSYS_DYNAMIC_STORAGE_CLASS_H
 uint32_t ia_css_process_group_get_psys_server_init_cycles(
     const ia_css_process_group_t            *process_group);
-
 
 /*! \deprecated this is old and will get removed */
 /*! Get the PG load start timestamp
@@ -305,7 +303,6 @@ IA_CSS_PSYS_DYNAMIC_STORAGE_CLASS_H
 int ia_css_process_group_set_resource_bitmap(
     ia_css_process_group_t            *process_group,
     const vied_nci_resource_bitmap_t    resource_bitmap);
-
 
 /*! Get the kernel bitmap of the the process group object
 

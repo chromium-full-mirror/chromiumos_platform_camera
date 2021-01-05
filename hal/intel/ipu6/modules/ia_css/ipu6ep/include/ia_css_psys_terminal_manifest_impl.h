@@ -211,8 +211,6 @@ static void ia_css_terminal_manifest_set_attributes_by_type(
     ia_css_terminal_manifest_set_connect_buffer_type(manifest, connect_buf_type);
 }
 
-
-
 /** Temporary implementation for new fields until the manfifest generator
  *  tool will be enhance to set values directly.
  *
@@ -229,8 +227,6 @@ static void ia_css_terminal_manifest_set_new_fields(
     assert(ia_css_terminal_manifest_set_connect_ID(manifest, IA_CSS_TERMINAL_INVALID_ID));
     assert(ia_css_terminal_manifest_set_max_payload_size(manifest, UINT32_MAX));
 }
-
-
 
 IA_CSS_PSYS_STATIC_STORAGE_CLASS_C
 int ia_css_terminal_manifest_set_type(
@@ -372,7 +368,6 @@ ia_css_terminal_dir_t ia_css_terminal_manifest_get_direction(
     return retval;
 }
 
-
 IA_CSS_PSYS_STATIC_STORAGE_CLASS_H
 int ia_css_terminal_manifest_set_direction(
     ia_css_terminal_manifest_t        *manifest,
@@ -393,7 +388,6 @@ int ia_css_terminal_manifest_set_direction(
     }
     return retval;
 }
-
 
 IA_CSS_PSYS_STATIC_STORAGE_CLASS_H
 ia_css_terminal_rou_t ia_css_terminal_manifest_get_rate_of_update(
@@ -517,7 +511,6 @@ unsigned int ia_css_terminal_manifest_get_max_payload_size(
     return retval;
 }
 
-
 IA_CSS_PSYS_STATIC_STORAGE_CLASS_H
 int ia_css_terminal_manifest_set_max_payload_size(
     ia_css_terminal_manifest_t            *manifest,
@@ -538,7 +531,6 @@ int ia_css_terminal_manifest_set_max_payload_size(
     }
     return retval;
 }
-
 
 IA_CSS_PSYS_STATIC_STORAGE_CLASS_C
 ia_css_program_group_manifest_t *ia_css_terminal_manifest_get_parent(

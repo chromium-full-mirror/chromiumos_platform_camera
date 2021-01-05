@@ -127,7 +127,6 @@
 
 /* ==================== IDS specs - END ==================== */
 
-
 /* ==================== DPC specs used in PSYS - START ==================== */
 /* in addition to register bank, it has a 0x3000 memory bank to store LUT, found in reg_descr.hsd */
 #define IA_CSS_ISA_PARAMETER_TERMINAL_DPC_V3_SECTION_COUNT                        (5)
@@ -183,7 +182,6 @@
 #define IA_CSS_ISA_PROGRAM_TERMINAL_DPC_V2_DEST_OFFSET_SECTION_2                    (0x3388)    /* AF pixels grid cfg */
 
 /* ==================== DPC specs - END ==================== */
-
 
 /* ==================== DPC_PEXT specs - START ==================== */
 #define IA_CSS_ISA_PARAMETER_TERMINAL_DPC_PEXT_SECTION_COUNT                        (2)
@@ -241,7 +239,6 @@
 #define IA_CSS_ISA_SPATIAL_PARAMETER_TERMINAL_OUT_PAF_SLICE_0_DEST_OFFSET_SECTION_0            (0x200)    /*FF register offset from kernel base*/
 #define IA_CSS_ISA_SPATIAL_PARAMETER_TERMINAL_OUT_PAF_NEXT_SLICE_OFFSET_SECTION_0            (0x180)    /*Determines the next FF location*/
 
-
 /* Sliced Parameter Terminal In does not exist for PAF*/
 
 /* Sliced Parameter Terminal Out does not exist for PAF*/
@@ -272,7 +269,6 @@
 /* Sliced Parameter Terminal Out does not exist for LSC_SENSOR_TYPE_0 */
 /* ==================== LSC_SENSOR_TYPE_0 specs - END ==================== */
 
-
 /* ==================== LSC_SENSOR_TYPE_1 specs - START ==================== */
 #define IA_CSS_ISA_PARAMETER_TERMINAL_OUT_LSC_SENSOR_TYPE_1_SECTION_COUNT                (0)
 
@@ -294,7 +290,6 @@
 
 /* Sliced Parameter Terminal Out does not exist for LSC_SENSOR_TYPE_1 */
 /* ==================== LSC_SENSOR_TYPE_1 specs - END ==================== */
-
 
 /* ==================== LSC_SENSOR_TYPE_2 specs - START ==================== */
 #define IA_CSS_ISA_PARAMETER_TERMINAL_OUT_LSC_SENSOR_TYPE_2_SECTION_COUNT                (0)
@@ -483,7 +478,6 @@
 #define IA_CSS_ISA_PARAMETER_TERMINAL_PIFCONV_OUTPUT_SCALED_B_DEST_OFFSET_SECTION_0        (0x0)
 #define IA_CSS_ISA_PARAMETER_TERMINAL_OUT_PIFCONV_OUTPUT_SCALED_B_SECTION_COUNT        (0)
 /* ====================  specs PIFCONV_ISA_SCALED_B- END ==================== */
-
 
 /* ====================  specs PIFCONV_ISA_FULL- START ==================== */
 #define IA_CSS_ISA_PARAMETER_TERMINAL_PIFCONV_OUTPUT_ISA_FULL_SECTION_COUNT            (1)

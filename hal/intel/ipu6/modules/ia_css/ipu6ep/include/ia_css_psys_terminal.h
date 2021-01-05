@@ -106,7 +106,6 @@ int ia_css_terminal_set_terminal_manifest_index(
     ia_css_terminal_t    *terminal,
     const uint16_t        tm_index);
 
-
 /*! Get the payload (buffer) size for all buffers that will be supplied for the terminal
 
  @param    terminal[in]            terminal object
@@ -116,7 +115,6 @@ int ia_css_terminal_set_terminal_manifest_index(
 IA_CSS_PSYS_DYNAMIC_STORAGE_CLASS_H
 uint32_t ia_css_terminal_get_payload_size(
     const ia_css_terminal_t *terminal);
-
 
 /*! Set the payload (buffer) size for all buffers that will be supplied for the terminal
 
@@ -129,7 +127,6 @@ IA_CSS_PSYS_DYNAMIC_STORAGE_CLASS_H
 int ia_css_terminal_set_payload_size(
     ia_css_terminal_t *terminal,
     uint32_t payload_size);
-
 
 /*! Get id of the terminal object
 
@@ -195,7 +192,6 @@ int ia_css_data_terminal_set_connection_type(
 IA_CSS_PSYS_DYNAMIC_STORAGE_CLASS_H
 uint8_t ia_css_data_terminal_get_link_id(
     const ia_css_data_terminal_t            *dterminal);
-
 
 /*! Set link id of the terminal object
 

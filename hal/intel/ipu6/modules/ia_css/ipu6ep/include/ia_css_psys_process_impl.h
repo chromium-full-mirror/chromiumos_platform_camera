@@ -124,7 +124,6 @@ EXIT:
     return process_ext->ext_mem_id[mem_type];
 }
 
-
 IA_CSS_PSYS_DYNAMIC_STORAGE_CLASS_C
 uint32_t ia_css_process_get_program_idx(
     const ia_css_process_t        *process)

@@ -17,7 +17,6 @@
 #ifndef __IA_CSS_PSYS_PROCESS_HSYS_KERNEL_H
 #define __IA_CSS_PSYS_PROCESS_HSYS_KERNEL_H
 
-
 /**
  * @file ia_css_psys_process.hsys.kernel.h
  *

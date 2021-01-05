@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 #include <ia_css_psys_terminal_manifest.h>
 
 /* Data object types on the terminals */
@@ -689,7 +688,6 @@ unsigned int ia_css_program_control_init_terminal_manifest_get_connect_section_c
     return prog->connect_section_count;
 }
 
-
 unsigned int ia_css_program_control_init_terminal_manifest_get_load_section_count(
     const ia_css_program_control_init_manifest_program_desc_t *prog)
 {
@@ -776,4 +774,3 @@ void ia_css_program_control_init_terminal_manifest_print(
 }
 
 #endif
-

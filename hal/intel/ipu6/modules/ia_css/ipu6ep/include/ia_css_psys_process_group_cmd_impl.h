@@ -227,7 +227,6 @@ extern int ia_css_process_group_exec_cmd(
     ia_css_process_group_t                *process_group,
     const ia_css_process_group_cmd_t        cmd);
 
-
 /*! Enqueue a buffer set corresponding to a persistent program group by
  * sending a command to subsystem.
 

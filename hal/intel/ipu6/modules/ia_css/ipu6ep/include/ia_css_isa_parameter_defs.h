@@ -99,7 +99,6 @@
 #define IA_CSS_ISA_NEEDS_SLICED_OUT_3A_STAT_AE_CCM        (0)
 #define IA_CSS_ISA_NEEDS_SLICED_OUT_3A_STAT_AE            (0)
 
-
 /* ==================== INL specs - START ==================== */
 /* in addition to register bank, it has a 0x200 memory bank to store LUT, found in reg_descr.hsd */
 #define IA_CSS_ISA_PARAMETER_TERMINAL_INL_SECTION_COUNT                        (2)
@@ -121,7 +120,6 @@
 #define IA_CSS_ISA_PROGRAM_TERMINAL_INL_SECTION_COUNT                            (0)
 /* ==================== INL specs - END ==================== */
 
-
 /* ==================== BLC_GLOBAL specs - START ==================== */
 /* in addition to register bank, it has a 0xC00 memory bank to store LUT, found in reg_descr.hsd */
 #define IA_CSS_ISA_PARAMETER_TERMINAL_BLC_GLOBAL_SECTION_COUNT                        (2)
@@ -142,7 +140,6 @@
 
 #define IA_CSS_ISA_PROGRAM_TERMINAL_BLC_GLOBAL_SECTION_COUNT                        (0)
 /* ==================== BLC_GLOBAL specs - END ==================== */
-
 
 /* ==================== BLC_SENSOR_TYPE_0 specs - START ==================== */
 #define IA_CSS_ISA_PARAMETER_TERMINAL_BLC_SENSOR_TYPE_0_SECTION_COUNT                    (1)
@@ -187,7 +184,6 @@
 #define IA_CSS_ISA_PROGRAM_TERMINAL_BLC_SENSOR_TYPE_0_DEST_OFFSET_SECTION_0                (0xC00)
 /* ==================== BLC_SENSOR_TYPE_0 specs - END ==================== */
 
-
 /* ==================== BLC_SENSOR_TYPE_1 specs - START ==================== */
 #define IA_CSS_ISA_PARAMETER_TERMINAL_BLC_SENSOR_TYPE_1_SECTION_COUNT                    (1)
 #define IA_CSS_ISA_PARAMETER_TERMINAL_BLC_SENSOR_TYPE_1_MAX_SIZE_SECTION_0                (0x4)
@@ -229,7 +225,6 @@
 #define IA_CSS_ISA_PROGRAM_TERMINAL_BLC_SENSOR_TYPE_1_MAX_SIZE_SECTION_0                (0x8)
 #define IA_CSS_ISA_PROGRAM_TERMINAL_BLC_SENSOR_TYPE_1_DEST_OFFSET_SECTION_0                (0xC00)
 /* ==================== BLC_SENSOR_TYPE_1 specs - END ==================== */
-
 
 /* ==================== BLC_SENSOR_TYPE_2 specs - START ==================== */
 #define IA_CSS_ISA_PARAMETER_TERMINAL_BLC_SENSOR_TYPE_2_SECTION_COUNT                    (1)
@@ -289,7 +284,6 @@
 #define IA_CSS_ISA_PROGRAM_TERMINAL_BLC_SENSOR_TYPE_2_DEST_OFFSET_SECTION_0                (0xC00)
 /* ==================== BLC_SENSOR_TYPE_2 specs - END ==================== */
 
-
 /* ==================== PCLN specs - START ==================== */
 /* in addition to register bank, it has a 0x800 memory bank to store LUT, found in reg_descr.hsd */
 #define IA_CSS_ISA_PARAMETER_TERMINAL_PCLN_SECTION_COUNT                        (2)
@@ -311,7 +305,6 @@
 #define IA_CSS_ISA_PROGRAM_TERMINAL_PCLN_SECTION_COUNT                            (0)
 /* ==================== PCLN specs - END ==================== */
 
-
 /* ==================== LSC_SENSOR_TYPE_0 specs - START ==================== */
 /* in addition to register bank, it has a 0xC00 memory bank to store LUT, found in reg_descr.hsd */
 #define IA_CSS_ISA_PARAMETER_TERMINAL_LSC_SENSOR_TYPE_0_SECTION_COUNT                    (1)
@@ -331,7 +324,6 @@
 #define IA_CSS_ISA_PROGRAM_TERMINAL_LSC_SENSOR_TYPE_0_DEST_OFFSET_SECTION_0                (0xC00)
 /* ==================== LSC_SENSOR_TYPE_0 specs - END ==================== */
 
-
 /* ==================== LSC_SENSOR_TYPE_1 specs - START ==================== */
 #define IA_CSS_ISA_PARAMETER_TERMINAL_LSC_SENSOR_TYPE_1_SECTION_COUNT                    (1)
 #define IA_CSS_ISA_PARAMETER_TERMINAL_LSC_SENSOR_TYPE_1_MAX_SIZE_SECTION_0                (0x4)
@@ -349,7 +341,6 @@
 #define IA_CSS_ISA_PROGRAM_TERMINAL_LSC_SENSOR_TYPE_1_MAX_SIZE_SECTION_0                (0x8)
 #define IA_CSS_ISA_PROGRAM_TERMINAL_LSC_SENSOR_TYPE_1_DEST_OFFSET_SECTION_0                (0xC00)
 /* ==================== LSC_SENSOR_TYPE_1 specs - END ==================== */
-
 
 /* ==================== LSC_SENSOR_TYPE_2 specs - START ==================== */
 #define IA_CSS_ISA_PARAMETER_TERMINAL_LSC_SENSOR_TYPE_2_SECTION_COUNT                    (1)
@@ -392,11 +383,9 @@
 /* IDS is HW revision dependent */
 /* ==================== IDS specs - END ==================== */
 
-
 /* ==================== 3A_STAT_AWB specs - START ==================== */
 /* AWB parameter properties are in the platform specific ia_css_parameter_defs_dep.h file */
 /* ==================== 3A_STAT_AWB specs - END ==================== */
-
 
 /* ==================== 3A_STAT_AF specs - START ==================== */
 /* in addition to register bank, it has a 0x400 memory bank to store output, found in reg_descr.hsd */
@@ -433,7 +422,6 @@
 #define IA_CSS_ISA_PROGRAM_TERMINAL_3A_STAT_AF_DEST_OFFSET_SECTION_0                    (0x400)
 /* ==================== 3A_STAT_AF specs - END ==================== */
 
-
 /* ==================== 3A_STAT_AE_CCM specs - START ==================== */
 #define IA_CSS_ISA_PARAMETER_TERMINAL_3A_STAT_AE_CCM_SECTION_COUNT                    (1)
 #define IA_CSS_ISA_PARAMETER_TERMINAL_3A_STAT_AE_CCM_MAX_SIZE_SECTION_0                (0x7C)
@@ -451,7 +439,6 @@
 
 #define IA_CSS_ISA_PROGRAM_TERMINAL_3A_STAT_AE_CCM_SECTION_COUNT                    (0)
 /* ==================== 3A_STAT_AE_CCM specs - END ==================== */
-
 
 /* ==================== 3A_STAT_AE specs - START ==================== */
 /* in addition to register bank, it has a 0x180 memory bank to store LUT and a 0x2000 memory bank to store output,

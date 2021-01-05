@@ -143,8 +143,7 @@ public:
                 mSwProcessingAlignWithIsp(false),
                 mMaxNvmDataSize(0),
                 mVideoStreamNum(DEFAULT_VIDEO_STREAM_NUM),
-                mTnrExtraFrameNum(DEFAULT_TNR_EXTRA_FRAME_NUM),
-                mSaturationFactor(-1.0f)
+                mTnrExtraFrameNum(DEFAULT_TNR_EXTRA_FRAME_NUM)
             {
             }
 
@@ -229,14 +228,11 @@ public:
             std::vector<UserToPslOutputMap> mOutputMap;
             int mMaxNvmDataSize;
             std::string mNvmDirectory;
-            /* key: camera module name, value: aiqb name */
+            /* key: camera module info, value: aiqb name */
             std::unordered_map<std::string, std::string> mCameraModuleToAiqbMap;
-            /* key: camera module name, value: camera module info */
-            std::unordered_map<std::string, CameraMetadata> mCameraModuleInfoMap;
             std::vector<IGraphType::ScalerInfo> mScalerInfo;
             int mVideoStreamNum;
             int mTnrExtraFrameNum;
-            float mSaturationFactor;
         };
 
         std::vector<CameraInfo> mCameras;
@@ -1199,13 +1195,5 @@ public:
      * the extra frame count for still stream
      */
      static int getTnrExtraFrameCount(int cameraId);
-
-     /**
-     * Get saturation factor for manual CCM
-     *
-     * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
-     * \return manual saturation factor
-     */
-     static float getManualSaturationFactor(int cameraId);
 };
 } /* namespace icamera */

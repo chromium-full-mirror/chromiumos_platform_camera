@@ -44,7 +44,6 @@
  * @{
  */
 
-
 /*! Check if the terminal manifest object specifies a spatial param terminal
  * type
 
@@ -65,7 +64,6 @@ bool ia_css_is_terminal_manifest_spatial_parameter_terminal(
 IA_CSS_PSYS_STATIC_STORAGE_CLASS_H
 bool ia_css_is_terminal_manifest_program_terminal(
     const ia_css_terminal_manifest_t        *manifest);
-
 
 /*! Check if the terminal manifest object specifies a program control init terminal type
  *
@@ -147,7 +145,6 @@ IA_CSS_PSYS_STATIC_STORAGE_CLASS_H
 ia_css_terminal_dir_t ia_css_terminal_manifest_get_direction(
     const ia_css_terminal_manifest_t        *manifest);
 
-
 /*! Set the direction of data flow for the terminal payload
 
  @param    manifest[in]            terminal manifest object
@@ -161,7 +158,6 @@ IA_CSS_PSYS_STATIC_STORAGE_CLASS_H
 int ia_css_terminal_manifest_set_direction(
     ia_css_terminal_manifest_t        *manifest,
     ia_css_terminal_dir_t direction);
-
 
 /*! Get the Rate Of Update (ROU) for the terminal payload
 
@@ -556,7 +552,6 @@ extern int ia_css_data_terminal_manifest_get_max_fragment_size(
 extern
 unsigned int ia_css_program_control_init_terminal_manifest_get_connect_section_count(
     const ia_css_program_control_init_manifest_program_desc_t *prog);
-
 
 /*!
  * Get the program control init load section count for program prog.

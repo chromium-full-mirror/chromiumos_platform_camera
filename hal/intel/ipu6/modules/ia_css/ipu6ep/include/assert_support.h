@@ -81,7 +81,6 @@
 ((void)sizeof(char[1 - 2*!!(condition)]))
 
 #endif
-
 /* Compile time assertion */
 #ifndef CT_ASSERT
 #define CT_ASSERT(cnd) ((void)sizeof(char[(cnd)?1 :  -1]))
@@ -188,7 +187,6 @@
 #endif
 
 #endif /* NDEBUG */
-
 #ifndef PIPE_GENERATION
 /* Deprecated OP___assert, this is still used in ~1000 places
  * in the code. This will be removed over time.

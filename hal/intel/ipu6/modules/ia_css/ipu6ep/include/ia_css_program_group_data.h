@@ -117,7 +117,6 @@ typedef struct ia_css_fragment_descriptor_s    ia_css_fragment_descriptor_t;
 
 typedef struct ia_css_stream_s            ia_css_stream_t;
 
-
 #define    N_UINT64_IN_STREAM_STRUCT            1
 
 #define    IA_CSS_STREAM_STRUCT_BITS \
@@ -203,8 +202,6 @@ struct ia_css_frame_descriptor_s {
     + (N_UINT32_IN_FRAME_STRUCT * 32) \
     + (N_PADDING_UINT8_IN_FRAME_STRUCT * 8))
 
-
-
 /**
  * Main frame structure holding the main store and auxiliary access properties
  * the "pointer_state" and "access_scope" should be encoded on the
@@ -272,7 +269,6 @@ struct ia_css_fragment_descriptor_s {
     /** Padding for 64bit alignment */
     uint8_t padding[N_PADDING_UINT8_IN_FRAGMENT_DESC_STRUCT];
 };
-
 
 /*! Print the frame object to file/stream
 
@@ -428,7 +424,6 @@ ia_css_frame_format_bitmap_t ia_css_frame_format_bit_mask(
  */
 IA_CSS_PSYS_DATA_STORAGE_CLASS_H
 ia_css_frame_format_bitmap_t ia_css_frame_format_bitmap_clear(void);
-
 
 /*! Compute the size of storage required for the data descriptor object
  * on a terminal

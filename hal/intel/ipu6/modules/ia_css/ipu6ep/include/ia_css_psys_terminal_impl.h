@@ -546,7 +546,6 @@ EXIT:
     return retval;
 }
 
-
 IA_CSS_PSYS_DYNAMIC_STORAGE_CLASS_C
 ia_css_process_group_t *ia_css_terminal_get_parent(
     const ia_css_terminal_t    *terminal)
