@@ -357,7 +357,7 @@ int PGCommon::createCommands()
     }
 
     CIPR::PSysEventConfig eventCfg = {};
-    eventCfg.timeout = kEventTimeout;
+    eventCfg.timeout = kEventTimeout * SLOWLY_MULTIPLIER;
     mEvent = new CIPR::Event(eventCfg);
 
     return OK;

@@ -18,10 +18,10 @@
 
 #include "IspParamAdaptor.h"
 
+#include <math.h>
 #include <stdio.h>
 #include <utility>
 
-#include "3a/AiqResult.h"
 #include "3a/AiqResultStorage.h"
 #include "iutils/Utils.h"
 #include "iutils/CameraLog.h"
@@ -728,6 +728,44 @@ void IspParamAdaptor::releaseIspParamBuffers()
     }
 }
 
+void IspParamAdaptor::applyMediaFormat(ia_media_format* mediaFormat, AiqResult* aiqResult) {
+    CheckError(!mediaFormat || !aiqResult, VOID_VALUE, "mediaFormat or aiqResult is nullptr");
+
+    *mediaFormat = media_format_legacy;
+    if (aiqResult->mAiqParam.tonemapMode == TONEMAP_MODE_GAMMA_VALUE) {
+        if (aiqResult->mAiqParam.tonemapGamma == 1.0) {
+            aiqResult->mGbceResults.gamma_lut_size = 0;
+            *mediaFormat = media_format_custom;
+            LOG2("%s: a linear 1.0 gamma value.", __func__);
+        } else {
+            LOGW("%s, dynamic gamma value(%f) is not supported", __func__,
+                 aiqResult->mAiqParam.tonemapGamma);
+        }
+    } else if (aiqResult->mAiqParam.tonemapMode == TONEMAP_MODE_CONTRAST_CURVE) {
+        camera_tonemap_curves_t* curves = &(aiqResult->mAiqParam.tonemapCurves);
+        CheckError((curves->rSize != curves->gSize || curves->bSize != curves->gSize), VOID_VALUE,
+                   "%s, the size of rgb channels must be same", __func__);
+
+        // User's curve is 2-d array: (in, out)
+        // Use the gamma curve to select the media format
+        float curveX = curves->gCurve[curves->gSize / 2];
+        float curveY = curves->gCurve[curves->gSize / 2 + 1];
+
+        if (curveX == curveY) {
+            // It's a linear gamma curves(same with gamma = 1.0)
+            aiqResult->mGbceResults.gamma_lut_size = 0;
+            *mediaFormat = media_format_custom;
+            LOG2("%s: a linear gamma curve. curveX: %f, curveY: %f", __func__, curveX, curveY);
+        } else if (abs(curveY - pow(curveX, (1 / 2.2))) < EPSILON) {
+            // Its a standard 2_2 gamma curves
+            *mediaFormat = media_format_bt709_8b;
+            LOG2("%s: a 2.2 gamma curve. curveX: %f, curveY: %f", __func__, curveX, curveY);
+        } else {
+            LOGW("%s, dynamic gamma curve(%f, %f) is not supported", __func__, curveX, curveY);
+        }
+    }
+}
+
 int IspParamAdaptor::runIspAdaptL(ia_isp_bxt_program_group programGroup,
                                   ia_isp_bxt_gdc_limits *mbrData,
                                   const IspSettings* ispSettings, long settingSequence,
@@ -806,18 +844,16 @@ int IspParamAdaptor::runIspAdaptL(ia_isp_bxt_program_group programGroup,
                 programGroup.run_kernels[i].metadata[3] = aiqResults->mAiqParam.yuvColorRangeMode;
                 LOG2("ofa yuv color range mode %d", programGroup.run_kernels[i].metadata[3]);
                 break;
-            case ia_pal_uuid_isp_gammatm_v3:
-                // Bypass the GammaTM for manual color transform awb mode
-                programGroup.run_kernels[i].enable =
-                    (aiqResults->mAiqParam.awbMode == AWB_MODE_MANUAL_COLOR_TRANSFORM) ? 0 : 1;
-                LOG2("GammaTM enabled: %d", programGroup.run_kernels[i].enable);
-                break;
             }
         }
     }
 
     // Enable or disable kernels according to environment variables for debug purpose.
     updateKernelToggles(programGroup);
+
+    applyMediaFormat(&inputParams.media_format, aiqResults);
+    LOG2("%s, media format: 0x%x, gamma lut size: %d", __func__,
+         inputParams.media_format, aiqResults->mGbceResults.gamma_lut_size);
 
     inputParams.timestamp = aiqResults->mTimestamp;
     inputParams.program_group = &programGroup;
@@ -830,19 +866,10 @@ int IspParamAdaptor::runIspAdaptL(ia_isp_bxt_program_group programGroup,
     inputParams.sa_results = &aiqResults->mSaResults;
     inputParams.weight_grid = aiqResults->mAeResults.weight_grid;
 
-    inputParams.media_format = media_format_legacy;
-    if (aiqResults->mAiqParam.tonemapMode != TONEMAP_MODE_FAST &&
-        aiqResults->mAiqParam.tonemapMode != TONEMAP_MODE_HIGH_QUALITY) {
-        inputParams.media_format = media_format_custom;
-    }
-    LOG2("%s, media format: 0x%x", __func__, inputParams.media_format);
-
-    if (VIDEO_STREAM_ID == streamId) {
+    if (VIDEO_STREAM_ID == streamId)
         inputParams.call_rate_control.mode = ia_isp_call_rate_never_on_converged;
-    } else {
+    else
         inputParams.call_rate_control.mode = ia_isp_call_rate_always;
-        inputParams.sa_results->lsc_update = true;
-    }
 
     if (aiqResults->mCustomControls.count > 0) {
         inputParams.custom_controls = &aiqResults->mCustomControls;
