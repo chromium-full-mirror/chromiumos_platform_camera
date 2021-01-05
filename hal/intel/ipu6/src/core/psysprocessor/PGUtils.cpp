@@ -16,14 +16,17 @@
 
 #define LOG_TAG "PGUtils"
 
+#include "PGUtils.h"
+
+// CIPF backends
+extern "C" {
+#include <ia_cipf_css/ia_cipf_css.h>
+}
+
 #include <stdint.h>
-
 #include <vector>
-
 #include "iutils/Utils.h"
 #include "iutils/CameraLog.h"
-
-#include "PGUtils.h"
 
 namespace icamera {
 
@@ -203,5 +206,81 @@ bool getTerminalPairs(int pgId, TERMINAL_PAIR_TYPE type, std::vector<TerminalPai
     return false;
 }
 
+int getCssFmtBpp(ia_css_frame_format_type_t cssFmt) {
+    int size = ARRAY_SIZE(sFormatMapping);
+    for (int i = 0; i < size; i++) {
+        if (sFormatMapping[i].cssFmt == cssFmt) {
+            return sFormatMapping[i].cssBpp;
+        }
+    }
+
+    LOG2("%s: unsupported cssFmt pixel format: 0x%x", __func__, cssFmt);
+    return 8;
+}
+
+int getCompressedBpp(ia_css_frame_format_type_t format, int cssBpp) {
+    int bpp = cssBpp;
+    switch (format) {
+        case IA_CSS_DATA_FORMAT_BAYER_GRBG:
+        case IA_CSS_DATA_FORMAT_BAYER_RGGB:
+        case IA_CSS_DATA_FORMAT_BAYER_BGGR:
+        case IA_CSS_DATA_FORMAT_BAYER_GBRG:
+            bpp = 10;
+            break;
+        case IA_CSS_DATA_FORMAT_YUV420: {
+            if (cssBpp == 16)
+                bpp = 10;
+            else if (cssBpp == 12)
+                bpp = 8;
+            break;
+        }
+        case IA_CSS_DATA_FORMAT_NV12:
+            bpp = 8;
+            break;
+        default:
+            LOGW("%s format %d compress not supported", __func__, format);
+            break;
+    }
+    return bpp;
+}
+
+int getCompressedBpe(ia_css_frame_format_type_t format, int cssBpp) {
+    int bpe = cssBpp;
+    switch (format) {
+        case IA_CSS_DATA_FORMAT_BAYER_GRBG:
+        case IA_CSS_DATA_FORMAT_BAYER_RGGB:
+        case IA_CSS_DATA_FORMAT_BAYER_BGGR:
+        case IA_CSS_DATA_FORMAT_BAYER_GBRG:
+            bpe = 16;
+            break;
+        case IA_CSS_DATA_FORMAT_YUV420: {
+            if (cssBpp == 12)
+                bpe = 8;
+            break;
+        }
+        case IA_CSS_DATA_FORMAT_NV12:
+            bpe = 8;
+            break;
+        default:
+            LOGW("%s format %d compress not supported", __func__, format);
+            break;
+    }
+    return bpe;
+}
+
+bool isCompressionTerminal(int pgId, int terminalIndex) {
+    bool cmp = false;
+    int tId = terminalIndex + 1 + psys_2600_pg_uid(pgId);
+    // only pg 187 terminal 3/7 and pg 189 terminal 0/4/6 support compression
+    if ((pgId == psys_ipu6_isa_lb_pg_id && (tId == psys_ipu6_isa_lb_input_high_uid ||
+                                            tId == psys_ipu6_isa_lb_output_uid)) ||
+        (pgId == psys_ipu6_bb_pg_id && (tId == psys_ipu6_bb_input_uid ||
+                                        tId == psys_ipu6_bb_tnr_ref_in_uid ||
+                                        tId == psys_ipu6_bb_tnr_ref_out_uid))) {
+        cmp = true;
+    }
+
+    return cmp;
+}
 } // name space PGUtils
 } // namespace icamera

@@ -218,7 +218,8 @@ int PipeLiteExecutor::createPGs()
         ExecutorUnit pgUnit;
         pgUnit.pgId = pgId;
         pgUnit.stageId = psys_2600_pg_uid(pgId);
-        pgUnit.pg = std::shared_ptr<PGCommon>(new PGCommon(pgId, pgName, pgUnit.stageId + 1));
+        pgUnit.pg =
+            std::shared_ptr<PGCommon>(new PGCommon(mCameraId, pgId, pgName, pgUnit.stageId + 1));
         // Please refer to ia_cipf_css.h for terminalBaseUid
         pgUnit.pg->setShareReferPool(mShareReferPool);
         mPGExecutors.push_back(pgUnit);

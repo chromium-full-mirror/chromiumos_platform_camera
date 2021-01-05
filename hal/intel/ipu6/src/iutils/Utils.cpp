@@ -325,80 +325,89 @@ int CameraUtils::getStride(int format, int width)
 /*
  * Calc frame size for compression
  */
-int CameraUtils::getCompressedFrameSize(int format, int width, int height)
-{
-   int alignedBpl = getStride(format, width);
-   int alignedHeight, imageBufferSize, frameSize;
+int CameraUtils::getCompressedFrameSize(int format, int width, int height) {
+    int frameSize = 0;
+    switch (format) {
+        case V4L2_PIX_FMT_SBGGR8:
+        case V4L2_PIX_FMT_SGBRG8:
+        case V4L2_PIX_FMT_SGRBG8:
+        case V4L2_PIX_FMT_SRGGB8:
+        case V4L2_PIX_FMT_SBGGR10:
+        case V4L2_PIX_FMT_SGBRG10:
+        case V4L2_PIX_FMT_SGRBG10:
+        case V4L2_PIX_FMT_SRGGB10: {
+            int alignedBpl = getStride(format, width);
+            alignedBpl = ALIGN(alignedBpl, ISYS_COMPRESSION_STRIDE_ALIGNMENT_BYTES);
+            int alignedHeight = ALIGN(height, ISYS_COMPRESSION_HEIGHT_ALIGNMENT);
+            int imageBufferSize = ALIGN(alignedBpl * alignedHeight, ISYS_COMPRESSION_PAGE_SIZE);
+            int singlePlanarTileStatusSize =
+                CAMHAL_CEIL_DIV(((alignedBpl * alignedHeight / ISYS_COMPRESSION_TILE_SIZE_BYTES) *
+                                 ISYS_COMPRESSION_TILE_STATUS_BITS),
+                                8);
+            int singleTileStatusSize =
+                ALIGN(singlePlanarTileStatusSize, ISYS_COMPRESSION_PAGE_SIZE);
+            LOG1("@%s: format:%s, stride:%d, height:%d, imageSize:%d, TS size:%d", __func__,
+                 pixelCode2String(format), alignedBpl, alignedHeight, imageBufferSize,
+                 singleTileStatusSize);
 
-   switch (format) {
-       case V4L2_PIX_FMT_SBGGR8:
-       case V4L2_PIX_FMT_SGBRG8:
-       case V4L2_PIX_FMT_SGRBG8:
-       case V4L2_PIX_FMT_SRGGB8:
-       case V4L2_PIX_FMT_SBGGR10:
-       case V4L2_PIX_FMT_SGBRG10:
-       case V4L2_PIX_FMT_SGRBG10:
-       case V4L2_PIX_FMT_SRGGB10:
-       {
-           alignedBpl = ALIGN(alignedBpl, ISYS_COMPRESSION_STRIDE_ALIGNMENT_BYTES);
-           alignedHeight = ALIGN(height, ISYS_COMPRESSION_HEIGHT_ALIGNMENT);
-           imageBufferSize = ALIGN(alignedBpl * alignedHeight, ISYS_COMPRESSION_PAGE_SIZE);
-           int singlePlanarTileStatusSize = CAMHAL_CEIL_DIV(((alignedBpl * alignedHeight / ISYS_COMPRESSION_TILE_SIZE_BYTES) *
-                                                                                               ISYS_COMPRESSION_TILE_STATUS_BITS), 8);
-           int singleTileStatusSize = ALIGN(singlePlanarTileStatusSize, ISYS_COMPRESSION_PAGE_SIZE);
-           LOG1("@%s: format:%s, aligned stride:%d, buffer height:%d, pixel buffer size:%d, single planner TS size:%d",
-                __func__, pixelCode2String(format), alignedBpl, alignedHeight, imageBufferSize, singleTileStatusSize);
-           frameSize = imageBufferSize + singleTileStatusSize;
-           break;
-       }
-       case GET_FOURCC_FMT('V','4','2','0'):
-       case GET_FOURCC_FMT('I','Y','U','V'):
-       {
-           //alignedBpl needs accurate stride, not equivalent value from getStride()
-           alignedBpl = (format == GET_FOURCC_FMT('V','4','2','0')) ? width * 2 : width;
-           alignedBpl = ALIGN(alignedBpl, PSYS_COMPRESSION_PSA_Y_STRIDE_ALIGNMENT);
-           alignedHeight = ALIGN(height, PSYS_COMPRESSION_PSA_HEIGHT_ALIGNMENT);
-           int alignBplUV = ALIGN(alignedBpl / UV_STRIDE_DIVIDER, PSYS_COMPRESSION_PSA_UV_STRIDE_ALIGNMENT);
-           int alignHeightUV = ALIGN(alignedHeight / UV_HEIGHT_DIVIDER, PSYS_COMPRESSION_PSA_HEIGHT_ALIGNMENT);
-           imageBufferSize = ALIGN((alignedBpl * alignedHeight + alignBplUV * alignHeightUV * 2), PSYS_COMPRESSION_PAGE_SIZE);
+            frameSize = imageBufferSize + singleTileStatusSize;
+            break;
+        }
+        case GET_FOURCC_FMT('V', '4', '2', '0'):
+        case GET_FOURCC_FMT('I', 'Y', 'U', 'V'): {
+            int alignedBpl = format == GET_FOURCC_FMT('V', '4', '2', '0') ? width * 2 : width;
+            alignedBpl = ALIGN(alignedBpl, PSYS_COMPRESSION_PSA_Y_STRIDE_ALIGNMENT);
+            int alignedHeight = ALIGN(height, PSYS_COMPRESSION_PSA_HEIGHT_ALIGNMENT);
+            int alignWidthUV = alignedBpl / 2;
+            int alignHeightUV = alignedHeight / 2;
 
-           int planarYTileStatus = CAMHAL_CEIL_DIV((alignedBpl * alignedHeight / TILE_SIZE_YUV420_Y) *
-                                                                                   TILE_STATUS_BITS_YUV420_Y, 8);
-           planarYTileStatus = ALIGN(planarYTileStatus, PSYS_COMPRESSION_PAGE_SIZE);
-           int planarUVTileStatus = CAMHAL_CEIL_DIV((alignBplUV * alignHeightUV / TILE_SIZE_YUV420_Y) *
-                                                                                   TILE_STATUS_BITS_YUV420_Y, 8);
-           planarUVTileStatus = ALIGN(planarUVTileStatus, PSYS_COMPRESSION_PAGE_SIZE);
+            int imageBufferSize =
+                ALIGN((alignedBpl * alignedHeight + alignWidthUV * alignHeightUV * 2),
+                      PSYS_COMPRESSION_PAGE_SIZE);
 
-           LOG1("@%s: format:%s, stride:%d, height:%d, imageSize:%d, tile_status_Y:%d, two tile_status_UV:%d",
-                       __func__, pixelCode2String(format), alignedBpl, alignedHeight,
-                       imageBufferSize, planarYTileStatus, planarUVTileStatus*2);
-           frameSize = imageBufferSize + planarYTileStatus + planarUVTileStatus * 2;
-           break;
-       }
-       case V4L2_PIX_FMT_NV12:
-       {
-           int bpl = width;
-           alignedBpl = ALIGN(bpl, PSYS_COMPRESSION_OFS_STRIDE_ALIGNMENT);
-           alignedHeight = ALIGN(height, PSYS_COMPRESSION_OFS_LINEAR_HEIGHT_ALIGNMENT);
-           int alignedHeightUV = ALIGN(alignedHeight / UV_HEIGHT_DIVIDER, PSYS_COMPRESSION_OFS_LINEAR_HEIGHT_ALIGNMENT);
-           int imageBufferSize = ALIGN(alignedBpl * (alignedHeight + alignedHeightUV), PSYS_COMPRESSION_PAGE_SIZE);
+            int planarYTileStatus = CAMHAL_CEIL_DIV(
+                (alignedBpl * alignedHeight / TILE_SIZE_YUV420_Y) * TILE_STATUS_BITS_YUV420_Y, 8);
+            planarYTileStatus = ALIGN(planarYTileStatus, PSYS_COMPRESSION_PAGE_SIZE);
+            int planarUVTileStatus = CAMHAL_CEIL_DIV(
+                (alignWidthUV * alignHeightUV / TILE_SIZE_YUV420_UV) * TILE_STATUS_BITS_YUV420_UV,
+                8);
+            planarUVTileStatus = ALIGN(planarUVTileStatus, PSYS_COMPRESSION_PAGE_SIZE);
 
-           int planarYTileStatus = CAMHAL_CEIL_DIV((alignedBpl *  alignedHeight / TILE_SIZE_OFS8_10_LINEAR) *
-                                                                                   TILE_STATUS_BITS_OFS8_10_LINEAR, 8);
-           planarYTileStatus = ALIGN(planarYTileStatus, PSYS_COMPRESSION_PAGE_SIZE);
-           int planarUVTileStatus = CAMHAL_CEIL_DIV((alignedBpl * alignedHeightUV / TILE_SIZE_OFS8_10_LINEAR) *
-                                                                                   TILE_STATUS_BITS_OFS8_10_LINEAR, 8);
-           planarUVTileStatus = ALIGN(planarUVTileStatus, PSYS_COMPRESSION_PAGE_SIZE);
+            LOG1("@%s: format:%s, stride:%d, height:%d, imageSize:%d, tile_status_Y:%d,"
+                 "tile_status_UV:%d", __func__, pixelCode2String(format), alignedBpl, alignedHeight,
+                 imageBufferSize, planarYTileStatus, planarUVTileStatus);
+            frameSize = imageBufferSize + planarYTileStatus + planarUVTileStatus * 2;
+            break;
+        }
+        case V4L2_PIX_FMT_NV12:  {
+                int bpl = width;
+                int alignedBpl = ALIGN(bpl, PSYS_COMPRESSION_OFS_STRIDE_ALIGNMENT);
+                int alignedHeight = ALIGN(height, PSYS_COMPRESSION_OFS_LINEAR_HEIGHT_ALIGNMENT);
+                int alignedHeightUV = ALIGN(alignedHeight / UV_HEIGHT_DIVIDER,
+                                            PSYS_COMPRESSION_OFS_LINEAR_HEIGHT_ALIGNMENT);
+                int imageBufferSize = ALIGN(alignedBpl * (alignedHeight + alignedHeightUV),
+                                            PSYS_COMPRESSION_PAGE_SIZE);
 
-           LOG1("@%s: format: %s, stride:%d, height:%d, imageSize:%d, tile_status_Y:%d, tile_status_UV:%d",
-                    __func__, pixelCode2String(format), alignedBpl, alignedHeight, imageBufferSize, planarYTileStatus, planarUVTileStatus);
-           frameSize = imageBufferSize + planarYTileStatus + planarUVTileStatus;
-           break;
-       }
-       default:
-           LOGE("@%s: unexpected format 0x%x in string %s, unsupported compression format", __func__, format, pixelCode2String(format));
-           frameSize = 0;
-           break;
+                int planarYTileStatus =
+                    CAMHAL_CEIL_DIV((alignedBpl * alignedHeight / TILE_SIZE_OFS8_10_LINEAR) *
+                                    TILE_STATUS_BITS_OFS8_10_LINEAR, 8);
+                planarYTileStatus = ALIGN(planarYTileStatus, PSYS_COMPRESSION_PAGE_SIZE);
+                int planarUVTileStatus =
+                    CAMHAL_CEIL_DIV((alignedBpl * alignedHeightUV / TILE_SIZE_OFS8_10_LINEAR) *
+                                    TILE_STATUS_BITS_OFS8_10_LINEAR, 8);
+                planarUVTileStatus = ALIGN(planarUVTileStatus, PSYS_COMPRESSION_PAGE_SIZE);
+
+                LOG1("@%s: format: %s, stride:%d height:%d imageSize:%d, tile_status_Y:%d, "
+                     "tile_status_UV:%d", __func__, pixelCode2String(format), alignedBpl,
+                     alignedHeight, imageBufferSize, planarYTileStatus, planarUVTileStatus);
+                frameSize = imageBufferSize + planarYTileStatus + planarUVTileStatus;
+                break;
+            }
+        default:
+            LOGE("@%s: unexpected format 0x%x in string %s, unsupported compression format",
+                 __func__, format, pixelCode2String(format));
+            frameSize = 0;
+            break;
     }
 
     return frameSize;

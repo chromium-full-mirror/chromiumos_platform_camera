@@ -53,11 +53,12 @@ int PGCommon::getFrameSize(int format, int width, int height,
     return size;
 }
 
-PGCommon::PGCommon(int pgId, const std::string& pgName, ia_uid terminalBaseUid):
+PGCommon::PGCommon(int cameraId, int pgId, const std::string& pgName, ia_uid terminalBaseUid):
     mCtx(nullptr),
     mManifestBuffer(nullptr),
     mPGParamsBuffer(nullptr),
     mPGParamAdapt(nullptr),
+    mCameraId(cameraId),
     mPGId(pgId),
     mName(pgName),
     mTerminalBaseUid(terminalBaseUid),
@@ -307,6 +308,8 @@ int PGCommon::prepare(IspParamAdaptor* adaptor, int streamId)
     CheckError((ret != OK), ret, "%s, call allocateTnrDataBuffers fail", __func__);
     ret = preparePayloadBuffers();
     CheckError((ret != OK), NO_MEMORY, "%s, preparePayloadBuffers fails", __func__);
+
+    configureFrameDesc();
 
     return OK;
 }
@@ -723,6 +726,57 @@ int PGCommon::configureTerminalFragmentDesc(int termIdx, const ia_p2p_fragment_d
              dstFragDesc->index[IA_CSS_ROW_DIMENSION],
              dstFragDesc->offset[IA_CSS_COL_DIMENSION],
              dstFragDesc->offset[IA_CSS_ROW_DIMENSION]);
+    }
+    return OK;
+}
+
+int PGCommon::configureFrameDesc() {
+    for (int termIdx = 0; termIdx < mTerminalCount; termIdx++) {
+        if (mPgTerminals[termIdx] >= IPU_MAX_TERMINAL_COUNT ||
+            !PGUtils::isCompressionTerminal(mPGId, termIdx)) {
+            continue;
+        }
+
+        ia_css_terminal_t* terminal =
+            ia_css_process_group_get_terminal(mProcessGroup, mPgTerminals[termIdx]);
+        ia_css_terminal_type_t terminalType = ia_css_terminal_get_type(terminal);
+
+        if ((terminalType == IA_CSS_TERMINAL_TYPE_DATA_OUT) ||
+            (terminalType == IA_CSS_TERMINAL_TYPE_DATA_IN)) {
+            ia_css_frame_descriptor_t* dstFrameDesc = ia_css_data_terminal_get_frame_descriptor(
+                reinterpret_cast<ia_css_data_terminal_t*>(terminal));
+            int width = mTerminalFrameInfos[termIdx].mWidth;
+            int height = mTerminalFrameInfos[termIdx].mHeight;
+            int cssBpp = PGUtils::getCssFmtBpp(dstFrameDesc->frame_format_type);
+            switch (dstFrameDesc->frame_format_type) {
+                case IA_CSS_DATA_FORMAT_BAYER_GRBG:
+                case IA_CSS_DATA_FORMAT_BAYER_RGGB:
+                case IA_CSS_DATA_FORMAT_BAYER_BGGR:
+                case IA_CSS_DATA_FORMAT_BAYER_GBRG: {
+                    if (!PlatformData::getISYSCompression(mCameraId)) break;
+
+                    int alignedBpl = width * 2;
+                    alignedBpl = ALIGN(alignedBpl, ISYS_COMPRESSION_STRIDE_ALIGNMENT_BYTES);
+                    int alignedHeight = ALIGN(height, ISYS_COMPRESSION_HEIGHT_ALIGNMENT);
+                    int imageBufferSize =
+                        ALIGN(alignedBpl * alignedHeight, ISYS_COMPRESSION_PAGE_SIZE);
+
+                    dstFrameDesc->bpp =
+                        PGUtils::getCompressedBpp(dstFrameDesc->frame_format_type, cssBpp);
+                    dstFrameDesc->bpe =
+                        PGUtils::getCompressedBpe(dstFrameDesc->frame_format_type, cssBpp);
+                    dstFrameDesc->plane_count = 1;
+                    dstFrameDesc->ts_offsets[0] = imageBufferSize;
+                    dstFrameDesc->is_compressed = 1;
+                    dstFrameDesc->stride[IA_CSS_COL_DIMENSION] = alignedBpl;
+                    dstFrameDesc->dimension[IA_CSS_ROW_DIMENSION] = alignedHeight;
+                    LOG1("%s set compression flag to PG %d terminal %d", __func__, mPGId, termIdx);
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
     }
     return OK;
 }
