@@ -691,10 +691,12 @@ int IspParamAdaptor::runIspAdaptL(ia_isp_bxt_program_group *pgPtr, ia_isp_bxt_gd
     LOG2("%s, media format: 0x%x, gamma lut size: %d", __func__,
          inputParams->media_format, aiqResults->mGbceResults.gamma_lut_size);
 
-    if (VIDEO_STREAM_ID == streamId)
+    if (VIDEO_STREAM_ID == streamId) {
         inputParams->call_rate_control.mode = ia_isp_call_rate_never_on_converged;
-    else
+    } else {
         inputParams->call_rate_control.mode = ia_isp_call_rate_always;
+        inputParams->force_lsc_update = true;
+    }
 
     int ret = deepCopyProgramGroup(pgPtr, &(inputParams->program_group));
     CheckError(ret != OK, UNKNOWN_ERROR, "%s, Failed to convert cca programGroup", __func__);

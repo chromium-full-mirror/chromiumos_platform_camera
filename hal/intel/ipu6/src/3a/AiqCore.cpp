@@ -101,10 +101,6 @@ int AiqCore::initAiqPlusParams() {
     CLEAR(mPaColorGains);
     CLEAR(mSaParams);
 
-    mGbceParams.gbce_level = ia_aiq_gbce_level_use_tuning;
-    mGbceParams.tone_map_level = ia_aiq_tone_map_level_use_tuning;
-    mGbceParams.ev_shift = 0;
-
     /* use convergence time from tunings */
     mSaParams.manual_convergence_time = -1.0;
 
@@ -357,11 +353,9 @@ int AiqCore::runAiq(long requestId, AiqResult *aiqResult) {
 
         //run gbce with bypass level if AE lock and ev shift isn't changed
         if (mAeForceLock && mGbceParams.ev_shift == mLastEvShift) {
-            mGbceParams.gbce_level = ia_aiq_gbce_level_bypass;
-            mGbceParams.tone_map_level = ia_aiq_tone_map_level_bypass;
+            mGbceParams.is_bypass = true;
         } else {
-            mGbceParams.gbce_level = ia_aiq_gbce_level_use_tuning;
-            mGbceParams.tone_map_level = ia_aiq_tone_map_level_use_tuning;
+            mGbceParams.is_bypass = false;
         }
         mAiqParams->bitmap |= cca::CCA_MODULE_GBCE;
         mAiqParams->gbce_input = mGbceParams;
