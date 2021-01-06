@@ -29,14 +29,15 @@ std::vector<IntelCca::CCAHandle> IntelCca::sCcaInstance;
 Mutex IntelCca::sLock;
 
 IntelCca* IntelCca::getInstance(int cameraId, TuningMode mode) {
-    LOG2("@%s, cameraId: %d, tuningMode: %d", __func__, cameraId, mode);
+    LOG2("@%s, cameraId:%d, tuningMode:%d, cca instance size:%d", __func__,
+         cameraId, mode, sCcaInstance.size());
 
     AutoMutex lock(sLock);
     for (auto &it : sCcaInstance) {
         if (cameraId == it.cameraId) {
-            if (it.ccaHandle.find(mode) == it.ccaHandle.end())
+            if (it.ccaHandle.find(mode) == it.ccaHandle.end()) {
                 it.ccaHandle[mode] = new IntelCca();
-
+            }
             return it.ccaHandle[mode];
         }
     }
@@ -50,7 +51,7 @@ IntelCca* IntelCca::getInstance(int cameraId, TuningMode mode) {
 }
 
 void IntelCca::releaseInstance(int cameraId, TuningMode mode) {
-    LOG2("@%s, cameraId: %d, tuningMode: %d", __func__, cameraId, mode);
+    LOG2("@%s, cameraId:%d, tuningMode:%d", __func__, cameraId, mode);
 
     AutoMutex lock(sLock);
     for (auto &it : sCcaInstance) {
@@ -58,14 +59,24 @@ void IntelCca::releaseInstance(int cameraId, TuningMode mode) {
             IntelCca *cca = it.ccaHandle[mode];
             it.ccaHandle.erase(mode);
             delete cca;
-            cca = nullptr;
         }
+    }
+}
+
+void IntelCca::releaseAllInstances() {
+    AutoMutex lock(sLock);
+    LOG2("@%s, cca instance size:%d", __func__, sCcaInstance.size());
+    for (auto &it : sCcaInstance) {
+        for (auto &oneCcaHandle : it.ccaHandle) {
+            IntelCca* intelCca = oneCcaHandle.second;
+            delete intelCca;
+        }
+        it.ccaHandle.clear();
     }
 }
 
 IntelCca::IntelCca() {
     LOG2("@%s", __func__);
-
     mIntelCCA = nullptr;
 }
 
@@ -89,7 +100,7 @@ ia_err IntelCca::init(const cca::cca_init_params& initParams) {
     LOG2("@%s, bitmap:%d", __func__, initParams.bitmap);
 
     ia_err ret = getIntelCCA()->init(initParams);
-    LOG2("@%s, ret:%d", __func__, ret);
+    LOG2("@%s, ret:%d, version:%s", __func__, ret, getIntelCCA()->getVersion());
 
     return ret;
 }
@@ -212,13 +223,6 @@ void IntelCca::deinit() {
 
     getIntelCCA()->deinit();
     releaseIntelCCA();
-}
-
-void IntelCca::getVersion(std::string* version) {
-    LOG2("@%s", __func__);
-    CheckError(!version, VOID_VALUE, "@%s, version is nullptr", __func__);
-
-    *version = std::string(getIntelCCA()->getVersion());
 }
 
 ia_err IntelCca::decodeStats(uint64_t statsPointer, uint32_t statsSize,

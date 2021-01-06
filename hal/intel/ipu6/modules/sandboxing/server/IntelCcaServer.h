@@ -39,15 +39,11 @@ class IntelCcaServer {
     status_t getMKN(void* pData, int dataSize);
     status_t getAiqd(void* pData, int dataSize);
     status_t updateTuning(void* pData, int dataSize);
-    status_t deinit();
-    status_t getVersion(void* pData, int dataSize);
+    status_t deinit(void* pData, int dataSize);
     status_t decodeStats(void* pData, int dataSize, void* statsAddr);
     status_t getPalDataSize(void* pData, int dataSize);
 
  private:
     bool unflattenProgramGroup(cca::cca_program_group* result);
-
- private:
-    std::unique_ptr<IntelCca> mCca;
 };
 } /* namespace icamera */

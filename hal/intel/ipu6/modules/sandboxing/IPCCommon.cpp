@@ -43,7 +43,6 @@ const char* IntelAlgoIpcCmdToString(IPC_CMD cmd) {
                                            "IPC_CCA_GET_AIQD",
                                            "IPC_CCA_UPDATE_TUNING",
                                            "IPC_CCA_DEINIT",
-                                           "IPC_CCA_GET_VERSION",
                                            "IPC_CCA_RUN_AIC",
                                            "IPC_CCA_DECODE_STATS",
                                            "IPC_CCA_GET_PAL_SIZE",
@@ -68,7 +67,7 @@ const char* IntelAlgoIpcCmdToString(IPC_CMD cmd) {
 
 IPC_GROUP IntelAlgoIpcCmdToGroup(IPC_CMD cmd) {
     IPC_GROUP group = IPC_GROUP_CPU_OTHER;
-    if (cmd >= IPC_CCA_INIT && cmd <= IPC_CCA_GET_VERSION) {
+    if (cmd >= IPC_CCA_INIT && cmd <= IPC_CCA_DEINIT) {
         group = IPC_GROUP_AIQ;
     } else if (cmd >= IPC_CCA_RUN_AIC && cmd <= IPC_CCA_GET_PAL_SIZE) {
         group = IPC_GROUP_PAL;

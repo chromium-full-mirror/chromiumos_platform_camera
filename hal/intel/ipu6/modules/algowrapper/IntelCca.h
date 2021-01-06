@@ -34,6 +34,7 @@ class IntelCca {
 
     static IntelCca* getInstance(int cameraId, TuningMode mode);
     static void releaseInstance(int cameraId, TuningMode mode);
+    static void releaseAllInstances();
 
     ia_err init(const cca::cca_init_params& initParams);
 
@@ -58,7 +59,6 @@ class IntelCca {
     ia_err updateTuning(uint8_t lardTags, const ia_lard_input_params& lardParams);
 
     void deinit();
-    void getVersion(std::string* version);
 
     ia_err decodeStats(uint64_t statsPointer, uint32_t statsSize,
                        ia_isp_bxt_statistics_query_results_t* results);

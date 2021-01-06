@@ -31,7 +31,7 @@
 namespace icamera {
 class IntelCca {
  public:
-    IntelCca();
+    IntelCca(int cameraId, TuningMode mode);
     virtual ~IntelCca();
 
     static IntelCca* getInstance(int cameraId, TuningMode mode);
@@ -60,7 +60,6 @@ class IntelCca {
     ia_err updateTuning(uint8_t lardTags, const ia_lard_input_params& lardParams);
 
     void deinit();
-    void getVersion(std::string* version);
 
     ia_err decodeStats(uint64_t statsPointer, uint32_t statsSize,
                        ia_isp_bxt_statistics_query_results_t* results);
@@ -70,6 +69,9 @@ class IntelCca {
     void freeMem(void* addr);
 
  private:
+    int mCameraId;
+    TuningMode mTuningMode;
+
     IntelAlgoCommon mCommon;
 
     bool mInitialized;
@@ -86,7 +88,7 @@ class IntelCca {
     ShmMemInfo mMemMKN;
     ShmMemInfo mMemAIQD;
     ShmMemInfo mMemTuning;
-    ShmMemInfo mMemVersion;
+    ShmMemInfo mMemDeinit;
     ShmMemInfo mMemDecodeStats;
     ShmMemInfo mMemPalSize;
 

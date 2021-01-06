@@ -164,10 +164,7 @@ void IntelCPUAlgoServer::handleRequest(const MsgReq& msg) {
             mCca.updateTuning(addr, requestSize);
             break;
         case IPC_CCA_DEINIT:
-            status = mCca.deinit();
-            break;
-        case IPC_CCA_GET_VERSION:
-            status = mCca.getVersion(addr, requestSize);
+            status = mCca.deinit(addr, requestSize);
             break;
         case IPC_CCA_DECODE_STATS: {
             intel_cca_decode_stats_data* params = static_cast<intel_cca_decode_stats_data*>(addr);

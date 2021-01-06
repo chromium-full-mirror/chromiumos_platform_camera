@@ -29,23 +29,27 @@
 namespace icamera {
 IntelCcaServer::IntelCcaServer() {
     LOGIPC("@%s", __func__);
-
-    mCca = std::unique_ptr<IntelCca>(new IntelCca());
 }
 
 IntelCcaServer::~IntelCcaServer() {
     LOGIPC("@%s", __func__);
+
+    IntelCca::releaseAllInstances();
 }
 
 status_t IntelCcaServer::init(void* pData, int dataSize) {
     LOGIPC("@%s, pData:%p, dataSize:%d", __func__, pData, dataSize);
     CheckError(pData == nullptr, UNKNOWN_ERROR, "@%s, pData is nullptr", __func__);
 
-    cca::cca_init_params* params = static_cast<cca::cca_init_params*>(pData);
-    LOG2("@%s, params->bitmap:%d", __func__, params->bitmap);
+    intel_cca_init_data* params = static_cast<intel_cca_init_data*>(pData);
+    LOG2("@%s, params->bitmap:%d", __func__, params->inParams.bitmap);
 
-    ia_err ret = mCca->init(*params);
-    CheckError(ret != ia_err_none, UNKNOWN_ERROR, "@%s, mCca->init fails", __func__);
+    IntelCca* intelCca = IntelCca::getInstance(params->cameraId, params->tuningMode);
+    CheckError(!intelCca, UNKNOWN_ERROR, "%s, Failed to get cca: cameraId(%d), mode(%d)", __func__,
+               params->cameraId, params->tuningMode);
+
+    ia_err ret = intelCca->init(params->inParams);
+    CheckError(ret != ia_err_none, UNKNOWN_ERROR, "@%s, intelCca->init fails", __func__);
     LOG2("@%s, ret:%d", __func__, ret);
 
     return OK;
@@ -55,10 +59,14 @@ status_t IntelCcaServer::setStats(void* pData, int dataSize) {
     LOGIPC("@%s, pData:%p, dataSize:%d", __func__, pData, dataSize);
     CheckError(pData == nullptr, UNKNOWN_ERROR, "@%s, pData is nullptr", __func__);
 
-    cca::cca_stats_params* params = static_cast<cca::cca_stats_params*>(pData);
+    intel_cca_set_stats_data* params = static_cast<intel_cca_set_stats_data*>(pData);
 
-    ia_err ret = mCca->setStatsParams(*params);
-    CheckError(ret != ia_err_none, UNKNOWN_ERROR, "@%s, mCca->init fails", __func__);
+    IntelCca* intelCca = IntelCca::getInstance(params->cameraId, params->tuningMode);
+    CheckError(!intelCca, UNKNOWN_ERROR, "%s, Failed to get cca: cameraId(%d), mode(%d)", __func__,
+               params->cameraId, params->tuningMode);
+
+    ia_err ret = intelCca->setStatsParams(params->inParams);
+    CheckError(ret != ia_err_none, UNKNOWN_ERROR, "@%s, intelCca->init fails", __func__);
     LOG2("@%s, ret:%d", __func__, ret);
 
     return OK;
@@ -70,8 +78,12 @@ status_t IntelCcaServer::runAEC(void* pData, int dataSize) {
 
     intel_cca_run_aec_data* params = static_cast<intel_cca_run_aec_data*>(pData);
 
-    ia_err ret = mCca->runAEC(params->frameId, params->inParams, &params->results);
-    CheckError(ret != ia_err_none, UNKNOWN_ERROR, "@%s, mCca->runAEC fails", __func__);
+    IntelCca* intelCca = IntelCca::getInstance(params->cameraId, params->tuningMode);
+    CheckError(!intelCca, UNKNOWN_ERROR, "%s, Failed to get cca: cameraId(%d), mode(%d)", __func__,
+               params->cameraId, params->tuningMode);
+
+    ia_err ret = intelCca->runAEC(params->frameId, params->inParams, &params->results);
+    CheckError(ret != ia_err_none, UNKNOWN_ERROR, "@%s, intelCca->runAEC fails", __func__);
     LOG2("@%s, ret:%d", __func__, ret);
 
     return OK;
@@ -83,8 +95,12 @@ status_t IntelCcaServer::runAIQ(void* pData, int dataSize) {
 
     intel_cca_run_aiq_data* params = static_cast<intel_cca_run_aiq_data*>(pData);
 
-    ia_err ret = mCca->runAIQ(params->frameId, params->inParams, &params->results);
-    CheckError(ret != ia_err_none, UNKNOWN_ERROR, "@%s, mCca->runAIQ fails", __func__);
+    IntelCca* intelCca = IntelCca::getInstance(params->cameraId, params->tuningMode);
+    CheckError(!intelCca, UNKNOWN_ERROR, "%s, Failed to get cca: cameraId(%d), mode(%d)", __func__,
+               params->cameraId, params->tuningMode);
+
+    ia_err ret = intelCca->runAIQ(params->frameId, params->inParams, &params->results);
+    CheckError(ret != ia_err_none, UNKNOWN_ERROR, "@%s, intelCca->runAIQ fails", __func__);
     LOG2("@%s, ret:%d", __func__, ret);
 
     return OK;
@@ -96,8 +112,12 @@ status_t IntelCcaServer::runLTM(void* pData, int dataSize) {
 
     intel_cca_run_ltm_data* params = static_cast<intel_cca_run_ltm_data*>(pData);
 
-    ia_err ret = mCca->runLTM(params->frameId, params->inParams);
-    CheckError(ret != ia_err_none, UNKNOWN_ERROR, "@%s, mCca->runLTM fails", __func__);
+    IntelCca* intelCca = IntelCca::getInstance(params->cameraId, params->tuningMode);
+    CheckError(!intelCca, UNKNOWN_ERROR, "%s, Failed to get cca: cameraId(%d), mode(%d)", __func__,
+               params->cameraId, params->tuningMode);
+
+    ia_err ret = intelCca->runLTM(params->frameId, params->inParams);
+    CheckError(ret != ia_err_none, UNKNOWN_ERROR, "@%s, intelCca->runLTM fails", __func__);
     LOG2("@%s, ret:%d", __func__, ret);
 
     return OK;
@@ -107,10 +127,14 @@ status_t IntelCcaServer::updateZoom(void* pData, int dataSize) {
     LOGIPC("@%s, pData:%p, dataSize:%d", __func__, pData, dataSize);
     CheckError(pData == nullptr, UNKNOWN_ERROR, "@%s, pData is nullptr", __func__);
 
-    cca::cca_dvs_zoom* params = static_cast<cca::cca_dvs_zoom*>(pData);
+    intel_cca_update_zoom_data* params = static_cast<intel_cca_update_zoom_data*>(pData);
 
-    ia_err ret = mCca->updateZoom(*params);
-    CheckError(ret != ia_err_none, UNKNOWN_ERROR, "@%s, mCca->updateZoom fails", __func__);
+    IntelCca* intelCca = IntelCca::getInstance(params->cameraId, params->tuningMode);
+    CheckError(!intelCca, UNKNOWN_ERROR, "%s, Failed to get cca: cameraId(%d), mode(%d)", __func__,
+               params->cameraId, params->tuningMode);
+
+    ia_err ret = intelCca->updateZoom(params->inParams);
+    CheckError(ret != ia_err_none, UNKNOWN_ERROR, "@%s, intelCca->updateZoom fails", __func__);
     LOG2("@%s, ret:%d", __func__, ret);
 
     return OK;
@@ -120,10 +144,14 @@ status_t IntelCcaServer::runDVS(void* pData, int dataSize) {
     LOGIPC("@%s, pData:%p, dataSize:%d", __func__, pData, dataSize);
     CheckError(pData == nullptr, UNKNOWN_ERROR, "@%s, pData is nullptr", __func__);
 
-    uint64_t* params = static_cast<uint64_t*>(pData);
+    intel_cca_run_dvs_data* params = static_cast<intel_cca_run_dvs_data*>(pData);
 
-    ia_err ret = mCca->runDVS(*params);
-    CheckError(ret != ia_err_none, UNKNOWN_ERROR, "@%s, mCca->runDVS fails", __func__);
+    IntelCca* intelCca = IntelCca::getInstance(params->cameraId, params->tuningMode);
+    CheckError(!intelCca, UNKNOWN_ERROR, "%s, Failed to get cca: cameraId(%d), mode(%d)", __func__,
+               params->cameraId, params->tuningMode);
+
+    ia_err ret = intelCca->runDVS(params->frameId);
+    CheckError(ret != ia_err_none, UNKNOWN_ERROR, "@%s, intelCca->runDVS fails", __func__);
     LOG2("@%s, ret:%d", __func__, ret);
 
     return OK;
@@ -135,12 +163,16 @@ status_t IntelCcaServer::runAIC(void* pData, int dataSize) {
 
     intel_cca_run_aic_data* params = static_cast<intel_cca_run_aic_data*>(pData);
 
+    IntelCca* intelCca = IntelCca::getInstance(params->cameraId, params->tuningMode);
+    CheckError(!intelCca, UNKNOWN_ERROR, "%s, Failed to get cca: cameraId(%d), mode(%d)", __func__,
+               params->cameraId, params->tuningMode);
+
     bool retVal = unflattenProgramGroup(&params->inParams->program_group);
     CheckError(retVal != true, UNKNOWN_ERROR, "@%s, unflattenProgramGroup fails", __func__);
 
-    ia_err ret = mCca->runAIC(params->frameId, params->inParams, &params->palOutData);
+    ia_err ret = intelCca->runAIC(params->frameId, params->inParams, &params->palOutData);
     CheckError(ret != ia_err_none && ret != ia_err_not_run, ret,
-               "@%s, mCca->runAIC fails", __func__);
+               "@%s, intelCca->runAIC fails", __func__);
     LOG2("@%s, ret:%d", __func__, ret);
 
     return ret;
@@ -150,10 +182,14 @@ status_t IntelCcaServer::getCMC(void* pData, int dataSize) {
     LOGIPC("@%s, pData:%p, dataSize:%d", __func__, pData, dataSize);
     CheckError(pData == nullptr, UNKNOWN_ERROR, "@%s, pData is nullptr", __func__);
 
-    cca::cca_cmc* params = static_cast<cca::cca_cmc*>(pData);
+    intel_cca_get_cmc_data* params = static_cast<intel_cca_get_cmc_data*>(pData);
 
-    ia_err ret = mCca->getCMC(params);
-    CheckError(ret != ia_err_none, UNKNOWN_ERROR, "@%s, mCca->getCMC fails", __func__);
+    IntelCca* intelCca = IntelCca::getInstance(params->cameraId, params->tuningMode);
+    CheckError(!intelCca, UNKNOWN_ERROR, "%s, Failed to get cca: cameraId(%d), mode(%d)", __func__,
+               params->cameraId, params->tuningMode);
+
+    ia_err ret = intelCca->getCMC(&params->results);
+    CheckError(ret != ia_err_none, UNKNOWN_ERROR, "@%s, intelCca->getCMC fails", __func__);
     LOG2("@%s, ret:%d", __func__, ret);
 
     return OK;
@@ -165,8 +201,12 @@ status_t IntelCcaServer::getMKN(void* pData, int dataSize) {
 
     intel_cca_mkn_data* params = static_cast<intel_cca_mkn_data*>(pData);
 
-    ia_err ret = mCca->getMKN(params->type, params->results);
-    CheckError(ret != ia_err_none, UNKNOWN_ERROR, "@%s, mCca->getMKN fails", __func__);
+    IntelCca* intelCca = IntelCca::getInstance(params->cameraId, params->tuningMode);
+    CheckError(!intelCca, UNKNOWN_ERROR, "%s, Failed to get cca: cameraId(%d), mode(%d)", __func__,
+               params->cameraId, params->tuningMode);
+
+    ia_err ret = intelCca->getMKN(params->type, params->results);
+    CheckError(ret != ia_err_none, UNKNOWN_ERROR, "@%s, intelCca->getMKN fails", __func__);
     LOG2("@%s, ret:%d", __func__, ret);
 
     return OK;
@@ -176,10 +216,14 @@ status_t IntelCcaServer::getAiqd(void* pData, int dataSize) {
     LOGIPC("@%s, pData:%p, dataSize:%d", __func__, pData, dataSize);
     CheckError(pData == nullptr, UNKNOWN_ERROR, "@%s, pData is nullptr", __func__);
 
-    cca::cca_aiqd* params = static_cast<cca::cca_aiqd*>(pData);
+    intel_cca_get_aiqd_data* params = static_cast<intel_cca_get_aiqd_data*>(pData);
 
-    ia_err ret = mCca->getAiqd(params);
-    CheckError(ret != ia_err_none, UNKNOWN_ERROR, "@%s, mCca->getAiqd fails", __func__);
+    IntelCca* intelCca = IntelCca::getInstance(params->cameraId, params->tuningMode);
+    CheckError(!intelCca, UNKNOWN_ERROR, "%s, Failed to get cca: cameraId(%d), mode(%d)", __func__,
+               params->cameraId, params->tuningMode);
+
+    ia_err ret = intelCca->getAiqd(&params->results);
+    CheckError(ret != ia_err_none, UNKNOWN_ERROR, "@%s, intelCca->getAiqd fails", __func__);
     LOG2("@%s, ret:%d", __func__, ret);
 
     return OK;
@@ -191,32 +235,28 @@ status_t IntelCcaServer::updateTuning(void* pData, int dataSize) {
 
     intel_cca_update_tuning_data* params = static_cast<intel_cca_update_tuning_data*>(pData);
 
-    ia_err ret = mCca->updateTuning(params->lardTags, params->lardParams);
-    CheckError(ret != ia_err_none, UNKNOWN_ERROR, "@%s, mCca->updateTuning fails", __func__);
+    IntelCca* intelCca = IntelCca::getInstance(params->cameraId, params->tuningMode);
+    CheckError(!intelCca, UNKNOWN_ERROR, "%s, Failed to get cca: cameraId(%d), mode(%d)", __func__,
+               params->cameraId, params->tuningMode);
+
+    ia_err ret = intelCca->updateTuning(params->lardTags, params->lardParams);
+    CheckError(ret != ia_err_none, UNKNOWN_ERROR, "@%s, intelCca->updateTuning fails", __func__);
     LOG2("@%s, ret:%d", __func__, ret);
 
     return OK;
 }
 
-status_t IntelCcaServer::deinit() {
-    LOGIPC("@%s", __func__);
-
-    mCca->deinit();
-
-    return OK;
-}
-
-status_t IntelCcaServer::getVersion(void* pData, int dataSize) {
+status_t IntelCcaServer::deinit(void* pData, int dataSize) {
     LOGIPC("@%s, pData:%p, dataSize:%d", __func__, pData, dataSize);
     CheckError(pData == nullptr, UNKNOWN_ERROR, "@%s, pData is nullptr", __func__);
 
-    intel_cca_version_data* params = static_cast<intel_cca_version_data*>(pData);
+    intel_cca_deinit_data* params = static_cast<intel_cca_deinit_data*>(pData);
 
-    std::string version;
-    mCca->getVersion(&version);
-    snprintf(params->data, sizeof(params->data), "%s", version.c_str());
-    params->size = std::min(version.size(), sizeof(params->data));
-    LOGIPC("@%s, aiq version:%s, size:%d", __func__, version.c_str(), params->size);
+    IntelCca* intelCca = IntelCca::getInstance(params->cameraId, params->tuningMode);
+    CheckError(!intelCca, UNKNOWN_ERROR, "%s, Failed to get cca: cameraId(%d), mode(%d)", __func__,
+               params->cameraId, params->tuningMode);
+
+    intelCca->deinit();
 
     return OK;
 }
@@ -232,9 +272,13 @@ status_t IntelCcaServer::decodeStats(void* pData, int dataSize, void* statsAddr)
         params->statsBuffer.data = statsAddr;
     }
 
-    ia_err ret = mCca->decodeStats(reinterpret_cast<uint64_t>(params->statsBuffer.data),
+    IntelCca* intelCca = IntelCca::getInstance(params->cameraId, params->tuningMode);
+    CheckError(!intelCca, UNKNOWN_ERROR, "%s, Failed to get cca: cameraId(%d), mode(%d)", __func__,
+               params->cameraId, params->tuningMode);
+
+    ia_err ret = intelCca->decodeStats(reinterpret_cast<uint64_t>(params->statsBuffer.data),
                                    params->statsBuffer.size, &params->results);
-    CheckError(ret != ia_err_none, UNKNOWN_ERROR, "@%s, mCca->decodeStats fails", __func__);
+    CheckError(ret != ia_err_none, UNKNOWN_ERROR, "@%s, intelCca->decodeStats fails", __func__);
     LOG2("@%s, ret:%d", __func__, ret);
 
     return OK;
@@ -270,8 +314,12 @@ status_t IntelCcaServer::getPalDataSize(void* pData, int dataSize) {
     bool ret = unflattenProgramGroup(&params->pg);
     CheckError(ret != true, UNKNOWN_ERROR, "@%s, unflattenProgramGroup fails", __func__);
 
-    uint32_t size = mCca->getPalDataSize(params->pg);
-    CheckError(size == 0, UNKNOWN_ERROR, "@%s, mCca->getPalDataSize fails", __func__);
+    IntelCca* intelCca = IntelCca::getInstance(params->cameraId, params->tuningMode);
+    CheckError(!intelCca, UNKNOWN_ERROR, "%s, Failed to get cca: cameraId(%d), mode(%d)", __func__,
+               params->cameraId, params->tuningMode);
+
+    uint32_t size = intelCca->getPalDataSize(params->pg);
+    CheckError(size == 0, UNKNOWN_ERROR, "@%s, intelCca->getPalDataSize fails", __func__);
 
     params->returnSize = size;
     LOG2("@%s, size:%d", __func__, size);
