@@ -916,7 +916,13 @@ int PipeLiteExecutor::allocBuffers()
         int srcFmt = termDesc.frameDesc.mFormat;
         int srcWidth = termDesc.frameDesc.mWidth;
         int srcHeight = termDesc.frameDesc.mHeight;
-        int size = PGCommon::getFrameSize(srcFmt, srcWidth, srcHeight, true);
+        int size = 0;
+        bool isPSACompression = PlatformData::getPSACompression(mCameraId);
+        if (isPSACompression && PGUtils::isCompressionTerminal(termDesc.terminal)) {
+            size = CameraUtils::getFrameSize(srcFmt, srcWidth, srcHeight, false, true, true);
+        } else {
+            size = CameraUtils::getFrameSize(srcFmt, srcWidth, srcHeight, true);
+        }
         shared_ptr<CameraBuffer> buf = CameraBuffer::create(mCameraId,
                      BUFFER_USAGE_PSYS_INPUT, V4L2_MEMORY_USERPTR, size, 0, srcFmt, srcWidth, srcHeight);
         CheckError(!buf, NO_MEMORY, "@%s: Allocate producer buffer failed", __func__);
@@ -962,8 +968,15 @@ int PipeLiteExecutor::allocBuffers()
             int srcWidth = mTerminalsDesc[terminal].frameDesc.mWidth;
             int srcHeight = mTerminalsDesc[terminal].frameDesc.mHeight;
             // Get frame size with aligned height taking in count for internal buffers.
-            // To garantee PSYS kernel like GDC always get enough buffer size to process.
-            int size = PGCommon::getFrameSize(srcFmt, srcWidth, srcHeight, true);
+            // To guarantee PSYS kernel like GDC always get enough buffer size to process.
+            int size = 0;
+            bool isPSACompression = PlatformData::getPSACompression(mCameraId);
+            if (isPSACompression && PGUtils::isCompressionTerminal(terminal)) {
+                size = PGCommon::getFrameSize(srcFmt, srcWidth, srcHeight, false, true, true);
+            } else {
+                size = PGCommon::getFrameSize(srcFmt, srcWidth, srcHeight, true);
+            }
+
             for (int i = 0; i < MAX_BUFFER_COUNT; i++) {
                 // Prepare internal frame buffer for its producer.
                 shared_ptr<CameraBuffer> buf = CameraBuffer::create(mCameraId,

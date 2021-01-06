@@ -227,13 +227,7 @@ int getCompressedBpp(ia_css_frame_format_type_t format, int cssBpp) {
         case IA_CSS_DATA_FORMAT_BAYER_GBRG:
             bpp = 10;
             break;
-        case IA_CSS_DATA_FORMAT_YUV420: {
-            if (cssBpp == 16)
-                bpp = 10;
-            else if (cssBpp == 12)
-                bpp = 8;
-            break;
-        }
+        case IA_CSS_DATA_FORMAT_YUV420:
         case IA_CSS_DATA_FORMAT_NV12:
             bpp = 8;
             break;
@@ -253,11 +247,7 @@ int getCompressedBpe(ia_css_frame_format_type_t format, int cssBpp) {
         case IA_CSS_DATA_FORMAT_BAYER_GBRG:
             bpe = 16;
             break;
-        case IA_CSS_DATA_FORMAT_YUV420: {
-            if (cssBpp == 12)
-                bpe = 8;
-            break;
-        }
+        case IA_CSS_DATA_FORMAT_YUV420:
         case IA_CSS_DATA_FORMAT_NV12:
             bpe = 8;
             break;
@@ -268,15 +258,14 @@ int getCompressedBpe(ia_css_frame_format_type_t format, int cssBpp) {
     return bpe;
 }
 
-bool isCompressionTerminal(int pgId, int terminalIndex) {
+bool isCompressionTerminal(int terminalId) {
     bool cmp = false;
-    int tId = terminalIndex + 1 + psys_2600_pg_uid(pgId);
-    // only pg 187 terminal 3/7 and pg 189 terminal 0/4/6 support compression
-    if ((pgId == psys_ipu6_isa_lb_pg_id && (tId == psys_ipu6_isa_lb_input_high_uid ||
-                                            tId == psys_ipu6_isa_lb_output_uid)) ||
-        (pgId == psys_ipu6_bb_pg_id && (tId == psys_ipu6_bb_input_uid ||
-                                        tId == psys_ipu6_bb_tnr_ref_in_uid ||
-                                        tId == psys_ipu6_bb_tnr_ref_out_uid))) {
+    /* only pg 187 terminal 3/7 and pg 189 terminal 0 support compression
+    ** tnr compression 189 terminal 4/6 not enabled in software
+    */
+    if (terminalId == psys_ipu6_isa_lb_input_high_uid ||
+        terminalId == psys_ipu6_isa_lb_output_uid ||
+        terminalId == psys_ipu6_bb_input_uid) {
         cmp = true;
     }
 

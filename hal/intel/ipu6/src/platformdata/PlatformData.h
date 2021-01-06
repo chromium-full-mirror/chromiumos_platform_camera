@@ -1090,8 +1090,28 @@ public:
      */
     static float getIspDigitalGain(int cameraId, float realDigitalGain);
 
+    /**
+     * \brief init Makernote
+     * allocate memory resource for Makernote
+     *
+     * param[in] int cameraId: camera ID
+     * \param[in] cameraId: [0, MAX_CAMERA_NUMBER - 1]
+     * \param[in] TuningMode tuningMode
+     *
+     * return OK if it is successful, fails for other values.
+     */
     static int initMakernote(int cameraId, TuningMode tuningMode);
 
+    /**
+     * \brief deinit Makernote
+     * free memory resource for Makernote
+     *
+     * param[in] int cameraId: camera ID
+     * \param[in] cameraId: [0, MAX_CAMERA_NUMBER - 1]
+     * \param[in] TuningMode tuningMode
+     *
+     * return OK if it is successful, fails for other values.
+     */
     static int deinitMakernote(int cameraId, TuningMode tuningMode);
 
     /**

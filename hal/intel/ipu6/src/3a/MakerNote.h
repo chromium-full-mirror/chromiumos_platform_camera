@@ -57,7 +57,26 @@ class MakerNote {
     MakerNote();
     ~MakerNote();
 
+    /**
+     * \brief init Makernote
+     * allocate memories for mMakernoteDataList by using IntelCca::allocMem()
+     *
+     * param[in] int cameraId
+     * param[in] TuningMode tuningMode
+     *
+     * return OK if it is successful, fails for other values.
+     */
     int init(int cameraId, TuningMode tuningMode);
+
+    /**
+     * \brief deinit Makernote
+     * free memories for mMakernoteDataList by using IntelCca::freeMem()
+     *
+     * param[in] int cameraId
+     * param[in] TuningMode tuningMode
+     *
+     * return OK if it is successful, fails for other values.
+     */
     int deinit(int cameraId, TuningMode tuningMode);
 
     /**
