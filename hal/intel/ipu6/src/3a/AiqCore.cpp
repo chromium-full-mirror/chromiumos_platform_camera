@@ -54,6 +54,7 @@ AiqCore::AiqCore(int cameraId) :
 
     mIntel3AParameter = std::unique_ptr<Intel3AParameter>(new Intel3AParameter(cameraId));
 
+    CLEAR(mFrameParams);
     CLEAR(mLastAeResult),
     CLEAR(mLastAwbResult),
     CLEAR(mLastAfResult),

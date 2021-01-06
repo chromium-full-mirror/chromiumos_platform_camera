@@ -76,9 +76,9 @@ int LensManager::setLensResult(const cca::cca_ae_results &aeResults,
     int lensHwType = PlatformData::getLensHwType(mCameraId);
     switch(lensHwType) {
         case LENS_VCM_HW:
-            if (mFocusPosition != afResults.next_lens_position) {
+            if (mFocusPosition != static_cast<int>(afResults.next_lens_position)) {
                 ret = mLensHw->setFocusPosition(afResults.next_lens_position);
-                mFocusPosition = afResults.next_lens_position;
+                mFocusPosition = static_cast<int>(afResults.next_lens_position);
                 LOG3A("mFocusPosition = %d, camera id %d", mFocusPosition, mCameraId);
                 LOG2("SENSORCTRLINFO: vcm_step=%d", mFocusPosition);
             }

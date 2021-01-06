@@ -260,7 +260,10 @@ int AiqInitData::getCpf(TuningMode mode, ia_binary_data* cpfData) {
     AiqData* cpf = mCpf[mode];
     CheckError(cpf == nullptr, NO_INIT, "@%s, cpf is nullptr", __func__);
 
-    *cpfData = *cpf->getData();
+    auto dataPtr = cpf->getData();
+    CheckError(dataPtr == nullptr, BAD_VALUE, "@%s, cpf->getData() is nullptr", __func__);
+
+    *cpfData = *dataPtr;
 
     return OK;
 }

@@ -42,6 +42,7 @@ AiqResult::AiqResult(int cameraId) :
     CLEAR(mCustomControls);
     CLEAR(mCustomControlsParams);
     CLEAR(mAwbResults);
+    CLEAR(mGbceResults);
     CLEAR(mPaResults);
     CLEAR(mAeResults);
     CLEAR(mAfResults);

@@ -49,7 +49,7 @@ struct PSysTaskData {
 
     CameraBufferPortMap mInputBuffers;
     CameraBufferPortMap mOutputBuffers;
-    PSysTaskData() { mTuningMode = TUNING_MODE_MAX; mFakeTask = false; }
+    PSysTaskData() { mTuningMode = TUNING_MODE_MAX; mFakeTask = false; mRequestId = -1; }
 };
 
 // Used to save all on-processing tasks.

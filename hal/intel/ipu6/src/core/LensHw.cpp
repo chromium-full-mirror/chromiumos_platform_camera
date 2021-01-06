@@ -155,5 +155,4 @@ int LensHw::getLatestPosition(int& lensPosition, unsigned long long& time)
     time = mLensMovementStartTime;
     return OK;
 }
-
 }   // namespace icamera

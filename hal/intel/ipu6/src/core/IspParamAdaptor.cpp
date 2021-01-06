@@ -337,6 +337,7 @@ int IspParamAdaptor::decodeStatsData(TuningMode tuningMode,
         CameraDump::dumpBinary(mCameraId, hwStatsData->data, hwStatsData->size, &bParam);
     }
 
+    CheckError(hwStatsData == nullptr, UNKNOWN_ERROR, "%s, hwStatsData is nullptr", __func__);
     ia_isp_bxt_statistics_query_results_t queryResults = {};
     ia_err iaErr = mIntelCca->decodeStats(reinterpret_cast<uint64_t>(hwStatsData->data),
                                           hwStatsData->size, &queryResults);
@@ -603,6 +604,7 @@ int IspParamAdaptor::allocateIspParamBuffers() {
         cca::cca_pal_input_params* p = static_cast<cca::cca_pal_input_params*>(
             mIntelCca->allocMem(pgMap.first, "palData", ISP_PARAM_QUEUE_SIZE,
                                 sizeof(cca::cca_pal_input_params)));
+        CheckError(p == nullptr, NO_MEMORY, "Cannot alloc memory for cca_pal_input_params!");
         CLEAR(*p);
         mStreamIdToPalInputParamsMap[pgMap.first] = p;
     }
@@ -764,12 +766,12 @@ int IspParamAdaptor::runIspAdaptL(ia_isp_bxt_program_group *pgPtr, ia_isp_bxt_gd
     }
 
     inputParams->custom_controls.count = aiqResults->mCustomControls.count;
-    if (inputParams->custom_controls.count > 0) {
-        CheckError(inputParams->custom_controls.count > cca::MAX_CUSTOM_CONTROLS_PARAM_SIZE,
-                   UNKNOWN_ERROR, "%s, buffer for custom control is too small",
-                   __func__, inputParams->custom_controls.count);
+    uint32_t cnt = static_cast<uint32_t>(inputParams->custom_controls.count);
+    if (cnt > 0) {
+        CheckError(cnt > cca::MAX_CUSTOM_CONTROLS_PARAM_SIZE,
+                   UNKNOWN_ERROR, "%s, buffer for custom control is too small", __func__, cnt);
 
-        MEMCPY_S(inputParams->custom_controls.parameters, inputParams->custom_controls.count,
+        MEMCPY_S(inputParams->custom_controls.parameters, cnt,
                  aiqResults->mCustomControls.parameters, cca::MAX_CUSTOM_CONTROLS_PARAM_SIZE);
     }
 

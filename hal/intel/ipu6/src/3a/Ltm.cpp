@@ -41,6 +41,8 @@ Ltm::Ltm(int cameraId)
 
     if (PlatformData::isEnableLtmThread(mCameraId)) {
         mLtmThread = new LtmThread(this);
+    } else {
+        mLtmThread = nullptr;
     }
     LOG3A("%s", __func__);
 }
@@ -175,8 +177,8 @@ int Ltm::handleSisLtm(const std::shared_ptr<CameraBuffer>& cameraBuffer) {
 
     ia_binary_data* sisFrame = (ia_binary_data*)cameraBuffer->getBufferAddr();
     CheckError(sisFrame == nullptr, BAD_VALUE, "sis frame buffer is nullptr!");
-    int size = sisFrame->size;
-    CheckError((size <= 0), BAD_VALUE, "sis data size err!");
+    unsigned int size = sisFrame->size;
+    CheckError((size == 0), BAD_VALUE, "sis data size err!");
     void* data = sisFrame->data;
     CheckError((data == nullptr), BAD_VALUE, "sis data ptr err!");
 
