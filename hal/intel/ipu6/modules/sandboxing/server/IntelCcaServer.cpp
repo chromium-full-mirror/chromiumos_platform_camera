@@ -165,7 +165,7 @@ status_t IntelCcaServer::getMKN(void* pData, int dataSize) {
 
     intel_cca_mkn_data* params = static_cast<intel_cca_mkn_data*>(pData);
 
-    ia_err ret = mCca->getMKN(params->type, &params->results);
+    ia_err ret = mCca->getMKN(params->type, params->results);
     CheckError(ret != ia_err_none, UNKNOWN_ERROR, "@%s, mCca->getMKN fails", __func__);
     LOG2("@%s, ret:%d", __func__, ret);
 

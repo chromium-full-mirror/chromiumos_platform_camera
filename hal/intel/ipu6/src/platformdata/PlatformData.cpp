@@ -1284,6 +1284,20 @@ float PlatformData::getIspDigitalGain(int cameraId, float realDigitalGain)
     return ispDg;
 }
 
+int PlatformData::initMakernote(int cameraId, TuningMode tuningMode)
+{
+    CheckError(cameraId >= static_cast<int>(getInstance()->mAiqInitData.size()), BAD_VALUE,
+               "@%s, bad cameraId:%d", __func__, cameraId);
+    return getInstance()->mAiqInitData[cameraId]->initMakernote(cameraId, tuningMode);
+}
+
+int PlatformData::deinitMakernote(int cameraId, TuningMode tuningMode)
+{
+    CheckError(cameraId >= static_cast<int>(getInstance()->mAiqInitData.size()), BAD_VALUE,
+               "@%s, bad cameraId:%d", __func__, cameraId);
+    return getInstance()->mAiqInitData[cameraId]->deinitMakernote(cameraId, tuningMode);
+}
+
 int PlatformData::saveMakernoteData(int cameraId, camera_makernote_mode_t makernoteMode,
                                     int64_t sequence, TuningMode tuningMode)
 {

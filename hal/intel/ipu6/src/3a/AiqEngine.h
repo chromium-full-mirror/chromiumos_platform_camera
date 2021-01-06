@@ -67,7 +67,7 @@ public:
      * indicate the frame that settings are applied.
      * settingSequence -1 means uncertain frame for this settings.
      */
-    int run3A(long requestId, long *settingSequence);
+    int run3A(bool runMkn, long requestId, long *settingSequence);
 
     /**
      * \brief Stop 3a thrad and LensManager.

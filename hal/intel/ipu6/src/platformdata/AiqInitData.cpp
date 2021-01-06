@@ -310,6 +310,14 @@ void AiqInitData::saveAiqd(TuningMode mode, const ia_binary_data& data) {
     aiqd->saveData(data);
 }
 
+int AiqInitData::initMakernote(int cameraId, TuningMode tuningMode) {
+    return mMkn->init(cameraId, tuningMode);
+}
+
+int AiqInitData::deinitMakernote(int cameraId, TuningMode tuningMode) {
+    return mMkn->deinit(cameraId, tuningMode);
+}
+
 int AiqInitData::saveMakernoteData(int cameraId, camera_makernote_mode_t makernoteMode,
                                    int64_t sequence, TuningMode tuningMode) {
     return mMkn->saveMakernoteData(cameraId, makernoteMode, sequence, tuningMode);

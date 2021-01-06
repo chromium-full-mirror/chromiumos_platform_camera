@@ -1088,6 +1088,10 @@ public:
      */
     static float getIspDigitalGain(int cameraId, float realDigitalGain);
 
+    static int initMakernote(int cameraId, TuningMode tuningMode);
+
+    static int deinitMakernote(int cameraId, TuningMode tuningMode);
+
     /**
      * \brief Save Makernote by ia_mkn_trg mode
      *

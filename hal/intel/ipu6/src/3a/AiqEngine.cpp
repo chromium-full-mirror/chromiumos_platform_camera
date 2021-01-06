@@ -129,7 +129,7 @@ int AiqEngine::stopEngine()
     return OK;
 }
 
-int AiqEngine::run3A(long requestId, long *settingSequence)
+int AiqEngine::run3A(bool runMkn, long requestId, long *settingSequence)
 {
     LOG3A("%s", __func__);
     // Run 3A in call thread
@@ -175,9 +175,11 @@ int AiqEngine::run3A(long requestId, long *settingSequence)
                mLastStatsSequence);
     }
 
-    PlatformData::saveMakernoteData(mCameraId, mAiqParam.makernoteMode,
-                                    mAiqResultStorage->getAiqResult()->mSequence,
-                                    aiqResult->mTuningMode);
+    if (runMkn) {
+        PlatformData::saveMakernoteData(mCameraId, mAiqParam.makernoteMode,
+                                        mAiqResultStorage->getAiqResult()->mSequence,
+                                        aiqResult->mTuningMode);
+    }
 
     return (state == AIQ_STATE_DONE || state == AIQ_STATE_WAIT) ? 0 : UNKNOWN_ERROR;
 }

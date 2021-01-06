@@ -96,6 +96,8 @@ class AiqInitData {
     ia_binary_data* getNvm();
 
     // maker note
+    int initMakernote(int cameraId, TuningMode tuningMode);
+    int deinitMakernote(int cameraId, TuningMode tuningMode);
     int saveMakernoteData(int cameraId, camera_makernote_mode_t makernoteMode,
                           int64_t sequence, TuningMode tuningMode);
     void updateMakernoteTimeStamp(int64_t sequence, uint64_t timestamp);

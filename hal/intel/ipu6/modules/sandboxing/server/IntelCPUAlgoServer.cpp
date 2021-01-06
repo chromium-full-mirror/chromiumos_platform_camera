@@ -143,9 +143,20 @@ void IntelCPUAlgoServer::handleRequest(const MsgReq& msg) {
         case IPC_CCA_GET_CMC:
             status = mCca.getCMC(addr, requestSize);
             break;
-        case IPC_CCA_GET_MKN:
+        case IPC_CCA_GET_MKN: {
+            intel_cca_mkn_data* params = static_cast<intel_cca_mkn_data*>(addr);
+            if (params->resultsHandle >= 0) {
+                ShmInfo paramsInfo = {};
+                status = getIntelAlgoServer()->getShmInfo(params->resultsHandle, &paramsInfo);
+                if (status != OK) {
+                    LOGE("%s, the buffer handle for resultsHandle is invalid", __func__);
+                    break;
+                }
+                params->results = static_cast<cca::cca_mkn*>(paramsInfo.addr);
+            }
             status = mCca.getMKN(addr, requestSize);
             break;
+        }
         case IPC_CCA_GET_AIQD:
             status = mCca.getAiqd(addr, requestSize);
             break;

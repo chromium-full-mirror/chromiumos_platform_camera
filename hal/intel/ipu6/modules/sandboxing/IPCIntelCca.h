@@ -50,7 +50,8 @@ struct intel_cca_run_aic_data {
 struct intel_cca_mkn_data {
     ia_mkn_trg type;
 
-    cca::cca_mkn results;
+    cca::cca_mkn* results;
+    int32_t resultsHandle;
 };
 
 struct intel_cca_update_tuning_data {

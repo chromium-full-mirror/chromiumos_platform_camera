@@ -591,7 +591,7 @@ int IspParamAdaptor::allocateIspParamBuffers() {
             ia_binary_data binaryData = {};
             int size = pgMap.second;
             binaryData.size = size;
-            binaryData.data = mIntelCca->allocatePalBuffer(pgMap.first, i, size);
+            binaryData.data = mIntelCca->allocMem(pgMap.first, "palData", i, size);
             CheckError(binaryData.data == nullptr, NO_MEMORY, "Faile to calloc PAL data");
             int64_t index = i * (-1) - 2; // default index list: -2, -3, -4, ...
             std::pair<int64_t, ia_binary_data> p(index, binaryData);
@@ -601,8 +601,8 @@ int IspParamAdaptor::allocateIspParamBuffers() {
 
     for (auto& pgMap : mStreamIdToPGOutSizeMap) {
         cca::cca_pal_input_params* p = static_cast<cca::cca_pal_input_params*>(
-            mIntelCca->allocatePalBuffer(pgMap.first, ISP_PARAM_QUEUE_SIZE,
-                                         sizeof(cca::cca_pal_input_params)));
+            mIntelCca->allocMem(pgMap.first, "palData", ISP_PARAM_QUEUE_SIZE,
+                                sizeof(cca::cca_pal_input_params)));
         CLEAR(*p);
         mStreamIdToPalInputParamsMap[pgMap.first] = p;
     }
@@ -614,7 +614,7 @@ void IspParamAdaptor::releaseIspParamBuffers() {
     for (int i = 0; i < ISP_PARAM_QUEUE_SIZE; i++) {
         for (auto& it : mStreamIdToIspParameterMap) {
             for (auto& binaryMap : it.second.mSequenceToDataMap) {
-                mIntelCca->freePalBuffer(binaryMap.second.data);
+                mIntelCca->freeMem(binaryMap.second.data);
             }
 
             it.second.mSequenceToDataId.clear();
@@ -623,7 +623,7 @@ void IspParamAdaptor::releaseIspParamBuffers() {
     }
 
     for (auto& it : mStreamIdToPalInputParamsMap) {
-        mIntelCca->freePalBuffer(it.second);
+        mIntelCca->freeMem(it.second);
     }
     mStreamIdToPalInputParamsMap.clear();
 }

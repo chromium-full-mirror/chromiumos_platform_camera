@@ -239,13 +239,14 @@ uint32_t IntelCca::getPalDataSize(const cca::cca_program_group& programGroup) {
     return size;
 }
 
-void* IntelCca::allocatePalBuffer(int streamId, int index, int palDataSize) {
-    LOG2("@%s index: %d, streamId: %d, size: %d", __func__, index, streamId, palDataSize);
+void* IntelCca::allocMem(int streamId, const std::string& name, int index, int size) {
+    LOG1("@%s, name:%s, index: %d, streamId: %d, size: %d", __func__,
+         name.c_str(), index, streamId, size);
 
-    return calloc(1, palDataSize);
+    return calloc(1, size);
 }
 
-void IntelCca::freePalBuffer(void* addr) {
+void IntelCca::freeMem(void* addr) {
     LOG2("@%s addr: %p", __func__, addr);
     free(addr);
 }

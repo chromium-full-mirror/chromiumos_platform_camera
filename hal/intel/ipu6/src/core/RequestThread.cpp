@@ -42,7 +42,8 @@ RequestThread::RequestThread(int cameraId, AiqUnitBase *a3AControl, ParameterGen
     mLastRequestId(-1),
     mLastPredictSeq(-1),
     mLastEofSeq(-1),
-    mBlockRequest(true)
+    mBlockRequest(true),
+    mNeedDoStillCapture(false)
 {
     CLEAR(mStreamConfig);
     CLEAR(mConfiguredStreams);
@@ -150,6 +151,10 @@ int RequestThread::configure(const stream_config_t *streamList) {
         if (mConfiguredStreams[i].usage == CAMERA_STREAM_PREVIEW ||
             mConfiguredStreams[i].usage == CAMERA_STREAM_VIDEO_CAPTURE) {
             hasVideoStream = true;
+        }
+
+        if (mConfiguredStreams[i].usage == CAMERA_STREAM_STILL_CAPTURE) {
+            mNeedDoStillCapture = true;
         }
     }
     LOG1("%s: user specified Configmode: %d, hasVideoStream %d", __func__, mUserConfigMode, hasVideoStream);
@@ -527,7 +532,8 @@ void RequestThread::handleRequest(CameraRequest& request)
         if (request.mParams.get()) {
             m3AControl->setParameters(*request.mParams);
         }
-        m3AControl->run3A(mLastRequestId, mPerframeControlSupport? &predictSequence : nullptr);
+        m3AControl->run3A(mNeedDoStillCapture, mLastRequestId,
+                          mPerframeControlSupport? &predictSequence : nullptr);
 
         // Check the final prediction value
         if (predictSequence <= mLastPredictSeq) {

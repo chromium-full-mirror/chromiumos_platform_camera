@@ -520,6 +520,12 @@ void CameraDevice::deinitIntelCcaHandle() {
                 LOGW("@%s, failed to get aiqd data, iaErr %d", __func__, iaErr);
             }
         }
+
+        int ret = PlatformData::deinitMakernote(mCameraId, mode);
+        if (ret != OK) {
+            LOGE("@%s, PlatformData::deinitMakernote fails", __func__);
+        }
+
         intelCca->deinit();
         IntelCca::releaseInstance(mCameraId, mode);
         mCcaInitialized = false;
@@ -629,6 +635,9 @@ int CameraDevice::initIntelCcaHandle(const std::vector<ConfigMode> &configModes)
             IntelCca::releaseInstance(mCameraId, tuningMode);
             return UNKNOWN_ERROR;
         }
+
+        ret = PlatformData::initMakernote(mCameraId, tuningMode);
+        CheckError(ret != OK, UNKNOWN_ERROR, "%s, PlatformData::initMakernote fails", __func__);
     }
 
     mCcaInitialized = true;

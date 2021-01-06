@@ -269,11 +269,11 @@ ia_err IntelCca::getMKN(ia_mkn_trg type, cca::cca_mkn* mkn) {
 
     intel_cca_mkn_data* params = static_cast<intel_cca_mkn_data*>(mMemMKN.mAddr);
     params->type = type;
+    params->results = mkn;
+    params->resultsHandle = mCommon.getShmMemHandle(mkn);
 
     ia_err ret = mCommon.requestSyncCca(IPC_CCA_GET_MKN, mMemMKN.mHandle);
     CheckError(ret != ia_err_none, ia_err_general, "@%s, requestSyncCca fails", __func__);
-
-    *mkn = params->results;
 
     return ret;
 }
@@ -363,33 +363,35 @@ uint32_t IntelCca::getPalDataSize(const cca::cca_program_group& programGroup) {
     return params->returnSize;
 }
 
-void* IntelCca::allocatePalBuffer(int streamId, int index, int palDataSize) {
-    LOG1("@%s index: %d, streamId: %d, size: %d", __func__, index, streamId, palDataSize);
+void* IntelCca::allocMem(int streamId, const std::string& name, int index, int size) {
+    LOG1("@%s, name:%s, index: %d, streamId: %d, size: %d", __func__,
+         name.c_str(), index, streamId, size);
     CheckError(mInitialized == false, nullptr, "@%s, mInitialized is false", __func__);
 
     uintptr_t personal = reinterpret_cast<uintptr_t>(this);
-    std::string palDataName = "/palData" + std::to_string(streamId) + std::to_string(index) +
-                              std::to_string(personal) + SHM_NAME;
+    std::string finalName = name + std::to_string(streamId) + std::to_string(index) +
+                            std::to_string(personal) + SHM_NAME;
 
     ShmMemInfo memInfo = {};
-    bool ret = mCommon.allocShmMem(palDataName, palDataSize, &memInfo);
+    bool ret = mCommon.allocShmMem(finalName, size, &memInfo);
     CheckError(ret == false, nullptr, "%s, mCommon.allocShmMem fails for pal buf", __func__);
     LOGIPC("%s, the buffer handle: %d, address: %p", __func__, memInfo.mHandle, memInfo.mAddr);
 
-    mMemsPalData.push_back(memInfo);
+    mMemsOuter[memInfo.mAddr] = memInfo;
 
     return memInfo.mAddr;
 }
 
-void IntelCca::freePalBuffer(void* addr) {
-    LOG1("@%s addr: %p", __func__, addr);
+void IntelCca::freeMem(void* addr) {
+    LOG1("@%s, addr: %p", __func__, addr);
 
     CheckError(mInitialized == false, VOID_VALUE, "@%s, mInitialized is false", __func__);
 
-    for (auto& mem : mMemsPalData) {
-        if (mem.mAddr == addr) {
-            mCommon.freeShmMem(mem);
-        }
+    if (mMemsOuter.find(addr) != mMemsOuter.end()) {
+        mCommon.freeShmMem(mMemsOuter[addr]);
+        mMemsOuter.erase(addr);
+        return;
     }
+    LOGW("@%s, there is no addr:%p, in the mMemsOuter", __func__, addr);
 }
 } /* namespace icamera */

@@ -48,7 +48,8 @@ AiqCore::AiqCore(int cameraId) :
     mShadingMode(SHADING_MODE_FAST),
     mLensShadingMapMode(LENS_SHADING_MAP_MODE_OFF),
     mLscGridRGGBLen(0),
-    mLastEvShift(0.0f) {
+    mLastEvShift(0.0f),
+    mTonemapMode(TONEMAP_MODE_FAST) {
     LOG3A("@%s", __func__);
 
     mIntel3AParameter = std::unique_ptr<Intel3AParameter>(new Intel3AParameter(cameraId));
@@ -282,6 +283,8 @@ int AiqCore::updateParameter(const aiq_parameter_t &param) {
     mAwbForceLock = param.awbForceLock;
     mAfForceLock = mIntel3AParameter->mAfForceLock;
 
+    mTonemapMode = param.tonemapMode;
+
     return OK;
 }
 
@@ -305,7 +308,8 @@ int AiqCore::setStatsParams(const cca::cca_stats_params &statsParams) {
 }
 
 int AiqCore::runAiq(long requestId, AiqResult *aiqResult) {
-    LOG3A("@%s, aiqResult:%p, requestId:%d", __func__, aiqResult, requestId);
+    LOG3A("@%s, aiqResult:%p, requestId:%d, mTonemapMode:%d", __func__,
+          aiqResult, requestId, mTonemapMode);
     CheckError(!aiqResult, BAD_VALUE, "@%s, aiqResult is nullptr", __func__);
 
     // run AE
@@ -334,19 +338,25 @@ int AiqCore::runAiq(long requestId, AiqResult *aiqResult) {
         mAiqParams->bitmap |= cca::CCA_MODULE_AWB;
         mAiqParams->awb_input = mIntel3AParameter->mAwbParams;
     }
+
     if (aaaRunType & IMAGING_ALGO_AF && !mAfForceLock) {
         mAiqParams->bitmap |= cca::CCA_MODULE_AF;
         mAiqParams->af_input = mIntel3AParameter->mAfParams;
     }
+
+    mGbceParams.gbce_on = (mTonemapMode == TONEMAP_MODE_FAST ||
+                           mTonemapMode == TONEMAP_MODE_HIGH_QUALITY) ? false : true;
     if (!skipGbce && (aaaRunType & IMAGING_ALGO_GBCE)) {
         mAiqParams->bitmap |= cca::CCA_MODULE_GBCE;
         mAiqParams->gbce_input = mGbceParams;
     }
+
     if (aaaRunType & IMAGING_ALGO_PA) {
         mPaParams.color_gains = {};
         mAiqParams->bitmap |= cca::CCA_MODULE_PA;
         mAiqParams->pa_input = mPaParams;
     }
+
     if (aaaRunType & IMAGING_ALGO_SA) {
         mAiqParams->bitmap |= cca::CCA_MODULE_SA;
         mSaParams.lsc_on = mLensShadingMapMode == LENS_SHADING_MAP_MODE_ON ? true : false;

@@ -155,6 +155,8 @@ private:
     long mLastEofSeq;
     bool mBlockRequest;  // Process the 2nd or 3th request after the 1st 3A event
                          // to avoid unstable AWB at the beginning of stream on
+
+    bool mNeedDoStillCapture;
 };
 
 } //namespace icamera

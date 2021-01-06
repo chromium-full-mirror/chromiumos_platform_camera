@@ -35,7 +35,7 @@ namespace icamera {
 struct MakernoteData {
     int64_t sequence;
     uint64_t timestamp;
-    cca::cca_mkn mknData;
+    cca::cca_mkn* mknData;
 
     MakernoteData() {
         sequence = -1;
@@ -56,6 +56,9 @@ class MakerNote {
  public:
     MakerNote();
     ~MakerNote();
+
+    int init(int cameraId, TuningMode tuningMode);
+    int deinit(int cameraId, TuningMode tuningMode);
 
     /**
      * \brief Save Makernote by ia_mkn_trg mode
@@ -99,7 +102,7 @@ class MakerNote {
 
     // Guard for MakerNote API
     Mutex mMknLock;
-    std::list<std::shared_ptr<MakernoteData>> mMakernoteDataList;
+    std::list<MakernoteData> mMakernoteDataList;
 };
 
 }  // namespace icamera

@@ -64,8 +64,8 @@ class IntelCca {
                        ia_isp_bxt_statistics_query_results_t* results);
 
     uint32_t getPalDataSize(const cca::cca_program_group& programGroup);
-    void* allocatePalBuffer(int streamId, int index, int palDataSize);
-    void freePalBuffer(void* addr);
+    void* allocMem(int streamId, const std::string& name, int index, int size);
+    void freeMem(void* addr);
 
  private:
     cca::IntelCCA* getIntelCCA();
