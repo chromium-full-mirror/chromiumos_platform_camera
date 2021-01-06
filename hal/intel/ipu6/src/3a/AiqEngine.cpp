@@ -36,9 +36,6 @@ AiqEngine::AiqEngine(int cameraId, SensorHwCtrl *sensorHw, LensHw *lensHw, AiqSe
 {
     LOG1("%s, mCameraId = %d", __func__, mCameraId);
 
-    CLEAR(mRgbsGridArray);
-    CLEAR(mAfGridArray);
-
     mAiqCore = new AiqCore(mCameraId);
 
     mSensorManager = new SensorManager(mCameraId, sensorHw);
@@ -177,7 +174,8 @@ int AiqEngine::run3A(long *settingSequence)
     }
 
     PlatformData::saveMakernoteData(mCameraId, mAiqParam.makernoteMode,
-                                    mAiqResultStorage->getAiqResult()->mSequence);
+                                    mAiqResultStorage->getAiqResult()->mSequence,
+                                    aiqResult->mTuningMode);
 
     return (state == AIQ_STATE_DONE || state == AIQ_STATE_WAIT) ? 0 : UNKNOWN_ERROR;
 }
@@ -257,15 +255,21 @@ int AiqEngine::saveRgbsGridData(const ia_aiq_rgbs_grid* rgbsGrid, ia_aiq_rgbs_gr
     return OK;
 }
 
-int AiqEngine::prepareStats(ia_aiq_statistics_input_params_v4 *statsParam,
-                            ia_aiq_gbce_results *gbceResults,
-                            AiqStatistics *aiqStatistics)
+int AiqEngine::prepareStatsParams(cca::cca_stats_params *statsParams, AiqStatistics *aiqStatistics)
 {
     mLastStatsSequence = aiqStatistics->mSequence;
     LOG3A("%s, sequence %ld", __func__, aiqStatistics->mSequence);
 
-    statsParam->rgbs_grids = mRgbsGridArray;
-    statsParam->af_grids = mAfGridArray;
+    // update face detection related parameters
+    if (PlatformData::isFaceAeEnabled(mCameraId)) {
+        cca::cca_face_state* faceState = &statsParams->faces;
+        int ret = icamera::FaceDetection::getResult(mCameraId, faceState);
+        if (ret == OK && faceState->num_faces > 0) {
+            ia_rectangle rect = faceState->faces[0].face_area;
+            LOG3A("@%s, face number:%d, left:%d, top:%d, right:%d, bottom:%d", __func__,
+                  faceState->num_faces, rect.left, rect.top, rect.right, rect.bottom);
+        }
+    }
 
     int ret = OK;
     do {
@@ -277,23 +281,9 @@ int AiqEngine::prepareStats(ia_aiq_statistics_input_params_v4 *statsParam,
             timestamp = aiqStatistics->mTimestamp;
         }
 
-        statsParam->frame_id = aiqStatistics->mSequence;
-        statsParam->frame_timestamp = timestamp;
-        statsParam->num_rgbs_grids = PlatformData::getExposureNum(mCameraId,
-                                         CameraUtils::isMultiExposureCase(mAiqParam.tuningMode));
-
-        if (statsParam->num_rgbs_grids > 1) {
-            for (unsigned int i = 0; i < statsParam->num_rgbs_grids; i++) {
-                statsParam->rgbs_grids[i] = &(aiqStatistics->mRgbsGridArray[i]);
-            }
-        } else {
-            statsParam->rgbs_grids[0] = &(aiqStatistics->mRgbsGridArray[0]);
-        }
-        statsParam->af_grids[0] = &(aiqStatistics->mAfGridArray[0]);
-        statsParam->num_af_grids = 1;
-        statsParam->external_histograms = nullptr;
-        statsParam->num_external_histograms = 0;
-        statsParam->camera_orientation = ia_aiq_camera_orientation_unknown;
+        statsParams->frame_id = aiqStatistics->mSequence;
+        statsParams->frame_timestamp = timestamp;
+        statsParams->camera_orientation = ia_aiq_camera_orientation_unknown;
 
         const AiqResult *feedback = mAiqResultStorage->getAiqResult(aiqStatistics->mSequence);
         if (feedback == nullptr) {
@@ -301,14 +291,6 @@ int AiqEngine::prepareStats(ia_aiq_statistics_input_params_v4 *statsParam,
                     __func__, aiqStatistics->mSequence);
             feedback = mAiqResultStorage->getAiqResult();
         }
-
-        statsParam->frame_ae_parameters = &feedback->mAeResults;
-        statsParam->frame_af_parameters = &feedback->mAfResults;
-        statsParam->frame_pa_parameters = &feedback->mPaResults;
-        statsParam->awb_results = &feedback->mAwbResults;
-        statsParam->frame_sa_parameters = &feedback->mSaResults;
-
-        *gbceResults = feedback->mGbceResults;
     } while (0);
     LOG3A("%s end", __func__);
     return ret;
@@ -320,7 +302,7 @@ void AiqEngine::setAiqResult(AiqResult *aiqResult, bool skip)
     for (unsigned int i = 0; i < aiqResult->mAeResults.num_exposures; i++) {
         SensorExposure exposure;
         exposure.sensorParam = *aiqResult->mAeResults.exposures[i].sensor_exposure;
-        exposure.realDigitalGain = (aiqResult->mAeResults.exposures[i].exposure)->digital_gain;
+        exposure.realDigitalGain = aiqResult->mAeResults.exposures[i].exposure[0].digital_gain;
         sensorExposures.push_back(exposure);
     }
     bool useSof = !mFirstExposureSetting;
@@ -413,15 +395,13 @@ AiqEngine::AiqState AiqEngine::prepareInputParam(void)
 
     mAiqCore->updateParameter(mAiqParam);
     // set Stats
-    ia_aiq_statistics_input_params_v4 statsParam;
-    CLEAR(statsParam);
-    ia_aiq_gbce_results gbceResults;
-    CLEAR(gbceResults);
+    cca::cca_stats_params statsParams = {};
 
     AiqStatistics *aiqStats =
         const_cast<AiqStatistics*>(mAiqResultStorage->getAndLockAiqStatistics());
 
     if (!needRun3A(aiqStats)) {
+        LOG3A("%s: needRun3A is false, return AIQ_STATE_WAIT", __func__);
         return AIQ_STATE_WAIT;
     }
 
@@ -430,29 +410,16 @@ AiqEngine::AiqState AiqEngine::prepareInputParam(void)
         return AIQ_STATE_RUN;
     }
 
-    // update face detection related parameters
-    ia_atbx_face faces[MAX_FACES_DETECTABLE];
-    ia_atbx_face_state facesState;
-    if (PlatformData::isFaceAeEnabled(mCameraId)) {
-        facesState.num_faces = 0;
-        facesState.faces = faces;
-        int ret = icamera::FaceDetection::getResult(mCameraId, &facesState);
-        if (ret == OK && facesState.num_faces > 0) {
-            ia_rectangle rect = facesState.faces[0].face_area;
-            LOG3A("@%s, face number:%d, left:%d, top:%d, right:%d, bottom:%d", __func__,
-                   facesState.num_faces, rect.left, rect.top, rect.right, rect.bottom);
-            statsParam.faces = &facesState;
-        }
-    }
-
-    ret = prepareStats(&statsParam, &gbceResults, aiqStats);
-
+    ret = prepareStatsParams(&statsParams, aiqStats);
     if (ret != OK) {
         LOG3A("%s: no useful stats", __func__);
         return AIQ_STATE_RUN;
     }
 
-    mAiqCore->setStatistics(&statsParam);
+    mAiqCore->setStatsParams(statsParams);
+
+#if 0
+#endif
 
     return AIQ_STATE_RUN;
 }
@@ -483,6 +450,8 @@ int AiqEngine::applyManualTonemaps(AiqResult *aiqResult)
      */
     if (mAiqParam.tonemapMode == TONEMAP_MODE_FAST ||
         mAiqParam.tonemapMode == TONEMAP_MODE_HIGH_QUALITY) {
+        aiqResult->mGbceResults.gamma_lut_size = 0;
+        aiqResult->mGbceResults.tone_map_lut_size = 0;
         return OK;
     }
 
@@ -500,7 +469,7 @@ int AiqEngine::applyManualTonemaps(AiqResult *aiqResult)
     }
 
     // use unity value for tone map table
-    if (aiqResult->mGbceResults.tone_map_lut_size > 0 && aiqResult->mGbceResults.tone_map_lut) {
+    if (aiqResult->mGbceResults.tone_map_lut_size > 0) {
         for (unsigned int i = 0; i < aiqResult->mGbceResults.tone_map_lut_size; i++) {
             aiqResult->mGbceResults.tone_map_lut[i] = 1.0;
         }

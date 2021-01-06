@@ -120,13 +120,21 @@ void IntelCPUAlgoServer::handleRequest(const MsgReq& msg) {
             status = UNKNOWN_ERROR;
             intel_cca_run_aic_data* params = static_cast<intel_cca_run_aic_data*>(addr);
             if (params->palDataHandle >= 0) {
-                ShmInfo info = {};
-                status = getIntelAlgoServer()->getShmInfo(params->palDataHandle, &info);
+                ShmInfo inParamsInfo = {};
+                status = getIntelAlgoServer()->getShmInfo(params->inParamsHandle, &inParamsInfo);
                 if (status != OK) {
-                    LOGE("%s, the buffer handle for image data is invalid", __func__);
+                    LOGE("%s, the buffer handle for inParamsHandle is invalid", __func__);
                     break;
                 }
-                params->palOutData.data = info.addr;
+                params->inParams = static_cast<cca::cca_pal_input_params*>(inParamsInfo.addr);
+
+                ShmInfo palDataInfo = {};
+                status = getIntelAlgoServer()->getShmInfo(params->palDataHandle, &palDataInfo);
+                if (status != OK) {
+                    LOGE("%s, the buffer handle for palDataHandle is invalid", __func__);
+                    break;
+                }
+                params->palOutData.data = palDataInfo.addr;
 
                 status = mCca.runAIC(addr, requestSize);
             }

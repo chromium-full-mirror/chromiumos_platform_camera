@@ -874,6 +874,7 @@ int PipeLiteExecutor::notifyStatsDone(TuningMode tuningMode,
             eventData.type = eventType[statsIndex];
             eventData.buffer = statsBuf;
             eventData.data.statsReady = statsReadyData;
+            eventData.pipeType = (mStreamId == VIDEO_STREAM_ID) ? VIDEO_STREAM_ID : STILL_STREAM_ID;
             notifyListeners(eventData);
         }
 

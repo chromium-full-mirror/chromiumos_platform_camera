@@ -925,24 +925,14 @@ public:
     static void saveAiqd(int cameraId, TuningMode tuningMode, const ia_binary_data& data);
 
     /**
-     * Get cpf and cmc
+     * Get cpf
      *
-     * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
-     * \param ispData: isp data in cpf
-     * \param aiqData:  aiq data in cpf
-     * \param otherData: other data in cpf
-     * \param cmcHandle: cmc handle
+     * \param cameraId: [0, MAX_CAMERA_NUMBER]
      * \param mode: tuning mode
-     * \param cmcData: cmd data
+     * \param aiqbData: cpf
      * \return OK if it is successful.
      */
-    static int getCpfAndCmc(int cameraId,
-                            ia_binary_data* ispData,
-                            ia_binary_data* aiqData,
-                            ia_binary_data* otherData,
-                            uintptr_t* cmcHandle,
-                            TuningMode mode = TUNING_MODE_VIDEO,
-                            ia_cmc_t** cmcData = nullptr);
+    static int getCpf(int cameraId, TuningMode mode, ia_binary_data* aiqbData);
 
     /**
      * If dynamic graph config enabled
@@ -1101,24 +1091,19 @@ public:
     /**
      * \brief Save Makernote by ia_mkn_trg mode
      *
+     * param[in] int cameraId: camera ID
      * \param[in] cameraId: [0, MAX_CAMERA_NUMBER - 1]
      * \param[in] camera_makernote_mode_t: MAKERNOTE_MODE_JPEG is corresponding
      *           to ia_mkn_trg_section_1 for Normal Jpeg capture;
      *           MAKERNOTE_MODE_RAW is corresponding to ia_mkn_trg_section_2
      *           for Raw image capture.
      * \param[in] int64_t sequence: the sequence in latest AiqResult
+     * param[in] TuningMode tuningMode: tuning mode
      *
      * \return OK if get Makernote successfully, otherwise return ERROR.
      */
     static int saveMakernoteData(int cameraId, camera_makernote_mode_t makernoteMode,
-                                 int64_t sequence);
-
-    /**
-     * \brief Get ia_mkn (Makernote) handle.
-     *
-     * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
-     */
-    static ia_mkn *getMknHandle(int cameraId);
+                                 int64_t sequence, TuningMode tuningMode);
 
     /**
      * \brief Update Makernote timestamp.

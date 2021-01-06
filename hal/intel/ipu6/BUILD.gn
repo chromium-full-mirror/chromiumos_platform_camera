@@ -66,7 +66,6 @@ shared_library("libcamhal") {
     "src/3a/AiqUnit.cpp",
     "src/3a/AiqUtils.cpp",
     "src/3a/I3AControlFactory.cpp",
-    "src/3a/DvsResult.cpp",
     "src/3a/Dvs.cpp",
     "src/3a/MakerNote.cpp",
     "src/3a/LensManager.cpp",
@@ -253,7 +252,6 @@ shared_library("libcamhal") {
 
 shared_library("libcam_algo") {
   sources = [
-    "src/3a/DvsResult.cpp",
     "src/iutils/Utils.cpp",
     "src/iutils/Trace.cpp",
     "src/iutils/ScopedAtrace.cpp",

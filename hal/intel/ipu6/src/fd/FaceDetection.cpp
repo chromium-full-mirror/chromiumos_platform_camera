@@ -302,7 +302,7 @@ void FaceDetection::getHalStreamId(int32_t *halStreamId) {
 }
 
 /* The result for 3A AE */
-int FaceDetection::getResult(int cameraId, ia_atbx_face_state *faceState) {
+int FaceDetection::getResult(int cameraId, cca::cca_face_state *faceState) {
     LOG1("@%s", __func__);
     CheckError(!faceState, UNKNOWN_ERROR, "faceState is nullptr");
     CheckError(cameraId < 0 || cameraId >= PlatformData::numberOfCameras(),

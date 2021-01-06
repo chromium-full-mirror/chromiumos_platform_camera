@@ -83,9 +83,7 @@ private:
     int saveAfGridData(const ia_aiq_af_grid* afGrid, ia_aiq_af_grid* dst);
     int saveRgbsGridData(const ia_aiq_rgbs_grid* rgbsGrid, ia_aiq_rgbs_grid* dst);
 
-    int prepareStats(ia_aiq_statistics_input_params_v4 *statsParami,
-                     ia_aiq_gbce_results *gbceResults,
-                     AiqStatistics *aiqStatistics);
+    int prepareStatsParams(cca::cca_stats_params *statsParams, AiqStatistics *aiqStatistics);
 
     void setAiqResult(AiqResult *aiqResult, bool skip);
 
@@ -135,9 +133,6 @@ private:
     Condition mStatsAvailableSignal;
 
     uint32_t mCurrentStatsSequence;
-
-    const ia_aiq_rgbs_grid* mRgbsGridArray[MAX_EXPOSURES_NUM];
-    const ia_aiq_af_grid* mAfGridArray[MAX_EXPOSURES_NUM];
 
     aiq_parameter_t mAiqParam;
 

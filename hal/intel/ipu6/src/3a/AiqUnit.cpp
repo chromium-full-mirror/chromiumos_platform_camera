@@ -28,7 +28,10 @@ AiqUnit::AiqUnit(int cameraId, SensorHwCtrl *sensorHw, LensHw *lensHw) :
     // LOCAL_TONEMAP_S
     mLtm(nullptr),
     // LOCAL_TONEMAP_E
-    mAiqUnitState(AIQ_UNIT_NOT_INIT)
+    mAiqUnitState(AIQ_UNIT_NOT_INIT),
+    // INTEL_DVS_S
+    mDvs(nullptr)
+    // INTEL_DVS_S
 {
     LOG1("@%s mCameraId = %d", __func__, mCameraId);
 
@@ -37,7 +40,9 @@ AiqUnit::AiqUnit(int cameraId, SensorHwCtrl *sensorHw, LensHw *lensHw) :
     mAiqEngine = new AiqEngine(cameraId, sensorHw, lensHw, mAiqSetting);
 
     // INTEL_DVS_S
-    mDvs = new Dvs(cameraId, mAiqSetting);
+    if (PlatformData::isDvsSupported(mCameraId)) {
+        mDvs = new Dvs(cameraId);
+    }
     // INTEL_DVS_E
     // LOCAL_TONEMAP_S
     if (PlatformData::isLtmEnabled(mCameraId)) {
@@ -86,9 +91,6 @@ int AiqUnit::init()
             return ret;
         }
 
-        // INTEL_DVS_S
-        mDvs->init();
-        // INTEL_DVS_E
         // LOCAL_TONEMAP_S
         if (mLtm) {
             mLtm->init();
@@ -111,9 +113,7 @@ int AiqUnit::deinit()
         mLtm->deinit();
     }
     // LOCAL_TONEMAP_E
-    // INTEL_DVS_S
-    mDvs->deinit();
-    // INTEL_DVS_E
+
     mAiqEngine->deinit();
 
     mAiqSetting->deinit();
@@ -144,8 +144,10 @@ int AiqUnit::configure(const stream_config_t *streamList)
     ret = mAiqEngine->configure(configModes);
     CheckError(ret != OK, ret, "configure AIQ engine error: %d", ret);
     // INTEL_DVS_S
-    ret = mDvs->configure(configModes);
-    CheckError(ret != OK, ret, "configure DVS engine error: %d", ret);
+    if (mDvs) {
+        ret = mDvs->configure(configModes);
+        CheckError(ret != OK, ret, "configure DVS engine error: %d", ret);
+    }
     // INTEL_DVS_E
     // LOCAL_TONEMAP_S
     if (mLtm) {
@@ -241,7 +243,9 @@ std::vector<EventListener*> AiqUnit::getStatsEventListener()
     }
     // LOCAL_TONEMAP_E
     // INTEL_DVS_S
-    eventListenerList.push_back(mDvs);
+    if (mDvs) {
+        eventListenerList.push_back(mDvs);
+    }
     // INTEL_DVS_E
     return eventListenerList;
 }

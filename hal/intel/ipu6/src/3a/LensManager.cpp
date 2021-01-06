@@ -61,8 +61,8 @@ int LensManager::stop()
     return OK;
 }
 
-int LensManager::setLensResult(const ia_aiq_ae_results &aeResults,
-                               const ia_aiq_af_results &afResults)
+int LensManager::setLensResult(const cca::cca_ae_results &aeResults,
+                               const cca::cca_af_results &afResults)
 {
     LOG3A("%s, mCameraId = %d", __func__, mCameraId);
     AutoMutex l(mLock);
