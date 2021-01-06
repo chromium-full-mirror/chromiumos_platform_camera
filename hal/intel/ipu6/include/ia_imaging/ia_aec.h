@@ -45,8 +45,8 @@ extern "C" {
  */
 LIBEXPORT ia_aec*
 ia_aec_init(
-    ia_ccat *ccat,
-    const ia_binary_data *aiqb_data,
+    ia_ccat *a_ccat_ptr,
+    const ia_binary_data *a_aiqb_data_ptr,
     const ia_cmc_t *a_cmc_ptr);
 
 /*!
@@ -56,7 +56,7 @@ ia_aec_init(
  * \param[in] ia_aec                AEC instance handle.
  */
 LIBEXPORT void
-ia_aec_deinit(ia_aec *ia_aec);
+ia_aec_deinit(ia_aec *a_aec_ptr);
 
 /*!
  * \brief AEC calculation based on input parameters and frame statistics.
@@ -69,9 +69,9 @@ ia_aec_deinit(ia_aec *ia_aec);
  */
 LIBEXPORT ia_err
 ia_aec_run(
-    ia_aec *ia_aec,
+    ia_aec *a_aec_ptr,
     const ia_aec_input_params *aec_input_params,
-    ia_aec_results *aec_results);
+    ia_aec_results *a_aec_results_ptr);
 
 
 #ifdef __cplusplus

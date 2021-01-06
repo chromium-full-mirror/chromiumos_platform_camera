@@ -32,6 +32,9 @@ extern "C" {
 #define MAX_IR_WEIGHT_GRID_SIZE 480u /* Max IR weight grid size = ir_width x ir_height*/
 #define MAX_NUM_SECTORS 36u
 #define MAX_NUM_IR_WEIGHT_GRIDS 30u
+#define PI_2 1.57079f
+#define IA_AEC_FLASHES_NUM 2
+#define MAX_NUM_PERCENTILES 20
 
 #ifdef __cplusplus
 }

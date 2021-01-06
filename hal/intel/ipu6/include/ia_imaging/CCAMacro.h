@@ -26,7 +26,7 @@ namespace cca {
  * sensor, IPU, etc.
  */
 const uint32_t MAX_CPF_LEN = 1024 * 1024 * 4;
-const uint32_t MAX_NVM_LEN = 1024 * 2;
+const uint32_t MAX_NVM_LEN = 1024 * 16;
 const uint32_t MAX_AIQD_LEN = 1024 * 1024;
 const uint32_t MAX_MKN_LEN = 64 * 1024;
 const uint32_t MAX_MKN_SECTION_SIZE = 100000;
@@ -54,8 +54,8 @@ const uint32_t MAX_GRBS_GRID_HEIGHT = 150;
 const uint32_t MAX_RGBS_STATS_GRID_SIZE (MAX_GRBS_GRID_WIDTH * MAX_GRBS_GRID_HEIGHT);
 const uint32_t MAX_STATS_LEN = 1024 * 1024;
 const uint32_t MAX_FACE_NUM = 32;
-const uint32_t MAX_LSC_DIM  = 2;
-const uint32_t MAX_LSC_DIM_SIZE (MAX_LSC_DIM * MAX_LSC_DIM);
+const uint32_t MAX_LSC_DIM  = 4;
+const uint32_t MAX_LSC_DIM_SIZE = 4;
 const uint32_t MAX_LSC_GRID_SIZE = 128 * 128;
 const uint32_t MAX_GAMMA_LUT_SIZE = 2048;
 const uint32_t MAX_TONE_MAP_LUT_SIZE = 2048;
@@ -71,5 +71,7 @@ const float GDC_CLIP_MAX_ANGLE = 3.5f;
 
 const uint32_t MAX_KERNEL_NUM_IN_PG = 128;
 const uint32_t MAX_PG_NUM = 5;
-const uint32_t MAX_PG_TERMINAL_NUM = 8;
+const uint32_t MAX_PG_TERMINAL_NUM = 16;
+
+const uint64_t INVALID_FRAME_ID = static_cast<uint64_t>(-1);
 }//cca

@@ -20,6 +20,7 @@
 #include "ia_isp_bxt_types.h"
 #include "ia_cmc_types.h"
 #include "ia_view_types.h"
+#include "ia_tnr7_types.h"
 #include "ia_bcomp_types.h"
 
 /*!
@@ -69,4 +70,5 @@ typedef struct
     cmc_parsed_sensor_decompand_t const *direct_cmc_parsed_sensor_decompand_t;
     cmc_parsed_pipe_compand_t const *direct_cmc_parsed_pipe_compand_t;
     cmc_parsed_pipe_decompand_t const* direct_cmc_parsed_pipe_decompand_t;
+    ia_tnr7_t const* direct_ia_tnr7_t;
 } ia_pal_direct_results;

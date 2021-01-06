@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-#pragma once
+#ifndef IA_PAL_OUTPUT_DATA_H
+#define IA_PAL_OUTPUT_DATA_H
+
 #include <map>
 #include "ia_pal_types_isp_ids_autogen.h"
 #include "ia_isp_bxt_types.h"
@@ -32,3 +34,5 @@ private:
     ia_binary_data m_public_output;
     std::map<ia_pal_uuid, unsigned int> m_public_output_offsets;
 };
+
+#endif // IA_PAL_OUTPUT_DATA_H

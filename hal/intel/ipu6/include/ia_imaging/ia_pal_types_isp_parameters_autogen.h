@@ -13536,6 +13536,38 @@ typedef struct
 
 } ia_pal_isp_tnr7_bc_1_0_t;
 
+/*! \isp struct tnr7_bc_1_1
+
+*/
+typedef struct
+{
+    /*!< enable block enable*/
+    int32_t enable;
+    /*!< is_first_frame If first frame, ignore input rec-sim*/
+    int32_t is_first_frame;
+    /*!< do_update Limit of S&R parameter update mechanism*/
+    int32_t do_update;
+    /*!< coeffs[3] Per-region mult-and-clamp coefficients*/
+    int32_t coeffs[3];
+    /*!< coeffs_user[3] Per-region mult-and-clamp coefficients (specified by user during offline calibration)*/
+    int32_t coeffs_user[3];
+    /*!< gpu_mode meta parameter controlling convolution implementation: 0 - HW implementation  1 - GPU implementation*/
+    int32_t gpu_mode;
+    /*!< tune_sensitivity user tuning - alignment-conf sensitivity*/
+    int32_t tune_sensitivity;
+    /*!< global_protection global protection enable*/
+    int32_t global_protection;
+    /*!< global_protection_sensitivity_lut_values[3] global protection - LUT values*/
+    int32_t global_protection_sensitivity_lut_values[3];
+    /*!< global_protection_sensitivity_lut_slopes[2] global protection - LUT slopes*/
+    int32_t global_protection_sensitivity_lut_slopes[2];
+    /*!< global_protection_motion_level average alignment conf of previous frame*/
+    int32_t global_protection_motion_level;
+    /*!< global_protection_motion_level_user average alignment conf of previous frame (specified by user during offline calibration)*/
+    int32_t global_protection_motion_level_user;
+
+} ia_pal_isp_tnr7_bc_1_1_t;
+
 /*! \isp struct tnr7_blend_1_0
 
 */
@@ -13695,6 +13727,48 @@ typedef struct
     int32_t mbd_safe_pixel_thr;
 
 } ia_pal_isp_tnr7_ims_1_0_t;
+
+/*! \isp struct tnr7_ims_1_1
+
+*/
+typedef struct
+{
+    /*!< enable block enable*/
+    int32_t enable;
+    /*!< update_limit Limit of S&R parameter update mechanism*/
+    int32_t update_limit;
+    /*!< update_coeff S&R parameter update coefficient*/
+    int32_t update_coeff;
+    /*!< do_update Enables S&R update mechanism for distance log-likelihood distribution*/
+    int32_t do_update;
+    /*!< d_ml[16] Maximum-likelihood of distance distribution*/
+    int32_t d_ml[16];
+    /*!< d_slopes[16] Distance log-likelihood slopes*/
+    int32_t d_slopes[16];
+    /*!< d_top[16] Distance log-likelihood constants*/
+    int32_t d_top[16];
+    /*!< outofbounds[16] Is ml value out-of-hostogram-bounds?*/
+    int32_t outofbounds[16];
+    /*!< d_ml_user[16] Maximum-likelihood of distance distribution (specified by user during offline calibration)*/
+    int32_t d_ml_user[16];
+    /*!< d_slopes_user[16] Distance log-likelihood slopes (specified by user during offline calibration)*/
+    int32_t d_slopes_user[16];
+    /*!< d_top_user[16] Distance log-likelihood constants (specified by user during offline calibration)*/
+    int32_t d_top_user[16];
+    /*!< gpu_mode meta parameter for controlling convolution implementation: 0 - HW implementation  1 - GPU implementation*/
+    int32_t gpu_mode;
+    /*!< radial_start radial correction start (relative to frame size)*/
+    int32_t radial_start;
+    /*!< radial_coeff radial correction power*/
+    int32_t radial_coeff;
+    /*!< frame_center_y frame center vertical*/
+    int32_t frame_center_y;
+    /*!< frame_center_x frame center horizontal*/
+    int32_t frame_center_x;
+    /*!< r_coeff radius relative to frame size*/
+    int32_t r_coeff;
+
+} ia_pal_isp_tnr7_ims_1_1_t;
 
 /*! \isp struct tnr7_mc_1_0
 

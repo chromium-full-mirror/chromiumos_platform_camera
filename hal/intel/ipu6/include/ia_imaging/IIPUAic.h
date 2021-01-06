@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include "CCAStorage.h"
 #include "IntelCCATypes.h"
 #ifdef PAC_ENABLE
 #include "ia_aic_types.h"
@@ -27,22 +28,12 @@ namespace cca {
  * \brief decode stats input parameters
  */
 typedef struct {
-    long sequenceId;                           /*!< sequence id of the frame to decode from. */
+    long sequenceId;                            /*!< sequence id of the frame to decode from. */
     const ia_aiq_ae_results* ae_settings;       /*!< AE result for sensor exposure setting. */
     const ia_bcomp_results* bcomp_settings;     /*!< BComp result for lens VCM and PWM setting. */
     ia_binary_data* stats;                      /*!< statistics binary. */
+    bool need_decode_dvs_stats;                 /*!< need process DVS statistics. */
 } cca_dec_stats_input;
-
-/*!
- * \brief decode stats output parameters
- */
-typedef struct {
-    ia_isp_bxt_statistics_query_results_t stats;   /*!< contents of the binary. */
-    const ia_aiq_rgbs_grid **rgbs_grids;           /*!< rgbs statistics. */
-    const ia_aiq_af_grid **af_grids;               /*!< AF filter. */
-    const ia_aiq_histogram **hist;                 /*!< histogram used for AEC. */
-    const ia_dvs_statistics **dvs_statistics;      /*!< DVS statistics */
-} cca_dec_stats_output;
 
 /*!
  * \brief intel 3a plus results for AIC run
@@ -70,7 +61,7 @@ typedef struct {
 typedef struct {
     int group_id;
     int fragment_count;
-    ImagingKernelGroup *kernel_group;
+    aic::ImagingKernelGroup *kernel_group;
 } cca_cb_config;
 
 /*!
@@ -87,7 +78,7 @@ typedef struct {
 typedef struct {
     uint32_t terminal_index;
     size_t buf_size;
-    IaAicBuffer *payload;
+    aic::IaAicBuffer *payload;
 } cca_terminal_buf;
 
 /*!
@@ -109,7 +100,7 @@ typedef struct {
  */
 typedef struct {
     int uuid;
-    IaAicBufferTypes terminal_type;
+    aic::IaAicBufferTypes terminal_type;
     uint32_t terminal_index;
     uint32_t *offsets;
     uint32_t *sizes;
@@ -133,6 +124,21 @@ typedef struct {
     uint32_t cb_num;
     cca_cb_kernel_offset cb_kernel_offset[MAX_PG_NUM];
 } cca_aic_kernel_offset;
+
+/*!
+ * \brief struct of PAL bin dump
+ */
+typedef struct
+{
+    int group_id;
+    aic::IaBinaryData bin;
+}cca_pal_output;
+
+typedef struct
+{
+    uint32_t cb_num;
+    cca_pal_output cb_output[MAX_PG_NUM];
+}cca_multi_pal_output;
 #endif
 
 /*!
@@ -163,17 +169,6 @@ public:
                         uint32_t max_stats_height, uint32_t max_num_stats_in, ia_mkn *mkn) = 0;
 
     /*!
-     * \brief run AIC parameters with graph config & Intel3A results.
-     *
-     * \param[in] params                 Mandatory.\n
-     *                                   AIQ plus parameters and stats.
-     * \param[out] pal                   Mandatory.\n
-     *                                   AIC results.
-     * \return                           Error code.
-     */
-    virtual ia_err run(const cca_pal_input_params& params, cca_3a_plus_results& aaaResults, ia_binary_data* pal) = 0;
-
-    /*!
      * \brief update tuning file aiqb.
      *
      * \param[in] aiqb                       Mandatory.\n
@@ -182,7 +177,18 @@ public:
      *                                       Parsed cmc data.
      * \return                               Error code.
      */
-    virtual ia_err updateTuning(const ia_binary_data *aiqb, const ia_cmc_t *cmc) = 0;
+    virtual ia_err updateTuning(const ia_binary_data *aiqb, const ia_cmc_t *cmc) const = 0;
+
+    /*!
+     * \brief pass parameters for statistic analysis.
+     *
+     * \param[in] params                     Mandatory.\n
+     *                                       parameters for statistis.
+     * \param[in] aiqResults                 Mandatory.\n
+     *                                       last AIQ results for reference.
+     * \return                               Error code.
+     */
+    virtual ia_err setStatsParams(ia_aiq* aiqHandle, const cca_stats_params &params, const cca_aiq_results_storage &aiqResults) = 0;
 
 #ifdef PAC_ENABLE
     /*!
@@ -220,13 +226,32 @@ public:
      *                                   group id of CB.
      * \param[in] seqId                  Mandatory.\n
      *                                   sequence id for streaming.
-     * \param[out] stats                 Mandatory.\n
-     *                                   decoded statistics.
      * \return                           Error code.
      */
-    virtual ia_err decodeStats(int groupId, long seqId, IaCcatStatistics *stats) = 0;
+    virtual ia_err decodeStats(int groupId, long seqId) = 0;
+
+    /*!
+     * \brief run AIC parameters with graph config & Intel3A results.
+     *
+     * \param[in] params                 Mandatory.\n
+     *                                   AIQ plus parameters and manual settings.
+     * \param[in] aaaResults             Mandatory.\n
+     *                                   AIQ plus results.
+     * \param[out] pal                   Mandatory.\n
+     *                                   AIC results for each CB.
+     * \return                           Error code.
+     */
+    virtual ia_err run(const cca_pal_input_params& params, cca_3a_plus_results& aaaResults, cca_multi_pal_output& output) = 0;
 
 #else
+    /*!
+     * \brief query DVS statistics.
+     *
+     * \param[out] stats                 Mandatory.\n
+     *                                   return DVS statistics.
+     * \return                           Error code.
+     */
+    virtual ia_err getDvsStats(ia_dvs_statistics* stats) = 0;
     /*!
      * \brief decode statistics for a specific type(AIQ, LTM, DVS stats) <=IPU6.
      *
@@ -236,7 +261,7 @@ public:
      *                                   results of parsing statistics from FW.
      * \return                           Error code.
      */
-    virtual ia_err decodeStats(const cca_dec_stats_input &decParams, cca_dec_stats_output &results) = 0;
+    virtual ia_err decodeStats(const cca_dec_stats_input &decParams, ia_isp_bxt_statistics_query_results_t *results) = 0;
 
     /*! Get PAL binary size
     *
@@ -248,6 +273,18 @@ public:
     * return Pal size in success. zero on failure
     */
     virtual uint32_t getPalSize(const cca_program_group &programGroup) = 0;
+    /*!
+     * \brief run AIC parameters with graph config & Intel3A results.
+     *
+     * \param[in] params                 Mandatory.\n
+     *                                   AIQ plus parameters and manual settings.
+     * \param[in] aaaResults             Mandatory.\n
+     *                                   AIQ plus results.
+     * \param[out] pal                   Mandatory.\n
+     *                                   AIC results.
+     * \return                           Error code.
+     */
+    virtual ia_err run(const cca_pal_input_params& params, cca_3a_plus_results& aaaResults, ia_binary_data* pal) = 0;
 
 #endif
      /*!
@@ -260,14 +297,14 @@ public:
      *
      * \return                                  IPU HW version.
      */
-    virtual const char* getVersion() = 0;
+    virtual const char* getVersion() const = 0;
 
     /*!
      * \brief get the IPU Handle.
      *
      * \return                       IPU handle.
      */
-    virtual void* getIspHandle() = 0;
+    virtual void* getIspHandle() const = 0;
 
 };
 }//cca

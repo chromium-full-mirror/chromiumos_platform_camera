@@ -107,10 +107,10 @@ ia_mkn_print_record(const ia_binary_data *mknt_data,
  * \return                          Error code.
  */
 LIBEXPORT ia_err
-ia_mkn_get_record(const ia_binary_data *mknt_data,
-                  const char* key,
-                  ia_mkn_record_header *mkn_record_header,
-                  void *record_data);
+ia_mkn_get_record(const ia_binary_data *a_mknt_data_ptr,
+                  const char* a_key,
+                  ia_mkn_record_header *a_mkn_record_header_ptr,
+                  void *a_record_data_ptr);
 
 /*!
  * \brief Copies record data from the makernote to given buffer.
@@ -128,9 +128,9 @@ ia_mkn_get_record(const ia_binary_data *mknt_data,
  * \return                           Error code.
  */
 LIBEXPORT ia_err
-ia_mkn_get_record_headers(const ia_binary_data *mknt_data,
-                          int *num_mkn_records,
-                          ia_mkn_record_header *mkn_record_headers);
+ia_mkn_get_record_headers(const ia_binary_data *a_mknt_data_ptr,
+                          int *a_num_mkn_records,
+                          ia_mkn_record_header *a_mkn_record_headers_ptr);
 
 #ifdef __cplusplus
 }

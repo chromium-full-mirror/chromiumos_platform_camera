@@ -36,8 +36,8 @@ extern "C" {
 #endif
 #define IA_CCAT_ACM_SECTORS_MAX_NUM 36
 
-typedef struct ia_ccat_t ia_ccat;
-typedef struct frame_info_t ia_ccat_frame_info;
+typedef struct _ia_ccat_t ia_ccat;
+typedef struct _frame_info_t ia_ccat_frame_info;
 
 LIBEXPORT ia_ccat*
 ia_ccat_init();
@@ -48,14 +48,14 @@ ia_ccat_init();
  */
 LIBEXPORT ia_err
 ia_ccat_set_tunings(
-    ia_ccat *ccat,        /*!< \param[in] Analysis toolbox's internal structure. */
-    const ia_cmc_t *cmc); /*!< \param[in] CMC structure that will be stored and copied/modified for CCAT internal use. */
+    ia_ccat *a_ccat_ptr,        /*!< \param[in] Analysis toolbox's internal structure. */
+    const ia_cmc_t *a_cmc_ptr); /*!< \param[in] CMC structure that will be stored and copied/modified for CCAT internal use. */
 
 /*!
  * \brief De-initializes and frees memory allocated in ia_ccat_init() function.
  */
 LIBEXPORT void
-ia_ccat_deinit(ia_ccat *ccat); /*!< \param[in] Analysis toolbox's internal structure. */
+ia_ccat_deinit(ia_ccat *a_ccat_ptr); /*!< \param[in] Analysis toolbox's internal structure. */
 
 /*!
  * \brief Statistics setting and initialization functions.
@@ -83,17 +83,17 @@ ia_ccat_deinit(ia_ccat *ccat); /*!< \param[in] Analysis toolbox's internal struc
  */
 LIBEXPORT ia_err
 ia_ccat_set_frame_parameters(
-    ia_ccat *ccat,                                                           /*!< \param[in] Analysis toolbox internal data structure. */
-    const ia_ccat_frame_statistics *frame_statistics,                        /*!< \param[in] Input statistics */
-    const ia_ccat_frame_parameters *frame_parameters);                       /*!< \param[in] Input parameters */
+    ia_ccat *a_ccat_ptr,                                                           /*!< \param[in] Analysis toolbox internal data structure. */
+    const ia_ccat_frame_statistics *a_in_statistics_ptr,                        /*!< \param[in] Input statistics */
+    const ia_ccat_frame_parameters *a_in_parameters_ptr);                       /*!< \param[in] Input parameters */
 
 /*!
  * \brief Registers percentile that will be calculated from histograms covering whole frame.
  */
 LIBEXPORT ia_err
 ia_ccat_register_percentile_frame(
-    ia_ccat *ccat,                    /*!< \param[in] Analysis toolbox internal data structure. */
-    float percentile);
+    ia_ccat *a_ccat_ptr,                    /*!< \param[in] Analysis toolbox internal data structure. */
+    float a_percentile);
 
 /*!
  * \brief Reserves frame into use.
@@ -101,80 +101,80 @@ ia_ccat_register_percentile_frame(
  */
 LIBEXPORT ia_err
 ia_ccat_hold_frame(
-    ia_ccat *ccat,                    /*!< \param[in]  Analysis toolbox internal data structure. */
-    ia_ccat_frame_type frame_type,    /*!< \param[in]  Frame type to acquire. */
-    ia_ccat_frame_info **frame_info); /*!< \param[out] Pointer to acquired frame info. */
+    ia_ccat *a_ccat_ptr,                    /*!< \param[in]  Analysis toolbox internal data structure. */
+    ia_ccat_frame_type a_frame_type,    /*!< \param[in]  Frame type to acquire. */
+    ia_ccat_frame_info **a_frame_info_ptr); /*!< \param[out] Pointer to acquired frame info. */
 
 LIBEXPORT ia_err
 ia_ccat_release_frame(
-    ia_ccat *ccat,                    /*!< \param[in] Analysis toolbox internal data structure. */
-    ia_ccat_frame_info **frame_info); /*!< \param[in] Frame info pointer that is no longer used. */
+    ia_ccat *a_ccat_ptr,                    /*!< \param[in] Analysis toolbox internal data structure. */
+    ia_ccat_frame_info **a_frame_info_ptr); /*!< \param[in] Frame info pointer that is no longer used. */
 
 LIBEXPORT ia_err
 ia_ccat_get_frame_percentile(
-    ia_ccat_frame_info* frame_info,
-    float percentile,
-    unsigned int exposure_index,
-    ia_ccat_histogram_type histogram_type,
-    float *percentile_bin);
+    ia_ccat_frame_info *a_frame_info_ptr,
+    float a_percentile,
+    unsigned int a_exposure_index,
+    ia_ccat_histogram_type a_histogram_type,
+    float *a_percentile_bin);
 
 LIBEXPORT ia_err
 ia_ccat_get_frame_normalized_percentile(
-    ia_ccat_frame_info* frame_info,
-    float percentile,
-    unsigned int exposure_index,
-    ia_ccat_histogram_type histogram_type,
-    float *normalized_percentile);
+    ia_ccat_frame_info *a_frame_info_ptr,
+    float a_percentile,
+    unsigned int a_exposure_index,
+    ia_ccat_histogram_type a_histogram_type,
+    float *a_normalized_percentile_ptr);
 
 LIBEXPORT ia_err
 ia_ccat_get_frame_total_gain(
-    ia_ccat_frame_info *frame_info,
-    unsigned int exposure_index,
-    float *total_gain);
+    ia_ccat_frame_info *a_frame_info_ptr,
+    unsigned int a_exposure_index,
+    float *a_total_gain_ptr);
 
 LIBEXPORT ia_err
 ia_ccat_calculate_total_gain(
-    const ia_aiq_exposure_parameters* a_exposure_params,
+    const ia_aiq_exposure_parameters *a_exposure_params,
     float *total_gain);
 
 LIBEXPORT ia_err
 ia_ccat_get_frame_total_exposure_time(
-    ia_ccat_frame_info *frame_info,
-    unsigned int exposure_index,
-    unsigned int *total_exposure_time);
+    ia_ccat_frame_info *a_frame_info_ptr,
+    unsigned int a_exposure_index,
+    unsigned int *a_total_exposure_time_ptr);
 
 LIBEXPORT ia_err
 ia_ccat_get_frame_lux_level_estimate(
-    ia_ccat_frame_info *frame_info,
-    unsigned int exposure_index,
-    float *lux_level_estimate);
+    ia_ccat_frame_info *a_frame_info_ptr,
+    unsigned int a_exposure_index,
+    float *a_lux_level_estimate_ptr);
 
 LIBEXPORT ia_err
 ia_ccat_get_frame_filtered_lux_level_estimate(
-    ia_ccat_frame_info *frame_info,
-    unsigned int exposure_index,
-    float *filtered_lux_level_estimate);
+    ia_ccat_frame_info *a_frame_info_ptr,
+    unsigned int a_exposure_index,
+    float *a_filtered_lux_level_estimate);
 
 LIBEXPORT ia_err
 ia_ccat_hold_frame_histogram(
-    ia_ccat_frame_info *frame_info,
-    unsigned int exposure_index,
-    ia_ccat_histogram_type histogram_type,
-    const ia_histogram **histogram);
+    ia_ccat_frame_info *a_frame_info_ptr,
+    unsigned int a_exposure_index,
+    ia_ccat_histogram_type a_histogram_type,
+    const ia_histogram **a_histogram_ptr);
 
 LIBEXPORT ia_err
 ia_ccat_get_frame_camera_orientation(
-    ia_ccat_frame_info *frame_info,
+    ia_ccat_frame_info *a_frame_info_ptr,
     ia_aiq_camera_orientation *a_camera_orientation);
 
 LIBEXPORT ia_err
 ia_ccat_get_frame_ccat(
-    ia_ccat_frame_info *frame_info,
+    ia_ccat_frame_info *a_frame_info_ptr,
     ia_ccat **ccat_ptr);
 
 LIBEXPORT ia_err
 ia_ccat_estimate_percentile_with_saturation_frame(
-    ia_ccat_frame_info *frame_info,
+    ia_ccat_frame_info *a_frame_info_ptr,
     ia_ccat_histogram_type a_ccat_histogram_type,
     unsigned int exposure_index,
     float a_full_sat_step,
@@ -183,59 +183,59 @@ ia_ccat_estimate_percentile_with_saturation_frame(
 
 LIBEXPORT ia_err
 ia_ccat_release_frame_histogram(
-    ia_ccat_frame_info *frame_info,
-    unsigned int exposure_index,
-    ia_ccat_histogram_type histogram_type,
-    const ia_histogram **histogram);
+    ia_ccat_frame_info *a_frame_info_ptr,
+    unsigned int a_exposure_index,
+    ia_ccat_histogram_type a_histogram_type,
+    const ia_histogram **a_histogram_ptr);
 
 LIBEXPORT ia_err
 ia_ccat_get_frame_histogram_info(
-    ia_ccat_frame_info *frame_info,
-    unsigned int exposure_index,
-    ia_ccat_histogram_type histogram_type,
-    float *mean,
-    float *saturation_percent,
-    float *max);
+    ia_ccat_frame_info *a_frame_info_ptr,
+    unsigned int a_exposure_index,
+    ia_ccat_histogram_type a_histogram_type,
+    float *a_mean_ptr,
+    float *a_saturation_percent_ptr,
+    float *a_max_ptr);
 
 LIBEXPORT ia_err
 ia_ccat_get_frame_histogram_segment_average(
-    ia_ccat_frame_info *frame_info,
-    unsigned int exposure_index,
+    ia_ccat_frame_info *a_frame_info_ptr,
+    unsigned int a_exposure_index,
     ia_ccat_histogram_type a_histogram_type,
-    float low_limit,
-    float high_limit,
-    float *average);
+    float a_low_limit,
+    float a_high_limit,
+    float *a_average_ptr);
 
 LIBEXPORT ia_err
 ia_ccat_get_frame_ae_results(
-    ia_ccat_frame_info *frame_info,
-    const ia_aec_results **ae_results_ptr);
+    ia_ccat_frame_info *a_frame_info_ptr,
+    const ia_aec_results **a_ae_results_ptr);
 
 LIBEXPORT ia_err
 ia_ccat_get_frame_awb_results(
-    ia_ccat_frame_info *frame_info,
-    const ia_aiq_awb_results **awb_results);
+    ia_ccat_frame_info *a_frame_info_ptr,
+    const ia_aiq_awb_results **a_awb_results_ptr);
 
 LIBEXPORT ia_err
 ia_ccat_get_frame_af_results(
-    ia_ccat_frame_info *frame_info,
-    const ia_aiq_af_results **af_results);
+    ia_ccat_frame_info *a_frame_info_ptr,
+    const ia_aiq_af_results **a_af_results_ptr);
 
 LIBEXPORT ia_err
 ia_ccat_get_frame_sa_results(
-    ia_ccat_frame_info *frame_info,
-    const ia_aiq_sa_results_v1 **sa_results);
+    ia_ccat_frame_info *a_frame_info_ptr,
+    const ia_aiq_sa_results_v1 **a_sa_results_ptr);
 
 LIBEXPORT ia_err
 ia_ccat_get_frame_exposure_result(
-    ia_ccat_frame_info *frame_info,
-    unsigned int exposure_index,
+    ia_ccat_frame_info *a_frame_info_ptr,
+    unsigned int a_exposure_index,
     const ia_aec_exposure_result **a_exposure_result_ptr);
 
 LIBEXPORT ia_err
 ia_ccat_get_frame_exposure_parameters(
-    ia_ccat_frame_info *frame_info,
-    unsigned int exposure_index,
+    ia_ccat_frame_info *a_frame_info_ptr,
+    unsigned int a_exposure_index,
     const ia_aec_exposure_parameters **a_exposure_parameters_ptr);
 
 /*!
@@ -252,58 +252,63 @@ ia_ccat_get_frame_exposure_parameters(
  */
 LIBEXPORT ia_err
 ia_ccat_calculate_segment_size(
-    ia_ccat_frame_info *frame_info,
+    ia_ccat_frame_info *a_frame_info_ptr,
     uint16_t a_low_limit,
     uint16_t a_high_limit,
     uint16_t a_num_exposures,
     float *power_noraml);
 
+LIBEXPORT ia_err
+ia_ccat_get_frame_statistics_grid_changed(
+    ia_ccat_frame_info *a_frame_info_ptr,
+    bool *statistics_grid_changed);
+
 #ifdef IA_AEC_FEATURE_WEIGHT_GRID
 LIBEXPORT ia_err
 ia_ccat_get_frame_histogram_weight_map(
-    ia_ccat_frame_info *frame_info,
+    ia_ccat_frame_info *a_frame_info_ptr,
     const ia_aec_weight_grid **a_weight_grid_ptr);
 
 LIBEXPORT ia_err
 ia_ccat_get_frame_weight_map_changed(
-    ia_ccat_frame_info *frame_info,
+    ia_ccat_frame_info *a_frame_info_ptr,
     bool *weight_map_changed);
 #endif
 
 LIBEXPORT ia_err
 ia_ccat_get_frame_sensor_exposure_parameters(
-    ia_ccat_frame_info *frame_info,
-    unsigned int exposure_index,
-    ia_aiq_exposure_sensor_parameters *exposure_sensor_parameters);
+    ia_ccat_frame_info *a_frame_info_ptr,
+    unsigned int a_exposure_index,
+    ia_aiq_exposure_sensor_parameters *a_exposure_sensor_parameters_ptr);
 
 LIBEXPORT ia_err
 ia_ccat_get_frame_color_gains(
-    ia_ccat_frame_info *frame_info,
-    ia_aiq_color_channels *color_gains);
+    ia_ccat_frame_info *a_frame_info_ptr,
+    ia_aiq_color_channels *a_color_gains_ptr);
 
 LIBEXPORT ia_err
 ia_ccat_get_frame_color_correction_matrix(
-    ia_ccat_frame_info *frame_info,
-    float(*matrix)[3][3]);
+    ia_ccat_frame_info *a_frame_info_ptr,
+    float(*a_matrix_ptr)[3][3]);
 
 LIBEXPORT ia_err
 ia_ccat_get_frame_timestamp(
-    ia_ccat_frame_info *frame_info,
-    unsigned long long *frame_timestamp);
+    ia_ccat_frame_info *a_frame_info_ptr,
+    unsigned long long *a_frame_timestamp_ptr);
 
 LIBEXPORT ia_err
 ia_ccat_get_frame_id(
-    ia_ccat_frame_info *frame_info,
-    unsigned long long *frame_id);
+    ia_ccat_frame_info *a_frame_info_ptr,
+    unsigned long long *frame_id_ptr);
 
 /*!
  * \brief Get information about number of exposures and which of them is the center (in case of multi exposure frame) exposure index.
  */
 LIBEXPORT ia_err
 ia_ccat_get_frame_exposure_index_info(
-    ia_ccat_frame_info *frame_info,                                    /*!< [in] Frame handle. */
-    unsigned int *center_exposure_index,                               /*!< [out] Center (in case of multiple exposures) / default exposure index . */
-    unsigned int *num_exposures);                                      /*!< [out] Number of exposures/statistics in the frame. */
+    ia_ccat_frame_info *a_frame_info_ptr,                                    /*!< [in] Frame handle. */
+    unsigned int *a_center_exposure_index_ptr,                               /*!< [out] Center (in case of multiple exposures) / default exposure index . */
+    unsigned int *a_num_exposures_ptr);                                      /*!< [out] Number of exposures/statistics in the frame. */
 
 /*!
  * \brief Get closest ACMs for a white point.
@@ -311,13 +316,13 @@ ia_ccat_get_frame_exposure_index_info(
  */
 LIBEXPORT ia_err
 ia_ccat_calculate_weighted_acm(
-    ia_ccat_frame_info *frame_info,                                    /*!< [in] Frame handle. */
-    const cmc_parsed_advanced_color_matrices_ls_t *parsed_acm_ls,      /*!< [in] ACMs from CMC or AIQ tunings. */
+    ia_ccat_frame_info *a_frame_info_ptr,                                    /*!< [in] Frame handle. */
+    const cmc_parsed_advanced_color_matrices_ls_t *a_parsed_advanced_color_matrices_ls,      /*!< [in] ACMs from CMC or AIQ tunings. */
     unsigned int a_num_advanced_color_matrices,                        /*!< [in] Number of advanced color matrices */
-    unsigned int sector_count,                                         /*!< [in] Number of sectors in ACMs. */
-    cmc_chromaticity point,                                            /*!< [in] Chromaticity to calculate distance (x and y axis) against input list of chromaticities in R/G and B/G plane. */
-    float (*out_acm)[3][3],                                            /*!< [out] Resulting ACMs. Array length is defined by sector_count. */
-    float (*out_ccm)[3][3],                                            /*!< [out] Resulting CCM. */
+    unsigned int a_sector_count,                                         /*!< [in] Number of sectors in ACMs. */
+    cmc_chromaticity a_point,                                            /*!< [in] Chromaticity to calculate distance (x and y axis) against input list of chromaticities in R/G and B/G plane. */
+    float (*a_out_acm)[3][3],                                            /*!< [out] Resulting ACMs. Array length is defined by sector_count. */
+    float (*a_out_ccm)[3][3],                                            /*!< [out] Resulting CCM. */
     float (*ccm_weights)[CMC_NUM_LIGHTSOURCES]);                       /*!< [out] CCM weight. */
 
 /*!
@@ -325,11 +330,11 @@ ia_ccat_calculate_weighted_acm(
  */
 LIBEXPORT ia_err
 ia_ccat_calculate_weighted_ccm(
-    ia_ccat_frame_info *frame_info,                                    /*!< [in] Frame handle. */
-    const cmc_parsed_color_matrices_t *parsed_color_matrices,          /*!< [in] CCM characterization data with R/G and B/G chromaticities. */
+    ia_ccat_frame_info *a_frame_info_ptr,                                    /*!< [in] Frame handle. */
+    const cmc_parsed_color_matrices_t *a_parsed_color_matrices_ptr,          /*!< [in] CCM characterization data with R/G and B/G chromaticities. */
     bool output_ccm_type_preferred,                                    /*!< [in] Flag to control output CCM to be preferred (true) or accurate (false). */
-    cmc_chromaticity point,                                            /*!< [in] Chromaticity to calculate distance (x and y axis) against input list of chromaticities in R/G and B/G plane. */
-    float (*out_ccm)[3][3],                                            /*!< [out] Resulting CCM. */
+    cmc_chromaticity a_point,                                            /*!< [in] Chromaticity to calculate distance (x and y axis) against input list of chromaticities in R/G and B/G plane. */
+    float (*a_out_ccm)[3][3],                                            /*!< [out] Resulting CCM. */
     float (*ccm_weights)[CMC_NUM_LIGHTSOURCES]);                       /*!< [out] CCM weight. */
 
 LIBEXPORT ia_err
@@ -340,14 +345,14 @@ ia_ccat_get_frame_scaled_cmc_lens_shading(
 
 LIBEXPORT ia_err
 ia_ccat_calculate_chromaticity_based_weights(
-    ia_ccat_frame_info *frame_info,                                      /*!< [in] Frame handle. */
+    ia_ccat_frame_info *a_frame_info_ptr,                                      /*!< [in] Frame handle. */
     cmc_chromaticity(*a_chromaticities_ptr)[CMC_NUM_LIGHTSOURCES],       /*!< [in] CCM characterization data with R/G and B/G chromaticities. */
-    cmc_cie_coords (*a_cie_coords)[CMC_NUM_LIGHTSOURCES],                /*!< [in] CCM characterization data with CIE X/Y chromaticities. */
-    unsigned int num_chromaticities,                                     /*!< [in] Number of input chromaticities. */
-    cmc_chromaticity point,                                              /*!< [in] Chromaticity to calculate distance (x and y axis) against input list of chromaticities in R/G and B/G plane or CIE X/Y plane. */
+    cmc_cie_coords (*a_cie_coords_ptr)[CMC_NUM_LIGHTSOURCES],                /*!< [in] CCM characterization data with CIE X/Y chromaticities. */
+    unsigned int a_num_chromaticities,                                     /*!< [in] Number of input chromaticities. */
+    cmc_chromaticity a_point,                                              /*!< [in] Chromaticity to calculate distance (x and y axis) against input list of chromaticities in R/G and B/G plane or CIE X/Y plane. */
     ia_ccat_point_type_t a_point_type,                                   /*!< [in] Option for using accurate or preferred CCM interpolation */
-    const float *ir_proportion,                                          /*!< [in] Ir effect on chromaticity point distance (z axis). */
-    float(*weights)[CMC_NUM_LIGHTSOURCES],                               /*!< [out] Normalized chromaticity distances translated into weights. */
+    const float *a_ir_proportion,                                          /*!< [in] Ir effect on chromaticity point distance (z axis). */
+    float(*a_cct_weights)[CMC_NUM_LIGHTSOURCES],                               /*!< [out] Normalized chromaticity distances translated into weights. */
     float *frame_ir_proportion);                                         /*!< [out] Frame ir proportion, ir mean divided by y_mean. */
 
 #ifdef IA_AEC_FEATURE_FLASH
@@ -356,8 +361,8 @@ ia_ccat_calculate_chromaticity_based_weights(
  */
 LIBEXPORT ia_err
 ia_ccat_calculate_flash_ratios(
-    const cmc_multi_led_flash_t *flash_tunings,
-    ia_ccat_frame_info *nonflash_frame_info,
+    const cmc_multi_led_flash_t *a_flash_tunings_ptr,
+    ia_ccat_frame_info *a_nonflash_frame_info_ptr,
     float (*flash_ratios)[IA_AEC_FLASHES_NUM]);
 
 /*!
@@ -365,144 +370,144 @@ ia_ccat_calculate_flash_ratios(
  */
 LIBEXPORT ia_err
 ia_ccat_calculate_flash_ratios_frame_tuning(
-    ia_ccat_frame_info *frame_info,
+    ia_ccat_frame_info *a_frame_info_ptr,
     float (*flash_ratios)[IA_AEC_FLASHES_NUM]);
 #endif
 
 #ifdef IA_CCAT_IR_GRID_ENABLED
 LIBEXPORT ia_err
 ia_ccat_get_frame_ir_grid(
-    ia_ccat_frame_info *frame_info,
-    const ia_ccat_ir_grid **ir_grid);
+    ia_ccat_frame_info *a_frame_info_ptr,
+    const ia_ccat_ir_grid **a_ir_grid_ptr);
 
 LIBEXPORT ia_err
 ia_ccat_get_frame_ir_histogram_info(
-    ia_ccat_frame_info *frame_info,
-    float *mean,
-    float *saturation_percent,
-    float *max);
+    ia_ccat_frame_info *a_frame_info_ptr,
+    float *a_mean_ptr,
+    float *a_saturation_percent_ptr,
+    float *a_max_ptr);
 
 LIBEXPORT ia_err
 ia_ccat_set_ir_compgain(
-    ia_ccat_frame_info *frame_info,
-    float ir_compgain);
+    ia_ccat_frame_info *a_frame_info_ptr,
+    float ir_compgain_isp);
 
 LIBEXPORT ia_err
 ia_ccat_get_ir_compgain(
-    ia_ccat_frame_info *frame_info,
-    float *ir_compgain);
+    ia_ccat_frame_info *a_frame_info_ptr,
+    float *ir_compgain_ptr);
 #endif
 
 #ifdef IA_CCAT_DEPTH_GRID_ENABLED
 LIBEXPORT ia_err
 ia_ccat_get_frame_depth_grid(
-    ia_ccat_frame_info *frame_info,
-    const ia_depth_grid **depth_grid);
+    ia_ccat_frame_info *a_frame_info_ptr,
+    const ia_depth_grid **a_depth_grid_ptr);
 #endif
 
 #ifdef IA_CCAT_RGBS_GRID_ENABLED
 LIBEXPORT ia_err
 ia_ccat_get_frame_rgbs_grid(
-    ia_ccat_frame_info *frame_info,
-    bool shading_corrected,
-    unsigned int exposure_index,
-    const ia_rgbs_grid **rgbs_grid);
+    ia_ccat_frame_info *a_frame_info_ptr,
+    bool a_shading_corrected,
+    unsigned int a_exposure_index,
+    const ia_rgbs_grid **a_rgbs_grid_ptr);
 
 LIBEXPORT ia_err
 ia_ccat_get_frame_af_grid(
-    ia_ccat_frame_info *frame_info,
-    unsigned int exposure_index,
-    const ia_filter_response_grid **af_grid);
+    ia_ccat_frame_info *a_frame_info_ptr,
+    unsigned int a_exposure_index,
+    const ia_filter_response_grid **a_af_grid_ptr);
 
 #ifdef IA_CCAT_HSV_GRID_ENABLED
 LIBEXPORT ia_err
 ia_ccat_get_frame_hsv_grid(
-    ia_ccat_frame_info *frame_info,
-    unsigned int exposure_index,
-    const ia_ccat_hsv_grid **hsv_grid);
+    ia_ccat_frame_info *a_frame_info_ptr,
+    unsigned int a_exposure_index,
+    const ia_ccat_hsv_grid **a_hsv_grid_ptr);
 #endif
 
 #ifdef IA_CCAT_LUMINANCE_GRID_ENABLED
 LIBEXPORT ia_err
 ia_ccat_get_frame_luminance_grid(
-    ia_ccat_frame_info *frame_info,
-    unsigned int exposure_index,
-    const ia_ccat_grid_char **luminance_grid);
+    ia_ccat_frame_info *a_frame_info_ptr,
+    unsigned int a_exposure_index,
+    const ia_ccat_grid_char **a_luminance_grid_ptr);
 
 #ifdef IA_CCAT_LUMINANCE_MOTION_ESTIMATE_ENABLED
 LIBEXPORT ia_err
 ia_ccat_get_frame_motion_level_estimate(
-    ia_ccat_frame_info *frame_info,
-    unsigned int exposure_index,
-    float *motion_estimate);
+    ia_ccat_frame_info *a_frame_info_ptr,
+    unsigned int a_exposure_index,
+    float *a_motion_estimate_ptr);
 #endif
 #endif
 
 #ifdef IA_CCAT_ROI_ANALYSIS_ENABLED
 LIBEXPORT ia_err
 ia_ccat_register_percentile_roi(
-    ia_ccat *ccat,                    /*!< \param[in] Analysis toolbox internal data structure. */
-    float percentile);
+    ia_ccat *a_ccat_ptr,                    /*!< \param[in] Analysis toolbox internal data structure. */
+    float a_percentile);
 
 LIBEXPORT ia_err
 ia_ccat_hold_frame_histogram_roi(
-    ia_ccat_frame_info *frame_info,
-    unsigned int exposure_index,
-    const ia_rectangle *roi_area,
-    ia_ccat_histogram_type histogram_type,
-    const ia_histogram **histogram);
+    ia_ccat_frame_info *a_frame_info_ptr,
+    unsigned int a_exposure_index,
+    const ia_rectangle *a_roi_area_ptr,
+    ia_ccat_histogram_type a_histogram_type,
+    const ia_histogram **a_histogram_ptr);
 
 LIBEXPORT ia_err
 ia_ccat_release_frame_histogram_roi(
-    ia_ccat_frame_info *frame_info,
-    unsigned int exposure_index,
-    const ia_rectangle *roi_area,
-    ia_ccat_histogram_type histogram_type,
-    const ia_histogram **histogram);
+    ia_ccat_frame_info *a_frame_info_ptr,
+    unsigned int a_exposure_index,
+    const ia_rectangle *a_roi_area_ptr,
+    ia_ccat_histogram_type a_histogram_type,
+    const ia_histogram **a_histogram_ptr);
 
 LIBEXPORT ia_err
 ia_ccat_get_frame_histogram_info_roi(
-    ia_ccat_frame_info *frame_info,
-    unsigned int exposure_index,
-    const ia_rectangle *roi_area,
-    ia_ccat_histogram_type histogram_type,
-    float *mean,
-    float *saturation_percent,
-    float *max);
+    ia_ccat_frame_info *a_frame_info_ptr,
+    unsigned int a_exposure_index,
+    const ia_rectangle *a_roi_area_ptr,
+    ia_ccat_histogram_type a_histogram_type,
+    float *a_mean_ptr,
+    float *a_saturation_percent_ptr,
+    float *a_max_ptr);
 
 LIBEXPORT ia_err
 ia_ccat_get_frame_percentile_roi(
-    ia_ccat_frame_info *frame_info,
-    float percentile,
-    unsigned int exposure_index,
-    const ia_rectangle *roi_area,
-    ia_ccat_histogram_type histogram_type,
-    float *percentile_bin);
+    ia_ccat_frame_info *a_frame_info_ptr,
+    float a_percentile,
+    unsigned int a_exposure_index,
+    const ia_rectangle *a_roi_area_ptr,
+    ia_ccat_histogram_type a_histogram_type,
+    float *a_percentile_bin_ptr);
 #endif /* IA_CCAT_ROI_ANALYSIS_ENABLED */
 
 #ifdef IA_CCAT_FACE_ANALYSIS_ENABLED
 LIBEXPORT ia_err
 ia_ccat_register_percentile_face(
-    ia_ccat *ccat,                    /*!< \param[in] Analysis toolbox internal data structure. */
-    float percentile);
+    ia_ccat *a_ccat_ptr,                    /*!< \param[in] Analysis toolbox internal data structure. */
+    float a_percentile);
 
 LIBEXPORT ia_err
 ia_ccat_get_face_stencil(
-    ia_ccat_frame_info *frame_info,
-    unsigned int exposure_index,
-    const ia_rectangle *face_area,
-    const ia_ccat_grid_char **stencil_mask);
+    ia_ccat_frame_info *a_frame_info_ptr,
+    unsigned int a_exposure_index,
+    const ia_rectangle *a_face_area_ptr,
+    const ia_ccat_grid_char **a_stencil_mask_ptr);
 
 LIBEXPORT ia_err
 ia_ccat_get_frame_faces(
-    ia_ccat_frame_info *frame_info,
-    unsigned int *num_faces,
-    const ia_face_roi **faces);
+    ia_ccat_frame_info *a_frame_info_ptr,
+    unsigned int *a_num_faces_ptr,
+    const ia_face_roi **a_faces_ptr);
 
 LIBEXPORT ia_err
 ia_ccat_get_face_coverage(
-    const ia_face_roi *face,
-    float *coverage);
+    const ia_face_roi *a_face_ptr,
+    float *a_coverage);
 
 LIBEXPORT ia_err
 ia_ccat_hold_frame_faces_histogram(
@@ -521,26 +526,26 @@ LIBEXPORT ia_err ia_ccat_release_frame_histogram_face(
 
 LIBEXPORT ia_err
 ia_ccat_get_frame_face_y_mean(
-    ia_ccat_frame_info *frame_info,
-    unsigned int exposure_index,
-    const ia_face_roi *face,
-    float *face_y_mean);
+    ia_ccat_frame_info *a_frame_info_ptr,
+    unsigned int a_exposure_index,
+    const ia_face_roi *a_face_ptr,
+    float *a_face_y_mean_ptr);
 
 LIBEXPORT ia_err
 ia_ccat_get_frame_percentile_face(
-    ia_ccat_frame_info *frame_info,
-    float percentile,
-    unsigned int exposure_index,
-    const ia_face_roi *face,
-    ia_ccat_histogram_type histogram_type,
-    float *percentile_bin);
+    ia_ccat_frame_info *a_frame_info_ptr,
+    float a_percentile,
+    unsigned int a_exposure_index,
+    const ia_face_roi *a_face_ptr,
+    ia_ccat_histogram_type a_histogram_type,
+    float *a_percentile_bin_ptr);
 
 /*!
  *  Calculates the percentage of how many pixels of the given roi are contained in the luminance segment [low, high].
  */
 LIBEXPORT ia_err
 ia_ccat_calculate_face_coverage_in_segment(
-    ia_ccat_frame_info *frame_info,
+    ia_ccat_frame_info *a_frame_info_ptr,
     unsigned char a_thr_low,
     unsigned char a_thr_high,
     const ia_face_roi *face,
@@ -548,12 +553,12 @@ ia_ccat_calculate_face_coverage_in_segment(
 
 LIBEXPORT ia_err
 ia_ccat_set_face_in_exit_time(
-    ia_ccat_frame_info *frame_info,
+    ia_ccat_frame_info *a_frame_info_ptr,
     bool face_in_exit_time);
 
 LIBEXPORT ia_err
 ia_ccat_get_face_in_exit_time(
-    ia_ccat_frame_info *frame_info,
+    ia_ccat_frame_info *a_frame_info_ptr,
     bool* face_in_exit_time);
 #endif /* IA_CCAT_FACE_ANALYSIS_ENABLED */
 #endif /* IA_CCAT_RGBS_GRID_ENABLED */
@@ -568,9 +573,9 @@ ia_ccat_get_face_in_exit_time(
 */
 LIBEXPORT ia_err
 ia_ccat_set_sensor_events_accelerometer(
-    ia_ccat *ccat,                                     /*!< [in, out] Analysistoolbox internal data structures. */
-    unsigned int num_events,                           /*!< [in] Number of accelerometer sensor events. */
-    const ia_ccat_motion_sensor_event *sensor_events); /*!< [in] Structure containing accelerometer events for given time range. */
+    ia_ccat *a_ccat_ptr,                                     /*!< [in, out] Analysistoolbox internal data structures. */
+    unsigned int a_num_events,                           /*!< [in] Number of accelerometer sensor events. */
+    const ia_ccat_motion_sensor_event *a_sensor_events_ptr); /*!< [in] Structure containing accelerometer events for given time range. */
 
 /*!
 * \brief Get a copy of accelerometer events.
@@ -578,21 +583,21 @@ ia_ccat_set_sensor_events_accelerometer(
 */
 LIBEXPORT ia_err
 ia_ccat_get_sensor_events_accelerometer(
-    const ia_ccat *ccat,                               /*!< [in] Analysistoolbox internal data structures. */
-    unsigned long long start_timestamp,                /*!< [in]  Start time for events to be copied. 0 if all data (max_num_events) must be copied. */
-    unsigned long long end_timestamp,                  /*!< [in]  End time for events to be copied. 0 if all data (max_num_events) must be copied. */
-    unsigned int *num_events,                          /*!< [in]  Number of events allowed to be copied (maximum amount of available memory in sensor_events).
+    const ia_ccat *a_ccat_ptr,                               /*!< [in] Analysistoolbox internal data structures. */
+    unsigned long long a_start_timestamp,                /*!< [in]  Start time for events to be copied. 0 if all data (max_num_events) must be copied. */
+    unsigned long long a_end_timestamp,                  /*!< [in]  End time for events to be copied. 0 if all data (max_num_events) must be copied. */
+    unsigned int *a_num_events_ptr,                          /*!< [in]  Number of events allowed to be copied (maximum amount of available memory in sensor_events).
                                                        [out] How many events were copied to the sensor_events structure. */
-    ia_ccat_motion_sensor_event* sensor_events);       /*!< [out] Copied accelerometer events. */
+    ia_ccat_motion_sensor_event *a_sensor_events_ptr);       /*!< [out] Copied accelerometer events. */
 
 /*!
 * \brief Set the gyroscope sensor events to CCAT internal circular buffer.
 */
 LIBEXPORT ia_err
 ia_ccat_set_sensor_events_gyroscope(
-    ia_ccat *ccat,                                     /*!< [in, out] Analysistoolbox internal data structures. */
-    unsigned int num_events,                           /*!< [in] Number of gyroscope sensor events. */
-    const ia_ccat_motion_sensor_event *sensor_events); /*!< [in] Structure containing gyroscope events for given time range. */
+    ia_ccat *a_ccat_ptr,                                     /*!< [in, out] Analysistoolbox internal data structures. */
+    unsigned int a_num_events,                           /*!< [in] Number of gyroscope sensor events. */
+    const ia_ccat_motion_sensor_event *a_sensor_events_ptr); /*!< [in] Structure containing gyroscope events for given time range. */
 
 /*!
 * \brief Get a copy of gyroscope events.
@@ -600,21 +605,21 @@ ia_ccat_set_sensor_events_gyroscope(
 */
 LIBEXPORT ia_err
 ia_ccat_get_sensor_events_gyroscope(
-    const ia_ccat *ccat,                               /*!< [in]  Analysistoolbox internal data structures. */
-    unsigned long long start_timestamp,                /*!< [in]  Start time for events to be copied. 0 if all data (max_num_events) must be copied. */
-    unsigned long long end_timestamp,                  /*!< [in]  End time for events to be copied. 0 if all data (max_num_events) must be copied. */
-    unsigned int *num_events,                          /*!< [in]  Number of events allowed to be copied (maximum amount of available memory in sensor_events).
+    const ia_ccat *a_ccat_ptr,                               /*!< [in]  Analysistoolbox internal data structures. */
+    unsigned long long a_start_timestamp,                /*!< [in]  Start time for events to be copied. 0 if all data (max_num_events) must be copied. */
+    unsigned long long a_end_timestamp,                  /*!< [in]  End time for events to be copied. 0 if all data (max_num_events) must be copied. */
+    unsigned int *a_num_events_ptr,                          /*!< [in]  Number of events allowed to be copied (maximum amount of available memory in sensor_events).
                                                        [out] How many events were copied to the sensor_events structure. */
-    ia_ccat_motion_sensor_event* sensor_events);       /*!< [out] Copied gyroscope events. */
+    ia_ccat_motion_sensor_event *a_sensor_events_ptr);       /*!< [out] Copied gyroscope events. */
 
 /*!
 * \brief Set the gravity sensor events to CCAT internal circular buffer.
 */
 LIBEXPORT ia_err
 ia_ccat_set_sensor_events_gravity(
-    ia_ccat *ccat,                                     /*!< [in, out] Analysistoolbox internal data structures. */
-    unsigned int num_events,                           /*!< [in] Number of gravity sensor events. */
-    const ia_ccat_motion_sensor_event *sensor_events); /*!< [in] Structure containing gravity events for given time range. */
+    ia_ccat *a_ccat_ptr,                                     /*!< [in, out] Analysistoolbox internal data structures. */
+    unsigned int a_num_events,                           /*!< [in] Number of gravity sensor events. */
+    const ia_ccat_motion_sensor_event *a_sensor_events_ptr); /*!< [in] Structure containing gravity events for given time range. */
 
 /*!
 * \brief Get a copy of gravity events.
@@ -622,21 +627,21 @@ ia_ccat_set_sensor_events_gravity(
 */
 LIBEXPORT ia_err
 ia_ccat_get_sensor_events_gravity(
-    const ia_ccat *ccat,                               /*!< [in]  Analysistoolbox internal data structures. */
-    unsigned long long start_timestamp,                /*!< [in]  Start time for events to be copied. 0 if all data (max_num_events) must be copied. */
-    unsigned long long end_timestamp,                  /*!< [in]  End time for events to be copied. 0 if all data (max_num_events) must be copied. */
-    unsigned int *num_events,                          /*!< [in]  Number of events allowed to be copied (maximum amount of available memory in sensor_events).
+    const ia_ccat *a_ccat_ptr,                               /*!< [in]  Analysistoolbox internal data structures. */
+    unsigned long long a_start_timestamp,                /*!< [in]  Start time for events to be copied. 0 if all data (max_num_events) must be copied. */
+    unsigned long long a_end_timestamp,                  /*!< [in]  End time for events to be copied. 0 if all data (max_num_events) must be copied. */
+    unsigned int *a_num_events_ptr,                          /*!< [in]  Number of events allowed to be copied (maximum amount of available memory in sensor_events).
                                                        [out] How many events were copied to the sensor_events structure. */
-    ia_ccat_motion_sensor_event* sensor_events);       /*!< [out] Copied gravity events. */
+    ia_ccat_motion_sensor_event* a_sensor_events_ptr);       /*!< [out] Copied gravity events. */
 
 /*!
 * \brief Set the ambient light sensor events to CCAT internal circular buffer.
 */
 LIBEXPORT ia_err
 ia_ccat_set_sensor_events_ambient_light(
-    ia_ccat *ccat,                                     /*!< [in, out] Analysistoolbox internal data structures. */
-    unsigned int num_events,                           /*!< [in] Number of ambient light sensor events. */
-    const ia_ccat_ambient_light_event *sensor_events); /*!< [in] Structure containing ambient light events for given time range. */
+    ia_ccat *a_ccat_ptr,                                     /*!< [in, out] Analysistoolbox internal data structures. */
+    unsigned int a_num_events,                           /*!< [in] Number of ambient light sensor events. */
+    const ia_ccat_ambient_light_event *a_sensor_events_ptr); /*!< [in] Structure containing ambient light events for given time range. */
 
 /*!
 * \brief Get a copy of ambient light events.
@@ -644,12 +649,12 @@ ia_ccat_set_sensor_events_ambient_light(
 */
 LIBEXPORT ia_err
 ia_ccat_get_sensor_events_ambient_light(
-    const ia_ccat *ccat,                               /*!< [in]  Analysistoolbox internal data structures. */
-    unsigned long long start_timestamp,                /*!< [in]  Start time for events to be copied. 0 if all data (max_num_events) must be copied. */
-    unsigned long long end_timestamp,                  /*!< [in]  End time for events to be copied. 0 if all data (max_num_events) must be copied. */
-    unsigned int *num_events,                          /*!< [in]  Number of events allowed to be copied (maximum amount of available memory in sensor_events).
+    const ia_ccat *a_ccat_ptr,                               /*!< [in]  Analysistoolbox internal data structures. */
+    unsigned long long a_start_timestamp,                /*!< [in]  Start time for events to be copied. 0 if all data (max_num_events) must be copied. */
+    unsigned long long a_end_timestamp,                  /*!< [in]  End time for events to be copied. 0 if all data (max_num_events) must be copied. */
+    unsigned int *a_num_events_ptr,                          /*!< [in]  Number of events allowed to be copied (maximum amount of available memory in sensor_events).
                                                             [out] How many events were copied to the sensor_events structure. */
-    ia_ccat_ambient_light_event* sensor_events);       /*!< [out] Copied ambient light events. */
+    ia_ccat_ambient_light_event *a_sensor_events_ptr);       /*!< [out] Copied ambient light events. */
 
                                                        /* Following functions require frame_info structure as input. Client should call ia_ccat_hold_frame() to get the frame handle.
                                                        * Once frame handle is no longer used, ia_ccat_release_frame() must be called. */
@@ -662,7 +667,7 @@ ia_ccat_get_sensor_events_ambient_light(
 */
 LIBEXPORT ia_err
 ia_ccat_get_lse_results(
-    ia_ccat_frame_info *frame_info,                                    /*!< [in]  Frame data structure pointer. */
+    ia_ccat_frame_info *a_frame_info_ptr,                                    /*!< [in]  Frame data structure pointer. */
     const ia_ccat_lse_results_t **lse_results_ptr);                    /*!< [out] Copied lse results. */
 
 LIBEXPORT ia_err

@@ -16,12 +16,19 @@
 
 #pragma once
 
+#include "ia_configuration.h"
 #include "ia_aiq.h"
 #include "ia_types.h"
 #include "ia_ob.h"
 #include "ia_lard.h"
+
+#ifdef ENABLE_LTM
 #include "ia_ltm.h"
+#endif
+
+#ifdef ENABLE_DVS
 #include "ia_dvs.h"
+#endif
 #include "ia_view.h"
 #include "ia_cmc_types.h"
 #include "ia_cmc_parser.h"
@@ -133,6 +140,7 @@ enum CCADVSOutputType
 
 typedef struct
 {
+    bool is_bypass;                                             /*!< Mandatory. bypass AEC run. */
     ia_aiq_frame_use frame_use;                                 /*!< Mandatory. Target frame type of the AEC calculations (Preview, Still, video etc.). */
     uint32_t num_exposures;                                     /*!< Mandatory. The number of exposure outputs to have. Must be positive. One for LDR, two or more for HDR/exposure bracketing. */
     ia_aiq_flash_mode flash_mode;                               /*!< Mandatory. Manual flash mode. If AEC should make flash decision, set mode to ia_aiq_flash_mode_auto. */
@@ -258,10 +266,10 @@ typedef struct
  */
 typedef struct
 {
-    ia_aiq_frame_use frame_use;             /*!< Deprecated. Not used. */
+    bool is_bypass;                         /*!< Optional. Don't run gbce, just use last results*/
     float ev_shift;                         /*!< Optional. Exposure Value shift [-4,4]. */
+    bool gbce_on;                           /*!< Optional. This flag is used to return gamma table in output params*/
 } cca_gbce_input_params;
-
 
 /*!
  * \brief R, G, B and Saturation grid block.
@@ -328,6 +336,7 @@ typedef struct
     cca_hist_weight_grid weight_grid;   /*!< Weight map to be used in the next frame histogram calculation. */
     uint16_t dvs_stats_height;                /*!< height of dvs statistics */
     uint16_t dvs_stats_width;                 /*!< width of dvs statistics */
+    ia_rectangle statistics_crop_area;  /*!< Mandatory for IPU7. RGBS and AF grid area crop with respect to full field of view of sensor output using (relative)ranges from ia_coordinate.h. */
 } cca_stats_params;
 
 /*!
@@ -356,7 +365,7 @@ typedef struct
  */
 typedef struct
 {
-    uint16_t lsc_grid[MAX_LSC_DIM_SIZE][MAX_LSC_GRID_SIZE];   /*!< Arrays of the LSC grid for all color channels.*/
+    uint16_t lsc_grid[MAX_LSC_DIM_SIZE][MAX_LSC_DIM_SIZE][MAX_LSC_GRID_SIZE];   /*!< Arrays of the LSC grid for all color channels.*/
     uint16_t width;                            /*!< Width of LSC grid. */
     uint16_t height;                           /*!< Height of LSC grid. */
     cmc_bayer_order color_order;               /*!< Bayer order of LSC grid. */
@@ -368,6 +377,7 @@ typedef struct
  */
 typedef struct
 {
+    bool have_manual_settings;                      /*!< have manual gamma/tm lut. */
     float r_gamma_lut[MAX_GAMMA_LUT_SIZE];          /*!< Gamma LUT for R channel. Range [0.0, 1.0]. */
     float b_gamma_lut[MAX_GAMMA_LUT_SIZE];          /*!< Gamma LUT for B channel. Range [0.0, 1.0]. */
     float g_gamma_lut[MAX_GAMMA_LUT_SIZE];          /*!< Gamma LUT for G channel. Range [0.0, 1.0]. */
@@ -535,6 +545,7 @@ typedef struct
     uint16_t base_iso;
     cmc_optomechanics_t optics;
     uint16_t lut_apertures;
+    float tnr7us_threshold_gain;
 } cca_cmc;
 
 struct cca_init_params{
