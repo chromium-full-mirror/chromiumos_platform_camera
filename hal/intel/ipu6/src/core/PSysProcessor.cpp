@@ -895,6 +895,7 @@ void PSysProcessor::dispatchTask(CameraBufferPortMap &inBuf, CameraBufferPortMap
         AutoRMutex rl(mIspSettingsLock);
         mIspSettings.palOverride = nullptr;
         taskParam.mIspSettings = mIspSettings;
+        mParameterGenerator->getRequestId(settingSequence, taskParam.mRequestId);
     }
 
     if (!mThreadRunning) return;

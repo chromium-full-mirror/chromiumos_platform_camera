@@ -523,10 +523,11 @@ void RequestThread::handleRequest(CameraRequest& request)
             mParamGenerator->updateParameters(predictSequence, request.mParams.get());
         }
     } else {
+        mLastRequestId++;
         if (request.mParams.get()) {
             m3AControl->setParameters(*request.mParams);
         }
-        m3AControl->run3A(mPerframeControlSupport? &predictSequence : nullptr);
+        m3AControl->run3A(mLastRequestId, mPerframeControlSupport? &predictSequence : nullptr);
 
         // Check the final prediction value
         if (predictSequence <= mLastPredictSeq) {
@@ -535,7 +536,6 @@ void RequestThread::handleRequest(CameraRequest& request)
         }
 
         mLastPredictSeq = predictSequence;
-        mLastRequestId++;
         mParamGenerator->saveParameters(mLastPredictSeq, mLastRequestId, request.mParams.get());
     }
     LOG2("%s: Process request: %ld:%ld, out buffer %d, param? %s", __func__,

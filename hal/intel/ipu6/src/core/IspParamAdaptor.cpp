@@ -463,7 +463,8 @@ void IspParamAdaptor::updateIspParameterMap(IspParameter* ispParam, int64_t data
  * runIspAdapt
  * Convert the results of the 3A algorithms and parse with P2P.
  */
-int IspParamAdaptor::runIspAdapt(const IspSettings* ispSettings, long settingSequence, int32_t streamId) {
+int IspParamAdaptor::runIspAdapt(const IspSettings* ispSettings, long requestId, long settingSequence,
+                                 int32_t streamId) {
     PERF_CAMERA_ATRACE();
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL2);
     AutoMutex l(mIspAdaptorLock);
@@ -509,7 +510,7 @@ int IspParamAdaptor::runIspAdapt(const IspSettings* ispSettings, long settingSeq
         CheckError(!pgPtr, UNKNOWN_ERROR, "%s, Failed to get the programGroup for streamId: %d",
                    __func__, it.first);
 
-        int ret = runIspAdaptL(pgPtr, mbrData, ispSettings, settingSequence, &binaryData, it.first);
+        int ret = runIspAdaptL(pgPtr, mbrData, ispSettings, requestId, settingSequence, &binaryData, it.first);
         CheckError(ret != OK, ret, "run isp adaptor error for streamId %d, sequence: %ld",
                    it.first, settingSequence);
         {
@@ -628,11 +629,11 @@ void IspParamAdaptor::releaseIspParamBuffers() {
 }
 
 int IspParamAdaptor::runIspAdaptL(ia_isp_bxt_program_group *pgPtr, ia_isp_bxt_gdc_limits *mbrData,
-                                  const IspSettings* ispSettings, long settingSequence,
+                                  const IspSettings* ispSettings, long requestId, long settingSequence,
                                   ia_binary_data *binaryData, int streamId) {
     PERF_CAMERA_ATRACE_IMAGING();
     CheckError(!mIntelCca, UNKNOWN_ERROR, "%s, mIntelCca is nullptr", __func__);
-    LOG2("%s: device type: %d", __func__, mPgParamType);
+    LOG2("%s: device type: %d, requestId:%d", __func__, mPgParamType, requestId);
 
     AiqResult* aiqResults = const_cast<AiqResult*>(AiqResultStorage::getInstance(mCameraId)->getAiqResult(settingSequence));
     if (aiqResults == nullptr) {
@@ -779,7 +780,7 @@ int IspParamAdaptor::runIspAdaptL(ia_isp_bxt_program_group *pgPtr, ia_isp_bxt_gd
     ia_err iaErr = ia_err_none;
     {
         PERF_CAMERA_ATRACE_PARAM1_IMAGING("ia_isp_bxt_run", 1);
-        iaErr = mIntelCca->runAIC(settingSequence, inputParams, binaryData);
+        iaErr = mIntelCca->runAIC(requestId, inputParams, binaryData);
     }
     CheckError(iaErr != ia_err_none && iaErr != ia_err_not_run, UNKNOWN_ERROR,
                "ISP parameter adaptation has failed %d", iaErr);

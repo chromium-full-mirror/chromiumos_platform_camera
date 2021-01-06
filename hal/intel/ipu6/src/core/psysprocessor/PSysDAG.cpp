@@ -726,7 +726,8 @@ int PSysDAG::prepareIpuParams(long sequence, bool forceUpdate, TaskInfo *task)
             }
         }
 
-        ret = mIspParamAdaptor->runIspAdapt(&task->mTaskData.mIspSettings, sequence, id);
+        ret = mIspParamAdaptor->runIspAdapt(&task->mTaskData.mIspSettings, task->mTaskData.mRequestId,
+                                            sequence, id);
         CheckError(ret != OK, UNKNOWN_ERROR,
                    "%s, Failed to run AIC: sequence: %ld streamId: %d", __func__, sequence, id);
 

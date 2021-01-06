@@ -81,7 +81,7 @@ public:
                         std::shared_ptr<CameraBuffer> statsBuffer,
                         std::shared_ptr<IGraphConfig> graphConfig = nullptr);
 
-    int runIspAdapt(const IspSettings* ispSettings, long settingSequence = -1, int32_t streamId = -1);
+    int runIspAdapt(const IspSettings* ispSettings, long requestId, long settingSequence = -1, int32_t streamId = -1);
     //Get ISP param from mult-stream ISP param adaptation
     ia_binary_data* getIpuParameter(long sequence = -1, int streamId = -1);
     int getPalOutputDataSize(const ia_isp_bxt_program_group* programGroup);
@@ -111,7 +111,7 @@ private:
     void updateIspParameterMap(IspParameter* ispParam, int64_t dataSeq,
                                int64_t settingSeq, ia_binary_data curIpuParam);
     int runIspAdaptL(ia_isp_bxt_program_group *pgPtr, ia_isp_bxt_gdc_limits* mbrData,
-                     const IspSettings* ispSettings, long settingSequence,
+                     const IspSettings* ispSettings, long requestId, long settingSequence,
                      ia_binary_data *binaryData, int32_t streamId = -1);
 
     //Allocate memory for mIspParameters

@@ -45,6 +45,7 @@ struct PSysTaskData {
     IspSettings mIspSettings;
     TuningMode mTuningMode;
     bool mFakeTask;
+    long mRequestId;
 
     CameraBufferPortMap mInputBuffers;
     CameraBufferPortMap mOutputBuffers;

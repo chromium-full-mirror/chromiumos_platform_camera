@@ -25,9 +25,11 @@
 
 namespace icamera {
 
-AiqEngine::AiqEngine(int cameraId, SensorHwCtrl *sensorHw, LensHw *lensHw, AiqSetting *setting) :
+AiqEngine::AiqEngine(int cameraId, SensorHwCtrl *sensorHw, LensHw *lensHw, AiqSetting *setting,
+                     ParameterGenerator* paramGen) :
     mCameraId(cameraId),
     mAiqSetting(setting),
+    mParamGen(paramGen),
     mFirstAiqRunning(true),
     mFirstExposureSetting(true),
     mAiqRunningForPerframe(false),
@@ -127,7 +129,7 @@ int AiqEngine::stopEngine()
     return OK;
 }
 
-int AiqEngine::run3A(long *settingSequence)
+int AiqEngine::run3A(long requestId, long *settingSequence)
 {
     LOG3A("%s", __func__);
     // Run 3A in call thread
@@ -156,7 +158,7 @@ int AiqEngine::run3A(long *settingSequence)
     aiqResult->mTuningMode = mAiqParam.tuningMode;
 
     if (state == AIQ_STATE_RUN) {
-        state = runAiq(aiqResult);
+        state = runAiq(requestId, aiqResult);
     }
     if (state == AIQ_STATE_RESULT_SET) {
         state = handleAiqResult(aiqResult);
@@ -281,7 +283,9 @@ int AiqEngine::prepareStatsParams(cca::cca_stats_params *statsParams, AiqStatist
             timestamp = aiqStatistics->mTimestamp;
         }
 
-        statsParams->frame_id = aiqStatistics->mSequence;
+        int64_t requestId = -1;
+        mParamGen->getRequestId(aiqStatistics->mSequence, requestId);
+        statsParams->frame_id = requestId;
         statsParams->frame_timestamp = timestamp;
         statsParams->camera_orientation = ia_aiq_camera_orientation_unknown;
 
@@ -424,9 +428,9 @@ AiqEngine::AiqState AiqEngine::prepareInputParam(void)
     return AIQ_STATE_RUN;
 }
 
-AiqEngine::AiqState AiqEngine::runAiq(AiqResult *aiqResult)
+AiqEngine::AiqState AiqEngine::runAiq(long requestId, AiqResult *aiqResult)
 {
-    int ret = mAiqCore->runAiq(aiqResult);
+    int ret = mAiqCore->runAiq(requestId, aiqResult);
     if (ret != OK) {
         return AIQ_STATE_ERROR;
     }

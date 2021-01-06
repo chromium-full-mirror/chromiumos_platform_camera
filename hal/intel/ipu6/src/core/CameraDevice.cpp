@@ -67,7 +67,8 @@ CameraDevice::CameraDevice(int cameraId) :
     mLensCtrl = new LensHw(mCameraId);
     mSensorCtrl = SensorHwCtrl::createSensorCtrl(mCameraId);
 
-    m3AControl = I3AControlFactory::createI3AControl(mCameraId, mSensorCtrl, mLensCtrl);
+    m3AControl = I3AControlFactory::createI3AControl(mCameraId, mSensorCtrl, mLensCtrl,
+                                                     mParamGenerator);
     mRequestThread = new RequestThread(mCameraId, m3AControl, mParamGenerator);
     mRequestThread->registerListener(EVENT_PROCESS_REQUEST, this);
     mRequestThread->registerListener(EVENT_DEVICE_RECONFIGURE, this);
@@ -579,13 +580,8 @@ int CameraDevice::initIntelCcaHandle(const std::vector<ConfigMode> &configModes)
         params.frameUse = ia_aiq_frame_use_video;
 
         params.aiqStorageLen = MAX_SETTING_COUNT;
-        params.aecFrameDelay = PlatformData::getAnalogGainLag(mCameraId);
-        if (PlatformData::getDigitalGainLag(mCameraId) > params.aecFrameDelay) {
-            params.aecFrameDelay = PlatformData::getDigitalGainLag(mCameraId);
-        }
-        if (PlatformData::getExposureLag(mCameraId) > params.aecFrameDelay) {
-            params.aecFrameDelay = PlatformData::getExposureLag(mCameraId);
-        }
+        // handle AE delay in AiqEngine
+        params.aecFrameDelay = 0;
 
         LOG1("aiqStorageLen:%d", params.aiqStorageLen);
         LOG1("aecFrameDelay:%d", params.aecFrameDelay);
@@ -1289,7 +1285,8 @@ int CameraDevice::reconfigure(stream_config_t *streamList)
         mSofSource = new SofSource(mCameraId);
         mLensCtrl = new LensHw(mCameraId);
         mSensorCtrl = SensorHwCtrl::createSensorCtrl(mCameraId);
-        m3AControl = I3AControlFactory::createI3AControl(mCameraId, mSensorCtrl, mLensCtrl);
+        m3AControl = I3AControlFactory::createI3AControl(mCameraId, mSensorCtrl, mLensCtrl,
+                                                         mParamGenerator);
 
         // Init and config with new mode
         int ret = mProducer->init();

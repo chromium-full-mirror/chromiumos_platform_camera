@@ -304,12 +304,12 @@ int AiqCore::setStatsParams(const cca::cca_stats_params &statsParams) {
     return ret;
 }
 
-int AiqCore::runAiq(AiqResult *aiqResult) {
-    LOG3A("@%s, aiqResult:%p", __func__, aiqResult);
+int AiqCore::runAiq(long requestId, AiqResult *aiqResult) {
+    LOG3A("@%s, aiqResult:%p, requestId:%d", __func__, aiqResult, requestId);
     CheckError(!aiqResult, BAD_VALUE, "@%s, aiqResult is nullptr", __func__);
 
     // run AE
-    int ret = runAe(&aiqResult->mAeResults);
+    int ret = runAe(requestId, &aiqResult->mAeResults);
 
     int aaaRunType = IMAGING_ALGO_AWB | IMAGING_ALGO_GBCE | IMAGING_ALGO_PA;
     if (PlatformData::getLensHwType(mCameraId) == LENS_VCM_HW) {
@@ -358,7 +358,8 @@ int AiqCore::runAiq(AiqResult *aiqResult) {
     {
         PERF_CAMERA_ATRACE_PARAM1_IMAGING("intelAiq->runAIQ", 1);
 
-        ia_err iaErr = intelCca->runAIQ(mAiqRunTime++, *mAiqParams.get(), mAiqResults.get());
+        ia_err iaErr = intelCca->runAIQ(requestId, *mAiqParams.get(), mAiqResults.get());
+        mAiqRunTime++;
         int iaRet = AiqUtils::convertError(iaErr);
         CheckError(iaRet != OK, ret, "@%s, runAIQ, iaRet: %d", __func__, iaRet);
     }
@@ -425,14 +426,14 @@ int AiqCore::runAiq(AiqResult *aiqResult) {
     return OK;
 }
 
-int AiqCore::runAe(cca::cca_ae_results* aeResults) {
+int AiqCore::runAe(long requestId, cca::cca_ae_results* aeResults) {
     LOG3A("@%s, aeResults:%p", __func__, aeResults);
     CheckError(!aeResults, BAD_VALUE, "@%s, aeResults is nullptr", __func__);
     PERF_CAMERA_ATRACE();
 
     int ret = OK;
     cca::cca_ae_results *newAeResults = &mLastAeResult;
-    bool aeForceRun = mIntel3AParameter->mAeParams.ev_shift != mLastEvShift ||
+    bool aeForceRun = mIntel3AParameter->mAeParams.ev_shift != mLastEvShift || mAeRunTime == 0 ||
                       (!mAeForceLock && (mAeRunTime % mIntel3AParameter->mAePerTicks == 0));
 
     if (aeForceRun) {
@@ -442,13 +443,14 @@ int AiqCore::runAe(cca::cca_ae_results* aeResults) {
         CheckError(!intelCca, UNKNOWN_ERROR, "%s, intelCca is null, m:%d", __func__, mTuningMode);
         {
             PERF_CAMERA_ATRACE_PARAM1_IMAGING("intelCca->runAEC", 1);
-            ia_err iaErr = intelCca->runAEC(mAeRunTime, mIntel3AParameter->mAeParams, newAeResults);
+            ia_err iaErr = intelCca->runAEC(requestId, mIntel3AParameter->mAeParams, newAeResults);
             ret = AiqUtils::convertError(iaErr);
             CheckError(ret != OK, ret, "Error running AE, ret: %d", ret);
-        }
 
-        if (newAeResults->exposures[0].converged) {
-            mLastEvShift = mIntel3AParameter->mAeParams.ev_shift;
+            LOG3A("%s, AE results exposure time %d, iso %d, converged %d", __func__,
+                  newAeResults->exposures[0].exposure[0].exposure_time_us,
+                  newAeResults->exposures[0].exposure[0].iso,
+                  newAeResults->exposures[0].converged);
         }
     }
 

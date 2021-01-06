@@ -23,7 +23,8 @@
 
 namespace icamera {
 
-AiqUnit::AiqUnit(int cameraId, SensorHwCtrl *sensorHw, LensHw *lensHw) :
+AiqUnit::AiqUnit(int cameraId, SensorHwCtrl *sensorHw, LensHw *lensHw,
+                 ParameterGenerator* paramGen) :
     mCameraId(cameraId),
     // LOCAL_TONEMAP_S
     mLtm(nullptr),
@@ -37,7 +38,7 @@ AiqUnit::AiqUnit(int cameraId, SensorHwCtrl *sensorHw, LensHw *lensHw) :
 
     mAiqSetting = new AiqSetting(cameraId);
 
-    mAiqEngine = new AiqEngine(cameraId, sensorHw, lensHw, mAiqSetting);
+    mAiqEngine = new AiqEngine(cameraId, sensorHw, lensHw, mAiqSetting, paramGen);
 
     // INTEL_DVS_S
     if (PlatformData::isDvsSupported(mCameraId)) {
@@ -202,7 +203,7 @@ int AiqUnit::stop()
     return OK;
 }
 
-int AiqUnit::run3A(long *settingSequence)
+int AiqUnit::run3A(long requestId, long *settingSequence)
 {
     AutoMutex l(mAiqUnitLock);
     TRACE_LOG_PROCESS("AiqUnit", "run3A");
@@ -215,7 +216,7 @@ int AiqUnit::run3A(long *settingSequence)
         return BAD_VALUE;
     }
 
-    int ret = mAiqEngine->run3A(settingSequence);
+    int ret = mAiqEngine->run3A(requestId, settingSequence);
     CheckError(ret != OK, ret, "run 3A failed.");
 
     return OK;

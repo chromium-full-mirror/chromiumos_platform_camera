@@ -23,6 +23,7 @@
 #include "AiqResultStorage.h"
 #include "SensorManager.h"
 #include "LensManager.h"
+#include "ParameterGenerator.h"
 
 namespace icamera {
 
@@ -36,7 +37,8 @@ namespace icamera {
 class AiqEngine {
 
 public:
-    AiqEngine(int cameraId, SensorHwCtrl *sensorHw, LensHw *lensHw, AiqSetting *setting);
+    AiqEngine(int cameraId, SensorHwCtrl *sensorHw, LensHw *lensHw, AiqSetting *setting,
+              ParameterGenerator* paramGen);
     ~AiqEngine();
 
     /**
@@ -65,7 +67,7 @@ public:
      * indicate the frame that settings are applied.
      * settingSequence -1 means uncertain frame for this settings.
      */
-    int run3A(long *settingSequence);
+    int run3A(long requestId, long *settingSequence);
 
     /**
      * \brief Stop 3a thrad and LensManager.
@@ -103,7 +105,7 @@ private:
     };
 
     AiqState prepareInputParam(void);
-    AiqState runAiq(AiqResult *aiqResult);
+    AiqState runAiq(long requestId, AiqResult *aiqResult);
     AiqState handleAiqResult(AiqResult *aiqResult);
     AiqState done(AiqResult *aiqResult);
 
@@ -121,6 +123,7 @@ private:
     int mCameraId;
     AiqResultStorage* mAiqResultStorage;
     AiqSetting *mAiqSetting;
+    ParameterGenerator* mParamGen;
     AiqCore *mAiqCore;
     SensorManager *mSensorManager;
     LensManager *mLensManager;

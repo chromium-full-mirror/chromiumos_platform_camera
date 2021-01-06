@@ -97,7 +97,7 @@ public:
      *
      * \return OK if succeed, other value indicates failed
      */
-    int runAiq(AiqResult *aiqResult);
+    int runAiq(long requestId, AiqResult *aiqResult);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(AiqCore);
@@ -127,7 +127,7 @@ private:
             gridGb(NULL), gridB(NULL) {}
     };
 
-    int runAe(cca::cca_ae_results* aeResults);
+    int runAe(long requestId, cca::cca_ae_results* aeResults);
     void focusDistanceResult(const cca::cca_af_results *afResults,
                              float *afDistanceDiopters,
                              camera_range_t *focusRange);
