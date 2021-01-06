@@ -42,7 +42,6 @@ extern "C" {
 #include "modules/algowrapper/IntelIspParamAdaptor.h"
 #endif
 
-#include "3a/AiqResult.h"
 #include "ia_aiq_types.h"
 #include "ia_isp_bxt_types.h"
 #include "ia_isp_bxt_statistics_types.h"
@@ -125,7 +124,6 @@ private:
     void dumpIspParameter(long sequence, ia_binary_data binaryData);
     // Enable or disable kernels according to environment variables for debug purpose.
     void updateKernelToggles(ia_isp_bxt_program_group programGroup);
-    void applyMediaFormat(ia_media_format* mediaFormat, AiqResult* aiqResults);
 
  private:
     enum IspAdaptorState {

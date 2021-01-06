@@ -570,6 +570,22 @@ ia_aiq_frame_use AiqUtils::convertFrameUsageToIaFrameUsage(int frameUsage)
     return ia_aiq_frame_use_preview;
 }
 
+void AiqUtils::applyTonemapGamma(float gamma, ia_aiq_gbce_results* results) {
+    CheckError(gamma < EPSILON, VOID_VALUE, "Bad gamma %f", gamma);
+    CheckError(!results, VOID_VALUE, "gbce results nullptr");
+
+    int lutSize = results->gamma_lut_size;
+    CheckError(lutSize < TONEMAP_MIN_POINTS, VOID_VALUE, "Bad gamma lut size (%d) in gbce results", lutSize);
+    for (int i = 0; i < lutSize; i++) {
+        results->g_gamma_lut[i] = pow(i / static_cast<float>(lutSize), 1 / gamma);
+    }
+
+    MEMCPY_S(results->b_gamma_lut, lutSize * sizeof(float),
+             results->g_gamma_lut, lutSize * sizeof(float));
+    MEMCPY_S(results->r_gamma_lut, lutSize * sizeof(float),
+             results->g_gamma_lut, lutSize * sizeof(float));
+}
+
 void AiqUtils::applyTonemapSRGB(ia_aiq_gbce_results* results) {
     CheckError(!results, VOID_VALUE, "gbce results nullptr");
 
@@ -606,6 +622,35 @@ void AiqUtils::applyTonemapREC709(ia_aiq_gbce_results* results) {
              results->g_gamma_lut, lutSize * sizeof(float));
     MEMCPY_S(results->r_gamma_lut, lutSize * sizeof(float),
              results->g_gamma_lut, lutSize * sizeof(float));
+}
+
+void AiqUtils::applyTonemapCurve(const camera_tonemap_curves_t& curves, ia_aiq_gbce_results* results) {
+    CheckError(!results, VOID_VALUE, "gbce result nullptr");
+    CheckError(results->gamma_lut_size <= 1, VOID_VALUE, "wrong gamma_lut_size");
+    CheckError(curves.rSize != curves.gSize, VOID_VALUE, "wrong rSize");
+    CheckError(curves.bSize != curves.gSize, VOID_VALUE, "wrong bSize");
+
+    LOG2("%s: input size %d, output size %d", __func__, curves.gSize, results->gamma_lut_size);
+    // User's curve is 2-d array: (in, out)
+    float step = static_cast<float>(curves.gSize / 2 - 1) / (results->gamma_lut_size - 1);
+    for (uint32_t i = 0; i < results->gamma_lut_size; i++) {
+        float inPos = i * step;
+        int32_t left = static_cast<int>(inPos) * 2 + 1;
+        int32_t right = left + 2;
+        float ratio = inPos - static_cast<int32_t>(inPos);
+        if (right > curves.gSize - 1) {
+            results->r_gamma_lut[i] = curves.rCurve[left];
+            results->g_gamma_lut[i] = curves.gCurve[left];
+            results->b_gamma_lut[i] = curves.bCurve[left];
+        } else {
+            results->r_gamma_lut[i] = curves.rCurve[left]
+                                      + ratio * (curves.rCurve[right] - curves.rCurve[left]);
+            results->g_gamma_lut[i] = curves.gCurve[left]
+                                      + ratio * (curves.gCurve[right] - curves.gCurve[left]);
+            results->b_gamma_lut[i] = curves.bCurve[left]
+                                      + ratio * (curves.bCurve[right] - curves.bCurve[left]);
+        }
+    }
 }
 
 void AiqUtils::applyAwbGainForTonemapCurve(const camera_tonemap_curves_t& curves,

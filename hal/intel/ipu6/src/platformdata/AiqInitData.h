@@ -67,7 +67,7 @@ private:
 class CpfConf
 {
 public:
-    explicit CpfConf(ia_binary_data* nvmData);
+    CpfConf();
     virtual ~CpfConf();
 
     /**
@@ -131,7 +131,6 @@ private:
 
 private:
     IntelLard* mLard;
-    ia_binary_data* mNvmData;
     std::unique_ptr<IntelCmc> mCmc;
     ia_binary_data mAiq;
     ia_binary_data mIsp;
@@ -171,8 +170,7 @@ public:
              const std::vector<TuningConfig>& tuningCfg,
              const std::vector<LardTagConfig>& lardTagCfg,
              const std::string& nvmPath,
-             std::unordered_map<std::string, std::string> camModuleToAiqbMap,
-             ia_binary_data* nvmData);
+             std::unordered_map<std::string, std::string> camModuleToAiqbMap);
     virtual ~CpfStore();
 
     /**

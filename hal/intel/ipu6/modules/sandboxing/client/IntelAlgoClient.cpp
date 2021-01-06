@@ -332,7 +332,7 @@ IntelAlgoClient::Runner::Runner(IPC_GROUP group, cros::CameraAlgorithmBridge* br
         : mGroup(group),
           mBridge(bridge),
           mIsCallbacked(false),
-          mCbResult(true),
+          mCbStatus(OK),
           mInitialized(false) {
     LOGIPC("@%s, group:%d", __func__, mGroup);
 
@@ -397,22 +397,23 @@ int IntelAlgoClient::Runner::requestSync(IPC_CMD cmd, int32_t bufferHandle) {
     CheckError((ret != OK), UNKNOWN_ERROR, "@%s, waitCallback fails, cmd:%d:%s", __func__, cmd,
                IntelAlgoIpcCmdToString(cmd));
 
-    LOGIPC("@%s, cmd:%d:%s, group:%d, mCbResult:%d, done!", __func__, cmd,
-           IntelAlgoIpcCmdToString(cmd), mGroup, mCbResult);
+    LOGIPC("@%s, cmd:%d:%s, group:%d, mCbStatus:%d, done!", __func__, cmd,
+           IntelAlgoIpcCmdToString(cmd), mGroup, mCbStatus);
 
     // check callback result
-    CheckError((mCbResult != true), UNKNOWN_ERROR, "@%s, callback fails, cmd:%d:%s", __func__, cmd,
-               IntelAlgoIpcCmdToString(cmd));
+    CheckError((mCbStatus != OK && mCbStatus != ia_err_not_run), mCbStatus,
+               "@%s, callback fails, cmd:%d:%s, mCbStatus:%d",
+               __func__, cmd, IntelAlgoIpcCmdToString(cmd), mCbStatus);
 
-    return OK;
+    return mCbStatus;
 }
 
 void IntelAlgoClient::Runner::callbackHandler(uint32_t status, int32_t buffer_handle) {
     LOGIPC("@%s, group:%d, status:%d, buffer_handle:%d", __func__, mGroup, status, buffer_handle);
-    if (status != 0) {
+    if (status != 0 && status != ia_err_not_run) {
         LOGE("@%s, group:%d, status:%d, buffer_handle:%d", __func__, mGroup, status, buffer_handle);
     }
-    mCbResult = status != 0 ? false : true;
+    mCbStatus = status;
 
     pthread_mutex_lock(&mCbLock);
     mIsCallbacked = true;

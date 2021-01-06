@@ -25,16 +25,10 @@
 
 #include "CameraLog.h"
 #include "GraphConfigServer.h"
-#include "IntelAiqServer.h"
 #include "IntelAlgoServer.h"
-#include "IntelCmcServer.h"
-#include "IntelDvsServer.h"
+#include "IntelCcaServer.h"
 #include "IntelFDServer.h"
-#include "IntelLardServer.h"
-#include "IntelLtmServer.h"
-#include "IntelMknServer.h"
 #include "IntelPGParamServer.h"
-#include "IspParamAdaptorServer.h"
 #include "cros-camera/camera_algorithm.h"
 #include "iutils/Errors.h"
 #include "iutils/Thread.h"
@@ -49,15 +43,9 @@ class IntelCPUAlgoServer : public RequestHandler {
     void handleRequest(const MsgReq& msg);
 
  private:
-    IntelLardServer mLard;
     IntelFDServer mFaceDetection;
     GraphConfigServer mGraph;
-    IntelCmcServer mCmc;
-    IntelMknServer mMkn;
-    IntelLtmServer mLtm;
-    IntelAiqServer mAiq;
-    IntelDvsServer mDvs;
-    IspParamAdaptorServer mIspAdaptor;
     IntelPGParamServer mPGParam;
+    IntelCcaServer mCca;
 };
 }  // namespace icamera

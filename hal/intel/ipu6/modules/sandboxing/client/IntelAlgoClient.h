@@ -126,7 +126,7 @@ class IntelAlgoClient : public camera_algorithm_callback_ops_t {
         pthread_mutex_t mCbLock;
         pthread_cond_t mCbCond;
         bool mIsCallbacked;
-        bool mCbResult;  // true: success, false: fail
+        int mCbStatus;
 
         bool mInitialized;
 
