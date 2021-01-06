@@ -42,6 +42,7 @@ extern "C" {
 #include "modules/algowrapper/IntelCca.h"
 #endif
 
+#include "3a/AiqResult.h"
 #include "ia_aiq_types.h"
 #include "ia_isp_bxt_types.h"
 #include "ia_isp_bxt_statistics_types.h"
@@ -125,6 +126,7 @@ private:
     // Enable or disable kernels according to environment variables for debug purpose.
     void updateKernelToggles(cca::cca_program_group *programGroup);
     void dumpProgramGroup(ia_isp_bxt_program_group *pgPtr);
+    void applyMediaFormat(ia_media_format* mediaFormat, AiqResult* aiqResults);
 
  private:
     enum IspAdaptorState {

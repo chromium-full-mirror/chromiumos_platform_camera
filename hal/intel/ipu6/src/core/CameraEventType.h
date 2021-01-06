@@ -91,7 +91,7 @@ struct EventData
 {
     EventData() :
         type(EVENT_ISYS_SOF),
-        pipeType (-1) {
+        pipeType(-1) {
         CLEAR(data);
     }
 

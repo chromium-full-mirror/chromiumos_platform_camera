@@ -97,10 +97,8 @@ float convertSpeedModeToTime(camera_converge_speed_t mode);
 
 ia_aiq_frame_use convertFrameUsageToIaFrameUsage(int frameUsage);
 
-void applyTonemapGamma(float gamma, cca::cca_gbce_params* results);
 void applyTonemapSRGB(cca::cca_gbce_params* results);
 void applyTonemapREC709(cca::cca_gbce_params* results);
-void applyTonemapCurve(const camera_tonemap_curves_t& curves, cca::cca_gbce_params* results);
 void applyAwbGainForTonemapCurve(const camera_tonemap_curves_t& curves,
                                  cca::cca_awb_results* results);
 
