@@ -630,13 +630,14 @@ void IspParamAdaptor::releaseIspParamBuffers() {
     mStreamIdToPalInputParamsMap.clear();
 }
 
-void IspParamAdaptor::applyMediaFormat(ia_media_format* mediaFormat, AiqResult* aiqResult) {
+void IspParamAdaptor::applyMediaFormat(const AiqResult* aiqResult,
+                                       ia_media_format* mediaFormat, bool* useLinearGamma) {
     CheckError(!mediaFormat || !aiqResult, VOID_VALUE, "mediaFormat or aiqResult is nullptr");
 
     *mediaFormat = media_format_legacy;
     if (aiqResult->mAiqParam.tonemapMode == TONEMAP_MODE_GAMMA_VALUE) {
         if (aiqResult->mAiqParam.tonemapGamma == 1.0) {
-            aiqResult->mGbceResults.gamma_lut_size = 0;
+            *useLinearGamma = true;
             *mediaFormat = media_format_custom;
             LOG2("%s: a linear 1.0 gamma value.", __func__);
         } else {
@@ -644,7 +645,7 @@ void IspParamAdaptor::applyMediaFormat(ia_media_format* mediaFormat, AiqResult* 
                  aiqResult->mAiqParam.tonemapGamma);
         }
     } else if (aiqResult->mAiqParam.tonemapMode == TONEMAP_MODE_CONTRAST_CURVE) {
-        camera_tonemap_curves_t* curves = &(aiqResult->mAiqParam.tonemapCurves);
+        const camera_tonemap_curves_t* curves = &aiqResult->mAiqParam.tonemapCurves;
         CheckError((curves->rSize != curves->gSize || curves->bSize != curves->gSize), VOID_VALUE,
                    "%s, the size of rgb channels must be same", __func__);
 
@@ -655,7 +656,7 @@ void IspParamAdaptor::applyMediaFormat(ia_media_format* mediaFormat, AiqResult* 
 
         if (curveX == curveY) {
             // It's a linear gamma curves(same with gamma = 1.0)
-            aiqResult->mGbceResults.gamma_lut_size = 0;
+            *useLinearGamma = true;
             *mediaFormat = media_format_custom;
             LOG2("%s: a linear gamma curve. curveX: %f, curveY: %f", __func__, curveX, curveY);
         } else if (abs(curveY - pow(curveX, (1 / 2.2))) < EPSILON) {
@@ -685,7 +686,8 @@ int IspParamAdaptor::runIspAdaptL(ia_isp_bxt_program_group *pgPtr, ia_isp_bxt_gd
     cca::cca_pal_input_params* inputParams = mStreamIdToPalInputParamsMap[streamId];
     inputParams->seq_id = settingSequence;
 
-    applyMediaFormat(&inputParams->media_format, aiqResults);
+    bool useLinearGamma = false;
+    applyMediaFormat(aiqResults, &inputParams->media_format, &useLinearGamma);
     LOG2("%s, media format: 0x%x, gamma lut size: %d", __func__,
          inputParams->media_format, aiqResults->mGbceResults.gamma_lut_size);
 
@@ -778,6 +780,9 @@ int IspParamAdaptor::runIspAdaptL(ia_isp_bxt_program_group *pgPtr, ia_isp_bxt_gd
     inputParams->manual_pa_setting = aiqResults->mPaResults;
     if (aiqResults->mGbceResults.have_manual_settings == true) {
         inputParams->manual_gbce_setting = aiqResults->mGbceResults;
+        if (useLinearGamma) {
+            inputParams->manual_gbce_setting.gamma_lut_size = 0;
+        }
     }
 
     if (CameraUtils::isUllPsysPipe(mTuningMode)) {

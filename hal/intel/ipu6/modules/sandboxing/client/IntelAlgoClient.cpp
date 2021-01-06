@@ -17,6 +17,7 @@
 #define LOG_TAG "IntelAlgoClient"
 
 #include "modules/sandboxing/client/IntelAlgoClient.h"
+#include "modules/sandboxing/client/IntelCca.h"
 
 #include <fcntl.h>
 #include <sys/mman.h>
@@ -49,6 +50,8 @@ IntelAlgoClient* IntelAlgoClient::getInstance() {
 
 void IntelAlgoClient::releaseInstance() {
     AutoMutex lock(sLock);
+
+    icamera::IntelCca::releaseAllInstances();
 
     if (sInstance) {
         delete sInstance;

@@ -39,13 +39,16 @@ namespace icamera {
 class IntelCPUAlgoServer : public RequestHandler {
  public:
     explicit IntelCPUAlgoServer(IntelAlgoServer* server);
-    virtual ~IntelCPUAlgoServer() {}
+    virtual ~IntelCPUAlgoServer();
     void handleRequest(const MsgReq& msg);
+
+ private:
+    uint16_t getKey(int cameraId, TuningMode mode);
 
  private:
     IntelFDServer mFaceDetection;
     GraphConfigServer mGraph;
     IntelPGParamServer mPGParam;
-    IntelCcaServer mCca;
+    std::unordered_map<uint16_t, IntelCcaServer*> mCcas;
 };
 }  // namespace icamera

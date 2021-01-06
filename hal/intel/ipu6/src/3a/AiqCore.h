@@ -201,6 +201,8 @@ private:
 
     std::unique_ptr<cca::cca_aiq_params> mAiqParams;
     std::unique_ptr<cca::cca_aiq_results> mAiqResults;
+
+    int32_t mTonemapMaxCurvePoints;
 };
 
 } /* namespace icamera */

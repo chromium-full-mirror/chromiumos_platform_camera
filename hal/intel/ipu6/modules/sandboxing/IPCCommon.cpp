@@ -31,6 +31,8 @@ const char* IntelAlgoIpcCmdToString(IPC_CMD cmd) {
                                            "IPC_GRAPH_GET_CONFIG_DATA",
                                            "IPC_GRAPH_GET_CONNECTION",
                                            "IPC_GRAPH_GET_PG_ID",
+                                           "IPC_CCA_CONSTRUCT",
+                                           "IPC_CCA_DESTRUCT",
                                            "IPC_CCA_INIT",
                                            "IPC_CCA_SET_STATS",
                                            "IPC_CCA_RUN_AEC",
@@ -67,7 +69,7 @@ const char* IntelAlgoIpcCmdToString(IPC_CMD cmd) {
 
 IPC_GROUP IntelAlgoIpcCmdToGroup(IPC_CMD cmd) {
     IPC_GROUP group = IPC_GROUP_CPU_OTHER;
-    if (cmd >= IPC_CCA_INIT && cmd <= IPC_CCA_DEINIT) {
+    if (cmd >= IPC_CCA_CONSTRUCT && cmd <= IPC_CCA_DEINIT) {
         group = IPC_GROUP_AIQ;
     } else if (cmd >= IPC_CCA_RUN_AIC && cmd <= IPC_CCA_GET_PAL_SIZE) {
         group = IPC_GROUP_PAL;

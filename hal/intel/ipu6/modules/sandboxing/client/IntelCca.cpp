@@ -64,13 +64,27 @@ void IntelCca::releaseInstance(int cameraId, TuningMode mode) {
     }
 }
 
-IntelCca::IntelCca(int cameraId, TuningMode mode):
+void IntelCca::releaseAllInstances() {
+    AutoMutex lock(sLock);
+    LOG2("@%s, cca instance size:%d", __func__, sCcaInstance.size());
+    for (auto &it : sCcaInstance) {
+        for (auto &oneCcaHandle : it.ccaHandle) {
+            IntelCca* intelCca = oneCcaHandle.second;
+            delete intelCca;
+        }
+        it.ccaHandle.clear();
+    }
+}
+
+IntelCca::IntelCca(int cameraId, TuningMode mode) :
     mCameraId(cameraId),
-    mTuningMode(mode) {
+    mTuningMode(mode),
+    mInitialized(false) {
     LOG1("@%s, cameraId:%d, tuning mode:%d", __func__, cameraId, mode);
 
     std::string number = std::to_string(cameraId) + std::to_string(mode) +
                          std::to_string(reinterpret_cast<uintptr_t>(this));
+    std::string structName = "/ccaStruct" + number + SHM_NAME;
     std::string initName = "/ccaInit" + number + SHM_NAME;
     std::string statsName = "/ccaStats" + number + SHM_NAME;
     std::string aecName = "/ccaAec" + number + SHM_NAME;
@@ -88,6 +102,7 @@ IntelCca::IntelCca(int cameraId, TuningMode mode):
     std::string palSizeName = "/ccaPalSize" + number + SHM_NAME;
 
     mMems = {
+        {structName.c_str(), sizeof(intel_cca_struct_data), &mMemStruct, false},
         {initName.c_str(), sizeof(intel_cca_init_data), &mMemInit, false},
         {statsName.c_str(), sizeof(intel_cca_set_stats_data), &mMemStats, false},
         {aecName.c_str(), sizeof(intel_cca_run_aec_data), &mMemAEC, false},
@@ -110,12 +125,25 @@ IntelCca::IntelCca(int cameraId, TuningMode mode):
         return;
     }
 
+    // construct the remote CCA
+    intel_cca_struct_data* params = static_cast<intel_cca_struct_data*>(mMemStruct.mAddr);
+    params->cameraId = mCameraId;
+    params->tuningMode = mTuningMode;
+    mCommon.requestSyncCca(IPC_CCA_CONSTRUCT, mMemStruct.mHandle);
+
     LOG1("@%s, done", __func__);
     mInitialized = true;
 }
 
 IntelCca::~IntelCca() {
     LOG1("@%s, mCameraId:%d, tuningMode:%d", __func__, mCameraId, mTuningMode);
+
+    // destruct the remote CCA
+    intel_cca_struct_data* params = static_cast<intel_cca_struct_data*>(mMemStruct.mAddr);
+    params->cameraId = mCameraId;
+    params->tuningMode = mTuningMode;
+    mCommon.requestSyncCca(IPC_CCA_DESTRUCT, mMemStruct.mHandle);
+
     mCommon.releaseAllShmMems(mMems);
 
     for (auto &it : mMemsOuter) {

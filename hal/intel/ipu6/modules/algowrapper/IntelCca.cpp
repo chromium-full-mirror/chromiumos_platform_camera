@@ -36,7 +36,7 @@ IntelCca* IntelCca::getInstance(int cameraId, TuningMode mode) {
     for (auto &it : sCcaInstance) {
         if (cameraId == it.cameraId) {
             if (it.ccaHandle.find(mode) == it.ccaHandle.end()) {
-                it.ccaHandle[mode] = new IntelCca();
+                it.ccaHandle[mode] = new IntelCca(cameraId, mode);
             }
             return it.ccaHandle[mode];
         }
@@ -44,7 +44,7 @@ IntelCca* IntelCca::getInstance(int cameraId, TuningMode mode) {
 
     IntelCca::CCAHandle handle = {};
     handle.cameraId = cameraId;
-    handle.ccaHandle[mode] = new IntelCca();
+    handle.ccaHandle[mode] = new IntelCca(cameraId, mode);
     sCcaInstance.push_back(handle);
 
     return handle.ccaHandle[mode];
@@ -75,8 +75,10 @@ void IntelCca::releaseAllInstances() {
     }
 }
 
-IntelCca::IntelCca() {
-    LOG2("@%s", __func__);
+IntelCca::IntelCca(int cameraId, TuningMode mode) :
+    mCameraId(cameraId),
+    mTuningMode(mode) {
+    LOG2("@%s, cameraId:%d, tuning mode:%d", __func__, mCameraId, mTuningMode);
     mIntelCCA = nullptr;
 }
 

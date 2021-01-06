@@ -49,7 +49,8 @@ AiqCore::AiqCore(int cameraId) :
     mLensShadingMapMode(LENS_SHADING_MAP_MODE_OFF),
     mLscGridRGGBLen(0),
     mLastEvShift(0.0f),
-    mTonemapMode(TONEMAP_MODE_FAST) {
+    mTonemapMode(TONEMAP_MODE_FAST),
+    mTonemapMaxCurvePoints(0) {
     LOG3A("@%s", __func__);
 
     mIntel3AParameter = std::unique_ptr<Intel3AParameter>(new Intel3AParameter(cameraId));
@@ -77,6 +78,15 @@ AiqCore::AiqCore(int cameraId) :
 
     mAiqParams = std::unique_ptr<cca::cca_aiq_params>(new cca::cca_aiq_params);
     mAiqResults = std::unique_ptr<cca::cca_aiq_results>(new cca::cca_aiq_results);
+
+    camera_info_t info;
+    CLEAR(info);
+    PlatformData::getCameraInfo(mCameraId, info);
+    info.capability->getTonemapMaxCurvePoints(mTonemapMaxCurvePoints);
+    if (mTonemapMaxCurvePoints > 0 && mTonemapMaxCurvePoints < MIN_TONEMAP_POINTS) {
+        LOGW("%s: wrong tonemap points", __func__);
+        mTonemapMaxCurvePoints = 0;
+    }
 }
 
 AiqCore::~AiqCore() {
@@ -91,7 +101,8 @@ int AiqCore::initAiqPlusParams() {
     CLEAR(mPaColorGains);
     CLEAR(mSaParams);
 
-    mGbceParams.frame_use = ia_aiq_frame_use_video;
+    mGbceParams.gbce_level = ia_aiq_gbce_level_use_tuning;
+    mGbceParams.tone_map_level = ia_aiq_tone_map_level_use_tuning;
     mGbceParams.ev_shift = 0;
 
     /* use convergence time from tunings */
@@ -272,7 +283,6 @@ int AiqCore::updateParameter(const aiq_parameter_t &param) {
     mLensShadingMapMode = param.lensShadingMapMode;
     mLensShadingMapSize = param.lensShadingMapSize;
 
-    mGbceParams.frame_use = AiqUtils::convertFrameUsageToIaFrameUsage(param.frameUsage);
     mGbceParams.ev_shift = param.evShift;
 
     // In still frame use force update by setting convergence time to 0.
@@ -330,9 +340,6 @@ int AiqCore::runAiq(long requestId, AiqResult *aiqResult) {
 
     mAiqParams->bitmap = 0;
 
-    // Don't run gbce if AE lock and ev shift isn't changed
-    bool skipGbce = (mAeForceLock && mGbceParams.ev_shift == mLastEvShift);
-
     // fill the parameter
     if ((aaaRunType & IMAGING_ALGO_AWB) &&
         (!mAwbForceLock && (mAwbRunTime % mIntel3AParameter->mAwbPerTicks == 0))) {
@@ -345,9 +352,17 @@ int AiqCore::runAiq(long requestId, AiqResult *aiqResult) {
         mAiqParams->af_input = mIntel3AParameter->mAfParams;
     }
 
-    mGbceParams.gbce_on = (mTonemapMode == TONEMAP_MODE_FAST ||
-                           mTonemapMode == TONEMAP_MODE_HIGH_QUALITY) ? false : true;
-    if (!skipGbce && (aaaRunType & IMAGING_ALGO_GBCE)) {
+    if (aaaRunType & IMAGING_ALGO_GBCE) {
+        mGbceParams.gbce_on = (mTonemapMaxCurvePoints > 0) ? true : false;
+
+        //run gbce with bypass level if AE lock and ev shift isn't changed
+        if (mAeForceLock && mGbceParams.ev_shift == mLastEvShift) {
+            mGbceParams.gbce_level = ia_aiq_gbce_level_bypass;
+            mGbceParams.tone_map_level = ia_aiq_tone_map_level_bypass;
+        } else {
+            mGbceParams.gbce_level = ia_aiq_gbce_level_use_tuning;
+            mGbceParams.tone_map_level = ia_aiq_tone_map_level_use_tuning;
+        }
         mAiqParams->bitmap |= cca::CCA_MODULE_GBCE;
         mAiqParams->gbce_input = mGbceParams;
     }
@@ -406,7 +421,7 @@ int AiqCore::runAiq(long requestId, AiqResult *aiqResult) {
     }
 
     // handle gbce result
-    if (!skipGbce && (aaaRunType & IMAGING_ALGO_GBCE)) {
+    if (aaaRunType & IMAGING_ALGO_GBCE) {
         aiqResult->mGbceResults = mAiqResults->gbce_output;
     }
 

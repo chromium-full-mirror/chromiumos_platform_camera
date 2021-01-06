@@ -36,6 +36,7 @@ class IntelCca {
 
     static IntelCca* getInstance(int cameraId, TuningMode mode);
     static void releaseInstance(int cameraId, TuningMode mode);
+    static void releaseAllInstances();
 
     ia_err init(const cca::cca_init_params& initParams);
 
@@ -76,6 +77,7 @@ class IntelCca {
 
     bool mInitialized;
 
+    ShmMemInfo mMemStruct;
     ShmMemInfo mMemInit;
     ShmMemInfo mMemStats;
     ShmMemInfo mMemAEC;

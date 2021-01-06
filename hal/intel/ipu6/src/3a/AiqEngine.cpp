@@ -459,13 +459,16 @@ int AiqEngine::applyManualTonemaps(AiqResult *aiqResult)
 
     aiqResult->mGbceResults.have_manual_settings = true;
 
-    if (mAiqParam.tonemapMode == TONEMAP_MODE_PRESET_CURVE) {
+    if (mAiqParam.tonemapMode == TONEMAP_MODE_GAMMA_VALUE) {
+        AiqUtils::applyTonemapGamma(mAiqParam.tonemapGamma, &aiqResult->mGbceResults);
+    } else if (mAiqParam.tonemapMode == TONEMAP_MODE_PRESET_CURVE) {
         if (mAiqParam.tonemapPresetCurve == TONEMAP_PRESET_CURVE_SRGB) {
             AiqUtils::applyTonemapSRGB(&aiqResult->mGbceResults);
         } else if (mAiqParam.tonemapPresetCurve == TONEMAP_PRESET_CURVE_REC709) {
             AiqUtils::applyTonemapREC709(&aiqResult->mGbceResults);
         }
     }  else if (mAiqParam.tonemapMode == TONEMAP_MODE_CONTRAST_CURVE) {
+        AiqUtils::applyTonemapCurve(mAiqParam.tonemapCurves, &aiqResult->mGbceResults);
         AiqUtils::applyAwbGainForTonemapCurve(mAiqParam.tonemapCurves, &aiqResult->mAwbResults);
     }
 

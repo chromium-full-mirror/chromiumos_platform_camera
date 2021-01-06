@@ -29,7 +29,7 @@
 namespace icamera {
 class IntelCca {
  public:
-    IntelCca();
+    IntelCca(int cameraId, TuningMode mode);
     virtual ~IntelCca();
 
     static IntelCca* getInstance(int cameraId, TuningMode mode);
@@ -72,6 +72,9 @@ class IntelCca {
     void releaseIntelCCA();
 
  private:
+     int mCameraId;
+     TuningMode mTuningMode;
+
     struct CCAHandle {
         int cameraId;
         std::unordered_map<TuningMode, IntelCca*> ccaHandle;  // TuningMode to IntelCca map

@@ -16,15 +16,17 @@
 
 #pragma once
 
-#include "iutils/Errors.h"
 #include "memory"
+#include <unordered_map>
+
+#include "iutils/Errors.h"
 #include "modules/algowrapper/IntelCca.h"
 #include "modules/sandboxing/IPCIntelCca.h"
 
 namespace icamera {
 class IntelCcaServer {
  public:
-    IntelCcaServer();
+    IntelCcaServer(int cameraId, TuningMode mode);
     virtual ~IntelCcaServer();
 
     status_t init(void* pData, int dataSize);
@@ -45,5 +47,11 @@ class IntelCcaServer {
 
  private:
     bool unflattenProgramGroup(cca::cca_program_group* result);
+
+ private:
+    int mCameraId;
+    TuningMode mTuningMode;
+
+    IntelCca* mCca;
 };
 } /* namespace icamera */

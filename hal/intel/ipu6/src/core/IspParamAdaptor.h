@@ -126,7 +126,8 @@ private:
     // Enable or disable kernels according to environment variables for debug purpose.
     void updateKernelToggles(cca::cca_program_group *programGroup);
     void dumpProgramGroup(ia_isp_bxt_program_group *pgPtr);
-    void applyMediaFormat(ia_media_format* mediaFormat, AiqResult* aiqResults);
+    void applyMediaFormat(const AiqResult* aiqResult,
+                          ia_media_format* mediaFormat, bool* useLinearGamma);
 
  private:
     enum IspAdaptorState {

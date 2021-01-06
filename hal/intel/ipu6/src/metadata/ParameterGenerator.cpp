@@ -31,7 +31,6 @@
 
 namespace icamera {
 
-#define MIN_TONEMAP_POINTS 64
 #define CHECK_REQUEST_ID(id) CheckError((id < 0), UNKNOWN_ERROR, "%s: error request id %ld!", __func__, id);
 #define CHECK_SEQUENCE(id) CheckError((id < 0), UNKNOWN_ERROR, "%s: error sequence %ld!", __func__, id);
 

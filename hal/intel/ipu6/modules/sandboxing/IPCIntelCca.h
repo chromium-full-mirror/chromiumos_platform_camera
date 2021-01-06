@@ -20,6 +20,11 @@
 
 namespace icamera {
 
+struct intel_cca_struct_data {
+    int cameraId;
+    TuningMode tuningMode;
+};
+
 struct intel_cca_init_data {
     int cameraId;
     TuningMode tuningMode;
