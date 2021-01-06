@@ -237,28 +237,14 @@ bool GPUExecutor::fetchTnrOutBuffer(int64_t seq, std::shared_ptr<CameraBuffer> b
 
 int GPUExecutor::getStillTnrTG(TuningMode mode, float* tg) {
     CheckError(!tg, UNKNOWN_ERROR, "invalid input");
-    ia_binary_data otherData = {nullptr, 0};
-    int ret =
-        PlatformData::getCpfAndCmc(mCameraId, nullptr, nullptr, &otherData, nullptr, mode, nullptr);
-    CheckError(ret || !otherData.data || otherData.size == 0, UNKNOWN_ERROR,
-               "Failed to get tunning data");
-
-    uint32_t offset = sizeof(ia_mkn_header);
-    ia_mkn_header* header_ptr = static_cast<ia_mkn_header*>(otherData.data);
-
-    while (offset < header_ptr->size) {
-        ia_mkn_record_header* record =
-            reinterpret_cast<ia_mkn_record_header*>(static_cast<char*>(otherData.data) + offset);
-        if (STILL_TNR_THRESHOLD_GAIN_ID == record->data_name_id) {
-            void* pStillTnr7Tigger = reinterpret_cast<char*>(record) + sizeof(ia_mkn_record_header);
-            MEMCPY_S(tg, sizeof(float), static_cast<char*>(pStillTnr7Tigger), sizeof(float));
-            return OK;
-        } else {
-            offset += record->size;
-        }
-    }
-
-    return UNKNOWN_ERROR;
+    IntelCca* intelCca = IntelCca::getInstance(mCameraId, mode);
+    CheckError(!intelCca, UNKNOWN_ERROR, "%s, cca is nullptr, mode:%d", __func__, mode);
+    cca::cca_cmc cmc;
+    ia_err ret = intelCca->getCMC(&cmc);
+    CheckError(ret != OK, BAD_VALUE, "@%s get cmc data failed", __func__);
+    *tg = cmc.tnr7us_threshold_gain;
+    LOG1("%s threshold gain is %f", __func__, cmc.tnr7us_threshold_gain);
+    return OK;
 }
 
 int GPUExecutor::getTotalGain(int64_t seq, float* totalGain) {
