@@ -81,7 +81,7 @@ class AiqInitData {
  public:
     AiqInitData(const std::string& sensorName, const std::string& camCfgDir,
                 const std::vector<TuningConfig>& tuningCfg, const std::string& nvmDir,
-                int maxNvmSize,
+                int maxNvmSize, std::string* camModuleName,
                 const std::unordered_map<std::string, std::string>& camModuleToAiqbMap);
     ~AiqInitData();
 

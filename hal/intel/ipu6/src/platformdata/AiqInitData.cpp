@@ -117,7 +117,7 @@ void AiqData::saveDataToFile(const std::string& fileName, const ia_binary_data* 
 
 AiqInitData::AiqInitData(const std::string& sensorName, const std::string& camCfgDir,
                          const std::vector<TuningConfig>& tuningCfg, const std::string& nvmDir,
-                         int maxNvmSize,
+                         int maxNvmSize, std::string* camModuleName,
                          const std::unordered_map<std::string, std::string>& camModuleToAiqbMap)
         : mSensorName(sensorName),
           mCamCfgDir(camCfgDir),
@@ -140,8 +140,6 @@ AiqInitData::AiqInitData(const std::string& sensorName, const std::string& camCf
 
     for (auto cfg : mTuningCfg) {
         string aiqbName = cfg.aiqbName;
-        aiqbName.append(".aiqb");
-        LOG1("aiqb file name %s", aiqbName.c_str());
 
         if (!mCameraModuleToAiqbMap.empty()) {
             std::string cameraModule;
@@ -149,10 +147,13 @@ AiqInitData::AiqInitData(const std::string& sensorName, const std::string& camCf
             if (ret == OK) {
                 if (mCameraModuleToAiqbMap.find(cameraModule) != mCameraModuleToAiqbMap.end()) {
                     aiqbName.assign(mCameraModuleToAiqbMap[cameraModule]);
-                    LOG1("@%s, aiqb name %s", __func__, aiqbName.c_str());
+                    if (camModuleName) *camModuleName = cameraModule;
                 }
             }
         }
+
+        aiqbName.append(".aiqb");
+        LOG1("aiqb file name %s", aiqbName.c_str());
 
         if (findConfigFile(camCfgDir, &aiqbName) != OK) {
             LOGE("there is no aiqb file:%s", cfg.aiqbName.c_str());
