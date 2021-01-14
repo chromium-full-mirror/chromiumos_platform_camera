@@ -17,6 +17,7 @@
 #define LOG_TAG "AiqInitData"
 
 #include <unordered_map>
+#include <dirent.h>
 
 #include "AiqInitData.h"
 
@@ -117,16 +118,14 @@ void AiqData::saveDataToFile(const std::string& fileName, const ia_binary_data* 
 
 AiqInitData::AiqInitData(const std::string& sensorName, const std::string& camCfgDir,
                          const std::vector<TuningConfig>& tuningCfg, const std::string& nvmDir,
-                         int maxNvmSize, std::string* camModuleName,
-                         const std::unordered_map<std::string, std::string>& camModuleToAiqbMap)
+                         int maxNvmSize, std::string* camModuleName)
         : mSensorName(sensorName),
-          mCamCfgDir(camCfgDir),
           mMaxNvmSize(maxNvmSize),
           mTuningCfg(tuningCfg),
-          mCameraModuleToAiqbMap(camModuleToAiqbMap),
           mNvm(nullptr) {
     LOG1("@%s, mMaxNvmSize:%d", __func__, mMaxNvmSize);
 
+    std::string aiqbNameFromModuleInfo;
     if (nvmDir.length() > 0) {
         mNvmPath.append(NVM_DATA_PATH);
 
@@ -136,23 +135,34 @@ AiqInitData::AiqInitData(const std::string& sensorName, const std::string& camCf
 
         mNvmPath.append("eeprom");
         LOG2("NVM data is located in %s", mNvmPath.c_str());
+
+        std::string cameraModule;
+        int ret = getCameraModuleFromEEPROM(mNvmPath, &cameraModule);
+        if (ret == OK) {
+            DIR* dir = opendir(camCfgDir.c_str());
+            if (dir) {
+                std::string aiqbName("camera_");
+                aiqbName.append(cameraModule);
+                struct dirent* direntPtr = nullptr;
+                while ((direntPtr = readdir(dir)) != nullptr) {
+                    if (strncmp(direntPtr->d_name, aiqbName.c_str(), aiqbName.length()) == 0) {
+                        aiqbNameFromModuleInfo.assign(direntPtr->d_name);
+                        if (camModuleName) *camModuleName = cameraModule;
+                        break;
+                    }
+                }
+                closedir(dir);
+            }
+        }
     }
 
     for (auto cfg : mTuningCfg) {
         string aiqbName = cfg.aiqbName;
-
-        if (!mCameraModuleToAiqbMap.empty()) {
-            std::string cameraModule;
-            int ret = getCameraModuleFromEEPROM(mNvmPath, &cameraModule);
-            if (ret == OK) {
-                if (mCameraModuleToAiqbMap.find(cameraModule) != mCameraModuleToAiqbMap.end()) {
-                    aiqbName.assign(mCameraModuleToAiqbMap[cameraModule]);
-                    if (camModuleName) *camModuleName = cameraModule;
-                }
-            }
-        }
-
         aiqbName.append(".aiqb");
+
+        if (!aiqbNameFromModuleInfo.empty()) {
+            aiqbName.assign(aiqbNameFromModuleInfo);
+        }
         LOG1("aiqb file name %s", aiqbName.c_str());
 
         if (findConfigFile(camCfgDir, &aiqbName) != OK) {
@@ -207,11 +217,14 @@ int AiqInitData::getCameraModuleFromEEPROM(const std::string& nvmPath, std::stri
     fclose(eepromFile);
     CheckError(!ret, UNKNOWN_ERROR, "Failed to read module info %d", ret);
 
+    if (strncmp(cameraModuleInfo.mOsInfo, NVM_OS, strlen(NVM_OS)) != 0) {
+        LOG1("NVM OS string doesn't match with module info");
+        return NO_ENTRY;
+    }
+
     char tmpName[CAMERA_MODULE_INFO_SIZE];
-    snprintf(tmpName, CAMERA_MODULE_INFO_SIZE, "%c%c%x-%c%c-%d", cameraModuleInfo.mSensorVendor[0],
-             cameraModuleInfo.mSensorVendor[1], cameraModuleInfo.mSensorModel,
-             cameraModuleInfo.mModuleVendor[0], cameraModuleInfo.mModuleVendor[1],
-             cameraModuleInfo.mModuleProduct);
+    snprintf(tmpName, CAMERA_MODULE_INFO_SIZE, "%c%c_%04x", cameraModuleInfo.mModuleVendor[0],
+             cameraModuleInfo.mModuleVendor[1], cameraModuleInfo.mModuleProduct);
 
     cameraModule->assign(tmpName);
     LOG1("%s, aiqb name %s", __func__, cameraModule->c_str());

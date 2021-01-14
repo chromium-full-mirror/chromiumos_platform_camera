@@ -97,8 +97,7 @@ int PlatformData::init() {
                             getCameraCfgPath(),
                             staticCfg->mCameras[i].mSupportedTuningConfig,
                             staticCfg->mCameras[i].mNvmDirectory,
-                            staticCfg->mCameras[i].mMaxNvmDataSize, &camModuleName,
-                            staticCfg->mCameras[i].mCameraModuleToAiqbMap);
+                            staticCfg->mCameras[i].mMaxNvmDataSize, &camModuleName);
         getInstance()->mAiqInitData.push_back(aiqInitData);
 
         if (!camModuleName.empty() &&

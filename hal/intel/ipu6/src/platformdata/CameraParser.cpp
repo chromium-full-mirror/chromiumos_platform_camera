@@ -432,23 +432,6 @@ void CameraParser::handleSensor(CameraParser *profiles, const char *name, const 
         pCurrentCam->mMaxNvmDataSize = atoi(atts[1]);
     } else if (strcmp(name, "nvmDirectory") == 0) {
         pCurrentCam->mNvmDirectory = atts[1];
-    } else if (strcmp(name, "cameraModuleToAiqbMap") == 0) {
-        int size = strlen(atts[1]);
-        char src[size + 1];
-        MEMCPY_S(src, size, atts[1], size);
-        src[size] = '\0';
-
-        char* savePtr = nullptr;
-        char* tablePtr = strtok_r(src, ",", &savePtr);
-        while (tablePtr) {
-            std::string key(tablePtr);
-            tablePtr = strtok_r(nullptr, ",", &savePtr);
-            CheckError(tablePtr == nullptr, VOID_VALUE, "value is nullptr");
-            std::string value(tablePtr);
-            pCurrentCam->mCameraModuleToAiqbMap[key] = value;
-
-            tablePtr = strtok_r(nullptr, ",", &savePtr);
-        }
     } else if (strcmp(name, "isISYSCompression") == 0) {
         pCurrentCam->mISYSCompression = strcmp(atts[1], "true") == 0;
     } else if (strcmp(name, "isPSACompression") == 0) {

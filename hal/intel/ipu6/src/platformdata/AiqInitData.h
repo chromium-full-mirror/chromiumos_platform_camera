@@ -29,6 +29,7 @@
 
 namespace icamera {
 
+#define NVM_OS "CrOS"
 /**
  * Camera Module Information
  *
@@ -81,8 +82,7 @@ class AiqInitData {
  public:
     AiqInitData(const std::string& sensorName, const std::string& camCfgDir,
                 const std::vector<TuningConfig>& tuningCfg, const std::string& nvmDir,
-                int maxNvmSize, std::string* camModuleName,
-                const std::unordered_map<std::string, std::string>& camModuleToAiqbMap);
+                int maxNvmSize, std::string* camModuleName);
     ~AiqInitData();
 
     // cpf
@@ -112,13 +112,9 @@ class AiqInitData {
 
  private:
     std::string mSensorName;
-    std::string mCamCfgDir;
     std::string mNvmPath;
     int mMaxNvmSize;
     std::vector<TuningConfig> mTuningCfg;
-
-    /* key: camera module info, value: aiqb name */
-    std::unordered_map<std::string, std::string> mCameraModuleToAiqbMap;
 
     // cpf
     std::unordered_map<TuningMode, AiqData*> mCpf;
