@@ -206,6 +206,19 @@ bool getTerminalPairs(int pgId, TERMINAL_PAIR_TYPE type, std::vector<TerminalPai
     return false;
 }
 
+int getCssFmtBpe(ia_css_frame_format_type_t cssFmt, int cssBpp) {
+    int bpe = cssBpp;
+    switch (cssFmt) {
+        case IA_CSS_DATA_FORMAT_YUYV:
+        case IA_CSS_DATA_FORMAT_UYVY:
+            bpe = 8;
+            break;
+        default:
+            break;
+    }
+    return bpe;
+}
+
 int getCssFmtBpp(ia_css_frame_format_type_t cssFmt) {
     int size = ARRAY_SIZE(sFormatMapping);
     for (int i = 0; i < size; i++) {

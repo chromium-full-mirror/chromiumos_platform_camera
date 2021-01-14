@@ -238,6 +238,8 @@ namespace CameraUtils {
 
     int getBpp(int format);
 
+    int getBpe(int format, int bpp);
+
     int getStride (int format, int width);
 
     int getCompressedFrameSize(int format, int width, int height);

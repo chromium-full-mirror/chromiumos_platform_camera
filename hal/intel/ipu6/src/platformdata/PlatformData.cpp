@@ -194,6 +194,11 @@ bool PlatformData::isEnableAIQ(int cameraId)
     return getInstance()->mStaticCfg.mCameras[cameraId].mEnableAIQ;
 }
 
+bool PlatformData::isEnableMkn(int cameraId)
+{
+    return getInstance()->mStaticCfg.mCameras[cameraId].mEnableMkn;
+}
+
 bool PlatformData::isEnableLtmThread(int cameraId)
 {
     return getInstance()->mStaticCfg.mCameras[cameraId].mEnableLtmThread;

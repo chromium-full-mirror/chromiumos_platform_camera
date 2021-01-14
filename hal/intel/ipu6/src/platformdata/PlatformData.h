@@ -99,6 +99,7 @@ public:
                 mSensorGainType(SENSOR_GAIN_NONE),
                 mLensCloseCode(0),
                 mEnableAIQ(false),
+                mEnableMkn(true),
                 mSkipFrameV4L2Error(false),
                 mCITMaxMargin(0),
                 mYuvColorRangeMode(CAMERA_FULL_MODE_YUV_COLOR_RANGE),
@@ -160,6 +161,7 @@ public:
             int mSensorGainType;
             int mLensCloseCode;
             bool mEnableAIQ;
+            bool mEnableMkn;
             bool mSkipFrameV4L2Error;
             int mCITMaxMargin;
             camera_yuv_color_range_mode_t mYuvColorRangeMode;
@@ -392,6 +394,14 @@ public:
      * \return if AIQ is enabled or not.
      */
     static bool isEnableAIQ(int cameraId);
+
+    /**
+     * Check Mkn is enabled or not
+     *
+     * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
+     * \return if Mkn is enabled or not.
+     */
+    static bool isEnableMkn(int cameraId);
 
     /**
      * Check if sensor digital gain is used or not

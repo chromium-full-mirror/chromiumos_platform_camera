@@ -482,7 +482,8 @@ int RequestManager::processCaptureRequest(camera3_capture_request_t* request) {
     for (uint32_t i = 0; i < request->num_output_buffers; i++) {
         camera3_stream_t* aStream = request->output_buffers[i].stream;        // app stream
         Camera3Stream* lStream = static_cast<Camera3Stream*>(aStream->priv);  // local stream
-        if (mInputStreamConfigured || aStream->format == HAL_PIXEL_FORMAT_BLOB) {
+        if (icamera::PlatformData::isEnableMkn(mCameraId) &&
+            (mInputStreamConfigured || aStream->format == HAL_PIXEL_FORMAT_BLOB)) {
             param.setMakernoteMode(icamera::MAKERNOTE_MODE_JPEG);
         }
 

@@ -285,6 +285,8 @@ void CameraParser::handleSensor(CameraParser *profiles, const char *name, const 
         getSupportedFormat(atts[1], pCurrentCam->mPSysFormat);
     } else if (strcmp(name, "enableAIQ") == 0) {
         pCurrentCam->mEnableAIQ = strcmp(atts[1], "true") == 0;
+    } else if (strcmp(name, "enableMkn") == 0) {
+        pCurrentCam->mEnableMkn = strcmp(atts[1], "true") == 0;
     } else if (strcmp(name, "useCrlModule") == 0) {
         pCurrentCam->mUseCrlModule = strcmp(atts[1], "true") == 0;
     } else if (strcmp(name, "skipFrameV4L2Error") == 0) {
@@ -1719,6 +1721,7 @@ void CameraParser::startParseElement(void *userData, const char *name, const cha
                 std::string tagName(name);
                 profiles->mCameraModuleName = tagName.substr(strlen("CameraModuleInfo_"));
                 LOGXML("@%s, mCameraModuleInfo %s is set", __func__, name);
+                break;
             }
 
             if (profiles->mInMediaCtlCfg) {
@@ -1729,6 +1732,8 @@ void CameraParser::startParseElement(void *userData, const char *name, const cha
                 profiles->handleStaticMetaData(profiles, name, atts);
             } else if (!profiles->mCameraModuleName.empty()) {
                 // The CameraModuleInfo belongs to the sensor segments
+                LOGXML("@%s, name:%s, atts[1]:%s, profiles->mCurrentSensor:%d", __func__,
+                       name, atts[1], profiles->mCurrentSensor);
                 profiles->handleGenericStaticMetaData(name, atts[1], &profiles->mCameraModuleMetadata);
             } else {
                 profiles->handleSensor(profiles, name, atts);

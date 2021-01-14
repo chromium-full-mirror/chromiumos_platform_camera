@@ -309,6 +309,20 @@ int CameraUtils::getBpp(int format)
     return -1;
 }
 
+int CameraUtils::getBpe(int format, int bpp) {
+    int bpe = bpp;
+    switch (format) {
+        case V4L2_PIX_FMT_YUYV:
+        case V4L2_PIX_FMT_UYVY:
+        case GET_FOURCC_FMT('Y','U','Y','2'):
+            bpe = 8;
+            break;
+        default:
+            break;
+    }
+    return bpe;
+}
+
 /**
  * Get the stride which is also known as aligned bype per line in some context.
  * Mainly used for locate the start of next line.

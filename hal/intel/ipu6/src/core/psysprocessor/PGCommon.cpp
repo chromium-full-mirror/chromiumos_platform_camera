@@ -469,13 +469,13 @@ int PGCommon::initParamAdapt()
     if (pgInFrame) {
         config.inputMainFrame.width = pgInFrame->mWidth;
         config.inputMainFrame.height = pgInFrame->mHeight;
-        config.inputMainFrame.bpe = pgInFrame->mBpp; //TODO: use bpe
+        config.inputMainFrame.bpe = CameraUtils::getBpe(pgInFrame->mFormat, pgInFrame->mBpp);
     }
 
     if (pgOutFrame) {
         config.outputMainFrame.width = pgOutFrame->mWidth;
         config.outputMainFrame.height = pgOutFrame->mHeight;
-        config.outputMainFrame.bpe = pgOutFrame->mBpp; //TODO: use bpe
+        config.outputMainFrame.bpe = CameraUtils::getBpe(pgOutFrame->mFormat, pgOutFrame->mBpp);
     }
 
     // init and config p2p handle
@@ -599,7 +599,7 @@ int PGCommon::setTerminalParams(const ia_css_frame_format_type* frameFormatTypes
         terminalParam->fragment_dimensions[IA_CSS_ROW_DIMENSION] = config.mHeight;
 
         terminalParam->bpp = PGUtils::getCssBpp(config.mFormat);
-        terminalParam->bpe = terminalParam->bpp;
+        terminalParam->bpe = PGUtils::getCssFmtBpe(terminalParam->frame_format_type, terminalParam->bpp);
         terminalParam->stride = PGUtils::getCssStride(config.mFormat, config.mWidth);
 
         terminalParam->offset = 0;
