@@ -381,20 +381,20 @@ int CameraUtils::getCompressedFrameSize(int format, int width, int height) {
         }
         case V4L2_PIX_FMT_NV12:  {
                 int bpl = width;
-                int alignedBpl = ALIGN(bpl, PSYS_COMPRESSION_OFS_STRIDE_ALIGNMENT);
-                int alignedHeight = ALIGN(height, PSYS_COMPRESSION_OFS_LINEAR_HEIGHT_ALIGNMENT);
+                int alignedBpl = ALIGN(bpl, PSYS_COMPRESSION_TNR_STRIDE_ALIGNMENT);
+                int alignedHeight = ALIGN(height, PSYS_COMPRESSION_TNR_LINEAR_HEIGHT_ALIGNMENT);
                 int alignedHeightUV = ALIGN(alignedHeight / UV_HEIGHT_DIVIDER,
-                                            PSYS_COMPRESSION_OFS_LINEAR_HEIGHT_ALIGNMENT);
+                                            PSYS_COMPRESSION_TNR_LINEAR_HEIGHT_ALIGNMENT);
                 int imageBufferSize = ALIGN(alignedBpl * (alignedHeight + alignedHeightUV),
                                             PSYS_COMPRESSION_PAGE_SIZE);
 
                 int planarYTileStatus =
-                    CAMHAL_CEIL_DIV((alignedBpl * alignedHeight / TILE_SIZE_OFS8_10_LINEAR) *
-                                    TILE_STATUS_BITS_OFS8_10_LINEAR, 8);
+                    CAMHAL_CEIL_DIV((alignedBpl * alignedHeight / TILE_SIZE_TNR_NV12_Y) *
+                                    TILE_STATUS_BITS_TNR_NV12_TILE_Y, 8);
                 planarYTileStatus = ALIGN(planarYTileStatus, PSYS_COMPRESSION_PAGE_SIZE);
                 int planarUVTileStatus =
-                    CAMHAL_CEIL_DIV((alignedBpl * alignedHeightUV / TILE_SIZE_OFS8_10_LINEAR) *
-                                    TILE_STATUS_BITS_OFS8_10_LINEAR, 8);
+                    CAMHAL_CEIL_DIV((alignedBpl * alignedHeightUV / TILE_SIZE_TNR_NV12_LINEAR) *
+                                    TILE_STATUS_BITS_TNR_NV12_LINEAR, 8);
                 planarUVTileStatus = ALIGN(planarUVTileStatus, PSYS_COMPRESSION_PAGE_SIZE);
 
                 LOG1("@%s: format: %s, stride:%d height:%d imageSize:%d, tile_status_Y:%d, "

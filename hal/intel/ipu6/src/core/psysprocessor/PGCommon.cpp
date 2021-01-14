@@ -205,6 +205,10 @@ void PGCommon::setInputInfo(const TerminalFrameInfoMap& inputInfos)
         if (tnrId < 0) continue;
 
         mFrameFormatType[tnrId] = IA_CSS_DATA_FORMAT_NV12; // for IPU6
+        // tnr terminal format is NV12, different from main terminal
+        config.mFormat = V4L2_PIX_FMT_NV12;
+        config.mBpp = CameraUtils::getBpp(config.mFormat);
+        config.mStride = CameraUtils::getStride(config.mFormat, config.mWidth);
         mTerminalFrameInfos[tnrId] = config;
     }
 
@@ -817,6 +821,40 @@ int PGCommon::configureFrameDesc() {
                 LOG1("%s set compression flag to PG %d terminal %d", __func__, mPGId, termIdx);
                 break;
             }
+            case IA_CSS_DATA_FORMAT_NV12:  {
+                if (!PlatformData::getPSACompression(mCameraId)) break;
+                // now the bpl of NV12 format is width
+                int alignedBpl = ALIGN(width, PSYS_COMPRESSION_TNR_STRIDE_ALIGNMENT);
+                int alignedHeight = ALIGN(height, PSYS_COMPRESSION_TNR_LINEAR_HEIGHT_ALIGNMENT);
+                int alignedHeightUV = ALIGN(alignedHeight / UV_HEIGHT_DIVIDER,
+                                            PSYS_COMPRESSION_TNR_LINEAR_HEIGHT_ALIGNMENT);
+                int imageBufferSize = ALIGN(alignedBpl * (alignedHeight + alignedHeightUV),
+                                            PSYS_COMPRESSION_PAGE_SIZE);
+                int planarYTileStatus =
+                    CAMHAL_CEIL_DIV((alignedBpl * alignedHeight / TILE_SIZE_TNR_NV12_Y) *
+                                    TILE_STATUS_BITS_TNR_NV12_TILE_Y, 8);
+                planarYTileStatus = ALIGN(planarYTileStatus, PSYS_COMPRESSION_PAGE_SIZE);
+
+                int planarUVTileStatus =
+                    CAMHAL_CEIL_DIV((alignedBpl * alignedHeightUV / TILE_SIZE_TNR_NV12_LINEAR) *
+                                    TILE_STATUS_BITS_TNR_NV12_LINEAR, 8);
+                planarUVTileStatus = ALIGN(planarUVTileStatus, PSYS_COMPRESSION_PAGE_SIZE);
+
+                dstFrameDesc->bpp =
+                    PGUtils::getCompressedBpp(dstFrameDesc->frame_format_type, cssBpp);
+                dstFrameDesc->bpe =
+                    PGUtils::getCompressedBpe(dstFrameDesc->frame_format_type, cssBpp);
+                dstFrameDesc->plane_count = 2;
+                dstFrameDesc->stride[IA_CSS_COL_DIMENSION] = alignedBpl;
+                dstFrameDesc->dimension[IA_CSS_ROW_DIMENSION] = alignedHeight;
+                dstFrameDesc->ts_offsets[0] = imageBufferSize;
+                dstFrameDesc->ts_offsets[1] = imageBufferSize + planarYTileStatus;
+                dstFrameDesc->is_compressed = 1;
+                LOG1("%s set compression flag to PG %d terminal %d", __func__, mPGId, termIdx);
+                LOG1("%s: compress image size %d tile %dx%d", __func__,
+                     imageBufferSize, planarYTileStatus, planarUVTileStatus);
+                break;
+            }
             default:
                 break;
         }
@@ -928,9 +966,17 @@ int PGCommon::allocateTnrDataBuffers() {
         bufferCount = PAIR_BUFFER_COUNT;
     }
 
-    int size = CameraUtils::getFrameSize(mTerminalFrameInfos[mInputMainTerminal].mFormat,
-                                         mTerminalFrameInfos[mInputMainTerminal].mWidth,
-                                         mTerminalFrameInfos[mInputMainTerminal].mHeight);
+    bool isCompression = PlatformData::getPSACompression(mCameraId) &&
+                         PGUtils::isCompressionTerminal(termIndex + mTerminalBaseUid);
+    int size = isCompression
+                   ? CameraUtils::getFrameSize(mTerminalFrameInfos[termIndex].mFormat,
+                                               mTerminalFrameInfos[mInputMainTerminal].mWidth,
+                                               mTerminalFrameInfos[mInputMainTerminal].mHeight,
+                                               false, true, true)
+                   : CameraUtils::getFrameSize(mTerminalFrameInfos[termIndex].mFormat,
+                                               mTerminalFrameInfos[mInputMainTerminal].mWidth,
+                                               mTerminalFrameInfos[mInputMainTerminal].mHeight);
+
     for (int32_t i = 0; i < bufferCount; i++) {
         uint8_t* buffer = nullptr;
         int ret = posix_memalign((void**)&buffer, PAGE_SIZE_U, PAGE_ALIGN(size));

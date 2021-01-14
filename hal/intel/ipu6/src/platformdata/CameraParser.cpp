@@ -49,7 +49,7 @@ CameraParser::CameraParser(MediaControl *mc, PlatformData::StaticCfg *cfg) :
 
     // Get common data from libcamhal_profile.xml
     int ret = getDataFromXmlFile(LIBCAMHAL_PROFILE_NAME);
-    CheckError(ret != OK, VOID_VALUE, "Failed to get libcamhal profile data frome %s",
+    CheckError(ret != OK, VOID_VALUE, "Failed to get libcamhal profile data from %s",
                LIBCAMHAL_PROFILE_NAME);
 
     mGenericStaticMetadataToTag = {
@@ -1900,7 +1900,7 @@ void CameraParser::getSensorDataFromXmlFile(void)
         sensorName.append(sensor);
         sensorName.append(".xml");
         int ret = getDataFromXmlFile(sensorName);
-        CheckError(ret != OK, VOID_VALUE, "Failed to get sensor profile data frome %s", sensorName.c_str());
+        CheckError(ret != OK, VOID_VALUE, "Failed to get sensor profile data from %s", sensorName.c_str());
     }
 }
 
