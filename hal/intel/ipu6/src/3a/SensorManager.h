@@ -67,7 +67,7 @@ public:
     EventListener *getSofEventListener();
 
     void handleEvent(EventData eventData);
-    uint32_t updateSensorExposure(SensorExpGroup sensorExposures, bool useSof = true);
+    uint32_t updateSensorExposure(SensorExpGroup sensorExposures);
     int getSensorInfo(ia_aiq_frame_params &frameParams,
                       ia_aiq_exposure_sensor_descriptor &sensorDescriptor);
 

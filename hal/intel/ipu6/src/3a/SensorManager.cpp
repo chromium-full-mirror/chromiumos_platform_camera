@@ -159,7 +159,7 @@ int SensorManager::getCurrentExposureAppliedDelay()
     return mExposureDataMap.size() + PlatformData::getExposureLag(mCameraId);
 }
 
-uint32_t SensorManager::updateSensorExposure(SensorExpGroup sensorExposures, bool useSof)
+uint32_t SensorManager::updateSensorExposure(SensorExpGroup sensorExposures)
 {
     AutoMutex l(mLock);
 
@@ -188,7 +188,7 @@ uint32_t SensorManager::updateSensorExposure(SensorExpGroup sensorExposures, boo
         digitalGains.push_back(digitalGain);
     }
 
-    if (useSof) {
+    if (appliedSeq > 0) {
         int sensorSeq = mLastSofSequence + mExposureDataMap.size() + 1;
         mExposureDataMap[sensorSeq] = exposureData;
         mAnalogGainMap[sensorSeq + mAnalogGainDelay] = analogGains;
@@ -202,8 +202,7 @@ uint32_t SensorManager::updateSensorExposure(SensorExpGroup sensorExposures, boo
         mSensorHwCtrl->setDigitalGains(digitalGains);
     }
 
-    LOG3A("@%s, useSof:%d, mLastSofSequence:%ld, appliedSeq %ld", __func__, useSof,
-           mLastSofSequence, appliedSeq);
+    LOG3A("@%s, mLastSofSequence:%ld, appliedSeq %ld", __func__, mLastSofSequence, appliedSeq);
     return ((uint32_t)appliedSeq);
 }
 

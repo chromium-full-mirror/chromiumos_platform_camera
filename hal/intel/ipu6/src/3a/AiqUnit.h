@@ -48,7 +48,7 @@ public:
     virtual int configure(const stream_config_t * /*streamList*/) { return OK; }
     virtual int start() { return OK; }
     virtual int stop() { return OK; }
-    virtual int run3A(bool runMkn, long request, long * /*settingSequence*/)  { return OK; }
+    virtual int run3A(long request, long * /*settingSequence*/)  { return OK; }
 
     virtual std::vector<EventListener*> getSofEventListener()
     {
@@ -106,7 +106,7 @@ public:
      * indicate the frame that settings are applied.
      * settingSequence -1 means uncertain frame for this settings.
      */
-    int run3A(bool runMkn, long requestId, long *settingSequence);
+    int run3A(long requestId, long *settingSequence);
 
     /**
      * \brief Get software EventListener

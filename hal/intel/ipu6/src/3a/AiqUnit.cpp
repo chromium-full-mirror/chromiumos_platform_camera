@@ -203,7 +203,7 @@ int AiqUnit::stop()
     return OK;
 }
 
-int AiqUnit::run3A(bool runMkn, long requestId, long *settingSequence)
+int AiqUnit::run3A(long requestId, long *settingSequence)
 {
     AutoMutex l(mAiqUnitLock);
     TRACE_LOG_PROCESS("AiqUnit", "run3A");
@@ -216,7 +216,7 @@ int AiqUnit::run3A(bool runMkn, long requestId, long *settingSequence)
         return BAD_VALUE;
     }
 
-    int ret = mAiqEngine->run3A(runMkn, requestId, settingSequence);
+    int ret = mAiqEngine->run3A(requestId, settingSequence);
     CheckError(ret != OK, ret, "run 3A failed.");
 
     return OK;

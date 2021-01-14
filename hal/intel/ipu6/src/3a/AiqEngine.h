@@ -67,7 +67,7 @@ public:
      * indicate the frame that settings are applied.
      * settingSequence -1 means uncertain frame for this settings.
      */
-    int run3A(bool runMkn, long requestId, long *settingSequence);
+    int run3A(long requestId, long *settingSequence);
 
     /**
      * \brief Stop 3a thrad and LensManager.
@@ -87,7 +87,9 @@ private:
 
     int prepareStatsParams(cca::cca_stats_params *statsParams, AiqStatistics *aiqStatistics);
 
+    // Handle AIQ results except Exposure results which are handled in setSensorExposure
     void setAiqResult(AiqResult *aiqResult, bool skip);
+    void setSensorExposure(AiqResult* aiqResult);
 
     int getSkippingNum(AiqResult *aiqResult);
 
@@ -128,14 +130,10 @@ private:
     SensorManager *mSensorManager;
     LensManager *mLensManager;
     bool mFirstAiqRunning;
-    bool mFirstExposureSetting;
     bool mAiqRunningForPerframe;
 
     // Guard for public API of AiqEngine.
     Mutex mEngineLock;
-    Condition mStatsAvailableSignal;
-
-    uint32_t mCurrentStatsSequence;
 
     aiq_parameter_t mAiqParam;
 

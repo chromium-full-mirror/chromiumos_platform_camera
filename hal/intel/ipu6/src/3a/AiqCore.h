@@ -93,7 +93,14 @@ public:
     int setStatsParams(const cca::cca_stats_params &statsParams);
 
     /**
-     * \brief run 3A and AiqPlus
+     * \brief run AE
+     *
+     * \return OK if succeed, other value indicates failed
+     */
+    int runAe(long requestId, AiqResult* aiqResult);
+
+    /**
+     * \brief run AWB, AF, SA, PA and GBCE
      *
      * \return OK if succeed, other value indicates failed
      */
@@ -127,7 +134,7 @@ private:
             gridGb(NULL), gridB(NULL) {}
     };
 
-    int runAe(long requestId, cca::cca_ae_results* aeResults);
+    int runAEC(long requestId, cca::cca_ae_results* aeResults);
     void focusDistanceResult(const cca::cca_af_results *afResults,
                              float *afDistanceDiopters,
                              camera_range_t *focusRange);

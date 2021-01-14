@@ -314,13 +314,18 @@ int AiqCore::setStatsParams(const cca::cca_stats_params &statsParams) {
     return ret;
 }
 
+int AiqCore::runAe(long requestId, AiqResult* aiqResult) {
+    LOG3A("@%s, aiqResult:%p, requestId:%d", __func__, aiqResult, requestId);
+    CheckError(!aiqResult, BAD_VALUE, "@%s, aiqResult is nullptr", __func__);
+
+    // run AE
+    return runAEC(requestId, &aiqResult->mAeResults);
+}
+
 int AiqCore::runAiq(long requestId, AiqResult *aiqResult) {
     LOG3A("@%s, aiqResult:%p, requestId:%d, mTonemapMode:%d", __func__,
           aiqResult, requestId, mTonemapMode);
     CheckError(!aiqResult, BAD_VALUE, "@%s, aiqResult is nullptr", __func__);
-
-    // run AE
-    int ret = runAe(requestId, &aiqResult->mAeResults);
 
     int aaaRunType = IMAGING_ALGO_AWB | IMAGING_ALGO_GBCE | IMAGING_ALGO_PA;
     if (PlatformData::getLensHwType(mCameraId) == LENS_VCM_HW) {
@@ -375,13 +380,14 @@ int AiqCore::runAiq(long requestId, AiqResult *aiqResult) {
     LOG3A("@%s, params->bitmap:%d, mAiqRunTime:%lld", __func__, mAiqParams->bitmap, mAiqRunTime);
 
     // runAIQ for awb/af/gbce/pa/sa
+    int ret = OK;
     {
         PERF_CAMERA_ATRACE_PARAM1_IMAGING("intelAiq->runAIQ", 1);
 
         ia_err iaErr = intelCca->runAIQ(requestId, *mAiqParams.get(), mAiqResults.get());
         mAiqRunTime++;
-        int iaRet = AiqUtils::convertError(iaErr);
-        CheckError(iaRet != OK, ret, "@%s, runAIQ, iaRet: %d", __func__, iaRet);
+        ret = AiqUtils::convertError(iaErr);
+        CheckError(ret != OK, ret, "@%s, runAIQ, ret: %d", __func__, ret);
     }
 
     // handle awb result
@@ -446,7 +452,7 @@ int AiqCore::runAiq(long requestId, AiqResult *aiqResult) {
     return OK;
 }
 
-int AiqCore::runAe(long requestId, cca::cca_ae_results* aeResults) {
+int AiqCore::runAEC(long requestId, cca::cca_ae_results* aeResults) {
     LOG3A("@%s, aeResults:%p", __func__, aeResults);
     CheckError(!aeResults, BAD_VALUE, "@%s, aeResults is nullptr", __func__);
     PERF_CAMERA_ATRACE();
