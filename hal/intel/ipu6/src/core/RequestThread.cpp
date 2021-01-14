@@ -222,6 +222,8 @@ void RequestThread::postConfigure(const stream_config_t *streamList) {
 }
 
 bool RequestThread::blockRequest() {
+    if (mPendingRequests.empty()) return true;
+
     /**
      * Block request processing if:
      * 1. mBlockRequest is true (except the 1st request), or
@@ -457,12 +459,15 @@ bool RequestThread::threadLoop()
     {
          ConditionLock lock(mPendingReqLock);
 
-         bool waitProcessing = blockRequest() || mPendingRequests.empty();
-         if (waitProcessing) {
+         if (blockRequest()) {
             int ret = mRequestSignal.waitRelative(lock, kWaitDuration * SLOWLY_MULTIPLIER);
-            waitProcessing = blockRequest() || mPendingRequests.empty();
-            if (ret == TIMED_OUT || waitProcessing) {
+            if (ret == TIMED_OUT) {
                 LOGW("%s: wait event time out", __func__);
+                return true;
+            }
+            if (blockRequest()) {
+                LOG2("Pending request processing, mBlockRequest %d, Req in processing %d",
+                     mBlockRequest, mRequestsInProcessing);
                 return true;
             }
         }

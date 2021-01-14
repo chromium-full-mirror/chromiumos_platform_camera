@@ -32,7 +32,6 @@ AiqEngine::AiqEngine(int cameraId, SensorHwCtrl *sensorHw, LensHw *lensHw, AiqSe
     mParamGen(paramGen),
     mFirstAiqRunning(true),
     mAiqRunningForPerframe(false),
-    m3ACadenceSequence(0),
     mLastStatsSequence(-1)
 {
     LOG1("%s, mCameraId = %d", __func__, mCameraId);
@@ -109,8 +108,6 @@ int AiqEngine::startEngine()
 
     mLensManager->start();
 
-    m3ACadenceSequence = 0;
-
     LOG1("%s, end mCameraId = %d", __func__, mCameraId);
 
     return OK;
@@ -132,27 +129,21 @@ int AiqEngine::run3A(long requestId, long *settingSequence)
     // Run 3A in call thread
     AutoMutex l(mEngineLock);
 
-    // Handle 3A cadence logic
-    int run3ACadence = mAiqParam.run3ACadence;
-    if (run3ACadence < 1) {
-        LOGW("Invalid 3A cadence %d, use default 1.", run3ACadence);
-        run3ACadence = 1;
-    }
-    LOG2("%s: run3ACadence is %d", __func__, run3ACadence);
-
-    if (m3ACadenceSequence % run3ACadence != 0) {
-        // Skip 3A per cadence
-        m3ACadenceSequence ++;
-        return OK;
-    }
-    LOG2("%s: run 3A for cadence sequence %ld", __func__, m3ACadenceSequence);
-    m3ACadenceSequence ++;
-
     mAiqRunningForPerframe = (settingSequence != nullptr);
-    AiqState state = prepareInputParam();
+
+    AiqStatistics *aiqStats =
+        const_cast<AiqStatistics*>(mAiqResultStorage->getAndLockAiqStatistics());
 
     AiqResult *aiqResult = mAiqResultStorage->acquireAiqResult();
-    aiqResult->mTuningMode = mAiqParam.tuningMode;
+    AiqState state = AIQ_STATE_IDLE;
+
+    if (!needRun3A(aiqStats, requestId)) {
+        LOG3A("%s: needRun3A is false, return AIQ_STATE_WAIT", __func__);
+        state = AIQ_STATE_WAIT;
+    } else {
+        state = prepareInputParam(aiqStats);
+        aiqResult->mTuningMode = mAiqParam.tuningMode;
+    }
 
     if (state == AIQ_STATE_RUN) {
         state = runAiq(requestId, aiqResult);
@@ -185,73 +176,6 @@ EventListener *AiqEngine::getSofEventListener()
     LOG1("%s, mCameraId = %d", __func__, mCameraId);
 
     return mSensorManager->getSofEventListener();
-}
-
-int AiqEngine::saveAfGridData(const ia_aiq_af_grid* afGrid, ia_aiq_af_grid* dst)
-{
-    LOG3A("%s", __func__);
-    if (afGrid == nullptr
-        || afGrid->filter_response_1 == nullptr
-        || afGrid->filter_response_2 == nullptr
-        || afGrid->grid_width == 0
-        || afGrid->grid_height == 0) {
-        LOGE("%s, af grids are invalid", __func__);
-        return BAD_VALUE;
-    }
-
-    size_t gridSize = afGrid->grid_width * afGrid->grid_height;
-    if (afGrid->grid_width != dst->grid_width || afGrid->grid_height != dst->grid_height) {
-        if (dst->filter_response_1 != nullptr) {
-            delete [] dst->filter_response_1;
-        }
-        dst->filter_response_1 = new int[gridSize];
-        if (dst->filter_response_2 != nullptr) {
-            delete [] dst->filter_response_2;
-        }
-        dst->filter_response_2 = new int[gridSize];
-    }
-
-    dst->grid_width = afGrid->grid_width;
-    dst->grid_height = afGrid->grid_height;
-    dst->block_width = afGrid->block_width;
-    dst->block_height = afGrid->block_height;
-    MEMCPY_S(dst->filter_response_1, gridSize * sizeof(int),
-             afGrid->filter_response_1, gridSize * sizeof(int));
-    MEMCPY_S(dst->filter_response_2, gridSize * sizeof(int),
-             afGrid->filter_response_2, gridSize * sizeof(int));
-
-    LOG3A("%s, grid size=[%dx%d]", __func__, dst->grid_width, dst->grid_height);
-    return OK;
-}
-
-int AiqEngine::saveRgbsGridData(const ia_aiq_rgbs_grid* rgbsGrid, ia_aiq_rgbs_grid* dst)
-{
-    LOG3A("%s", __func__);
-    if (rgbsGrid == nullptr
-        || rgbsGrid->blocks_ptr == nullptr
-        || rgbsGrid->grid_width == 0
-        || rgbsGrid->grid_height == 0) {
-        LOGE("%s, rgbs grids are invalid", __func__);
-        return BAD_VALUE;
-    }
-
-    size_t gridSize = rgbsGrid->grid_width * rgbsGrid->grid_height;
-    if (rgbsGrid->grid_width != dst->grid_width || rgbsGrid->grid_height != dst->grid_height) {
-        if (dst->blocks_ptr != nullptr) {
-            delete [] dst->blocks_ptr;
-        }
-        dst->blocks_ptr = new rgbs_grid_block[gridSize];
-    }
-
-    dst->grid_width = rgbsGrid->grid_width;
-    dst->grid_height = rgbsGrid->grid_height;
-    MEMCPY_S(dst->blocks_ptr, gridSize * sizeof(rgbs_grid_block),
-             rgbsGrid->blocks_ptr, gridSize * sizeof(rgbs_grid_block));
-
-    dst->shading_correction = rgbsGrid->shading_correction;
-
-    LOG3A("%s, grid size=[%dx%d]", __func__, dst->grid_width, dst->grid_height);
-    return OK;
 }
 
 int AiqEngine::prepareStatsParams(cca::cca_stats_params *statsParams, AiqStatistics *aiqStatistics)
@@ -329,7 +253,7 @@ int AiqEngine::getSkippingNum(AiqResult *aiqResult)
     return skipNum;
 }
 
-bool AiqEngine::needRun3A(AiqStatistics *aiqStatistics)
+bool AiqEngine::needRun3A(AiqStatistics *aiqStatistics, long requestId)
 {
     LOG3A("%s", __func__);
 
@@ -342,6 +266,20 @@ bool AiqEngine::needRun3A(AiqStatistics *aiqStatistics)
     if (mFirstAiqRunning) {
         return true;
     }
+
+    // Handle 3A cadence logic
+    int run3ACadence = mAiqParam.run3ACadence;
+    if (run3ACadence < 1) {
+        LOGW("Invalid 3A cadence %d, use default 1.", run3ACadence);
+        run3ACadence = 1;
+    }
+    LOG2("%s: run3ACadence is %d", __func__, run3ACadence);
+
+    if (requestId % run3ACadence != 0) {
+        // Skip 3A per cadence
+        return false;
+    }
+    LOG2("%s: run 3A for requestId %ld", __func__, requestId);
 
     if (aiqStatistics == nullptr) {
         LOG3A("no stats and not need to re-run 3A");
@@ -359,7 +297,7 @@ bool AiqEngine::needRun3A(AiqStatistics *aiqStatistics)
     return true;
 }
 
-AiqEngine::AiqState AiqEngine::prepareInputParam(void)
+AiqEngine::AiqState AiqEngine::prepareInputParam(AiqStatistics* aiqStats)
 {
     // set Aiq Params
     int ret = mAiqSetting->getAiqParameter(mAiqParam);
@@ -383,22 +321,14 @@ AiqEngine::AiqState AiqEngine::prepareInputParam(void)
     mLensManager->getLensInfo(mAiqParam);
 
     mAiqCore->updateParameter(mAiqParam);
-    // set Stats
-    cca::cca_stats_params statsParams = {};
-
-    AiqStatistics *aiqStats =
-        const_cast<AiqStatistics*>(mAiqResultStorage->getAndLockAiqStatistics());
-
-    if (!needRun3A(aiqStats)) {
-        LOG3A("%s: needRun3A is false, return AIQ_STATE_WAIT", __func__);
-        return AIQ_STATE_WAIT;
-    }
 
     if (aiqStats == nullptr) {
         LOG3A("%s: run aiq without stats data", __func__);
         return AIQ_STATE_RUN;
     }
 
+    // set Stats
+    cca::cca_stats_params statsParams = {};
     ret = prepareStatsParams(&statsParams, aiqStats);
     if (ret != OK) {
         LOG3A("%s: no useful stats", __func__);

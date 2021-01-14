@@ -93,6 +93,7 @@ int Intel3AParameter::init()
 
 void Intel3AParameter::initAeParameter()
 {
+    mAeParams.is_bypass = false;
     mAeParams.num_exposures = 1;
     mAeParams.frame_use = ia_aiq_frame_use_video;
     mAeParams.flash_mode = ia_aiq_flash_mode_off;

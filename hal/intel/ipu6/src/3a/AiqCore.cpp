@@ -459,25 +459,29 @@ int AiqCore::runAEC(long requestId, cca::cca_ae_results* aeResults) {
 
     int ret = OK;
     cca::cca_ae_results *newAeResults = &mLastAeResult;
-    bool aeForceRun = mIntel3AParameter->mAeParams.ev_shift != mLastEvShift || mAeRunTime == 0 ||
-                      (!mAeForceLock && (mAeRunTime % mIntel3AParameter->mAePerTicks == 0));
 
-    if (aeForceRun) {
-        LOG3A("AEC frame_use: %d", mIntel3AParameter->mAeParams.frame_use);
+    // Run AEC with setting bypass mode to false
+    if (mAeRunTime == 0 || (mIntel3AParameter->mAeParams.ev_shift != mLastEvShift)
+        || (!mAeForceLock && (mAeRunTime % mIntel3AParameter->mAePerTicks == 0))) {
+        mIntel3AParameter->mAeParams.is_bypass = false;
+    } else {
+        mIntel3AParameter->mAeParams.is_bypass = true;
+    }
 
-        IntelCca* intelCca = getIntelCca(mTuningMode);
-        CheckError(!intelCca, UNKNOWN_ERROR, "%s, intelCca is null, m:%d", __func__, mTuningMode);
-        {
-            PERF_CAMERA_ATRACE_PARAM1_IMAGING("intelCca->runAEC", 1);
-            ia_err iaErr = intelCca->runAEC(requestId, mIntel3AParameter->mAeParams, newAeResults);
-            ret = AiqUtils::convertError(iaErr);
-            CheckError(ret != OK, ret, "Error running AE, ret: %d", ret);
+    LOG3A("AEC frame_use: %d, bypass: %d", mIntel3AParameter->mAeParams.frame_use,
+          mIntel3AParameter->mAeParams.is_bypass);
+    IntelCca* intelCca = getIntelCca(mTuningMode);
+    CheckError(!intelCca, UNKNOWN_ERROR, "%s, intelCca is null, m:%d", __func__, mTuningMode);
+    {
+        PERF_CAMERA_ATRACE_PARAM1_IMAGING("intelCca->runAEC", 1);
+        ia_err iaErr = intelCca->runAEC(requestId, mIntel3AParameter->mAeParams, newAeResults);
+        ret = AiqUtils::convertError(iaErr);
+        CheckError(ret != OK, ret, "Error running AE, ret: %d", ret);
 
-            LOG3A("%s, AE results exposure time %d, iso %d, converged %d", __func__,
-                  newAeResults->exposures[0].exposure[0].exposure_time_us,
-                  newAeResults->exposures[0].exposure[0].iso,
-                  newAeResults->exposures[0].converged);
-        }
+        LOG3A("%s, AE results exposure time %d, iso %d, converged %d", __func__,
+              newAeResults->exposures[0].exposure[0].exposure_time_us,
+              newAeResults->exposures[0].exposure[0].iso,
+              newAeResults->exposures[0].converged);
     }
 
     mIntel3AParameter->updateAeResult(newAeResults);

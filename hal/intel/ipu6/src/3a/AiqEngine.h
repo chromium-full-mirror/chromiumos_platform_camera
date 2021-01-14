@@ -82,9 +82,6 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(AiqEngine);
 
-    int saveAfGridData(const ia_aiq_af_grid* afGrid, ia_aiq_af_grid* dst);
-    int saveRgbsGridData(const ia_aiq_rgbs_grid* rgbsGrid, ia_aiq_rgbs_grid* dst);
-
     int prepareStatsParams(cca::cca_stats_params *statsParams, AiqStatistics *aiqStatistics);
 
     // Handle AIQ results except Exposure results which are handled in setSensorExposure
@@ -93,7 +90,7 @@ private:
 
     int getSkippingNum(AiqResult *aiqResult);
 
-    bool needRun3A(AiqStatistics *aiqStatistics);
+    bool needRun3A(AiqStatistics *aiqStatistics, long requestId);
 
     enum AiqState {
         AIQ_STATE_IDLE = 0,
@@ -106,7 +103,7 @@ private:
         AIQ_STATE_MAX
     };
 
-    AiqState prepareInputParam(void);
+    AiqState prepareInputParam(AiqStatistics* aiqStats);
     AiqState runAiq(long requestId, AiqResult *aiqResult);
     AiqState handleAiqResult(AiqResult *aiqResult);
     AiqState done(AiqResult *aiqResult);
@@ -137,7 +134,6 @@ private:
 
     aiq_parameter_t mAiqParam;
 
-    long m3ACadenceSequence;
     long mLastStatsSequence;
 };
 
