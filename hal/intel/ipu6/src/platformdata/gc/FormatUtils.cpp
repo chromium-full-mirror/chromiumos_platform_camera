@@ -114,7 +114,7 @@ static const FormatInfo gFormatMapping[] = {
     { V4L2_PIX_FMT_SRGGB10P, 0, "V4L2_PIX_FMT_SRGGB10P", "RGGB10P", 10, FORMAT_RAW },
 
     { V4L2_PIX_FMT_NV16, 0, "V4L2_PIX_FMT_NV16", "NV16", 16, FORMAT_YUV },
-    { V4L2_PIX_FMT_YUYV, 0, "V4L2_PIX_FMT_YUYV", "YUYV", 16, FORMAT_YUV },
+    { V4L2_PIX_FMT_YUYV, ia_cipf_frame_fourcc_yuy2, "V4L2_PIX_FMT_YUYV", "YUYV", 16, FORMAT_YUV },
     { V4L2_PIX_FMT_YVU420, 0, "V4L2_PIX_FMT_YVU420", "YVU420", 12, FORMAT_YUV },
     { V4L2_PIX_FMT_YUV422P, 0, "V4L2_PIX_FMT_YUV422P", "YUV422P", 16, FORMAT_YUV },
 
@@ -255,6 +255,7 @@ int32_t getBpl(int32_t format, int32_t width)
         case css_fourcc_p010_lsb:
         case css_fourcc_p010_msb_tile_y:
         case css_fourcc_p010_msb_cile_y:
+        case ia_cipf_frame_fourcc_yuy2:
             bpl = width * 2;
             break;
         case ia_cipf_frame_fourcc_nv12:     // NV12

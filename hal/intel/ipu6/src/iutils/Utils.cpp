@@ -156,7 +156,7 @@ static const FormatInfo gFormatMapping[] = {
     { GET_FOURCC_FMT('G','R','1','0'), "GR10", "GR10", 16, FORMAT_FOURCC },
     { GET_FOURCC_FMT('C','S','L','6'), "GRBG_12_LI", "CSL6", 15, FORMAT_FOURCC },
     { GET_FOURCC_FMT('P','0','1','0'), "P010", "P010", 24, FORMAT_FOURCC },
-    { GET_FOURCC_FMT('Y','U','Y','2'), "YUY2", "YUY2", 16, FORMAT_FOURCC },
+    { GET_FOURCC_FMT('Y','U','Y','2'), "YUV422_8_P64", "YUY2", 16, FORMAT_FOURCC },
     { GET_FOURCC_FMT('G','R','B','G'), "GRBG", "GRBG", 8, FORMAT_FOURCC },
 };
 

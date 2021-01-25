@@ -47,8 +47,8 @@ struct FormatMap {
 };
 
 static const FormatMap sFormatMapping[] = {
-    { V4L2_PIX_FMT_YUYV,   IA_CSS_DATA_FORMAT_YUYV, 12 },
-    { V4L2_PIX_FMT_UYVY,   IA_CSS_DATA_FORMAT_UYVY, 12 },
+    { V4L2_PIX_FMT_YUYV,   IA_CSS_DATA_FORMAT_YUYV, 16 },
+    { V4L2_PIX_FMT_UYVY,   IA_CSS_DATA_FORMAT_UYVY, 16 },
     { V4L2_PIX_FMT_YUV420, IA_CSS_DATA_FORMAT_YUV420, 16 },
     { V4L2_PIX_FMT_NV12,   IA_CSS_DATA_FORMAT_NV12, 8 },
     { V4L2_PIX_FMT_NV16,   IA_CSS_DATA_FORMAT_NV16, 12 },
@@ -58,8 +58,9 @@ static const FormatMap sFormatMapping[] = {
     { V4L2_PIX_FMT_SGRBG12, IA_CSS_DATA_FORMAT_RAW, 16 },
     { V4L2_PIX_FMT_SGRBG10, IA_CSS_DATA_FORMAT_RAW, 16 }, // IA_CSS_DATA_FORMAT_BAYER_GRBG or IA_CSS_DATA_FORMAT_RAW ?
 
-    { GET_FOURCC_FMT('Y', 'U', 'Y', 'V'), IA_CSS_DATA_FORMAT_YUYV, 12 },
-    { GET_FOURCC_FMT('U', 'Y', 'V', 'Y'), IA_CSS_DATA_FORMAT_UYVY, 12 },
+    { GET_FOURCC_FMT('Y', 'U', 'Y', 'V'), IA_CSS_DATA_FORMAT_YUYV, 16 },
+    { GET_FOURCC_FMT('Y', 'U', 'Y', '2'), IA_CSS_DATA_FORMAT_YUYV, 16 },
+    { GET_FOURCC_FMT('U', 'Y', 'V', 'Y'), IA_CSS_DATA_FORMAT_UYVY, 16 },
     { GET_FOURCC_FMT('Y', 'U', '1', '2'), IA_CSS_DATA_FORMAT_YUV420, 16 },
     { GET_FOURCC_FMT('N', 'V', '1', '2'), IA_CSS_DATA_FORMAT_NV12, 8 },
     { GET_FOURCC_FMT('N', 'V', '1', '6'), IA_CSS_DATA_FORMAT_NV16, 12 },
@@ -97,6 +98,9 @@ int getCssStride(int v4l2Fmt, int width) {
     switch (v4l2Fmt) {
         case GET_FOURCC_FMT('I','Y','U','V'):
             stride = width;
+            break;
+        case GET_FOURCC_FMT('Y','U','Y','2'):
+            stride = ALIGN_64(width * 2);
             break;
         default:
             stride = getStride(cssFmt, width);
@@ -138,6 +142,9 @@ int getStride(int cssFmt, int width) {
             break;
         case IA_CSS_DATA_FORMAT_NV12:
             stride = width;
+            break;
+        case IA_CSS_DATA_FORMAT_YUYV:
+            stride = ALIGN_64(width * 2);
             break;
         default:
             LOG2("TODO for format: %d", cssFmt);
@@ -278,9 +285,7 @@ bool isCompressionTerminal(int terminalId) {
     */
     if (terminalId == psys_ipu6_isa_lb_input_high_uid ||
         terminalId == psys_ipu6_isa_lb_output_uid ||
-        terminalId == psys_ipu6_bb_input_uid ||
-        terminalId == psys_ipu6_bb_tnr_ref_in_uid ||
-        terminalId == psys_ipu6_bb_tnr_ref_out_uid) {
+        terminalId == psys_ipu6_bb_input_uid) {
         cmp = true;
     }
 

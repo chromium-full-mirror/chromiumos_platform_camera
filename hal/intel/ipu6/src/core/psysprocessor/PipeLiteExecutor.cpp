@@ -113,10 +113,11 @@ int PipeLiteExecutor::analyzeConnections(const vector<IGraphType::PipelineConnec
     ia_uid lastStageId = mPGExecutors.back().stageId;
 
     for (auto const& connection : connVector) {
-        LOG2("%s: terminal %d (%d): %dx%d, 0x%x", getName(),
+        LOG2("%s: terminal %d (%d): %dx%d, 0x%x(%s)", getName(),
              connection.portFormatSettings.terminalId, connection.portFormatSettings.enabled,
              connection.portFormatSettings.width, connection.portFormatSettings.height,
-             connection.portFormatSettings.fourcc);
+             connection.portFormatSettings.fourcc,
+             CameraUtils::fourcc2String(connection.portFormatSettings.fourcc).c_str());
         LOG2("%s:     connection source %d, %d, %d, has edge %d", getName(),
              connection.connectionConfig.mSourceStage, connection.connectionConfig.mSourceTerminal,
              connection.connectionConfig.mSourceIteration, connection.hasEdgePort);
