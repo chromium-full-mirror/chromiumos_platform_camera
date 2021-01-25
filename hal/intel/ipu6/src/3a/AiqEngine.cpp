@@ -31,10 +31,11 @@ AiqEngine::AiqEngine(int cameraId, SensorHwCtrl *sensorHw, LensHw *lensHw, AiqSe
     mAiqSetting(setting),
     mParamGen(paramGen),
     mFirstAiqRunning(true),
-    mAiqRunningForPerframe(false),
     mLastStatsSequence(-1)
 {
     LOG1("%s, mCameraId = %d", __func__, mCameraId);
+
+    mAiqRunningForPerframe = PlatformData::isFeatureSupported(mCameraId, PER_FRAME_CONTROL);
 
     mAiqCore = new AiqCore(mCameraId);
 
@@ -123,13 +124,11 @@ int AiqEngine::stopEngine()
     return OK;
 }
 
-int AiqEngine::run3A(long requestId, long *settingSequence)
+int AiqEngine::run3A(long requestId, long applyingSeq, long* effectSeq)
 {
     LOG3A("%s", __func__);
     // Run 3A in call thread
     AutoMutex l(mEngineLock);
-
-    mAiqRunningForPerframe = (settingSequence != nullptr);
 
     AiqStatistics *aiqStats =
         const_cast<AiqStatistics*>(mAiqResultStorage->getAndLockAiqStatistics());
@@ -146,7 +145,7 @@ int AiqEngine::run3A(long requestId, long *settingSequence)
     }
 
     if (state == AIQ_STATE_RUN) {
-        state = runAiq(requestId, aiqResult);
+        state = runAiq(requestId, aiqResult, applyingSeq);
     }
     if (state == AIQ_STATE_RESULT_SET) {
         state = handleAiqResult(aiqResult);
@@ -157,9 +156,9 @@ int AiqEngine::run3A(long requestId, long *settingSequence)
 
     mAiqResultStorage->unLockAiqStatistics();
 
-    if (settingSequence) {
-        *settingSequence = mAiqResultStorage->getAiqResult()->mSequence;
-        LOG3A("%s, sequence %ld, mLastStatsSequence %ld", __func__, *settingSequence,
+    if (effectSeq) {
+        *effectSeq = mAiqResultStorage->getAiqResult()->mSequence;
+        LOG3A("%s, effect sequence %ld, mLastStatsSequence %ld", __func__, *effectSeq,
                mLastStatsSequence);
     }
 
@@ -340,13 +339,13 @@ AiqEngine::AiqState AiqEngine::prepareInputParam(AiqStatistics* aiqStats)
     return AIQ_STATE_RUN;
 }
 
-AiqEngine::AiqState AiqEngine::runAiq(long requestId, AiqResult *aiqResult)
+AiqEngine::AiqState AiqEngine::runAiq(long requestId, AiqResult *aiqResult, long applyingSeq)
 {
     int ret = mAiqCore->runAe(requestId, aiqResult);
     if (ret != OK) {
         return AIQ_STATE_ERROR;
     }
-    setSensorExposure(aiqResult);
+    setSensorExposure(aiqResult, applyingSeq);
 
     ret = mAiqCore->runAiq(requestId, aiqResult);
     if (ret != OK) {
@@ -356,7 +355,7 @@ AiqEngine::AiqState AiqEngine::runAiq(long requestId, AiqResult *aiqResult)
     return AIQ_STATE_RESULT_SET;
 }
 
-void AiqEngine::setSensorExposure(AiqResult* aiqResult)
+void AiqEngine::setSensorExposure(AiqResult* aiqResult, long applyingSeq)
 {
     SensorExpGroup sensorExposures;
     for (unsigned int i = 0; i < aiqResult->mAeResults.num_exposures; i++) {
@@ -365,7 +364,7 @@ void AiqEngine::setSensorExposure(AiqResult* aiqResult)
         exposure.realDigitalGain = aiqResult->mAeResults.exposures[i].exposure[0].digital_gain;
         sensorExposures.push_back(exposure);
     }
-    aiqResult->mSequence = mSensorManager->updateSensorExposure(sensorExposures);
+    aiqResult->mSequence = mSensorManager->updateSensorExposure(sensorExposures, applyingSeq);
 }
 
 AiqEngine::AiqState AiqEngine::handleAiqResult(AiqResult *aiqResult)
