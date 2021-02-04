@@ -201,13 +201,13 @@ shared_library("libcamhal") {
   libs = [
     "jpeg",
     "dl",
-    "cros_config",
   ]
   pkg_deps = [
     "expat",
     "libchrome",
     "libcros_camera",
     "libcros_camera_android_deps",
+    "libcros_config",
     "libmojo",
     "libsync",
     "libyuv",
