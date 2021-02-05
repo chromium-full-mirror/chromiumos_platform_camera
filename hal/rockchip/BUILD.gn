@@ -103,7 +103,7 @@ shared_library("libcamera_hal") {
     "libsync",
     "libyuv",
   ]
-  hal_src_root = "//camera/hal/rockchip"
+  hal_src_root = "//platform_camera/hal/rockchip"
   include_dirs = [
     "${hal_src_root}",
     "${hal_src_root}/AAL",
@@ -144,7 +144,7 @@ shared_library("libcam_algo") {
     "psl/rkisp1/ipc/server/AiqLibrary.cpp",
     "psl/rkisp1/ipc/server/Rockchip3AServer.cpp",
   ]
-  hal_src_root = "//camera/hal/rockchip"
+  hal_src_root = "//platform_camera/hal/rockchip"
   include_dirs = [
     "${hal_src_root}",
     "${hal_src_root}/common",
