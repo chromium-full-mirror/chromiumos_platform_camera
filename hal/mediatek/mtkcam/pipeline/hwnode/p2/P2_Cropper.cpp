@@ -16,7 +16,7 @@
 
 #define SUPPORT_LMV_MV_API 0
 
-#include "camera/hal/mediatek/mtkcam/pipeline/hwnode/p2/P2_Cropper.h"
+#include "platform_camera/hal/mediatek/mtkcam/pipeline/hwnode/p2/P2_Cropper.h"
 #include "P2_Common.h"
 
 #include <mtkcam/utils/debug/P2_DebugControl.h>

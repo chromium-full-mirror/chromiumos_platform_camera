@@ -19,7 +19,7 @@
 #include <stdio.h>
 #include <string>
 
-#include <camera/hal/mediatek/mtkcam/ipc/client/IspMgrIpcAdapter.h>
+#include <platform_camera/hal/mediatek/mtkcam/ipc/client/IspMgrIpcAdapter.h>
 
 #include <mtkcam/aaa/aaa_utils.h>
 #include <MyUtils.h>

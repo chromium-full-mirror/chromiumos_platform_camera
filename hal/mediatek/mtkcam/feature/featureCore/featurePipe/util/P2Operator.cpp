@@ -15,7 +15,7 @@
  */
 
 #include <cstring>
-#include "camera/hal/mediatek/mtkcam/feature/featureCore/featurePipe/util/P2Operator.h"
+#include "platform_camera/hal/mediatek/mtkcam/feature/featureCore/featurePipe/util/P2Operator.h"
 
 #define PIPE_MODULE_TAG "vsdof_util"
 #define PIPE_CLASS_TAG "P2Operator"

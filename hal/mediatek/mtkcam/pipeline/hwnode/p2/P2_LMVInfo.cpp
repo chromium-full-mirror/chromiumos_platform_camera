@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "camera/hal/mediatek/mtkcam/pipeline/hwnode/p2/P2_LMVInfo.h"
+#include "platform_camera/hal/mediatek/mtkcam/pipeline/hwnode/p2/P2_LMVInfo.h"
 #define P2_CLASS_TAG LMVInfo
 #define P2_TRACE TRACE_LMV_INFO
 #include "P2_LogHeader.h"

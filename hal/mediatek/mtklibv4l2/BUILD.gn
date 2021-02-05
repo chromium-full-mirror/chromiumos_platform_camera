@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 shared_library("libmtk_mc_libv4l2") {
-  import("//camera/hal/mediatek/common-config.gni")
+  import("//platform_camera/hal/mediatek/common-config.gni")
   sources = [
     "MediaCtrlConfig.cpp",
     "MediaEntity.cpp",

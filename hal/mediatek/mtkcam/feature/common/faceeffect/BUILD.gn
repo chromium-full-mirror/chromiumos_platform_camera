@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 shared_library("libfeature.face") {
-  import("//camera/hal/mediatek/common-config.gni")
+  import("//platform_camera/hal/mediatek/common-config.gni")
   sources = [
     "FaceDetection/FD4.0/fd_hal_base.cpp",
     "FaceDetection/FD4.0/fdvt_hal.cpp",
@@ -32,10 +32,10 @@ shared_library("libfeature.face") {
     "camalgo.fdft",
   ]
   deps += [
-    "//camera/hal/mediatek/mtkcam/custom:libcameracustom",
-    "//camera/hal/mediatek/mtkcam/drv/fdvt/4.0:libmtkcam_fdvt",
-    "//camera/hal/mediatek/mtkcam/ipc/client:libcam_algo_client",
-    "//camera/hal/mediatek/mtkcam/utils/property_service:libmtk_property",
-    "//camera/hal/mediatek/mtkcam/utils/std:libmtkcam_stdutils",
+    "//platform_camera/hal/mediatek/mtkcam/custom:libcameracustom",
+    "//platform_camera/hal/mediatek/mtkcam/drv/fdvt/4.0:libmtkcam_fdvt",
+    "//platform_camera/hal/mediatek/mtkcam/ipc/client:libcam_algo_client",
+    "//platform_camera/hal/mediatek/mtkcam/utils/property_service:libmtk_property",
+    "//platform_camera/hal/mediatek/mtkcam/utils/std:libmtkcam_stdutils",
   ]
 }

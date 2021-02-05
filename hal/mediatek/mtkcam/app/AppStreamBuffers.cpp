@@ -18,7 +18,7 @@
 #define LOG_TAG "MtkCam/streambuf"
 //
 #include "MyUtils.h"
-#include "camera/hal/mediatek/mtkcam/app/AppStreamBuffers.h"
+#include "platform_camera/hal/mediatek/mtkcam/app/AppStreamBuffers.h"
 
 #include <memory>
 #include <string>

@@ -13,7 +13,7 @@ action("gen_static_metadata") {
 }
 
 shared_library("libmtk_halsensor") {
-  import("//camera/hal/mediatek/common-config.gni")
+  import("//platform_camera/hal/mediatek/common-config.gni")
   sources = [
     "HalSensor.cpp",
     "HalSensorList.cpp",
@@ -45,9 +45,9 @@ shared_library("libmtk_halsensor") {
   ]
   deps += [
     ":gen_static_metadata",
-    "//camera/hal/mediatek/mtkcam/custom:libcameracustom",
-    "//camera/hal/mediatek/mtkcam/utils/TuningUtils:libmtkcam_tuning_utils",
-    "//camera/hal/mediatek/mtkcam/utils/metadata:libmtkcam_metadata",
-    "//camera/hal/mediatek/mtkcam/utils/module:libmtkcam_modulehelper",
+    "//platform_camera/hal/mediatek/mtkcam/custom:libcameracustom",
+    "//platform_camera/hal/mediatek/mtkcam/utils/TuningUtils:libmtkcam_tuning_utils",
+    "//platform_camera/hal/mediatek/mtkcam/utils/metadata:libmtkcam_metadata",
+    "//platform_camera/hal/mediatek/mtkcam/utils/module:libmtkcam_modulehelper",
   ]
 }

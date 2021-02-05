@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 shared_library("libcam_normalstream") {
-  import("//camera/hal/mediatek/common-config.gni")
+  import("//platform_camera/hal/mediatek/common-config.gni")
   sources = [
     "NormalStream.cpp",
     "ReqApiMgr.cpp",
@@ -28,9 +28,9 @@ shared_library("libcam_normalstream") {
   ]
   libs += [ "pthread" ]
   deps += [
-    "//camera/hal/mediatek/mtkcam/drv/iopipe/src/common:libcam_iopie_common",
-    "//camera/hal/mediatek/mtkcam/drv/iopipe/src/utils:libcam_iopie_utils",
-    "//camera/hal/mediatek/mtkcam/utils/imgbuf:libmtkcam_imgbuf",
-    "//camera/hal/mediatek/mtklibv4l2:libmtk_mc_libv4l2",
+    "//platform_camera/hal/mediatek/mtkcam/drv/iopipe/src/common:libcam_iopie_common",
+    "//platform_camera/hal/mediatek/mtkcam/drv/iopipe/src/utils:libcam_iopie_utils",
+    "//platform_camera/hal/mediatek/mtkcam/utils/imgbuf:libmtkcam_imgbuf",
+    "//platform_camera/hal/mediatek/mtklibv4l2:libmtk_mc_libv4l2",
   ]
 }

@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 shared_library("libmtkcam_modulefactory_utils") {
-  import("//camera/hal/mediatek/common-config.gni")
+  import("//platform_camera/hal/mediatek/common-config.gni")
   sources = [
     "../store.cpp",
     "register_utils.cpp",
@@ -24,6 +24,6 @@ shared_library("libmtkcam_modulefactory_utils") {
     "MTKCAM_MODULE_GROUP_ID_END=MTKCAM_MODULE_ID_UTILS_END",
   ]
   deps += [
-    "//camera/hal/mediatek/mtkcam/utils/LogicalCam:libmtkcam.logicalmodule",
+    "//platform_camera/hal/mediatek/mtkcam/utils/LogicalCam:libmtkcam.logicalmodule",
   ]
 }

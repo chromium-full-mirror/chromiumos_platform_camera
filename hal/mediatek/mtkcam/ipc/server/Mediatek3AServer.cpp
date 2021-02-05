@@ -24,7 +24,7 @@
 #include <string>
 
 #include <IPCHal3a.h>
-#include <camera/hal/mediatek/mtkcam/ipc/server/Mediatek3AServer.h>
+#include <platform_camera/hal/mediatek/mtkcam/ipc/server/Mediatek3AServer.h>
 #include "Hal3aIpcServerAdapter.h"
 #include "IPCSWNR.h"
 #include "IPCIspMgr.h"

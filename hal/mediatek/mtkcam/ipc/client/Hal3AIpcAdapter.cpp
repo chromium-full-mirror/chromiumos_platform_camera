@@ -23,7 +23,7 @@
 #include <vector>
 
 #include <IPCHal3a.h>
-#include <camera/hal/mediatek/mtkcam/ipc/client/Hal3AIpcAdapter.h>
+#include <platform_camera/hal/mediatek/mtkcam/ipc/client/Hal3AIpcAdapter.h>
 
 #include <mtkcam/aaa/aaa_utils.h>
 #include <mtkcam/utils/metastore/IMetadataProvider.h>

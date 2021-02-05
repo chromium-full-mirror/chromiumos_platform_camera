@@ -23,7 +23,7 @@
 #include <property_lib.h>
 #include <faces.h>
 #include <MTKDetection.h>
-#include <camera/hal/mediatek/mtkcam/feature/common/faceeffect/FaceDetection/FD4.0/fdvt_hal.h>
+#include <platform_camera/hal/mediatek/mtkcam/feature/common/faceeffect/FaceDetection/FD4.0/fdvt_hal.h>
 #include <mtkcam/utils/std/Log.h>
 #include <cam_fdvt_v4l2.h>
 #include <camera_custom_fd.h>

@@ -20,7 +20,7 @@
 #define P2_TRACE TRACE_STREAMING_PROCESSOR
 #include "P2_LogHeader.h"
 
-#include "camera/hal/mediatek/mtkcam/pipeline/hwnode/p2/P2_StreamingProcessor.h"
+#include "platform_camera/hal/mediatek/mtkcam/pipeline/hwnode/p2/P2_StreamingProcessor.h"
 #include "P2_Util.h"
 
 #include <memory>

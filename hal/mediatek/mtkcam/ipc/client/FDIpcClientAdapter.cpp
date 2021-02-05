@@ -21,7 +21,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <camera/hal/mediatek/mtkcam/ipc/client/FDIpcClientAdapter.h>
+#include <platform_camera/hal/mediatek/mtkcam/ipc/client/FDIpcClientAdapter.h>
 
 #include "mtkcam/utils/std/Log.h"
 #include "Hal3aIpcCommon.h"

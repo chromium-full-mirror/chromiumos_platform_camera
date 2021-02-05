@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 shared_library("libmtkcam_streamutils") {
-  import("//camera/hal/mediatek/common-config.gni")
+  import("//platform_camera/hal/mediatek/common-config.gni")
   sources = [
     "SyncHelper/SyncHelper.cpp",
     "SyncHelper/SyncHelperBase.cpp",
@@ -30,9 +30,9 @@ shared_library("libmtkcam_streamutils") {
   ]
   libs += [ "pthread" ]
   deps += [
-    "//camera/hal/mediatek/mtkcam/utils/imgbuf:libmtkcam_imgbuf",
-    "//camera/hal/mediatek/mtkcam/utils/metadata:libmtkcam_metadata",
-    "//camera/hal/mediatek/mtkcam/utils/property_service:libmtk_property",
-    "//camera/hal/mediatek/mtkcam/utils/std:libmtkcam_stdutils",
+    "//platform_camera/hal/mediatek/mtkcam/utils/imgbuf:libmtkcam_imgbuf",
+    "//platform_camera/hal/mediatek/mtkcam/utils/metadata:libmtkcam_metadata",
+    "//platform_camera/hal/mediatek/mtkcam/utils/property_service:libmtk_property",
+    "//platform_camera/hal/mediatek/mtkcam/utils/std:libmtkcam_stdutils",
   ]
 }

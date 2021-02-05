@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "camera/hal/mediatek/mtkcam/pipeline/hwnode/p2/P2_MWData.h"
+#include "platform_camera/hal/mediatek/mtkcam/pipeline/hwnode/p2/P2_MWData.h"
 #include <mtkcam/utils/debug/P2_DebugControl.h>
 
 #include <list>

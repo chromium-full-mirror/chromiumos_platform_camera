@@ -19,7 +19,7 @@
 #include <string>
 #include <vector>
 
-#include <camera/hal/mediatek/mtkcam/ipc/client/Hal3aIpcCommon.h>
+#include <platform_camera/hal/mediatek/mtkcam/ipc/client/Hal3aIpcCommon.h>
 
 #include "Mediatek3AClient.h"
 

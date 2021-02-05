@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 shared_library("libcameracustom") {
-  import("//camera/hal/mediatek/common-config.gni")
+  import("//platform_camera/hal/mediatek/common-config.gni")
   sources = [
     "./mt8183/hal/camera/camera_custom_3dnr.cpp",
     "./mt8183/hal/camera/camera_custom_capture_nr.cpp",
@@ -23,5 +23,5 @@ shared_library("libcameracustom") {
     "${mtk_root_path}/mtkcam/include",
   ]
   deps +=
-      [ "//camera/hal/mediatek/mtkcam/utils/property_service:libmtk_property" ]
+      [ "//platform_camera/hal/mediatek/mtkcam/utils/property_service:libmtk_property" ]
 }

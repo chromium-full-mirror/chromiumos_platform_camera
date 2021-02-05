@@ -18,7 +18,7 @@
 #include <memory>
 #include <string>
 
-#include <camera/hal/mediatek/mtkcam/ipc/IPCCommon.h>
+#include <platform_camera/hal/mediatek/mtkcam/ipc/IPCCommon.h>
 
 IPC_GROUP Mediatek3AIpcCmdToGroup(IPC_CMD cmd) {
   switch (cmd) {

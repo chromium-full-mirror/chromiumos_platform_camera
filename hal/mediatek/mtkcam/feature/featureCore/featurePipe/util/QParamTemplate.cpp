@@ -20,7 +20,7 @@
 #define PIPE_LOG_TAG PIPE_MODULE_TAG PIPE_CLASS_TAG
 #include <include/PipeLog.h>
 
-#include "camera/hal/mediatek/mtkcam/feature/featureCore/featurePipe/util/QParamTemplate.h"
+#include "platform_camera/hal/mediatek/mtkcam/feature/featureCore/featurePipe/util/QParamTemplate.h"
 
 #include <memory>
 

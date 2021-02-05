@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 shared_library("libcam_iopie_utils") {
-  import("//camera/hal/mediatek/common-config.gni")
+  import("//platform_camera/hal/mediatek/common-config.gni")
   sources = [
     "CamCapability/Cam_cap.cpp",
     "CamCapability/cam_capability.cpp",
@@ -28,10 +28,10 @@ shared_library("libcam_iopie_utils") {
   ]
   libs += [ "pthread" ]
   deps += [
-    "//camera/hal/mediatek/mtkcam/utils/gralloc:libmtkcam_grallocutils",
-    "//camera/hal/mediatek/mtkcam/utils/imgbuf:libmtkcam_imgbuf",
-    "//camera/hal/mediatek/mtkcam/utils/property_service:libmtk_property",
-    "//camera/hal/mediatek/mtkcam/utils/std:libmtkcam_stdutils",
-    "//camera/hal/mediatek/mtklibv4l2:libmtk_mc_libv4l2",
+    "//platform_camera/hal/mediatek/mtkcam/utils/gralloc:libmtkcam_grallocutils",
+    "//platform_camera/hal/mediatek/mtkcam/utils/imgbuf:libmtkcam_imgbuf",
+    "//platform_camera/hal/mediatek/mtkcam/utils/property_service:libmtk_property",
+    "//platform_camera/hal/mediatek/mtkcam/utils/std:libmtkcam_stdutils",
+    "//platform_camera/hal/mediatek/mtklibv4l2:libmtk_mc_libv4l2",
   ]
 }

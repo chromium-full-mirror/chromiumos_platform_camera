@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 shared_library("libmtkcam.featurepipe.util") {
-  import("//camera/hal/mediatek/common-config.gni")
+  import("//platform_camera/hal/mediatek/common-config.gni")
   sources = [
     "P2Operator.cpp",
     "QParamTemplate.cpp",
@@ -36,8 +36,8 @@ shared_library("libmtkcam.featurepipe.util") {
     "${mtk_root_path}/mtkcam/drv/iopipe/src/utils",
   ]
   deps += [
-    "//camera/hal/mediatek/mtkcam/drv/iopipe/src/pass2:libcam_normalstream",
-    "//camera/hal/mediatek/mtkcam/utils/property_service:libmtk_property",
-    "//camera/hal/mediatek/mtkcam/utils/std:libmtkcam_stdutils",
+    "//platform_camera/hal/mediatek/mtkcam/drv/iopipe/src/pass2:libcam_normalstream",
+    "//platform_camera/hal/mediatek/mtkcam/utils/property_service:libmtk_property",
+    "//platform_camera/hal/mediatek/mtkcam/utils/std:libmtkcam_stdutils",
   ]
 }

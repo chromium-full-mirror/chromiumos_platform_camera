@@ -18,7 +18,7 @@
 #include <memory>
 #include <stdio.h>
 #include <stdlib.h>
-#include <camera/hal/mediatek/mtkcam/feature/common/faceeffect/FaceDetection/FD4.0/fdvt_hal.h>
+#include <platform_camera/hal/mediatek/mtkcam/feature/common/faceeffect/FaceDetection/FD4.0/fdvt_hal.h>
 #include <mtkcam/feature/FaceDetection/fd_hal_base.h>
 
 /*******************************************************************************

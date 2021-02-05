@@ -17,7 +17,7 @@
 #undef LOG_TAG
 #define LOG_TAG "MtkCam/AppStreamMgr"
 //
-#include "camera/hal/mediatek/mtkcam/app/AppStreamMgr.h"
+#include "platform_camera/hal/mediatek/mtkcam/app/AppStreamMgr.h"
 #include <cros-camera/camera_buffer_manager.h>
 #include <mtkcam/ipc/client/Mediatek3AClient.h>
 #include <mtkcam/utils/gralloc/IGrallocHelper.h>

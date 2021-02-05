@@ -20,7 +20,7 @@
 #include <cutils/compiler.h>
 #include <stdio.h>
 
-#include <camera/hal/mediatek/mtkcam/ipc/client/NR3DIpcClientAdapter.h>
+#include <platform_camera/hal/mediatek/mtkcam/ipc/client/NR3DIpcClientAdapter.h>
 
 #include "mtkcam/utils/std/Log.h"
 #include "Hal3aIpcCommon.h"

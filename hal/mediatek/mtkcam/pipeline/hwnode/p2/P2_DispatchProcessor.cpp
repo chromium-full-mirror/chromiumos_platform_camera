@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "camera/hal/mediatek/mtkcam/pipeline/hwnode/p2/P2_DispatchProcessor.h"
+#include "platform_camera/hal/mediatek/mtkcam/pipeline/hwnode/p2/P2_DispatchProcessor.h"
 
 #define P2_DISPATCH_THREAD_NAME "p2_dispatch"
 

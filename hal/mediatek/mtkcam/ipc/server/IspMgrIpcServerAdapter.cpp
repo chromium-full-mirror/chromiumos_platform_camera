@@ -22,7 +22,7 @@
 #include <sys/stat.h>
 #include <Errors.h>
 
-#include <camera/hal/mediatek/mtkcam/ipc/server/IspMgrIpcServerAdapter.h>
+#include <platform_camera/hal/mediatek/mtkcam/ipc/server/IspMgrIpcServerAdapter.h>
 
 #include "IPCIspMgr.h"
 #include "IPCCommon.h"

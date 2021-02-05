@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "camera/hal/mediatek/mtkcam/pipeline/hwnode/p2/P2_CaptureProcessor.h"
+#include "platform_camera/hal/mediatek/mtkcam/pipeline/hwnode/p2/P2_CaptureProcessor.h"
 
 #define P2_CAPTURE_THREAD_NAME "p2_capture"
 

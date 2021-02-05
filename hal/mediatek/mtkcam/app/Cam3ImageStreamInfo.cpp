@@ -18,7 +18,7 @@
 #define LOG_TAG "MtkCam/StreamInfo"
 //
 #include "MyUtils.h"
-#include "camera/hal/mediatek/mtkcam/app/Cam3ImageStreamInfo.h"
+#include "platform_camera/hal/mediatek/mtkcam/app/Cam3ImageStreamInfo.h"
 
 #include <memory>
 #include <string>

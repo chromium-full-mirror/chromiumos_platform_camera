@@ -1,10 +1,10 @@
-mtk_root_path = "//camera/hal/mediatek"
+mtk_root_path = "//platform_camera/hal/mediatek"
 include_dirs = [
   "${mtk_root_path}",
   "${mtk_root_path}/mtkcam/include",
   "${mtk_root_path}/mtkcam/utils",
   "${mtk_root_path}/mtkcam/utils/property_service",
-  "//camera",
+  "//platform_camera",
 ]
 ldflags = [ "-Wl,--no-undefined" ]
 libs = []

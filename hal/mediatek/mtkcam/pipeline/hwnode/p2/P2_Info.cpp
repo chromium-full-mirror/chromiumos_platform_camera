@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "camera/hal/mediatek/mtkcam/pipeline/hwnode/p2/P2_Info.h"
+#include "platform_camera/hal/mediatek/mtkcam/pipeline/hwnode/p2/P2_Info.h"
 
 namespace P2 {
 

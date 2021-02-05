@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "camera/hal/mediatek/mtkcam/pipeline/hwnode/p2/P2_MWFrame.h"
+#include "platform_camera/hal/mediatek/mtkcam/pipeline/hwnode/p2/P2_MWFrame.h"
 
 #include <mtkcam/utils/debug/P2_DebugControl.h>
 #define P2_CLASS_TAG MWFrame

@@ -18,7 +18,7 @@
 #include <memory>
 #include <stdio.h>
 
-#include <camera/hal/mediatek/mtkcam/ipc/client/SWNRIpcClientAdapter.h>
+#include <platform_camera/hal/mediatek/mtkcam/ipc/client/SWNRIpcClientAdapter.h>
 
 #include "mtkcam/utils/std/Log.h"
 #include "Hal3aIpcCommon.h"

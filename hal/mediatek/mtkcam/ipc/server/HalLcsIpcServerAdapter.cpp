@@ -17,7 +17,7 @@
 #include <cutils/compiler.h>
 #include <stdio.h>
 
-#include <camera/hal/mediatek/mtkcam/ipc/server/HalLcsIpcServerAdapter.h>
+#include <platform_camera/hal/mediatek/mtkcam/ipc/server/HalLcsIpcServerAdapter.h>
 
 #include "mtkcam/utils/std/Log.h"
 #include "IPCLCS.h"

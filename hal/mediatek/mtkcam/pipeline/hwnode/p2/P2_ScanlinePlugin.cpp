@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "camera/hal/mediatek/mtkcam/pipeline/hwnode/p2/P2_ScanlinePlugin.h"
+#include "platform_camera/hal/mediatek/mtkcam/pipeline/hwnode/p2/P2_ScanlinePlugin.h"
 #include <mtkcam/utils/debug/P2_DebugControl.h>
 #define P2_CLASS_TAG ScanlinePlugin
 #define P2_TRACE TRACE_P2_SCANLINE_PLUGIN

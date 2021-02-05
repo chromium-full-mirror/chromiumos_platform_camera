@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 shared_library("libmtkcam_pipeline") {
-  import("//camera/hal/mediatek/common-config.gni")
+  import("//platform_camera/hal/mediatek/common-config.gni")
   sources = [
     "InFlightRequest.cpp",
     "PipelineBufferSetFrameControlImp.cpp",
@@ -31,9 +31,9 @@ shared_library("libmtkcam_pipeline") {
   ]
   libs += [ "pthread" ]
   deps += [
-    "//camera/hal/mediatek/mtkcam/pipeline/utils:libmtkcam_streamutils",
-    "//camera/hal/mediatek/mtkcam/utils/metadata:libmtkcam_metadata",
-    "//camera/hal/mediatek/mtkcam/utils/property_service:libmtk_property",
-    "//camera/hal/mediatek/mtkcam/utils/std:libmtkcam_stdutils",
+    "//platform_camera/hal/mediatek/mtkcam/pipeline/utils:libmtkcam_streamutils",
+    "//platform_camera/hal/mediatek/mtkcam/utils/metadata:libmtkcam_metadata",
+    "//platform_camera/hal/mediatek/mtkcam/utils/property_service:libmtk_property",
+    "//platform_camera/hal/mediatek/mtkcam/utils/std:libmtkcam_stdutils",
   ]
 }

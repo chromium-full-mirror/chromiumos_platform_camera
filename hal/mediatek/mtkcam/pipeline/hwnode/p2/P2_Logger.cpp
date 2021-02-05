@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "camera/hal/mediatek/mtkcam/pipeline/hwnode/p2/P2_Logger.h"
+#include "platform_camera/hal/mediatek/mtkcam/pipeline/hwnode/p2/P2_Logger.h"
 #include <mtkcam/utils/debug/P2_DebugControl.h>
 #define P2_CLASS_TAG P2_Logger
 #define P2_TRACE TRACE_P2_LOGGER

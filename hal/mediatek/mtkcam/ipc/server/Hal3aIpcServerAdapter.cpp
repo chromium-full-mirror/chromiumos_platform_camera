@@ -37,7 +37,7 @@
 #include "IPCCommon.h"
 #include "Mediatek3AServer.h"
 
-#include <camera/hal/mediatek/mtkcam/ipc/server/Hal3aIpcServerAdapter.h>
+#include <platform_camera/hal/mediatek/mtkcam/ipc/server/Hal3aIpcServerAdapter.h>
 
 using NSCam::IImageBuffer;
 using NSCam::IIPCHalSensor;

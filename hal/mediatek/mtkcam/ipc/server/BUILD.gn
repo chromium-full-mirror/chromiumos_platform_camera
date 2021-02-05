@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 shared_library("libcam_algo") {
-  import("//camera/hal/mediatek/common-config.gni")
+  import("//platform_camera/hal/mediatek/common-config.gni")
   sources = [
     "../IPCCommon.cpp",
     "FDIpcServerAdapter.cpp",
@@ -36,9 +36,9 @@ shared_library("libcam_algo") {
     "pthread",
   ]
   deps += [
-    "//camera/hal/mediatek/mtkcam/utils/hw:libmtkcam_hwutils",
-    "//camera/hal/mediatek/mtkcam/utils/imgbuf:libmtkcam_imgbuf",
-    "//camera/hal/mediatek/mtkcam/utils/metadata:libmtkcam_metadata",
-    "//camera/hal/mediatek/mtkcam/utils/module:libmtkcam_modulehelper",
+    "//platform_camera/hal/mediatek/mtkcam/utils/hw:libmtkcam_hwutils",
+    "//platform_camera/hal/mediatek/mtkcam/utils/imgbuf:libmtkcam_imgbuf",
+    "//platform_camera/hal/mediatek/mtkcam/utils/metadata:libmtkcam_metadata",
+    "//platform_camera/hal/mediatek/mtkcam/utils/module:libmtkcam_modulehelper",
   ]
 }

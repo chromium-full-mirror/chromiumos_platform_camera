@@ -16,7 +16,7 @@
 
 //! \file  lmv_drv.cpp
 
-#include <camera/hal/mediatek/mtkcam/feature/common/lmv/lmv_drv.h>
+#include <platform_camera/hal/mediatek/mtkcam/feature/common/lmv/lmv_drv.h>
 
 #include <dlfcn.h>
 #include <fcntl.h>

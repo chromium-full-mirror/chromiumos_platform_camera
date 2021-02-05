@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 shared_library("libmtkcam_modulefactory_aaa") {
-  import("//camera/hal/mediatek/common-config.gni")
+  import("//platform_camera/hal/mediatek/common-config.gni")
   sources = [
     "../store.cpp",
     "register_3DNR_IPC.cpp",
@@ -40,5 +40,5 @@ shared_library("libmtkcam_modulefactory_aaa") {
     "cam.lcs",
     "pthread",
   ]
-  deps += [ "//camera/hal/mediatek/mtkcam/ipc/client:libcam_algo_client" ]
+  deps += [ "//platform_camera/hal/mediatek/mtkcam/ipc/client:libcam_algo_client" ]
 }

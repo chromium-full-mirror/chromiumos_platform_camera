@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "camera/hal/mediatek/mtkcam/pipeline/hwnode/p2/P2_BasicProcessor.h"
+#include "platform_camera/hal/mediatek/mtkcam/pipeline/hwnode/p2/P2_BasicProcessor.h"
 #include "P2_Util.h"
 #include <src/pass2/NormalStream.h>
 
