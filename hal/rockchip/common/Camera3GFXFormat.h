@@ -18,7 +18,7 @@
 #ifndef _CAMERA3_GFX_FORMAT_H_
 #define _CAMERA3_GFX_FORMAT_H_
 
-#include <system/window.h>
+#include <cutils/native_handle.h>
 #include "Camera3V4l2Format.h"
 
 NAMESPACE_DECLARATION {
