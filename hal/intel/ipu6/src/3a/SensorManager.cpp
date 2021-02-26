@@ -199,8 +199,16 @@ uint32_t SensorManager::updateSensorExposure(SensorExpGroup sensorExposures, lon
             mExposureDataMap[sensorSeq] = exposureData;
         }
 
-        mAnalogGainMap[sensorSeq + mAnalogGainDelay] = analogGains;
-        mDigitalGainMap[sensorSeq + mDigitalGainDelay] = digitalGains;
+        if ((sensorSeq + mAnalogGainDelay) == mLastSofSequence) {
+            mSensorHwCtrl->setAnalogGains(analogGains);
+        } else {
+            mAnalogGainMap[sensorSeq + mAnalogGainDelay] = analogGains;
+        }
+        if ((sensorSeq + mDigitalGainDelay) == mLastSofSequence) {
+            mSensorHwCtrl->setDigitalGains(digitalGains);
+        } else {
+            mDigitalGainMap[sensorSeq + mDigitalGainDelay] = digitalGains;
+        }
         effectSeq += mExposureDataMap.size();
     } else if (PlatformData::isIsysEnabled(mCameraId)) {
         mSensorHwCtrl->setFrameDuration(exposureData.lineLengthPixels,
