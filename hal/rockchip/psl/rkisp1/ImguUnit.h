@@ -82,12 +82,6 @@ private:
         IMGU_IDLE,
     };
 
-    enum ImguPipeType {
-        PIPE_VIDEO_INDEX = 0,
-        PIPE_STILL_INDEX,
-        PIPE_NUM
-    };
-
     struct PipeConfiguration {
         std::vector<std::shared_ptr<IDeviceWorker>> deviceWorkers;
         std::vector<std::shared_ptr<FrameWorker>> pollableWorkers;
@@ -108,11 +102,10 @@ private:
     StreamConfig mActiveStreams;
     std::vector<std::shared_ptr<ITaskEventListener>> mListeningTasks;   // Tasks that listen for events from another task.
 
-    PipeConfiguration mPipeConfigs[PIPE_NUM];
+    PipeConfiguration mPipeConfig;
     std::vector<std::shared_ptr<IDeviceWorker>> mFirstWorkers;
     std::vector<ICaptureEventSource *> mListenerDeviceWorkers; /* mListenerDeviceWorkers doesn't own ICaptureEventSource objects */
     std::vector<ICaptureEventListener*> mListeners; /* mListeners doesn't own ICaptureEventListener objects */
-    PipeConfiguration* mCurPipeConfig;
     PipeConfiguration mMetaConfig;
 
     MediaCtlHelper mMediaCtlHelper;

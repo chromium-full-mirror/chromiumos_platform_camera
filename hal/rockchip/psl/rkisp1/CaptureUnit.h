@@ -63,7 +63,7 @@ public:
         struct timeval   timestamp;
         unsigned int     sequence;
         std::shared_ptr<rk_aiq_statistics_input_params> stats;
-        std::shared_ptr<rkisp1_isp_params_cfg> param;
+        std::shared_ptr<rkisp1_params_cfg> param;
         unsigned int     reqId;
         rk_aiq_exposure_sensor_descriptor exposureDesc;
         rk_aiq_frame_params frameParams;

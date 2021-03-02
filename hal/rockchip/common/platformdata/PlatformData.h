@@ -141,7 +141,6 @@ struct SensorDriverDescriptor {
     std::string mI2CAddress;
     enum ISP_PORT mIspPort;
     enum SensorDeviceType mSensorDevType;
-    int csiPort;
 };
 
 enum ExtensionGroups {
@@ -235,7 +234,6 @@ private:
     status_t findMediaControllerSensors();
     status_t findMediaDeviceInfo();
     status_t initDriverListHelper(unsigned major, unsigned minor, SensorDriverDescriptor& drvInfo);
-    status_t getCSIPortID(const std::string &deviceName, int &portId);
 };
 
 /**

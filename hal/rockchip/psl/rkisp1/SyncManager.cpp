@@ -118,12 +118,6 @@ status_t SyncManager::setSubdev(std::shared_ptr<MediaEntity> entity, sensorEntit
         }
         mIsysReceiverSubdev = subdev;
         break;
-    case SUBDEV_ISYSBACKEND:
-        if (entity->getType() != SUBDEV_GENERIC) {
-            LOGE("%s is not Isys receiver subdevice\n", entity->getName());
-        }
-        mIsysReceiverSubdev = subdev;
-        break;
     default:
         LOGE("Entity type (%d) not existing", type);
         return BAD_VALUE;
@@ -153,32 +147,7 @@ status_t SyncManager::setMediaEntity(const std::string &name,
         return UNKNOWN_ERROR;
     }
 
-    //The entity port of rkisp1-csi2 is dynamical,
-    //get rkisp1-csi2 0 or 1 from pixel entity sink.
-    if (type == SUBDEV_ISYSRECEIVER) {
-        const char* pixelType  = "pixel_array";
-
-        entityName = cap->getMediaCtlEntityName(pixelType);
-        status = mMediaCtl->getMediaEntity(mediaEntity, entityName.c_str());
-        if (mediaEntity == nullptr || status != NO_ERROR) {
-             LOGE("Could not retrieve media entity %s", entityName.c_str());
-             return UNKNOWN_ERROR;
-        }
-        std::vector<string> names;
-        names.clear();
-        status = mMediaCtl->getSinkNamesForEntity(mediaEntity, names);
-        if (names.size()== 0 || status != NO_ERROR) {
-             LOGE("Could not retrieve sink name of media entity %s",
-                 entityName.c_str());
-             return UNKNOWN_ERROR;
-        }
-
-        LOG1("camera %d using csi port: %s\n", mCameraId, names[0].c_str());
-        entityName = names[0];
-    } else {
-        entityName = cap->getMediaCtlEntityName(name);
-    }
-
+    entityName = cap->getMediaCtlEntityName(name);
     LOG1("found entityName: %s\n", entityName.c_str());
     if (entityName == "none" && name == "pixel_array") {
         LOGE("No %s in this Sensor. Should not happen", entityName.c_str());
@@ -914,7 +883,7 @@ status_t SyncManager::initSynchronization()
      * find the sub-device that represent the csi receiver, open it and keep a
      * reference in mIsysReceiverSubdev
      */
-    status = setMediaEntity("isys_backend", SUBDEV_ISYSBACKEND);
+    status = setMediaEntity("csi_receiver", SUBDEV_ISYSRECEIVER);
     if (CC_UNLIKELY(status != NO_ERROR)) {
         LOGE("Cannot find the isys csi-receiver");
         return UNKNOWN_ERROR;

@@ -106,7 +106,6 @@ typedef struct MediaCtlControlParams {
  */
 typedef struct MediaCtlConfig {
     ConfigProperties mCameraProps;
-    FrameTimingCalcSize mFTCSize;
     std::vector<MediaCtlLinkParams> mLinkParams;
     std::vector<MediaCtlFormatParams> mFormatParams;
     std::vector<MediaCtlSelectionParams> mSelectionParams;

@@ -44,7 +44,6 @@ class MediaEntity;
 typedef enum {
     SUBDEV_PIXEL_ARRAY,
     SUBDEV_ISYSRECEIVER,
-    SUBDEV_ISYSBACKEND
 } sensorEntityType;
 
 enum {

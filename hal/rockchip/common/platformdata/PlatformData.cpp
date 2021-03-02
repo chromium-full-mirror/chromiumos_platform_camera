@@ -966,104 +966,6 @@ status_t CameraHWInfo::findMediaDeviceInfo()
 }
 
 /**
- * Function to get the CSI port number a sensor is connected to.
- * Use mediacontroller to go through the links to find the CSI entity
- * and trim the port number from it.
- *
- * \param[IN] deviceName sensor full name
- * \param[OUT] portId CSI port number
- *
- */
-status_t CameraHWInfo::getCSIPortID(const std::string &deviceName, int &portId)
-{
-    LOG1("@%s", __FUNCTION__);
-    status_t status = NO_ERROR;
-    std::shared_ptr<MediaEntity> mediaEntity = nullptr;
-    std::vector<string> names;
-    string name;
-    std::vector<string> nameTemplateVec;
-
-    // Kernel driver should follow one of these 3 templates to report the CSI port, else this
-    // parsing will fail. The format is <...CSI...> port-number
-    const char *CSI_RX_PORT_NAME_TEMPLATE1 = "CSI-2";
-    const char *CSI_RX_PORT_NAME_TEMPLATE2 = "CSI2-port";
-    const char *CSI_RX_PORT_NAME_TEMPLATE3 = "TPG";
-    const char *CSI_RX_PORT_NAME_TEMPLATE4 = "mipi-dphy";
-    nameTemplateVec.push_back(CSI_RX_PORT_NAME_TEMPLATE1);
-    nameTemplateVec.push_back(CSI_RX_PORT_NAME_TEMPLATE2);
-    nameTemplateVec.push_back(CSI_RX_PORT_NAME_TEMPLATE3);
-    nameTemplateVec.push_back(CSI_RX_PORT_NAME_TEMPLATE4);
-
-    std::shared_ptr<MediaController> mediaCtl = std::make_shared<MediaController>(mMediaControllerPathName.c_str());
-    if (!mediaCtl) {
-        LOGE("Error creating MediaController");
-        return UNKNOWN_ERROR;
-    }
-
-    status = mediaCtl->init();
-    if (status != NO_ERROR) {
-        LOGE("Error initializing Media Controller");
-        return status;
-    }
-
-    status = mediaCtl->getMediaEntity(mediaEntity, deviceName.c_str());
-    if (status != NO_ERROR) {
-        LOGE("Failed to get media entity by sensor name %s", deviceName.c_str());
-        return status;
-    }
-
-    if (mediaEntity->getType() != SUBDEV_SENSOR) {
-        LOGE("Media entity not sensor type");
-        return UNKNOWN_ERROR;
-    }
-
-    // Traverse the sinks till we get CSI port
-    while (1) {
-        names.clear();
-        status = mediaCtl->getSinkNamesForEntity(mediaEntity, names);
-        if (status != NO_ERROR) {
-            LOGE("Error getting sink names for entity %s", mediaEntity->getName());
-            return UNKNOWN_ERROR;
-        }
-
-        // For sensor type there will be only one sink
-        if (names.size() != 1) {
-            LOGW("Number of sinks for sensor not 1 it is %zu", names.size());
-        }
-        if (names.size() == 0) {
-            LOGW("No sink names available for %s", deviceName.c_str());
-            return 0;
-        }
-
-        name = names[0];
-        size_t pos = 0;
-        for (auto &nameTemplate : nameTemplateVec) {
-            // check if name is CSI port
-            if ((pos = name.find(nameTemplate)) != string::npos) {
-                LOG2("found CSI port name = %s", name.c_str());
-                // Trim the port id from CSI port name
-                name = name.substr(pos + nameTemplate.length());
-                portId = atoi(name.c_str());
-                if (portId < 0) {
-                    LOGE("Error getting port id %d", portId);
-                    return UNKNOWN_ERROR;
-                }
-                return status;
-            }
-        }
-        // Get media entity for new name
-        mediaEntity = nullptr;
-        status = mediaCtl->getMediaEntity(mediaEntity, name.c_str());
-        if (status != NO_ERROR) {
-            LOGE("Failed to get media entity by name %s", name.c_str());
-            break;
-        }
-    }
-
-    return status;
-}
-
-/**
  * Get all available sensor modes from the driver
  *
  * Function gets all currently available sensor modes from the driver
@@ -1172,8 +1074,6 @@ std::string CameraHWInfo::getFullMediaCtlElementName(const std::vector<std::stri
 status_t CameraHWInfo::initDriverListHelper(unsigned major, unsigned minor, SensorDriverDescriptor& drvInfo)
 {
     LOG1("@%s", __FUNCTION__);
-    int portId = 0;
-    status_t status = UNKNOWN_ERROR;
     std::size_t pos = string::npos;
 
     string subdevPathName = "/dev/v4l-subdev";
@@ -1204,12 +1104,6 @@ status_t CameraHWInfo::initDriverListHelper(unsigned major, unsigned minor, Sens
                 drvInfo.mDeviceName = subdevPathNameN.substr(pos + 1);
 
             drvInfo.mIspPort = (ISP_PORT)n; // Unused for media-ctl sensors
-            status = getCSIPortID(drvInfo.mSensorName, portId);
-            if (status != NO_ERROR) {
-                LOGE("error getting CSI port id %d", portId);
-                return status;
-            }
-
             /*
              * Parse i2c address from sensor name.
              * It is the last word in the sensor name string, so find last
@@ -1217,36 +1111,10 @@ status_t CameraHWInfo::initDriverListHelper(unsigned major, unsigned minor, Sens
              */
             pos = drvInfo.mSensorName.rfind(" ");
             drvInfo.mI2CAddress = drvInfo.mSensorName.substr(pos + 1);
-
-            /*
-             *  Now that we are done using the sensor name cut the name to
-             *  first space, to get the actual name. First we check if
-             *  it is tpg.
-             */
-            size_t i = drvInfo.mSensorName.find("TPG");
-            if (CC_LIKELY(i != std::string::npos)) {
-                drvInfo.mSensorName = drvInfo.mSensorName.substr(i,3);
-                drvInfo.csiPort = portId;
-                /* Because of several ports for TPG in media entity,
-                 * just use port 0 as source input.
-                 */
-                if (drvInfo.csiPort == 0)
-                    mSensorInfo.push_back(drvInfo);
-
-            } else {
-                i = drvInfo.mSensorName.find(" ");
-                if (CC_LIKELY(i != std::string::npos)) {
-                    drvInfo.mSensorName = drvInfo.mSensorName.substr(0, i);
-                } else {
-                    LOGW("Could not extract sensor name correctly");
-                }
-
-                drvInfo.csiPort = portId;
-                mSensorInfo.push_back(drvInfo);
-            }
-            LOG1("Registered sensor driver \"%s\" found for sensor \"%s\", CSI port:%d",
-                 drvInfo.mDeviceName.c_str(), drvInfo.mSensorName.c_str(),
-                 drvInfo.csiPort);
+            drvInfo.mSensorName = drvInfo.mSensorName.substr(0, pos);
+            mSensorInfo.push_back(drvInfo);
+            LOG1("Registered sensor driver \"%s\" found for sensor \"%s\"",
+                 drvInfo.mDeviceName.c_str(), drvInfo.mSensorName.c_str());
             // All ok
             break;
         }

@@ -27,16 +27,10 @@ namespace camera2 {
  */
 enum NodeTypes {
     IMGU_NODE_NULL =            0,
-    IMGU_NODE_VF_PREVIEW =      1 << 1,
-    IMGU_NODE_PV_PREVIEW =      1 << 2,
-    IMGU_NODE_VIDEO =           1 << 3,
-    IMGU_NODE_STILL =           1 << 4,
-    IMGU_NODE_RAW =             1 << 5,
-    IMGU_NODE_PARAM =           1 << 6,
-    IMGU_NODE_STAT =            1 << 7,
-    IMGU_NODE_INPUT =           1 << 8,
-    IMGU_NODE_OUTPUT =          1 << 9,
-    ISYS_NODE_RAW =             1 << 10
+    IMGU_NODE_PREVIEW =         1 << 1,  // self path
+    IMGU_NODE_VIDEO =           1 << 2,  // main path
+    IMGU_NODE_PARAM =           1 << 3,
+    IMGU_NODE_STAT =            1 << 4,
 };
 
 int getDefaultMemoryType(NodeTypes node);

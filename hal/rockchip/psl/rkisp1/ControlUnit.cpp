@@ -31,6 +31,7 @@
 #include "SettingsProcessor.h"
 #include "Metadata.h"
 #include "Rk3aRunner.h"
+#include "GraphConfig.h"
 
 static const int SETTINGS_POOL_SIZE = MAX_REQUEST_IN_PROCESS_NUM * 2;
 
@@ -1006,14 +1007,11 @@ status_t ControlUnit::handleFlush(void)
 status_t
 ControlUnit::getIspRect(rk_aiq_exposure_sensor_descriptor &desc)
 {
-//copy the define in the GraphConfig.cpp
-#define MEDIACTL_PAD_IN_NUM 0
-#define MEDIACTL_PAD_OUTPUT_NUM 2
     status_t status = NO_ERROR;
-    const MediaCtlConfig *mediaCtlConfig = mStreamCfgProv.getMediaCtlConfig(IStreamConfigProvider::IMGU_COMMON);
+    const MediaCtlConfig *mediaCtlConfig = mStreamCfgProv.getMediaCtlConfig(IStreamConfigProvider::IMGU_VIDEO);
     for (unsigned int i = 0; i < mediaCtlConfig->mSelectionParams.size(); i++) {
         MediaCtlSelectionParams param = mediaCtlConfig->mSelectionParams[i];
-        if (strstr(param.entityName.c_str(), "rkisp1-isp-subdev")) {
+        if (strstr(param.entityName.c_str(), MEDIACTL_IMGUNAME)) {
             switch (param.pad) {
             case MEDIACTL_PAD_IN_NUM:
                 desc.isp_input_width = param.width;

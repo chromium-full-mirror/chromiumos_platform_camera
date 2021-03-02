@@ -38,10 +38,10 @@ public:
     status_t convertStats(struct rkisp1_stat_buffer* isp_stats, rk_aiq_statistics_input_params* aiq_stats);
 
 private:
-    void convertAwbStats(struct cifisp_awb_stat* awb_stats, rk_aiq_awb_measure_result* aiq_awb_stats);
-    void convertAeStats(struct cifisp_ae_stat* ae_stats, rk_aiq_aec_measure_result* aiq_ae_stats);
-    void convertAfStats(struct cifisp_af_stat* af_stats, rk_aiq_af_meas_stat* aiq_af_stats);
-    void convertHistStats(struct cifisp_hist_stat* hist_stats, rk_aiq_aec_measure_result* aiq_hist_stats);
+    void convertAwbStats(struct rkisp1_cif_isp_awb_stat* awb_stats, rk_aiq_awb_measure_result* aiq_awb_stats);
+    void convertAeStats(struct rkisp1_cif_isp_ae_stat* ae_stats, rk_aiq_aec_measure_result* aiq_ae_stats);
+    void convertAfStats(struct rkisp1_cif_isp_af_stat* af_stats, rk_aiq_af_meas_stat* aiq_af_stats);
+    void convertHistStats(struct rkisp1_cif_isp_hist_stat* hist_stats, rk_aiq_aec_measure_result* aiq_hist_stats);
 
 private:
 };

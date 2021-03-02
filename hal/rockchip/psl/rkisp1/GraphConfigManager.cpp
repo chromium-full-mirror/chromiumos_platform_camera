@@ -99,25 +99,16 @@ GraphConfigManager::GraphConfigManager(int32_t camId,
 void GraphConfigManager::initStreamResolutionIds()
 {
     mVideoStreamResolutions.clear();
-    mStillStreamResolutions.clear();
     mVideoStreamKeys.clear();
-    mStillStreamKeys.clear();
 
     // Will map streams in this order
     mVideoStreamKeys.push_back(GCSS_KEY_IMGU_VIDEO);
     mVideoStreamKeys.push_back(GCSS_KEY_IMGU_PREVIEW);
-    mStillStreamKeys.push_back(GCSS_KEY_IMGU_STILL);
-    mStillStreamKeys.push_back(GCSS_KEY_IMGU_PREVIEW);
 
     for (size_t i = 0; i < mVideoStreamKeys.size(); i++) {
         ItemUID w = {mVideoStreamKeys[i], GCSS_KEY_WIDTH};
         ItemUID h = {mVideoStreamKeys[i], GCSS_KEY_HEIGHT};
         mVideoStreamResolutions.push_back(std::make_pair(w,h));
-    }
-    for (size_t i = 0; i < mStillStreamKeys.size(); i++) {
-        ItemUID w = {mStillStreamKeys[i], GCSS_KEY_WIDTH};
-        ItemUID h = {mStillStreamKeys[i], GCSS_KEY_HEIGHT};
-        mStillStreamResolutions.push_back(std::make_pair(w,h));
     }
 }
 
@@ -223,71 +214,12 @@ camera3_stream_t* GraphConfigManager::getStreamByVirtualId(uid_t vPortId)
     return nullptr;
 }
 
-bool GraphConfigManager::needSwapVideoPreview(GCSS::GraphConfigNode* graphCfgNode, int32_t id)
-{
-    bool swapVideoPreview = false;
-    int previewWidth = 0;
-    int previewHeight = 0;
-    int videoWidth = 0;
-    int videoHeight = 0;
-    status_t ret1 = OK;
-    status_t ret2 = OK;
-
-    GraphConfigNode* node = nullptr;
-    std::string nodeName = GC_PREVIEW;
-    graphCfgNode->getDescendantByString(nodeName, &node);
-    if (node) {
-        ret1 = node->getValue(GCSS_KEY_WIDTH, previewWidth);
-        ret2 = node->getValue(GCSS_KEY_HEIGHT, previewHeight);
-        if (ret1 != OK || ret2 != OK) {
-            LOGE("@%s, fail to get width or height for node %s, ret1:%d, ret2:%d",
-                __FUNCTION__, nodeName.c_str(), ret1, ret2);
-            return swapVideoPreview;
-        }
-    }
-    LOG2("@%s, settings id:%d, for %s, width:%d, height:%d",
-        __FUNCTION__, id, nodeName.c_str(), previewWidth, previewHeight);
-
-    node = nullptr;
-    nodeName = GC_VIDEO;
-    graphCfgNode->getDescendantByString(nodeName, &node);
-    if (node) {
-        ret1 = node->getValue(GCSS_KEY_WIDTH, videoWidth);
-        ret2 = node->getValue(GCSS_KEY_HEIGHT, videoHeight);
-        if (ret1 != OK || ret2 != OK) {
-            LOGE("@%s, fail to get width or height for node %s, ret1:%d, ret2:%d",
-                __FUNCTION__, nodeName.c_str(), ret1, ret2);
-            return swapVideoPreview;
-        }
-    }
-    LOG2("@%s, settings id:%d, for %s, width:%d, height:%d",
-        __FUNCTION__, id, nodeName.c_str(), videoWidth, videoHeight);
-
-    if (previewWidth != 0 && previewHeight != 0
-        && videoWidth != 0 && videoHeight != 0) {
-        if (previewWidth > videoWidth
-            && previewHeight > videoHeight)
-            swapVideoPreview = true;
-    }
-    LOG2("@%s, swapVideoPreview:%d", __FUNCTION__, swapVideoPreview);
-
-    return swapVideoPreview;
-}
-
 void GraphConfigManager::handleVideoStream(ResolutionItem& res, PlatformGraphConfigKey& streamKey)
 {
     res = mVideoStreamResolutions[0];
     mVideoStreamResolutions.erase(mVideoStreamResolutions.begin());
     streamKey = mVideoStreamKeys[0];
     mVideoStreamKeys.erase(mVideoStreamKeys.begin());
-}
-
-void GraphConfigManager::handleStillStream(ResolutionItem& res, PlatformGraphConfigKey& streamKey)
-{
-    res = mStillStreamResolutions[0];
-    mStillStreamResolutions.erase(mStillStreamResolutions.begin());
-    streamKey = mStillStreamKeys[0];
-    mStillStreamKeys.erase(mStillStreamKeys.begin());
 }
 
 void GraphConfigManager::handleMap(camera3_stream_t* stream, ResolutionItem& res, PlatformGraphConfigKey& streamKey)
@@ -313,8 +245,7 @@ void GraphConfigManager::handleMap(camera3_stream_t* stream, ResolutionItem& res
 #define streamSizeGE(s1, s2) (((s1)->width * (s1)->height) >= ((s2)->width * (s2)->height))
 
 status_t GraphConfigManager::mapStreamToKey(const std::vector<camera3_stream_t*> &streams,
-                                                    int& videoStreamCnt, int& stillStreamCnt,
-                                                    int& needEnableStill)
+                                            int& videoStreamCnt, int& stillStreamCnt)
 {
     for (int i = 0; i < streams.size(); i++) {
         if ( streams[i]->stream_type != CAMERA3_STREAM_OUTPUT) {
@@ -395,36 +326,18 @@ status_t GraphConfigManager::mapStreamToKey(const std::vector<camera3_stream_t*>
         return UNKNOWN_ERROR;
     }
 
-    if (blobNum && !isVideoSnapshot) {
-
-        //HACK: Force use video
-        //TODO: Fix xml(add missing entries for still)
-        needEnableStill = false;
-
-        LOGD("@%s, it has BLOB, needEnableStill:%d", __FUNCTION__, needEnableStill);
-    }
-
     LOG2("@%s, mainOutputIndex %d, secondaryOutputIndex %d ", __FUNCTION__, mainOutputIndex, secondaryOutputIndex);
 
     PlatformGraphConfigKey streamKey;
     ResolutionItem res;
 
-    if (needEnableStill) {
-        // use postview node only for still pipe due to FOV issue
-        // Select settings only according to jpeg stream
-        LOG1(" select settings according %p", availableStreams[0]);
-        stillStreamCnt++;
-        handleStillStream(res, streamKey);
-        handleMap(availableStreams[0], res, streamKey);
-    } else {
+    videoStreamCnt++;
+    handleVideoStream(res, streamKey);
+    handleMap(availableStreams[mainOutputIndex], res, streamKey);
+    if (secondaryOutputIndex >= 0) {
         videoStreamCnt++;
         handleVideoStream(res, streamKey);
-        handleMap(availableStreams[mainOutputIndex], res, streamKey);
-        if (secondaryOutputIndex >= 0) {
-            videoStreamCnt++;
-            handleVideoStream(res, streamKey);
-            handleMap(availableStreams[secondaryOutputIndex], res, streamKey);
-        }
+        handleMap(availableStreams[secondaryOutputIndex], res, streamKey);
     }
 
     return OK;
@@ -448,7 +361,6 @@ status_t GraphConfigManager::configStreams(const vector<camera3_stream_t*> &stre
     HAL_KPI_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL1, 1000000); /* 1 ms*/
     UNUSED(operationMode);
     ResolutionItem res;
-    int needEnableStill = false;
     status_t ret = OK;
 
     mFirstQueryResults.clear();
@@ -474,7 +386,7 @@ status_t GraphConfigManager::configStreams(const vector<camera3_stream_t*> &stre
     mStreamToSinkIdMap.clear();
 
     int videoStreamCount = 0, stillStreamCount = 0;
-    ret = mapStreamToKey(streams, videoStreamCount, stillStreamCount, needEnableStill);
+    ret = mapStreamToKey(streams, videoStreamCount, stillStreamCount);
     if (ret != OK) {
         LOGE("@%s, call mapStreamToKey fail, ret:%d", __FUNCTION__, ret);
         return ret;
@@ -485,12 +397,6 @@ status_t GraphConfigManager::configStreams(const vector<camera3_stream_t*> &stre
     int streamNum = (streams.size() > 2) ? 2 : streams.size();
 
     mQuery[streamCount] = std::to_string(streamNum);
-    // W/A: only pv node is used due to FOV issue,
-    // so here consider one stream only for still case
-    if(needEnableStill) {
-        mQuery[streamCount] = std::to_string(1);
-    }
-
     /**
      * Look for settings. If query results are empty, get default settings
      */
@@ -548,12 +454,11 @@ status_t GraphConfigManager::configStreams(const vector<camera3_stream_t*> &stre
     }
 
     /**
-     * since we map the max res stream to video, and the little one to preview, so
-     * swapVideoPreview here is always false,  by the way, please make sure
-     * the video or still stream size >= preview stream size in graph_settings_<sensor name>.xml, zyc.
+     * We map the max res stream to video, and the little one to preview.
+     * Please make sure the video stream size >= preview stream size in
+     * graph_settings_<sensor name>.xml, zyc.
      */
-    bool swapVideoPreview = needSwapVideoPreview(mFirstQueryResults[0], id);
-    gc->setMediaCtlConfig(mMediaCtl, swapVideoPreview, needEnableStill);
+    gc->setMediaCtlConfig(mMediaCtl);
 
     // Get media control config
     for (size_t i = 0; i < MEDIA_TYPE_MAX_COUNT; i++) {
@@ -573,9 +478,7 @@ status_t GraphConfigManager::configStreams(const vector<camera3_stream_t*> &stre
     }
     ret = gc->getImguMediaCtlData(mCameraId,
                                   testPatternMode,
-                                  &mMediaCtlConfigs[IMGU_COMMON],
-                                  &mMediaCtlConfigs[IMGU_VIDEO],
-                                  &mMediaCtlConfigs[IMGU_STILL]);
+                                  &mMediaCtlConfigs[IMGU_VIDEO]);
     if (ret != OK) {
         LOGE("Couldn't get Imgu mediaCtl data");
     }

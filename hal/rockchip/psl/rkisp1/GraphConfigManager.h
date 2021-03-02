@@ -93,9 +93,7 @@ class IStreamConfigProvider {
 public:
     enum MediaType {
         CIO2 = 0,
-        IMGU_COMMON,
         IMGU_VIDEO,
-        IMGU_STILL,
 
         MEDIA_TYPE_MAX_COUNT
     };
@@ -190,14 +188,10 @@ private:
     void dumpQuery(const std::map<GCSS::ItemUID, std::string> &query);
     status_t prepareGraphConfig(std::shared_ptr<GraphConfig> gc);
 
-    bool needSwapVideoPreview(GCSS::GraphConfigNode* graphCfgNode, int32_t id);
-
     void handleVideoStream(ResolutionItem& res, PlatformGraphConfigKey& streamKey);
-    void handleStillStream(ResolutionItem& res, PlatformGraphConfigKey& streamKey);
     void handleMap(camera3_stream_t* stream, ResolutionItem& res, PlatformGraphConfigKey& streamKey);
     status_t mapStreamToKey(const std::vector<camera3_stream_t*> &streams,
-                                    int& videoStreamCnt, int& stillStreamCnt,
-                                    int& needEnableStill);
+                            int& videoStreamCnt, int& stillStreamCnt);
 private:
     std::unique_ptr<GCSS::GraphQueryManager> mGraphQueryManager;
     /*
@@ -215,9 +209,7 @@ private:
     std::vector<GCSS::GraphConfigNode*> mSecondQueryResults;
 
     std::vector<PlatformGraphConfigKey> mVideoStreamKeys;
-    std::vector<PlatformGraphConfigKey> mStillStreamKeys;
     std::vector<ResolutionItem> mVideoStreamResolutions;
-    std::vector<ResolutionItem> mStillStreamResolutions;
     SharedItemPool<GraphConfig> mGraphConfigPool;
 
     /**

@@ -25,13 +25,13 @@
 #include "RKISP1CameraHw.h"
 #include "NodeTypes.h"
 
-#define BLS_START_H_MAX_IS_VALID(val)    ((val) < CIFISP_BLS_START_H_MAX)
-#define BLS_STOP_H_MAX_IS_VALID(val)    ((val) < CIFISP_BLS_STOP_H_MAX)
-#define BLS_START_V_MAX_IS_VALID(val)    ((val) < CIFISP_BLS_START_V_MAX)
-#define BLS_STOP_V_MAX_IS_VALID(val)    ((val) < CIFISP_BLS_STOP_V_MAX)
-#define BLS_SAMPLE_MAX_IS_VALID(val)    ((val) < CIFISP_BLS_SAMPLES_MAX)
+#define BLS_START_H_MAX_IS_VALID(val)    ((val) < RKISP1_CIF_ISP_BLS_START_H_MAX)
+#define BLS_STOP_H_MAX_IS_VALID(val)    ((val) < RKISP1_CIF_ISP_BLS_STOP_H_MAX)
+#define BLS_START_V_MAX_IS_VALID(val)    ((val) < RKISP1_CIF_ISP_BLS_START_V_MAX)
+#define BLS_STOP_V_MAX_IS_VALID(val)    ((val) < RKISP1_CIF_ISP_BLS_STOP_V_MAX)
+#define BLS_SAMPLE_MAX_IS_VALID(val)    ((val) < RKISP1_CIF_ISP_BLS_SAMPLES_MAX)
 #define BLS_FIX_SUB_IS_VALID(val)    \
-    ((val) > (short)CIFISP_BLS_FIX_SUB_MIN && (val) < CIFISP_BLS_FIX_SUB_MAX)
+    ((val) > (short)RKISP1_CIF_ISP_BLS_FIX_SUB_MIN && (val) < RKISP1_CIF_ISP_BLS_FIX_SUB_MAX)
 
 namespace android {
 namespace camera2 {
@@ -76,10 +76,10 @@ static const camera_metadata_tag gAiqMetadata[] = {
     ANDROID_SCALER_CROP_REGION,
 };
 
-static int dpcc_param_check(struct cifisp_dpcc_config *arg)
+static int dpcc_param_check(struct rkisp1_cif_isp_dpcc_config *arg)
 {
     unsigned int i = 0;
-    struct cifisp_dpcc_methods_config *method;
+    struct rkisp1_cif_isp_dpcc_methods_config *method;
     if (arg->mode > CIF_ISP_DPCC_MODE_MAX ||
         arg->output_mode > CIF_ISP_DPCC_OUTPUTMODE_MAX ||
         arg->set_use > CIF_ISP_DPCC_SETUSE_MAX) {
@@ -90,7 +90,7 @@ static int dpcc_param_check(struct cifisp_dpcc_config *arg)
         goto err;
     }
     method = &arg->methods[i];
-    for (i = 0; i < CIFISP_DPCC_METHODS_MAX; i++) {
+    for (i = 0; i < RKISP1_CIF_ISP_DPCC_METHODS_MAX; i++) {
         if ((method->method & CIF_ISP_DPCC_METHODS_SET_RESERVED) ||
             (method->line_thresh & CIF_ISP_DPCC_LINE_THRESH_RESERVED) ||
             (method->line_mad_fac &
@@ -111,7 +111,7 @@ err:
     return -1;
 }
 
-static int bls_param_check(struct cifisp_bls_config *arg)
+static int bls_param_check(struct rkisp1_cif_isp_bls_config *arg)
 {
     if (!BLS_START_H_MAX_IS_VALID(arg->bls_window1.h_offs) ||
         !BLS_STOP_H_MAX_IS_VALID(arg->bls_window1.h_size)  ||
@@ -136,7 +136,7 @@ err:
     return -1;
 }
 
-static int sdg_param_check(struct cifisp_sdg_config *arg)
+static int sdg_param_check(struct rkisp1_cif_isp_sdg_config *arg)
 {
     int i;
     if (arg->xa_pnts.gamma_dx0 & CIFISP_DEGAMMA_X_RESERVED ||
@@ -144,7 +144,7 @@ static int sdg_param_check(struct cifisp_sdg_config *arg)
         LOG2("incompatible param in function: %s", __func__);
         return -1;
     }
-    for (i = 0; i < CIFISP_DEGAMMA_CURVE_SIZE; i++) {
+    for (i = 0; i < RKISP1_CIF_ISP_DEGAMMA_CURVE_SIZE; i++) {
         if ((arg->curve_b.gamma_y[i] & CIFISP_DEGAMMA_Y_RESERVED) ||
             (arg->curve_r.gamma_y[i] & CIFISP_DEGAMMA_Y_RESERVED) ||
             (arg->curve_g.gamma_y[i] & CIFISP_DEGAMMA_Y_RESERVED)) {
@@ -156,9 +156,9 @@ static int sdg_param_check(struct cifisp_sdg_config *arg)
     return 0;
 }
 
-static int lsc_param_check(struct cifisp_lsc_config *arg)
+static int lsc_param_check(struct rkisp1_cif_isp_lsc_config *arg)
 {
-    int i;
+    int i, j;
     /* if (arg->config_width != params_vdev->isp_acq_width || */
     /*     arg->config_height != params_vdev->isp_acq_height) { */
     /*     LOG2("LSC config: lsc_w %d lsc_h %d act_w %d act_h %d", */
@@ -168,7 +168,7 @@ static int lsc_param_check(struct cifisp_lsc_config *arg)
     /*          params_vdev->isp_acq_height); */
     /*     return -1; */
     /* } */
-    for (i = 0; i < CIFISP_LSC_SIZE_TBL_SIZE; i++) {
+    for (i = 0; i < RKISP1_CIF_ISP_LSC_SECTORS_TBL_SIZE; i++) {
         if ((arg->x_size_tbl[i] & CIF_ISP_LSC_SECT_SIZE_RESERVED) ||
             (arg->y_size_tbl[i] & CIF_ISP_LSC_SECT_SIZE_RESERVED)) {
             LOG2("incompatible sect size x 0x%x y 0x%x in function: %s",
@@ -177,7 +177,7 @@ static int lsc_param_check(struct cifisp_lsc_config *arg)
             return -1;
         }
     }
-    for (i = 0; i < CIFISP_LSC_GRAD_TBL_SIZE; i++) {
+    for (i = 0; i < RKISP1_CIF_ISP_LSC_SECTORS_TBL_SIZE; i++) {
         if ((arg->x_grad_tbl[i] & CIF_ISP_LSC_GRAD_RESERVED) ||
             (arg->y_grad_tbl[i] & CIF_ISP_LSC_GRAD_RESERVED)) {
             LOG2("incompatible grad x 0x%x y 0x%x in function: %s",
@@ -186,26 +186,28 @@ static int lsc_param_check(struct cifisp_lsc_config *arg)
             return -1;
         }
     }
-    for (i = 0; i < CIFISP_LSC_DATA_TBL_SIZE; i++) {
-        if ((arg->r_data_tbl[i] &
-             CIF_ISP_LSC_SAMPLE_RESERVED) ||
-            (arg->gr_data_tbl[i] &
-             CIF_ISP_LSC_SAMPLE_RESERVED) ||
-            (arg->gb_data_tbl[i] &
-             CIF_ISP_LSC_SAMPLE_RESERVED) ||
-            (arg->b_data_tbl[i] & CIF_ISP_LSC_SAMPLE_RESERVED)) {
-            LOG2("incompatible sample r 0x%x gr 0x%x gb 0x%x b 0x%x in function: %s",
-                 arg->r_data_tbl[i],
-                 arg->gr_data_tbl[i],
-                 arg->gb_data_tbl[i],
-                 arg->b_data_tbl[i], __func__);
-            return -1;
+    for (i = 0; i < RKISP1_CIF_ISP_LSC_SAMPLES_MAX; i++) {
+	for (j = 0; j < RKISP1_CIF_ISP_LSC_SAMPLES_MAX; j++) {
+            if ((arg->r_data_tbl[i][j] &
+                 CIF_ISP_LSC_SAMPLE_RESERVED) ||
+                (arg->gr_data_tbl[i][j] &
+                 CIF_ISP_LSC_SAMPLE_RESERVED) ||
+                (arg->gb_data_tbl[i][j] &
+                 CIF_ISP_LSC_SAMPLE_RESERVED) ||
+                (arg->b_data_tbl[i][j] & CIF_ISP_LSC_SAMPLE_RESERVED)) {
+                LOG2("incompatible sample r 0x%x gr 0x%x gb 0x%x b 0x%x in function: %s",
+                     arg->r_data_tbl[i][j],
+                     arg->gr_data_tbl[i][j],
+                     arg->gb_data_tbl[i][j],
+                     arg->b_data_tbl[i][j], __func__);
+                return -1;
+            }
         }
     }
     return 0;
 }
 
-static int awb_gain_param_check(struct cifisp_awb_gain_config *arg)
+static int awb_gain_param_check(struct rkisp1_cif_isp_awb_gain_config *arg)
 {
     if (arg->gain_red > CIF_ISP_AWB_GAINS_MAX_VAL ||
         arg->gain_green_r > CIF_ISP_AWB_GAINS_MAX_VAL ||
@@ -217,7 +219,7 @@ static int awb_gain_param_check(struct cifisp_awb_gain_config *arg)
     return 0;
 }
 
-static int flt_param_check(struct cifisp_flt_config *arg)
+static int flt_param_check(struct rkisp1_cif_isp_flt_config *arg)
 {
     if (arg->mode > CIF_ISP_FLT_MODE_MAX ||
         arg->grn_stage1 > CIF_ISP_FLT_GREEN_STAGE1_MAX ||
@@ -239,27 +241,27 @@ static int flt_param_check(struct cifisp_flt_config *arg)
     return 0;
 }
 
-static int ctk_param_check(struct cifisp_ctk_config *arg)
+static int ctk_param_check(struct rkisp1_cif_isp_ctk_config *arg)
 {
-    if (arg->coeff0 & CIF_ISP_CTK_COEFF_RESERVED ||
-        arg->coeff1 & CIF_ISP_CTK_COEFF_RESERVED ||
-        arg->coeff2 & CIF_ISP_CTK_COEFF_RESERVED ||
-        arg->coeff3 & CIF_ISP_CTK_COEFF_RESERVED ||
-        arg->coeff4 & CIF_ISP_CTK_COEFF_RESERVED ||
-        arg->coeff5 & CIF_ISP_CTK_COEFF_RESERVED ||
-        arg->coeff6 & CIF_ISP_CTK_COEFF_RESERVED ||
-        arg->coeff7 & CIF_ISP_CTK_COEFF_RESERVED ||
-        arg->coeff8 & CIF_ISP_CTK_COEFF_RESERVED ||
-        arg->ct_offset_r & CIF_ISP_XTALK_OFFSET_RESERVED ||
-        arg->ct_offset_g & CIF_ISP_XTALK_OFFSET_RESERVED ||
-        arg->ct_offset_b & CIF_ISP_XTALK_OFFSET_RESERVED) {
+    if (arg->coeff[0][0] & CIF_ISP_CTK_COEFF_RESERVED ||
+        arg->coeff[0][1] & CIF_ISP_CTK_COEFF_RESERVED ||
+        arg->coeff[0][2] & CIF_ISP_CTK_COEFF_RESERVED ||
+        arg->coeff[1][0] & CIF_ISP_CTK_COEFF_RESERVED ||
+        arg->coeff[1][1] & CIF_ISP_CTK_COEFF_RESERVED ||
+        arg->coeff[1][2] & CIF_ISP_CTK_COEFF_RESERVED ||
+        arg->coeff[2][0] & CIF_ISP_CTK_COEFF_RESERVED ||
+        arg->coeff[2][1] & CIF_ISP_CTK_COEFF_RESERVED ||
+        arg->coeff[2][2] & CIF_ISP_CTK_COEFF_RESERVED ||
+        arg->ct_offset[0] & CIF_ISP_XTALK_OFFSET_RESERVED ||
+        arg->ct_offset[1] & CIF_ISP_XTALK_OFFSET_RESERVED ||
+        arg->ct_offset[2] & CIF_ISP_XTALK_OFFSET_RESERVED) {
         LOG2("incompatible param in function: %s", __func__);
         return -1;
     }
     return 0;
 }
 
-static int goc_param_check(struct cifisp_goc_config *arg)
+static int goc_param_check(struct rkisp1_cif_isp_goc_config *arg)
 {
     if (arg->mode > CIF_ISP_GOC_MODE_MAX) {
         LOG2("incompatible param 0x%x in  function: %s",
@@ -269,7 +271,7 @@ static int goc_param_check(struct cifisp_goc_config *arg)
     return 0;
 }
 
-static int cproc_param_check(struct cifisp_cproc_config *arg)
+static int cproc_param_check(struct rkisp1_cif_isp_cproc_config *arg)
 {
     if (arg->c_out_range & CIF_C_PROC_CTRL_RESERVED ||
         arg->y_out_range & CIF_C_PROC_CTRL_RESERVED ||
@@ -284,7 +286,7 @@ static int cproc_param_check(struct cifisp_cproc_config *arg)
     return 0;
 }
 
-static int ie_param_check(struct cifisp_ie_config *arg)
+static int ie_param_check(struct rkisp1_cif_isp_ie_config *arg)
 {
     switch (arg->effect) {
     case V4L2_COLORFX_NONE:
@@ -302,13 +304,13 @@ static int ie_param_check(struct cifisp_ie_config *arg)
     }
 }
 
-static int dpf_param_check(struct cifisp_dpf_config *arg)
+static int dpf_param_check(struct rkisp1_cif_isp_dpf_config *arg)
 {
     int retval = 0;
     int i;
     /* Parameter check */
-    if (arg->gain.mode >= CIFISP_DPF_GAIN_USAGE_MAX ||
-        arg->gain.mode < CIFISP_DPF_GAIN_USAGE_DISABLED ||
+    if (arg->gain.mode >= RKISP1_CIF_ISP_DPF_GAIN_USAGE_MAX ||
+        arg->gain.mode < RKISP1_CIF_ISP_DPF_GAIN_USAGE_DISABLED ||
         arg->gain.nf_b_gain & CIF_ISP_DPF_NF_GAIN_RESERVED ||
         arg->gain.nf_r_gain & CIF_ISP_DPF_NF_GAIN_RESERVED ||
         arg->gain.nf_gr_gain & CIF_ISP_DPF_NF_GAIN_RESERVED ||
@@ -317,7 +319,7 @@ static int dpf_param_check(struct cifisp_dpf_config *arg)
         retval = -1;
         goto end;
     }
-    for (i = 0; i < CIFISP_DPF_MAX_SPATIAL_COEFFS; i++) {
+    for (i = 0; i < RKISP1_CIF_ISP_DPF_MAX_SPATIAL_COEFFS; i++) {
         if (arg->g_flt.spatial_coeff[i] >
             CIF_ISP_DPF_SPATIAL_COEFF_MAX) {
             LOG2("incompatible DPF G Spatial param");
@@ -331,21 +333,21 @@ static int dpf_param_check(struct cifisp_dpf_config *arg)
             goto end;
         }
     }
-    if (arg->rb_flt.fltsize != CIFISP_DPF_RB_FILTERSIZE_9x9 &&
-        arg->rb_flt.fltsize != CIFISP_DPF_RB_FILTERSIZE_13x9) {
+    if (arg->rb_flt.fltsize != RKISP1_CIF_ISP_DPF_RB_FILTERSIZE_9x9 &&
+        arg->rb_flt.fltsize != RKISP1_CIF_ISP_DPF_RB_FILTERSIZE_13x9) {
         LOG2("incompatible DPF RB filter size param");
         retval = -1;
         goto end;
     }
-    for (i = 0; i < CIFISP_DPF_MAX_NLF_COEFFS; i++) {
+    for (i = 0; i < RKISP1_CIF_ISP_DPF_MAX_NLF_COEFFS; i++) {
         if (arg->nll.coeff[i] > CIF_ISP_DPF_NLL_COEFF_N_MAX) {
             LOG2("incompatible DPF NLL coeff param");
             retval = -1;
             goto end;
         }
     }
-    if (arg->nll.scale_mode != CIFISP_NLL_SCALE_LINEAR &&
-        arg->nll.scale_mode != CIFISP_NLL_SCALE_LOGARITHMIC) {
+    if (arg->nll.scale_mode != RKISP1_CIF_ISP_NLL_SCALE_LINEAR &&
+        arg->nll.scale_mode != RKISP1_CIF_ISP_NLL_SCALE_LOGARITHMIC) {
         LOG2("incompatible DPF NLL scale mode param");
         retval = -1;
         goto end;
@@ -354,24 +356,24 @@ end:
     return retval;
 }
 
-static int awb_meas_param_check(struct cifisp_awb_meas_config *arg)
+static int awb_meas_param_check(struct rkisp1_cif_isp_awb_meas_config *arg)
 {
-    if (arg->awb_mode > CIFISP_AWB_MODE_YCBCR ||
+    if (arg->awb_mode > RKISP1_CIF_ISP_AWB_MODE_YCBCR ||
         arg->awb_wnd.h_offs > CIF_ISP_AWB_WINDOW_OFFSET_MAX ||
         arg->awb_wnd.v_offs > CIF_ISP_AWB_WINDOW_OFFSET_MAX ||
         arg->awb_wnd.h_size > CIF_ISP_AWB_WINDOW_MAX_SIZE ||
         arg->awb_wnd.v_size > CIF_ISP_AWB_WINDOW_MAX_SIZE ||
-        arg->frames > CIFISP_AWB_MAX_FRAMES) {
+        arg->frames > RKISP1_CIF_ISP_AWB_MAX_FRAMES) {
         LOG2("incompatible param in function: %s", __func__);
         return -1;
     }
     return 0;
 }
 
-static int afm_param_check(struct cifisp_afc_config *arg)
+static int afm_param_check(struct rkisp1_cif_isp_afc_config *arg)
 {
     int i;
-    if (arg->num_afm_win > CIFISP_AFM_MAX_WINDOWS ||
+    if (arg->num_afm_win > RKISP1_CIF_ISP_AFM_MAX_WINDOWS ||
         arg->thres & CIF_ISP_AFM_THRES_RESERVED ||
         arg->var_shift & CIF_ISP_AFM_VAR_SHIFT_RESERVED) {
         LOG2("incompatible param in function: %s", __func__);
@@ -392,10 +394,10 @@ static int afm_param_check(struct cifisp_afc_config *arg)
     return 0;
 }
 
-static int hst_param_check(struct cifisp_hst_config *arg)
+static int hst_param_check(struct rkisp1_cif_isp_hst_config *arg)
 {
     int i;
-    if (arg->mode > CIFISP_HISTOGRAM_MODE_Y_HISTOGRAM ||
+    if (arg->mode > RKISP1_CIF_ISP_HISTOGRAM_MODE_Y_HISTOGRAM ||
         arg->histogram_predivider > CIF_ISP_MAX_HIST_PREDIVIDER ||
         arg->meas_window.v_offs & CIF_ISP_HIST_WINDOW_OFFSET_RESERVED ||
         arg->meas_window.h_offs & CIF_ISP_HIST_WINDOW_OFFSET_RESERVED ||
@@ -406,7 +408,7 @@ static int hst_param_check(struct cifisp_hst_config *arg)
         LOG2("incompatible param in function: %s", __func__);
         return -1;
     }
-    for (i = 0; i < CIFISP_HISTOGRAM_WEIGHT_GRIDS_SIZE; i++) {
+    for (i = 0; i < RKISP1_CIF_ISP_HISTOGRAM_WEIGHT_GRIDS_SIZE_V10; i++) {
         if (arg->hist_weight[i] & CIF_ISP_HIST_WEIGHT_RESERVED) {
             LOG2("incompatible param in function: %s",
                  __func__);
@@ -416,7 +418,7 @@ static int hst_param_check(struct cifisp_hst_config *arg)
     return 0;
 }
 
-static int aec_param_check(struct cifisp_aec_config *arg)
+static int aec_param_check(struct rkisp1_cif_isp_aec_config *arg)
 {
     if (arg->meas_window.h_offs > CIF_ISP_EXP_MAX_HOFFS ||
         arg->meas_window.h_size > CIF_ISP_EXP_MAX_HSIZE ||
@@ -424,90 +426,90 @@ static int aec_param_check(struct cifisp_aec_config *arg)
         arg->meas_window.v_offs > CIF_ISP_EXP_MAX_VOFFS ||
         arg->meas_window.v_size > CIF_ISP_EXP_MAX_VSIZE ||
         arg->meas_window.v_size < CIF_ISP_EXP_MIN_VSIZE ||
-        arg->mode > CIFISP_EXP_MEASURING_MODE_1) {
+        arg->mode > RKISP1_CIF_ISP_EXP_MEASURING_MODE_1) {
         LOG2("incompatible param in function: %s", __func__);
         return -1;
     }
     return 0;
 }
 static int
-__check_params(struct rkisp1_isp_params_cfg *configs)
+__check_params(struct rkisp1_params_cfg *configs)
 {
     int ret;
-    if (configs->module_cfg_update & CIFISP_MODULE_DPCC) {
+    if (configs->module_cfg_update & RKISP1_CIF_ISP_MODULE_DPCC) {
         ret = dpcc_param_check(&configs->others.dpcc_config);
         if (ret < 0)
-            configs->module_cfg_update &= ~CIFISP_MODULE_DPCC;
+            configs->module_cfg_update &= ~RKISP1_CIF_ISP_MODULE_DPCC;
     }
-    if (configs->module_cfg_update & CIFISP_MODULE_BLS) {
+    if (configs->module_cfg_update & RKISP1_CIF_ISP_MODULE_BLS) {
         ret = bls_param_check(&configs->others.bls_config);
         if (ret < 0)
-            configs->module_cfg_update &= ~CIFISP_MODULE_BLS;
+            configs->module_cfg_update &= ~RKISP1_CIF_ISP_MODULE_BLS;
     }
-    if (configs->module_cfg_update & CIFISP_MODULE_SDG) {
+    if (configs->module_cfg_update & RKISP1_CIF_ISP_MODULE_SDG) {
         ret = sdg_param_check(&configs->others.sdg_config);
         if (ret < 0)
-            configs->module_cfg_update &= ~CIFISP_MODULE_SDG;
+            configs->module_cfg_update &= ~RKISP1_CIF_ISP_MODULE_SDG;
     }
-    if (configs->module_cfg_update & CIFISP_MODULE_LSC) {
+    if (configs->module_cfg_update & RKISP1_CIF_ISP_MODULE_LSC) {
         ret = lsc_param_check(&configs->others.lsc_config);
         if (ret < 0)
-            configs->module_cfg_update &= ~CIFISP_MODULE_LSC;
+            configs->module_cfg_update &= ~RKISP1_CIF_ISP_MODULE_LSC;
     }
-    if (configs->module_cfg_update & CIFISP_MODULE_AWB_GAIN) {
+    if (configs->module_cfg_update & RKISP1_CIF_ISP_MODULE_AWB_GAIN) {
         ret = awb_gain_param_check(&configs->others.awb_gain_config);
         if (ret < 0)
-            configs->module_cfg_update &= ~CIFISP_MODULE_AWB_GAIN;
+            configs->module_cfg_update &= ~RKISP1_CIF_ISP_MODULE_AWB_GAIN;
     }
-    if (configs->module_cfg_update & CIFISP_MODULE_FLT) {
+    if (configs->module_cfg_update & RKISP1_CIF_ISP_MODULE_FLT) {
         ret = flt_param_check(&configs->others.flt_config);
         if (ret < 0)
-            configs->module_cfg_update &= ~CIFISP_MODULE_FLT;
+            configs->module_cfg_update &= ~RKISP1_CIF_ISP_MODULE_FLT;
     }
-    if (configs->module_cfg_update & CIFISP_MODULE_CTK) {
+    if (configs->module_cfg_update & RKISP1_CIF_ISP_MODULE_CTK) {
         ret = ctk_param_check(&configs->others.ctk_config);
         if (ret < 0)
-            configs->module_cfg_update &= ~CIFISP_MODULE_CTK;
+            configs->module_cfg_update &= ~RKISP1_CIF_ISP_MODULE_CTK;
     }
-    if (configs->module_cfg_update & CIFISP_MODULE_GOC) {
+    if (configs->module_cfg_update & RKISP1_CIF_ISP_MODULE_GOC) {
         ret = goc_param_check(&configs->others.goc_config);
         if (ret < 0)
-            configs->module_cfg_update &= ~CIFISP_MODULE_GOC;
+            configs->module_cfg_update &= ~RKISP1_CIF_ISP_MODULE_GOC;
     }
-    if (configs->module_cfg_update & CIFISP_MODULE_CPROC) {
+    if (configs->module_cfg_update & RKISP1_CIF_ISP_MODULE_CPROC) {
         ret = cproc_param_check(&configs->others.cproc_config);
         if (ret < 0)
-            configs->module_cfg_update &= ~CIFISP_MODULE_CPROC;
+            configs->module_cfg_update &= ~RKISP1_CIF_ISP_MODULE_CPROC;
     }
-    if (configs->module_cfg_update & CIFISP_MODULE_IE) {
+    if (configs->module_cfg_update & RKISP1_CIF_ISP_MODULE_IE) {
         ret = ie_param_check(&configs->others.ie_config);
         if (ret < 0)
-            configs->module_cfg_update &= ~CIFISP_MODULE_IE;
+            configs->module_cfg_update &= ~RKISP1_CIF_ISP_MODULE_IE;
     }
-    if (configs->module_cfg_update & CIFISP_MODULE_DPF) {
+    if (configs->module_cfg_update & RKISP1_CIF_ISP_MODULE_DPF) {
         ret = dpf_param_check(&configs->others.dpf_config);
         if (ret < 0)
-            configs->module_cfg_update &= ~CIFISP_MODULE_DPF;
+            configs->module_cfg_update &= ~RKISP1_CIF_ISP_MODULE_DPF;
     }
-    if (configs->module_cfg_update & CIFISP_MODULE_AWB) {
+    if (configs->module_cfg_update & RKISP1_CIF_ISP_MODULE_AWB) {
         ret = awb_meas_param_check(&configs->meas.awb_meas_config);
         if (ret < 0)
-            configs->module_cfg_update &= ~CIFISP_MODULE_AWB;
+            configs->module_cfg_update &= ~RKISP1_CIF_ISP_MODULE_AWB;
     }
-    if (configs->module_cfg_update & CIFISP_MODULE_AFC) {
+    if (configs->module_cfg_update & RKISP1_CIF_ISP_MODULE_AFC) {
         ret = afm_param_check(&configs->meas.afc_config);
         if (ret < 0)
-            configs->module_cfg_update &= ~CIFISP_MODULE_AFC;
+            configs->module_cfg_update &= ~RKISP1_CIF_ISP_MODULE_AFC;
     }
-    if (configs->module_cfg_update & CIFISP_MODULE_HST) {
+    if (configs->module_cfg_update & RKISP1_CIF_ISP_MODULE_HST) {
         ret = hst_param_check(&configs->meas.hst_config);
         if (ret < 0)
-            configs->module_cfg_update &= ~CIFISP_MODULE_AFC;
+            configs->module_cfg_update &= ~RKISP1_CIF_ISP_MODULE_AFC;
     }
-    if (configs->module_cfg_update & CIFISP_MODULE_AEC) {
+    if (configs->module_cfg_update & RKISP1_CIF_ISP_MODULE_AEC) {
         ret = aec_param_check(&configs->meas.aec_config);
         if (ret < 0)
-            configs->module_cfg_update &= ~CIFISP_MODULE_AEC;
+            configs->module_cfg_update &= ~RKISP1_CIF_ISP_MODULE_AEC;
     }
     return 0;
 }
@@ -544,7 +546,7 @@ status_t ParameterWorker::configure(std::shared_ptr<GraphConfig> &config)
     if (ret != OK)
         return ret;
 
-    if (mCameraBuffers[0]->size() < sizeof(rkisp1_isp_params_cfg)) {
+    if (mCameraBuffers[0]->size() < sizeof(rkisp1_params_cfg)) {
         LOGE("Parameter buffer is not big enough");
         return UNKNOWN_ERROR;
     }
@@ -567,8 +569,8 @@ status_t ParameterWorker::prepareRun(std::shared_ptr<DeviceMessage> msg)
 
     mMsg = msg;
 
-    rkisp1_isp_params_cfg *ispParams = (rkisp1_isp_params_cfg *)mCameraBuffers[mIndex]->data();
-    memset(ispParams, 0, sizeof(rkisp1_isp_params_cfg));
+    rkisp1_params_cfg *ispParams = (rkisp1_params_cfg *)mCameraBuffers[mIndex]->data();
+    memset(ispParams, 0, sizeof(rkisp1_params_cfg));
 
     struct AiqResults* aiqResults = &msg->pMsg.processingSettings->captureSettings->aiqResults;
 
@@ -716,7 +718,7 @@ bool paramConvertor::areNewParams(struct AiqResults* results)
     return memcmp(results, &mLastAiqResults, sizeof(struct AiqResults));
 }
 
-void paramConvertor::convertDpcc(struct cifisp_dpcc_config* dpcc_config, rk_aiq_dpcc_config* aiq_dpcc_config)
+void paramConvertor::convertDpcc(struct rkisp1_cif_isp_dpcc_config* dpcc_config, rk_aiq_dpcc_config* aiq_dpcc_config)
 {
     LOG2("%s:%d: enter", __func__, __LINE__);
     if (aiq_dpcc_config->enabled != mLastAiqResults.miscIspResults.dpcc_config.enabled)
@@ -751,7 +753,7 @@ void paramConvertor::convertDpcc(struct cifisp_dpcc_config* dpcc_config, rk_aiq_
     dpcc_config->methods[2].rg_fac = aiq_dpcc_config->isp_dpcc_rg_fac_3;
 }
 
-void paramConvertor::convertBls(struct cifisp_bls_config* bls_config, rk_aiq_bls_config* aiq_bls_config)
+void paramConvertor::convertBls(struct rkisp1_cif_isp_bls_config* bls_config, rk_aiq_bls_config* aiq_bls_config)
 {
     LOG2("%s:%d: enter", __func__, __LINE__);
     if (aiq_bls_config->enabled != mLastAiqResults.miscIspResults.bls_config.enabled)
@@ -778,7 +780,7 @@ void paramConvertor::convertBls(struct cifisp_bls_config* bls_config, rk_aiq_bls
     bls_config->fixed_val.b = aiq_bls_config->isp_bls_d_fixed;
 }
 
-void paramConvertor::convertSdg(struct cifisp_sdg_config* sdg_config, rk_aiq_sdg_config* aiq_sdg_config)
+void paramConvertor::convertSdg(struct rkisp1_cif_isp_sdg_config* sdg_config, rk_aiq_sdg_config* aiq_sdg_config)
 {
     LOG2("%s:%d: enter", __func__, __LINE__);
     if (aiq_sdg_config->enabled != mLastAiqResults.miscIspResults.sdg_config.enabled)
@@ -787,32 +789,32 @@ void paramConvertor::convertSdg(struct cifisp_sdg_config* sdg_config, rk_aiq_sdg
     mpIspParams->module_ens |= (aiq_sdg_config->enabled ? HAL_ISP_SDG_MASK : 0);
 
     int i = 0;
-    for (i = 0; i < CIFISP_DEGAMMA_CURVE_SIZE; i++) {
+    for (i = 0; i < RKISP1_CIF_ISP_DEGAMMA_CURVE_SIZE; i++) {
         sdg_config->curve_r.gamma_y[i] = aiq_sdg_config->red[i];
     }
 
-    for (i = 0; i < CIFISP_DEGAMMA_CURVE_SIZE; i++) {
+    for (i = 0; i < RKISP1_CIF_ISP_DEGAMMA_CURVE_SIZE; i++) {
         sdg_config->curve_g.gamma_y[i] = aiq_sdg_config->green[i];
     }
 
-    for (i = 0; i < CIFISP_DEGAMMA_CURVE_SIZE; i++) {
+    for (i = 0; i < RKISP1_CIF_ISP_DEGAMMA_CURVE_SIZE; i++) {
         sdg_config->curve_b.gamma_y[i] = aiq_sdg_config->blue[i];
     }
 
     sdg_config->xa_pnts.gamma_dx0 = 0;
     sdg_config->xa_pnts.gamma_dx1 = 0;
 
-    for (i = 0; i < (CIFISP_DEGAMMA_CURVE_SIZE - 1) ; i++) {
-        if (i < (CIFISP_DEGAMMA_CURVE_SIZE - 1) / 2)
+    for (i = 0; i < (RKISP1_CIF_ISP_DEGAMMA_CURVE_SIZE - 1) ; i++) {
+        if (i < (RKISP1_CIF_ISP_DEGAMMA_CURVE_SIZE - 1) / 2)
             sdg_config->xa_pnts.gamma_dx0 |= (uint32_t)(aiq_sdg_config->segment[i]) << (i * 4);
         else {
-            int index = i - (CIFISP_DEGAMMA_CURVE_SIZE - 1) / 2;
+            int index = i - (RKISP1_CIF_ISP_DEGAMMA_CURVE_SIZE - 1) / 2;
             sdg_config->xa_pnts.gamma_dx1 |= (uint32_t)(aiq_sdg_config->segment[i]) << (index * 4);
         }
     }
 }
 
-void paramConvertor::convertHst(struct cifisp_hst_config* hst_config, rk_aiq_hist_config* aiq_hst_config)
+void paramConvertor::convertHst(struct rkisp1_cif_isp_hst_config* hst_config, rk_aiq_hist_config* aiq_hst_config)
 {
     LOG2("%s:%d: enter", __func__, __LINE__);
     if (aiq_hst_config->enabled != mLastAiqResults.aeResults.hist_config_result.enabled)
@@ -835,22 +837,22 @@ void paramConvertor::convertHst(struct cifisp_hst_config* hst_config, rk_aiq_his
 
     switch (aiq_hst_config->mode) {
     case RK_ISP_HIST_MODE_RGB_COMBINED:
-        hst_config->mode = CIFISP_HISTOGRAM_MODE_RGB_COMBINED;
+        hst_config->mode = RKISP1_CIF_ISP_HISTOGRAM_MODE_RGB_COMBINED;
         break;
     case RK_ISP_HIST_MODE_R:
-        hst_config->mode = CIFISP_HISTOGRAM_MODE_R_HISTOGRAM;
+        hst_config->mode = RKISP1_CIF_ISP_HISTOGRAM_MODE_R_HISTOGRAM;
         break;
     case RK_ISP_HIST_MODE_G:
-        hst_config->mode = CIFISP_HISTOGRAM_MODE_G_HISTOGRAM;
+        hst_config->mode = RKISP1_CIF_ISP_HISTOGRAM_MODE_G_HISTOGRAM;
         break;
     case RK_ISP_HIST_MODE_B:
-        hst_config->mode = CIFISP_HISTOGRAM_MODE_B_HISTOGRAM;
+        hst_config->mode = RKISP1_CIF_ISP_HISTOGRAM_MODE_B_HISTOGRAM;
         break;
     case RK_ISP_HIST_MODE_Y:
-        hst_config->mode = CIFISP_HISTOGRAM_MODE_Y_HISTOGRAM;
+        hst_config->mode = RKISP1_CIF_ISP_HISTOGRAM_MODE_Y_HISTOGRAM;
         break;
     case RK_ISP_HIST_MODE_INVALID:
-        hst_config->mode = CIFISP_HISTOGRAM_MODE_DISABLE;
+        hst_config->mode = RKISP1_CIF_ISP_HISTOGRAM_MODE_DISABLE;
         break;
     case RK_ISP_HIST_MODE_MAX:
     default :
@@ -859,7 +861,7 @@ void paramConvertor::convertHst(struct cifisp_hst_config* hst_config, rk_aiq_his
     }
 }
 
-void paramConvertor::convertLsc(struct cifisp_lsc_config* lsc_config, rk_aiq_lsc_config* aiq_lsc_config)
+void paramConvertor::convertLsc(struct rkisp1_cif_isp_lsc_config* lsc_config, rk_aiq_lsc_config* aiq_lsc_config)
 {
     LOG2("%s:%d: enter", __func__, __LINE__);
     if (aiq_lsc_config->enabled != mLastAiqResults.awbResults.lsc_cfg.enabled)
@@ -868,36 +870,35 @@ void paramConvertor::convertLsc(struct cifisp_lsc_config* lsc_config, rk_aiq_lsc
     mpIspParams->module_ens |= (aiq_lsc_config->enabled ? HAL_ISP_LSC_MASK : 0);
 
     int data_tbl_size = aiq_lsc_config->lsc_config.lsc_data_tbl_cnt;
-    if (data_tbl_size > CIFISP_LSC_DATA_TBL_SIZE)
-        data_tbl_size = CIFISP_LSC_DATA_TBL_SIZE;
+    if (data_tbl_size > RKISP1_CIF_ISP_LSC_SAMPLES_MAX * RKISP1_CIF_ISP_LSC_SAMPLES_MAX)
+        data_tbl_size = RKISP1_CIF_ISP_LSC_SAMPLES_MAX * RKISP1_CIF_ISP_LSC_SAMPLES_MAX;
     for (int i = 0; i < data_tbl_size; i++) {
-        lsc_config->r_data_tbl[i] = aiq_lsc_config->lsc_config.lsc_r_data_tbl[i];
-        lsc_config->gr_data_tbl[i] = aiq_lsc_config->lsc_config.lsc_gr_data_tbl[i];
-        lsc_config->gb_data_tbl[i] = aiq_lsc_config->lsc_config.lsc_gb_data_tbl[i];
-        lsc_config->b_data_tbl[i] = aiq_lsc_config->lsc_config.lsc_b_data_tbl[i];
+	int m = i / RKISP1_CIF_ISP_LSC_SAMPLES_MAX;
+        int n = i % RKISP1_CIF_ISP_LSC_SAMPLES_MAX;
+        lsc_config->r_data_tbl[m][n]= aiq_lsc_config->lsc_config.lsc_r_data_tbl[i];
+        lsc_config->gr_data_tbl[m][n] = aiq_lsc_config->lsc_config.lsc_gr_data_tbl[i];
+        lsc_config->gb_data_tbl[m][n] = aiq_lsc_config->lsc_config.lsc_gb_data_tbl[i];
+        lsc_config->b_data_tbl[m][n] = aiq_lsc_config->lsc_config.lsc_b_data_tbl[i];
     }
 
     int grad_tbl_size = aiq_lsc_config->lsc_config.lsc_grad_tbl_cnt;
-    if (grad_tbl_size > CIFISP_LSC_GRAD_TBL_SIZE)
-        grad_tbl_size = CIFISP_LSC_GRAD_TBL_SIZE;
+    if (grad_tbl_size > RKISP1_CIF_ISP_LSC_SECTORS_TBL_SIZE)
+        grad_tbl_size = RKISP1_CIF_ISP_LSC_SECTORS_TBL_SIZE;
     for (int i = 0; i < grad_tbl_size; i++) {
         lsc_config->x_grad_tbl[i] = aiq_lsc_config->lsc_config.lsc_x_grad_tbl[i];
         lsc_config->y_grad_tbl[i] = aiq_lsc_config->lsc_config.lsc_y_grad_tbl[i];
     }
 
     int size_tbl_size = aiq_lsc_config->lsc_config.lsc_size_tbl_cnt;
-    if (size_tbl_size > CIFISP_LSC_SIZE_TBL_SIZE)
-        size_tbl_size = CIFISP_LSC_SIZE_TBL_SIZE;
+    if (size_tbl_size > RKISP1_CIF_ISP_LSC_SECTORS_TBL_SIZE)
+        size_tbl_size = RKISP1_CIF_ISP_LSC_SECTORS_TBL_SIZE;
     for (int i = 0; i < size_tbl_size; i++) {
         lsc_config->x_size_tbl[i] = aiq_lsc_config->lsc_config.lsc_x_size_tbl[i];
         lsc_config->y_size_tbl[i] = aiq_lsc_config->lsc_config.lsc_y_size_tbl[i];
     }
-
-    lsc_config->config_width = aiq_lsc_config->config_width;
-    lsc_config->config_height = aiq_lsc_config->config_height;
 }
 
-void paramConvertor::convertAwbGain(struct cifisp_awb_gain_config* awbGain_config, rk_aiq_awb_gain_config* aiq_awbGain_config)
+void paramConvertor::convertAwbGain(struct rkisp1_cif_isp_awb_gain_config* awbGain_config, rk_aiq_awb_gain_config* aiq_awbGain_config)
 {
     LOG2("%s:%d: enter", __func__, __LINE__);
     if (aiq_awbGain_config->enabled != mLastAiqResults.awbResults.awb_gain_cfg.enabled)
@@ -911,7 +912,7 @@ void paramConvertor::convertAwbGain(struct cifisp_awb_gain_config* awbGain_confi
     awbGain_config->gain_green_b = aiq_awbGain_config->awb_gains.green_b_gain;
 }
 
-void paramConvertor::convertFlt(struct cifisp_flt_config* flt_config, rk_aiq_flt_config* aiq_flt_config)
+void paramConvertor::convertFlt(struct rkisp1_cif_isp_flt_config* flt_config, rk_aiq_flt_config* aiq_flt_config)
 {
     LOG2("%s:%d: enter", __func__, __LINE__);
     if (aiq_flt_config->enabled != mLastAiqResults.miscIspResults.flt_config.enabled)
@@ -921,10 +922,10 @@ void paramConvertor::convertFlt(struct cifisp_flt_config* flt_config, rk_aiq_flt
 
     switch (aiq_flt_config->mode) {
     case RK_ISP_FLT_STATIC_MODE:
-        flt_config->mode = CIFISP_FLT_STATIC_MODE;
+        flt_config->mode = RKISP1_CIF_ISP_FLT_STATIC_MODE;
         break;
     case RK_ISP_FLT_DYNAMIC_MODE:
-        flt_config->mode = CIFISP_FLT_DYNAMIC_MODE;
+        flt_config->mode = RKISP1_CIF_ISP_FLT_DYNAMIC_MODE;
         break;
     default :
         LOGE("%s:%d: not support the mode(%d)", __func__, __LINE__, aiq_flt_config->mode);
@@ -946,7 +947,7 @@ void paramConvertor::convertFlt(struct cifisp_flt_config* flt_config, rk_aiq_flt
     flt_config->fac_bl1 = aiq_flt_config->fac_bl1;
 }
 
-void paramConvertor::convertBdm(struct cifisp_bdm_config* bdm_config, rk_aiq_bdm_config* aiq_bdm_config)
+void paramConvertor::convertBdm(struct rkisp1_cif_isp_bdm_config* bdm_config, rk_aiq_bdm_config* aiq_bdm_config)
 {
     LOG2("%s:%d: enter", __func__, __LINE__);
     if (aiq_bdm_config->enabled != mLastAiqResults.miscIspResults.bdm_config.enabled)
@@ -957,7 +958,7 @@ void paramConvertor::convertBdm(struct cifisp_bdm_config* bdm_config, rk_aiq_bdm
     bdm_config->demosaic_th = aiq_bdm_config->demosaic_th;
 }
 
-void paramConvertor::convertCtk(struct cifisp_ctk_config* ctk_config, rk_aiq_ctk_config* aiq_ctk_config)
+void paramConvertor::convertCtk(struct rkisp1_cif_isp_ctk_config* ctk_config, rk_aiq_ctk_config* aiq_ctk_config)
 {
     LOG2("%s:%d: enter", __func__, __LINE__);
     if (aiq_ctk_config->enabled != mLastAiqResults.awbResults.ctk_config.enabled)
@@ -965,22 +966,22 @@ void paramConvertor::convertCtk(struct cifisp_ctk_config* ctk_config, rk_aiq_ctk
     mpIspParams->module_cfg_update |= HAL_ISP_CTK_MASK;
     mpIspParams->module_ens |= (aiq_ctk_config->enabled ? HAL_ISP_CTK_MASK : 0);
 
-    ctk_config->coeff0 = aiq_ctk_config->ctk_matrix.coeff[0];
-    ctk_config->coeff1 = aiq_ctk_config->ctk_matrix.coeff[1];
-    ctk_config->coeff2 = aiq_ctk_config->ctk_matrix.coeff[2];
-    ctk_config->coeff3 = aiq_ctk_config->ctk_matrix.coeff[3];
-    ctk_config->coeff4 = aiq_ctk_config->ctk_matrix.coeff[4];
-    ctk_config->coeff5 = aiq_ctk_config->ctk_matrix.coeff[5];
-    ctk_config->coeff6 = aiq_ctk_config->ctk_matrix.coeff[6];
-    ctk_config->coeff7 = aiq_ctk_config->ctk_matrix.coeff[7];
-    ctk_config->coeff8 = aiq_ctk_config->ctk_matrix.coeff[8];
+    ctk_config->coeff[0][0] = aiq_ctk_config->ctk_matrix.coeff[0];
+    ctk_config->coeff[0][1] = aiq_ctk_config->ctk_matrix.coeff[1];
+    ctk_config->coeff[0][2] = aiq_ctk_config->ctk_matrix.coeff[2];
+    ctk_config->coeff[1][0] = aiq_ctk_config->ctk_matrix.coeff[3];
+    ctk_config->coeff[1][1] = aiq_ctk_config->ctk_matrix.coeff[4];
+    ctk_config->coeff[1][2] = aiq_ctk_config->ctk_matrix.coeff[5];
+    ctk_config->coeff[2][0] = aiq_ctk_config->ctk_matrix.coeff[6];
+    ctk_config->coeff[2][1] = aiq_ctk_config->ctk_matrix.coeff[7];
+    ctk_config->coeff[2][2] = aiq_ctk_config->ctk_matrix.coeff[8];
 
-    ctk_config->ct_offset_r = aiq_ctk_config->cc_offset.red;
-    ctk_config->ct_offset_g = aiq_ctk_config->cc_offset.green;
-    ctk_config->ct_offset_b = aiq_ctk_config->cc_offset.blue;
+    ctk_config->ct_offset[0] = aiq_ctk_config->cc_offset.red;
+    ctk_config->ct_offset[1] = aiq_ctk_config->cc_offset.green;
+    ctk_config->ct_offset[2] = aiq_ctk_config->cc_offset.blue;
 }
 
-void paramConvertor::convertGoc(struct cifisp_goc_config* goc_config, rk_aiq_goc_config* aiq_goc_config)
+void paramConvertor::convertGoc(struct rkisp1_cif_isp_goc_config* goc_config, rk_aiq_goc_config* aiq_goc_config)
 {
     LOG2("%s:%d: enter", __func__, __LINE__);
     if (aiq_goc_config->enabled != mLastAiqResults.miscIspResults.gbce_config.goc_config.enabled)
@@ -990,10 +991,10 @@ void paramConvertor::convertGoc(struct cifisp_goc_config* goc_config, rk_aiq_goc
 
     switch (aiq_goc_config->mode) {
     case RK_ISP_SEGMENTATION_MODE_LOGARITHMIC:
-        goc_config->mode = CIFISP_GOC_MODE_LOGARITHMIC;
+        goc_config->mode = RKISP1_CIF_ISP_GOC_MODE_LOGARITHMIC;
         break;
     case RK_ISP_SEGMENTATION_MODE_EQUIDISTANT:
-        goc_config->mode = CIFISP_GOC_MODE_EQUIDISTANT;
+        goc_config->mode = RKISP1_CIF_ISP_GOC_MODE_EQUIDISTANT;
         break;
     case RK_ISP_SEGMENTATION_MODE_INVALID:
     case RK_ISP_SEGMENTATION_MODE_MAX:
@@ -1003,14 +1004,14 @@ void paramConvertor::convertGoc(struct cifisp_goc_config* goc_config, rk_aiq_goc
     }
 
     int curve_size = aiq_goc_config->gamma_y.gamma_y_cnt;
-    if (curve_size > CIFISP_GAMMA_OUT_MAX_SAMPLES)
-        curve_size = CIFISP_GAMMA_OUT_MAX_SAMPLES;
+    if (curve_size > RKISP1_CIF_ISP_GAMMA_OUT_MAX_SAMPLES_V10)
+        curve_size = RKISP1_CIF_ISP_GAMMA_OUT_MAX_SAMPLES_V10;
     for (int i = 0; i < curve_size; i++) {
         goc_config->gamma_y[i] = aiq_goc_config->gamma_y.gamma_y[i];
     }
 }
 
-void paramConvertor::convertCproc(struct cifisp_cproc_config* cproc_config, rk_aiq_cproc_config* aiq_cproc_config)
+void paramConvertor::convertCproc(struct rkisp1_cif_isp_cproc_config* cproc_config, rk_aiq_cproc_config* aiq_cproc_config)
 {
     LOG2("%s:%d: enter", __func__, __LINE__);
     if (aiq_cproc_config->enabled != mLastAiqResults.miscIspResults.gbce_config.cproc_config.enabled)
@@ -1027,7 +1028,7 @@ void paramConvertor::convertCproc(struct cifisp_cproc_config* cproc_config, rk_a
     cproc_config->hue = aiq_cproc_config->hue;
 }
 
-void paramConvertor::convertAwb(struct cifisp_awb_meas_config* awb_config, rk_aiq_awb_measure_config* aiq_awb_config)
+void paramConvertor::convertAwb(struct rkisp1_cif_isp_awb_meas_config* awb_config, rk_aiq_awb_measure_config* aiq_awb_config)
 {
     LOG2("%s:%d: enter", __func__, __LINE__);
     if (aiq_awb_config->enabled != mLastAiqResults.awbResults.awb_meas_cfg.enabled)
@@ -1051,13 +1052,13 @@ void paramConvertor::convertAwb(struct cifisp_awb_meas_config* awb_config, rk_ai
 
     switch (aiq_awb_config->awb_meas_mode) {
         case RK_ISP_AWB_MEASURING_MODE_RGB:
-            awb_config->awb_mode = CIFISP_AWB_MODE_RGB;
+            awb_config->awb_mode = RKISP1_CIF_ISP_AWB_MODE_RGB;
             break;
         case RK_ISP_AWB_MEASURING_MODE_YCBCR:
-            awb_config->awb_mode = CIFISP_AWB_MODE_YCBCR;
+            awb_config->awb_mode = RKISP1_CIF_ISP_AWB_MODE_YCBCR;
             break;
         case RK_ISP_AWB_MEASURING_MODE_INVALID:
-            awb_config->awb_mode = CIFISP_AWB_MODE_MANUAL;
+            awb_config->awb_mode = RKISP1_CIF_ISP_AWB_MODE_MANUAL;
             break;
         case RK_ISP_AWB_MEASURING_MODE_MAX:
         default :
@@ -1066,7 +1067,7 @@ void paramConvertor::convertAwb(struct cifisp_awb_meas_config* awb_config, rk_ai
     }
 }
 
-void paramConvertor::convertIe(struct cifisp_ie_config* ie_config, rk_aiq_ie_config* aiq_ie_config)
+void paramConvertor::convertIe(struct rkisp1_cif_isp_ie_config* ie_config, rk_aiq_ie_config* aiq_ie_config)
 {
     LOG2("%s:%d: enter", __func__, __LINE__);
     if (aiq_ie_config->enabled != mLastAiqResults.miscIspResults.gbce_config.ie_config.enabled)
@@ -1159,7 +1160,7 @@ void paramConvertor::convertIe(struct cifisp_ie_config* ie_config, rk_aiq_ie_con
     }
 }
 
-void paramConvertor::convertAec(struct cifisp_aec_config* aec_config, rk_aiq_aec_config* aiq_aec_config)
+void paramConvertor::convertAec(struct rkisp1_cif_isp_aec_config* aec_config, rk_aiq_aec_config* aiq_aec_config)
 {
     LOG2("%s:%d: enter", __func__, __LINE__);
     if (aiq_aec_config->enabled != mLastAiqResults.aeResults.aec_config_result.enabled)
@@ -1176,10 +1177,10 @@ void paramConvertor::convertAec(struct cifisp_aec_config* aec_config, rk_aiq_aec
 
     switch (aiq_aec_config->mode) {
     case RK_ISP_EXP_MEASURING_MODE_0:
-        aec_config->mode = CIFISP_EXP_MEASURING_MODE_0;
+        aec_config->mode = RKISP1_CIF_ISP_EXP_MEASURING_MODE_0;
         break;
     case RK_ISP_EXP_MEASURING_MODE_1:
-        aec_config->mode = CIFISP_EXP_MEASURING_MODE_1;
+        aec_config->mode = RKISP1_CIF_ISP_EXP_MEASURING_MODE_1;
         break;
     case RK_ISP_EXP_MEASURING_MODE_INVALID:
     case RK_ISP_EXP_MEASURING_MODE_MAX:
@@ -1189,12 +1190,12 @@ void paramConvertor::convertAec(struct cifisp_aec_config* aec_config, rk_aiq_aec
     }
 }
 
-/* void paramConvertor::convertWdr(struct cifisp_dpcc_config* dpcc_config, rk_aiq_dpcc_config*  aiq_)*/
+/* void paramConvertor::convertWdr(struct rkisp1_cif_isp_dpcc_config* dpcc_config, rk_aiq_dpcc_config*  aiq_)*/
 /* { */
 
 /* } */
 
-void paramConvertor::convertDpf(struct cifisp_dpf_config* dpf_config, rk_aiq_dpf_config* aiq_dpf_config)
+void paramConvertor::convertDpf(struct rkisp1_cif_isp_dpf_config* dpf_config, rk_aiq_dpf_config* aiq_dpf_config)
 {
     LOG2("%s:%d: enter", __func__, __LINE__);
     if (aiq_dpf_config->enabled != mLastAiqResults.miscIspResults.dpf_config.enabled)
@@ -1204,25 +1205,25 @@ void paramConvertor::convertDpf(struct cifisp_dpf_config* dpf_config, rk_aiq_dpf
 
     switch (aiq_dpf_config->gain_usage) {
         case RK_AIQ_ISP_DPF_GAIN_USAGE_DISABLED:
-            dpf_config->gain.mode = CIFISP_DPF_GAIN_USAGE_DISABLED;
+            dpf_config->gain.mode = RKISP1_CIF_ISP_DPF_GAIN_USAGE_DISABLED;
             break;
         case RK_AIQ_ISP_DPF_GAIN_USAGE_NF_GAINS:
-            dpf_config->gain.mode = CIFISP_DPF_GAIN_USAGE_NF_GAINS;
+            dpf_config->gain.mode = RKISP1_CIF_ISP_DPF_GAIN_USAGE_NF_GAINS;
             break;
         case RK_AIQ_ISP_DPF_GAIN_USAGE_LSC_GAINS:
-            dpf_config->gain.mode = CIFISP_DPF_GAIN_USAGE_LSC_GAINS;
+            dpf_config->gain.mode = RKISP1_CIF_ISP_DPF_GAIN_USAGE_LSC_GAINS;
             break;
         case RK_AIQ_ISP_DPF_GAIN_USAGE_NF_LSC_GAINS:
-            dpf_config->gain.mode = CIFISP_DPF_GAIN_USAGE_NF_LSC_GAINS;
+            dpf_config->gain.mode = RKISP1_CIF_ISP_DPF_GAIN_USAGE_NF_LSC_GAINS;
             break;
         case RK_AIQ_ISP_DPF_GAIN_USAGE_AWB_GAINS:
-            dpf_config->gain.mode = CIFISP_DPF_GAIN_USAGE_AWB_GAINS;
+            dpf_config->gain.mode = RKISP1_CIF_ISP_DPF_GAIN_USAGE_AWB_GAINS;
             break;
         case RK_AIQ_ISP_DPF_GAIN_USAGE_AWB_LSC_GAINS:
-            dpf_config->gain.mode = CIFISP_DPF_GAIN_USAGE_AWB_LSC_GAINS;
+            dpf_config->gain.mode = RKISP1_CIF_ISP_DPF_GAIN_USAGE_AWB_LSC_GAINS;
             break;
         case RK_AIQ_ISP_DPF_GAIN_USAGE_MAX:
-            dpf_config->gain.mode = CIFISP_DPF_GAIN_USAGE_MAX;
+            dpf_config->gain.mode = RKISP1_CIF_ISP_DPF_GAIN_USAGE_MAX;
             break;
         case RK_AIQ_ISP_DPF_GAIN_USAGE_INVALID:
         default :
@@ -1237,8 +1238,8 @@ void paramConvertor::convertDpf(struct cifisp_dpf_config* dpf_config, rk_aiq_dpf
     dpf_config->g_flt.gr_enable = aiq_dpf_config->process_gr_pixel;
     dpf_config->g_flt.gb_enable = aiq_dpf_config->process_gb_pixel;
     int spatial_size = aiq_dpf_config->spatial_g.weight_coeff_size;
-    if (spatial_size > CIFISP_DPF_MAX_SPATIAL_COEFFS)
-        spatial_size = CIFISP_DPF_MAX_SPATIAL_COEFFS;
+    if (spatial_size > RKISP1_CIF_ISP_DPF_MAX_SPATIAL_COEFFS)
+        spatial_size = RKISP1_CIF_ISP_DPF_MAX_SPATIAL_COEFFS;
     for (int i = 0; i < spatial_size; i++) {
         dpf_config->g_flt.spatial_coeff[i] = aiq_dpf_config->spatial_g.weight_coeff[i];
     }
@@ -1246,18 +1247,18 @@ void paramConvertor::convertDpf(struct cifisp_dpf_config* dpf_config, rk_aiq_dpf
     dpf_config->rb_flt.r_enable = aiq_dpf_config->process_red_pixel;
     dpf_config->rb_flt.b_enable = aiq_dpf_config->process_blue_pixel;
     spatial_size = aiq_dpf_config->spatial_rb.weight_coeff_size;
-    if (spatial_size > CIFISP_DPF_MAX_SPATIAL_COEFFS)
-        spatial_size = CIFISP_DPF_MAX_SPATIAL_COEFFS;
+    if (spatial_size > RKISP1_CIF_ISP_DPF_MAX_SPATIAL_COEFFS)
+        spatial_size = RKISP1_CIF_ISP_DPF_MAX_SPATIAL_COEFFS;
     for (int i = 0; i < spatial_size; i++) {
         dpf_config->rb_flt.spatial_coeff[i] = aiq_dpf_config->spatial_rb.weight_coeff[i];
     }
 
     switch (aiq_dpf_config->rb_flt_size) {
         case RK_AIQ_ISP_DPF_RB_FILTERSIZE_13x9:
-            dpf_config->rb_flt.fltsize = CIFISP_DPF_RB_FILTERSIZE_13x9;
+            dpf_config->rb_flt.fltsize = RKISP1_CIF_ISP_DPF_RB_FILTERSIZE_13x9;
             break;
         case RK_AIQ_ISP_DPF_RB_FILTERSIZE_9x9:
-            dpf_config->rb_flt.fltsize = CIFISP_DPF_RB_FILTERSIZE_9x9;
+            dpf_config->rb_flt.fltsize = RKISP1_CIF_ISP_DPF_RB_FILTERSIZE_9x9;
             break;
         case RK_AIQ_ISP_DPF_RB_FILTERSIZE_INVALID:
         case RK_AIQ_ISP_DPF_RB_FILTERSIZE_MAX:
@@ -1267,17 +1268,17 @@ void paramConvertor::convertDpf(struct cifisp_dpf_config* dpf_config, rk_aiq_dpf
     }
 
     int nll_size = aiq_dpf_config->lookup.nll_coeff_size;
-    if (nll_size > CIFISP_DPF_MAX_NLF_COEFFS)
-        nll_size = CIFISP_DPF_MAX_NLF_COEFFS;
+    if (nll_size > RKISP1_CIF_ISP_DPF_MAX_NLF_COEFFS)
+        nll_size = RKISP1_CIF_ISP_DPF_MAX_NLF_COEFFS;
     for (int i = 0; i < nll_size; i++) {
         dpf_config->nll.coeff[i] = aiq_dpf_config->lookup.nll_coeff[i];
     }
     switch (aiq_dpf_config->lookup.x_scale) {
         case RK_AIQ_ISP_DPF_NLL_SCALE_LINEAR:
-            dpf_config->nll.scale_mode = CIFISP_NLL_SCALE_LINEAR;
+            dpf_config->nll.scale_mode = RKISP1_CIF_ISP_NLL_SCALE_LINEAR;
             break;
         case RK_AIQ_ISP_DPF_NLL_SCALE_LOGARITHMIC:
-            dpf_config->nll.scale_mode = CIFISP_NLL_SCALE_LOGARITHMIC;
+            dpf_config->nll.scale_mode = RKISP1_CIF_ISP_NLL_SCALE_LOGARITHMIC;
             break;
         case RK_AIQ_ISP_DPF_NLL_SCALE_INVALID:
         case RK_AIQ_ISP_DPF_NLL_SCALE_MAX:
@@ -1287,7 +1288,7 @@ void paramConvertor::convertDpf(struct cifisp_dpf_config* dpf_config, rk_aiq_dpf
     }
 }
 
-void paramConvertor::convertDpfStrength(struct cifisp_dpf_strength_config* dpfStrength_config, rk_aiq_dpf_strength_config* aiq_dpfStrength_config)
+void paramConvertor::convertDpfStrength(struct rkisp1_cif_isp_dpf_strength_config* dpfStrength_config, rk_aiq_dpf_strength_config* aiq_dpfStrength_config)
 {
     LOG2("%s:%d: enter", __func__, __LINE__);
     if (aiq_dpfStrength_config->enabled != mLastAiqResults.miscIspResults.strength_config.enabled)
@@ -1300,7 +1301,7 @@ void paramConvertor::convertDpfStrength(struct cifisp_dpf_strength_config* dpfSt
     dpfStrength_config->b = aiq_dpfStrength_config->b;
 }
 
-status_t paramConvertor::convertParams(struct rkisp1_isp_params_cfg* isp_cfg, struct AiqResults* aiqResults)
+status_t paramConvertor::convertParams(struct rkisp1_params_cfg* isp_cfg, struct AiqResults* aiqResults)
 {
     LOG2("%s:%d: enter", __func__, __LINE__);
     if (CC_UNLIKELY(isp_cfg == NULL || aiqResults == NULL))

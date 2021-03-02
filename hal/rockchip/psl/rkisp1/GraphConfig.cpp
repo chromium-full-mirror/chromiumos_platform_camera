@@ -37,7 +37,6 @@ using std::vector;
 using std::map;
 using std::set;
 
-
 namespace android {
 namespace camera2 {
 
@@ -45,32 +44,7 @@ extern int32_t gDumpType;
 
 namespace gcu = graphconfig::utils;
 
-// TODO: Change the format attribute natively as integer attribute
-#ifndef VIDEO_RECORDING_FORMAT
-#define VIDEO_RECORDING_FORMAT TILE
-#endif
-
-#define MEDIACTL_PAD_OUTPUT_NUM 2
-#define MEDIACTL_PAD_VF_NUM 3
-#define MEDIACTL_PAD_PV_NUM 4
 #define SCALING_FACTOR 1
-
-const string csi2_without_port = "rockchip-sy-mipi-dphy";
-
-/* isp port name*/
-const string MEDIACTL_INPUTNAME = "input";
-const string MEDIACTL_OUTPUTNAME = "output";
-
-/*video entity name*/
-const string MEDIACTL_PARAMETERNAME = "rkisp1-input-params";
-
-const string MEDIACTL_VIDEONAME = "rkisp1_mainpath";
-const string MEDIACTL_STILLNAME = "rkisp1_mainpath";
-
-const string MEDIACTL_PREVIEWNAME = "rkisp1_selfpath";
-const string MEDIACTL_POSTVIEWNAME = "postview";
-
-const string MEDIACTL_STATNAME = "rkisp1-statistics";
 
 GraphConfig::GraphConfig() :
         mManager(nullptr),
@@ -82,12 +56,10 @@ GraphConfig::GraphConfig() :
         mSourceType(SRC_NONE)
 {
     //CLEAR(mProgramGroup);
-    mSourcePortName.clear();
     mSinkPeerPort.clear();
     mStreamToSinkIdMap.clear();
     mStream2TuningMap.clear();
     createKernelListStructures();
-    mCSIBE = CSI_BE + "0";
     mMainNodeName.clear();
     mSecondNodeName.clear();
 }
@@ -103,7 +75,6 @@ GraphConfig::~GraphConfig()
  */
 void GraphConfig::fullReset()
 {
-    mSourcePortName.clear();
     mSinkPeerPort.clear();
     mStreamToSinkIdMap.clear();
     mStreamIds.clear();
@@ -274,7 +245,6 @@ status_t GraphConfig::analyzeSourceType()
     ret = mSettings->getDescendant(GCSS_KEY_SENSOR, &inputDevNode);
     if (ret == css_err_none) {
         mSourceType = SRC_SENSOR;
-        mSourcePortName = SENSOR_PORT_NAME;
     } else {
         LOG1("No sensor node from the graph");
     }
@@ -1908,74 +1878,26 @@ status_t GraphConfig::getMediaCtlData(MediaCtlConfig *mediaCtlConfig)
     SourceNodeInfo sourceInfo;
     Node *sourceNode = nullptr;
 
-    string csi2;
-    if (mSourceType == SRC_SENSOR) {
-        ret = mSettings->getDescendant(GCSS_KEY_SENSOR, &sourceNode);
-        if (ret != css_err_none) {
-            LOGE("Error: Couldn't get sensor node from the graph");
-            return UNKNOWN_ERROR;
-        }
-        retErr = parseSensorNodeInfo(sourceNode, sourceInfo);
-        if (retErr != OK) {
-            LOGE("Error: Couldn't get sensor node info");
-            return UNKNOWN_ERROR;
-        }
-
-        // get the next entity port of the "ov5670 binner 11-0010" which is dynamical.
-        // it could "rkisp1-csi2 0" or "rkisp1-csi2 1", then it will get 0 or 1.
-        int port = 0;
-        std::shared_ptr<MediaEntity> entity = nullptr;
-        string entityName = sourceInfo.name + " " + sourceInfo.i2cAddress;
-        LOG1("entityName:%s\n", entityName.c_str());
-        status_t ret = mMediaCtl->getMediaEntity(entity, entityName.c_str());
-        if (ret != NO_ERROR) {
-            LOGE("@%s, fail to call getMediaEntity, ret:%d\n", __FUNCTION__, ret);
-            return UNKNOWN_ERROR;
-        }
-        std::vector<media_link_desc> links;
-        entity->getLinkDesc(links);
-        LOG1("@%s, links number:%zu\n", __FUNCTION__, links.size());
-        if (links.size()) {
-            struct media_pad_desc* pad = &links[0].sink;
-            LOG1("@%s, sink entity:%d, flags:%d, index:%d\n",
-                __FUNCTION__, pad->entity, pad->flags, pad->index);
-            struct media_entity_desc entityDesc;
-            mMediaCtl->findMediaEntityById(pad->entity, entityDesc);
-            LOG1("@%s, name:%s\n", __FUNCTION__, entityDesc.name);
-            string name = entityDesc.name;
-            std::size_t p = name.find(" ");
-            if (p != std::string::npos) {
-                string s;
-                s.append(name, p + 1, 1);
-                port = std::stoi(s);
-                LOG1("@%s, port:%d\n", __FUNCTION__, port);
-            }
-        }
-
-        // get csi2 and cio2 names
-        //csi2 = csi2_without_port + std::to_string(port);
-        //mCSIBE = CSI_BE + std::to_string(port);
-        csi2 = csi2_without_port;
-        mCSIBE = CSI_BE;
-        /* TODO: should config according to real topology, sensor to isp link is decided by the sensor interface,
-        * link is different for mipi and dvp.
-        *  mipi sensor --- > csi ---> isp
-        * dvp sensor ----> isp
-        */
-        addLinkParams(entityName, 0, csi2, 0, 1, MEDIA_LNK_FL_ENABLED, mediaCtlConfig);
-        LOG1(" csi2 is:%s, cio2 is:%s\n", csi2.c_str(), mCSIBE.c_str());
-    } else {
+    if (mSourceType != SRC_SENSOR) {
         LOGE("Error: No source");
         return UNKNOWN_ERROR;
     }
 
-#if 0//needn't get the default expsure here, get it from 3a lib instead
-    // Add control params
-    retErr = addControls(sourceNode, sourceInfo, mediaCtlConfig);
-    if (retErr != OK) {
+    ret = mSettings->getDescendant(GCSS_KEY_SENSOR, &sourceNode);
+    if (ret != css_err_none) {
+        LOGE("Error: Couldn't get sensor node from the graph");
         return UNKNOWN_ERROR;
     }
-#endif
+    retErr = parseSensorNodeInfo(sourceNode, sourceInfo);
+    if (retErr != OK) {
+        LOGE("Error: Couldn't get sensor node info");
+        return UNKNOWN_ERROR;
+    }
+
+    // Enable link from sensor to rkisp1.
+    string entityName = sourceInfo.name + " " + sourceInfo.i2cAddress;
+    addLinkParams(entityName, 0, MEDIACTL_IMGUNAME, 0, 1, MEDIA_LNK_FL_ENABLED, mediaCtlConfig);
+
     /*
      * Add Camera properties to mediaCtlConfig
      */
@@ -1992,170 +1914,12 @@ status_t GraphConfig::getMediaCtlData(MediaCtlConfig *mediaCtlConfig)
     cameraProps.name = cameraName.c_str();
     mediaCtlConfig->mCameraProps = cameraProps;
 
-    mediaCtlConfig->mFTCSize.Width = sourceInfo.output.w;
-    mediaCtlConfig->mFTCSize.Height = sourceInfo.output.h;
-
-    Node *pixelFormatterIn = nullptr, *pixelFormatterOut = nullptr;
-    Node *csiBEOutput = nullptr, *csiBESocOutput = nullptr;
-    int pfInW = 0, pfInH = 0, pfOutW = 0, pfOutH = 0, pfLeft = 0, pfTop = 0;
-    bool pfPresent = false;
-
-    // Get csi_be node. If not found, try csi_be_soc. If not found return error.
-    ret = mSettings->getDescendantByString("csi_be:output", &csiBEOutput);
-    if (ret != css_err_none) {
-
-        ret = mSettings->getDescendantByString("csi_be_soc:output", &csiBESocOutput);
-        if (ret != css_err_none) {
-            LOGE("Error: Couldn't get csi_be or csi_be_soc nodes from the graph");
-            return UNKNOWN_ERROR;
-        }
-        // get format from _soc
-        ret = csiBESocOutput->getValue(GCSS_KEY_FORMAT, formatStr);
-        if (ret != css_err_none) {
-            LOGE("Error: Couldn't get format from the graph");
-            return UNKNOWN_ERROR;
-        }
-    } else {
-        ret = csiBEOutput->getValue(GCSS_KEY_FORMAT, formatStr);
-        if (ret != css_err_none) {
-            LOGE("Error: Couldn't get format from the graph");
-            return UNKNOWN_ERROR;
-        }
-    }
-
-    /* consistency check, we have at least one CSI-BE */
-    if (CC_UNLIKELY(csiBESocOutput == nullptr && csiBEOutput == nullptr)) {
-        LOGE("Error: CSI BE Output nullptr");
-        return UNKNOWN_ERROR;
-    }
-
-    std::string pixelFormatterInput = "bxt_pixelformatter:input";
-    std::string pixelFormatterOutput = "bxt_pixelformatter:output";
-    std::string inputPort;
-    std::string outputPort;
-    if (csiBEOutput != nullptr) {
-        inputPort = "csi_be:" + pixelFormatterInput;
-        outputPort = "csi_be:" + pixelFormatterOutput;
-    } else {
-        inputPort = "csi_be_soc:" + pixelFormatterInput;
-        outputPort = "csi_be_soc:" + pixelFormatterOutput;
-    }
-
-    /* Get cropping values from the pixel formatter input. Output resolution
-     * comes from the csi be output. Some graphs may not use pixel formatter.*/
-    ret = mSettings->getDescendantByString(inputPort,
-                                            &pixelFormatterIn);
-    if (ret != css_err_none) {
-        LOGW("Couldn't get pixel formatter input, skipping");
-    } else {
-        pfPresent = true;
-        ret = mSettings->getDescendantByString(outputPort,
-                                                &pixelFormatterOut);
-        if (ret != css_err_none) {
-            LOGE("Error: Couldn't get pixel formatter output");
-            return UNKNOWN_ERROR;
-        }
-
-        retErr = getDimensions(pixelFormatterIn, pfInW, pfInH, pfLeft, pfTop);
-        if (retErr != OK) {
-            LOGE("Error: Couldn't get values from pixel formatter input");
-            return UNKNOWN_ERROR;
-        }
-
-        retErr = getDimensions(pixelFormatterOut, pfOutW, pfOutH);
-        if (retErr != OK) {
-            LOGE("Error: Couldn't get values from pixel formatter output");
-            return UNKNOWN_ERROR;
-        }
-    }
-
-    int csiBEOutW = 0, csiBEOutH = 0;
-    int csiBESocOutW = 0, csiBESocOutH = 0;
-    if (csiBEOutput != nullptr) {
-        retErr = getDimensions(csiBEOutput, csiBEOutW,csiBEOutH);
-        if (retErr != OK) {
-            LOGE("Error: Couldn't values from csi be output");
-            return UNKNOWN_ERROR;
-        }
-    } else {
-        retErr = getDimensions(csiBESocOutput, csiBESocOutW, csiBESocOutH);
-        if (retErr != OK) {
-            LOGE("Error: Couldn't get values from csi be soc out");
-            return UNKNOWN_ERROR;
-        }
-        LOG1("pfInW:%d, pfLeft:%d, pfTop:%d,pfOutW:%d,pfOutH:%d,csiBESocOutW:%d,csiBESocOutH:%d",
-              pfInW, pfLeft, pfTop, pfOutW, pfOutH, csiBESocOutW,csiBESocOutH);
-    }
-
-    /* Boolean to tell whether there is pixel formatter cropping.
-     * This affects which selections are made */
-    bool pixelFormatter = false;
-    if (pfInW != pfOutW || pfInH != pfOutH || pfLeft != 0 || pfTop != 0)
-        pixelFormatter = true;
-
-    /*
-     * If CSI BE SOC is not used, we must have ISA. Get video crop, scaled and
-     * non scaled output from ISA and apply the formats. Otherwise add formats
-     * for CSI BE SOC.
-     */
-    Node *isaNode = nullptr;
-    Node *cropVideoIn = nullptr, *cropVideoOut = nullptr;
-    int videoCropW = 0, videoCropH = 0, videoCropT = 0, videoCropL = 0;
-    int videoCropOutW = 0, videoCropOutH = 0;
-
-    /*
-     * First get and set values when CSI BE SOC is not used
-     */
-    if (csiBESocOutput == nullptr) {
-        ret = mSettings->getDescendant(GCSS_KEY_CSI_BE, &isaNode);
-        if (ret != css_err_none) {
-            LOGE("Error: Couldn't get isa node");
-            return UNKNOWN_ERROR;
-        }
-
-        // Check if there is video cropping available. It is zero as default.
-        ret = isaNode->getDescendantByString("csi_be:output",
-                                             &cropVideoOut);
-        if (ret == css_err_none) {
-            ret = isaNode->getDescendantByString("csi_be:input",
-                                                 &cropVideoIn);
-        }
-        if (ret == css_err_none) {
-            retErr = getDimensions(cropVideoIn, videoCropW, videoCropH,
-                    videoCropL, videoCropT);
-            if (retErr != OK) {
-                LOGE("Error: Couldn't get values from crop video input");
-                return UNKNOWN_ERROR;
-            }
-            retErr = getDimensions(cropVideoOut, videoCropOutW, videoCropOutH);
-            if (retErr != OK) {
-                LOGE("Error: Couldn't get values from crop video output");
-                return UNKNOWN_ERROR;
-            }
-        }
-    }
-
     /* Set sensor pixel array parameter to the attributes in 'sensor_mode' node,
      * ignore the attributes in pixel_array and binner node due to upstream driver
      * removed binner and scaler subdev.
      */
     addFormatParams(sourceInfo.pa.name, sourceInfo.output.w, sourceInfo.output.h,
                     0, sourceInfo.output.mbusFormat, 0, 0, mediaCtlConfig);
-
-    // rkisp1-csi2 0 or 1
-    addFormatParams(csi2, csiBESocOutW, csiBESocOutH,
-                    0, sourceInfo.output.mbusFormat, 0, 0, mediaCtlConfig);
-    addFormatParams(csi2, csiBESocOutW, csiBESocOutH,
-                    1, sourceInfo.output.mbusFormat, 0, 0, mediaCtlConfig);
-
-    /* Start populating selections into mediaCtlConfig
-     * entity name, width, height, left crop, top crop, target, pad, config */
-    addSelectionParams(sourceInfo.pa.name,
-                       sourceInfo.pa.out.w,
-                       sourceInfo.pa.out.h,
-                       sourceInfo.pa.out.l,
-                       sourceInfo.pa.out.t,
-                       V4L2_SEL_TGT_CROP, 0 /* sink pad */, mediaCtlConfig);
 
     if (gDumpType & CAMERA_DUMP_MEDIA_CTL)
         dumpMediaCtlConfig(*mediaCtlConfig);
@@ -2198,27 +1962,106 @@ status_t GraphConfig::getNodeInfo(const ia_uid uid, const Node &parent, int* wid
     return status;
 }
 
+status_t GraphConfig::getWidthHeightFormat(Node* node, int &width, int &height,
+                                           string& fourccFormat) {
+    int ret = node->getValue(GCSS_KEY_WIDTH, width);
+    if (ret != css_err_none) {
+        LOGE("Could not get width for <%s>", NODE_NAME(node));
+        return UNKNOWN_ERROR;
+    }
+
+    ret = node->getValue(GCSS_KEY_HEIGHT, height);
+    if (ret != css_err_none) {
+        LOGE("Could not get height for <%s>", NODE_NAME(node));
+        return UNKNOWN_ERROR;
+    }
+    ret = node->getValue(GCSS_KEY_FORMAT, fourccFormat);
+    if (ret != css_err_none) {
+        LOGE("Could not get format for <%s>", NODE_NAME(node));
+        return UNKNOWN_ERROR;
+    }
+    return OK;
+}
+
+status_t GraphConfig::getPathMediaCtlData(Node* pipe, int nodeType,
+                                        int ispOutWidth, int ispOutHeight,
+                                        int32_t testPatternMode,
+                                        string resizerName, string pathName,
+                                        MediaCtlConfig *mediaCtlConfig) {
+    if (pipe == nullptr) {
+      LOGE("Missing video/preview section in current setting. Check graph_settings.xml");
+      return UNKNOWN_ERROR;
+    }
+
+    // Assume enabled="1" by default. Explicitly set to 0 in settings, if necessary.
+    int enabled = 1;
+    int ret = pipe->getValue(GCSS_KEY_ENABLED, enabled);
+    if (ret != css_err_none) {
+        LOG1("Attribute 'enabled' not present in <%s>. Assuming enabled=\"1\"", NODE_NAME(pipe));
+    }
+
+    if (!enabled) {
+        LOG1("Node <%s> not enabled - Skipping", NODE_NAME(pipe));
+        return OK;
+    }
+
+    int width = 0, height = 0;
+    string fourccFormat = "";
+    ret = getWidthHeightFormat(pipe, width, height, fourccFormat);
+    if (ret != OK) {
+      LOGE("Missing width/height/format in video/preview section. Check graph_settings.xml");
+      return UNKNOWN_ERROR;
+    }
+
+    // Resizer Input
+    int cropWidth = 0, cropHeight = 0;
+    ret = getNodeInfo(GCSS_KEY_IMGU_PCRP, *pipe, &cropWidth, &cropHeight);
+    if (ret != OK) {
+        LOGE("Missing crop info for <%s>", NODE_NAME(pipe));
+        return UNKNOWN_ERROR;
+    }
+
+    /* use limit range if test pattern mode is selected */
+    int quantization = testPatternMode != ANDROID_SENSOR_TEST_PATTERN_MODE_OFF ?
+        V4L2_QUANTIZATION_LIM_RANGE : V4L2_QUANTIZATION_DEFAULT;
+
+    addFormatParams(resizerName, ispOutWidth, ispOutHeight, 0,
+                    MEDIA_BUS_FMT_YUYV8_2X8, 0, quantization, mediaCtlConfig);
+    addSelectionParams(resizerName, cropWidth, cropHeight,
+                      (ispOutWidth - cropWidth) / 2, (ispOutHeight - cropHeight) / 2,
+                      V4L2_SEL_TGT_CROP, 0, mediaCtlConfig);
+    addLinkParams(MEDIACTL_IMGUNAME, 2, resizerName, 0, 1, MEDIA_LNK_FL_ENABLED, mediaCtlConfig);
+
+    // Resizer Output
+    addFormatParams(resizerName, width, height, 1,
+                    MEDIA_BUS_FMT_YUYV8_1_5X8, 0, quantization, mediaCtlConfig);
+
+    // Video/Preview Node
+    int format = gcu::getV4L2Format(get_fourcc(fourccFormat[0],
+                                               fourccFormat[1],
+                                               fourccFormat[2],
+                                               fourccFormat[3]));
+    addFormatParams(pathName, width, height, 0, format, 0, 0, mediaCtlConfig);
+
+    LOG2("Adding video node: %s", NODE_NAME(pipe));
+    addImguVideoNode(nodeType, pathName, mediaCtlConfig);
+    return OK;
+}
 
 /*
  * Imgu specific function
  */
 status_t GraphConfig::getImguMediaCtlData(int32_t cameraId,
                                           int32_t testPatternMode,
-                                          MediaCtlConfig *mediaCtlConfig,
-                                          MediaCtlConfig *mediaCtlConfigVideo,
-                                          MediaCtlConfig *mediaCtlConfigStill)
+                                          MediaCtlConfig *mediaCtlConfig)
 {
-    CheckAndLogError(
-        (!mediaCtlConfig || !mediaCtlConfigVideo || !mediaCtlConfigStill),
-        BAD_VALUE, "@%s null ptr\n", __FUNCTION__);
+    CheckAndLogError((!mediaCtlConfig), BAD_VALUE, "@%s null ptr\n", __FUNCTION__);
 
     int ret;
-
     Node *imgu = nullptr;
-    Node *preview = nullptr, *video = nullptr, *still = nullptr, *output = nullptr, *input = nullptr;
-    int width = 0, height = 0, format = 0;
-    int enabled = 1;
-    std::string kImguName = "rkisp1-isp-subdev";
+    Node *preview = nullptr, *video = nullptr, *output = nullptr, *input = nullptr;
+    int width = 0, height = 0;
+    string fourccFormat = "";
 
     ret = mSettings->getDescendant(GCSS_KEY_IMGU, &imgu);
     if (ret != css_err_none) {
@@ -2226,179 +2069,91 @@ status_t GraphConfig::getImguMediaCtlData(int32_t cameraId,
         return UNKNOWN_ERROR;
     }
 
-    // TODO: not done
     mSettings->getDescendant(GCSS_KEY_IMGU_PREVIEW, &preview);
     mSettings->getDescendant(GCSS_KEY_IMGU_VIDEO, &video);
-    mSettings->getDescendant(GCSS_KEY_IMGU_STILL, &still);
     imgu->getDescendant(GCSS_KEY_OUTPUT, &output);
     imgu->getDescendant(GCSS_KEY_INPUT, &input);
 
-    struct lut {
-        uint32_t uid;
-        string name;
-        int ipuNodeName;
-        Node *pipe;
-        int pad;
-    };
+    // IMGU Input
+    if (input == nullptr) {
+      LOGE("Missing input section in current setting. Check graph_settings.xml");
+      return UNKNOWN_ERROR;
+    }
 
-    vector<lut> uids;
-    uids.clear();
+    ret = getWidthHeightFormat(input, width, height, fourccFormat);
+    if (ret != OK) {
+      LOGE("Missing width/height/format in input section. Check graph_settings.xml");
+      return UNKNOWN_ERROR;
+    }
 
-    uids = {
-        { GCSS_KEY_IMGU_STILL, MEDIACTL_STILLNAME, IMGU_NODE_STILL, still, -1 },
-        { GCSS_KEY_INPUT, kImguName, IMGU_NODE_INPUT,input, 0 },
-        { GCSS_KEY_OUTPUT, kImguName, -1, output, MEDIACTL_PAD_OUTPUT_NUM },
-        { GCSS_KEY_IMGU_VIDEO, MEDIACTL_VIDEONAME, IMGU_NODE_VIDEO, video, 0 },
-        { GCSS_KEY_IMGU_PREVIEW, MEDIACTL_PREVIEWNAME, IMGU_NODE_VF_PREVIEW, preview, 0 },
-    };
+    int32_t iMbusFormat = gcu::getMBusFormat(get_fourcc(fourccFormat[0],
+                                                        fourccFormat[1],
+                                                        fourccFormat[2],
+                                                        fourccFormat[3]));
+    int iacWidth = 0, iacHeight = 0;
+    ret = getNodeInfo(GCSS_KEY_IMGU_IAC, *input, &iacWidth, &iacHeight);
+    if (ret != OK) {
+        LOGW("Input setction: Missing crop (iac) value. Check graph_settings.xml");
+        return UNKNOWN_ERROR;
+    }
+
+    addFormatParams(MEDIACTL_IMGUNAME, width, height, 0, iMbusFormat, 0, 0, mediaCtlConfig);
+    addSelectionParams(MEDIACTL_IMGUNAME, iacWidth, iacHeight, 0, 0, V4L2_SEL_TGT_CROP, 0, mediaCtlConfig);
+
+    // IMGU OUPUT
+    if (output == nullptr) {
+      LOGE("Missing input section in current setting. Check graph_settings.xml");
+      return UNKNOWN_ERROR;
+    }
+
+    ret = getWidthHeightFormat(input, width, height, fourccFormat);
+    if (ret != OK) {
+      LOGE("Missing width/height/format in input section. Check graph_settings.xml");
+      return UNKNOWN_ERROR;
+    }
 
     int ispOutWidth = 0, ispOutHeight = 0;
-    for (int i = 0; i < uids.size(); i++) {
-        string name = uids[i].name;
-        Node *pipe = uids[i].pipe;
+    ret = getNodeInfo(GCSS_KEY_IMGU_ISM, *output, &ispOutWidth, &ispOutHeight);
+    if (ret != OK) {
+        LOGW("Input setction: Missing crop (ism) value. Check graph_settings.xml");
+        return UNKNOWN_ERROR;
+    }
 
-        if (pipe == nullptr) {
-            LOGD("<%u> node is not present in graph (descriptor or settings) - continuing.", uids[i].uid);
-            continue;
-        }
+    /* use limit range if test pattern mode is selected */
+    int quantization = testPatternMode != ANDROID_SENSOR_TEST_PATTERN_MODE_OFF ?
+        V4L2_QUANTIZATION_LIM_RANGE : V4L2_QUANTIZATION_DEFAULT;
 
-        // Assume enabled="1" by default. Explicitly set to 0 in settings, if necessary.
-        enabled = 1;
-        ret = pipe->getValue(GCSS_KEY_ENABLED, enabled);
-        if (ret != css_err_none) {
-            LOG1("Attribute 'enabled' not present in <%s>. Assuming enabled=\"1\"", NODE_NAME(pipe));
-        }
+    addFormatParams(MEDIACTL_IMGUNAME, width, height, 2, V4L2_MBUS_FMT_YUYV8_2X8, 0, quantization, mediaCtlConfig);
+    addSelectionParams(MEDIACTL_IMGUNAME, ispOutWidth, ispOutHeight, 0, 0, V4L2_SEL_TGT_CROP, 2, mediaCtlConfig);
 
-        if (!enabled) {
-            LOG1("Node <%s> not enabled - continuing", NODE_NAME(pipe));
-            continue;
-        }
-
-        ret = pipe->getValue(GCSS_KEY_WIDTH, width);
-        if (ret != css_err_none) {
-            LOGE("Could not get width for <%s>", NODE_NAME(pipe));
-            return UNKNOWN_ERROR;
-        }
-
-        if (width == 0)
-            continue;
-
-        ret = pipe->getValue(GCSS_KEY_HEIGHT, height);
-        if (ret != css_err_none) {
-            LOGE("Could not get height for <%s>", NODE_NAME(pipe));
-            return UNKNOWN_ERROR;
-        }
-        string fourccFormat = "";
-        ret = pipe->getValue(GCSS_KEY_FORMAT, fourccFormat);
-        if (ret != css_err_none) {
-            LOGE("Could not get format for <%s>", NODE_NAME(pipe));
-            return UNKNOWN_ERROR;
-        }
-
-        format = gcu::getV4L2Format(get_fourcc(fourccFormat[0],
-                                               fourccFormat[1],
-                                               fourccFormat[2],
-                                               fourccFormat[3]));
-
-        if (GCSS::ItemUID::key2str(uids[i].uid) == GC_PREVIEW ||
-            GCSS::ItemUID::key2str(uids[i].uid) == GC_STILL ||
-            GCSS::ItemUID::key2str(uids[i].uid) == GC_VIDEO) {
-            int nodeWidth = 0, nodeHeight = 0;
-
-            /* Use BGGR as bayer format when specific sensor receives test pattern request */
-            if (testPatternMode != ANDROID_SENSOR_TEST_PATTERN_MODE_OFF) {
-                const RKISP1CameraCapInfo* capInfo = getRKISP1CameraCapInfo(cameraId);
-                CheckAndLogError(capInfo == nullptr, UNKNOWN_ERROR,
-                                 "@%s: failed to get cameraCapInfo",
-                                 __FUNCTION__);
-                if (name.compare(MEDIACTL_INPUTNAME) == 0 &&
-                        !capInfo->getTestPatternBayerFormat().empty()) {
-                    format = gcu::getV4L2Format(capInfo->getTestPatternBayerFormat());
-                }
-            }
-            addFormatParams(name, width, height, uids[i].pad,
-                            format, 0, 0, mediaCtlConfig);
-
-            // Get path crop  info
-            ret = getNodeInfo(GCSS_KEY_IMGU_PCRP, *pipe, &nodeWidth, &nodeHeight);
-            if (ret != OK) {
-                LOGE("pipe log name: %s can't get info!", name.c_str());
-                return UNKNOWN_ERROR;
-            } else {
-                struct v4l2_selection select;
-                CLEAR(select);
-                /* videodev2.h says don't use *_MPLAEN */
-                select.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-                select.target = V4L2_SEL_TGT_CROP;
-                select.flags = 0;
-                select.r.left = (ispOutWidth - nodeWidth) / 2;
-                select.r.top = (ispOutHeight - nodeHeight) / 2;
-                select.r.width = nodeWidth;
-                select.r.height = nodeHeight;
-                addSelectionVideoParams(name.c_str(), select, mediaCtlConfig);
-                LOG2("pipe log name: %s  crop size %dx%d", name.c_str(), nodeWidth, nodeHeight);
-            }
-
-            LOG2("Adding video node: %s", NODE_NAME(pipe));
-            addImguVideoNode(uids[i].ipuNodeName, name, mediaCtlConfig);
-            addLinkParams(kImguName, MEDIACTL_PAD_OUTPUT_NUM, name, 0, 1, MEDIA_LNK_FL_ENABLED, mediaCtlConfig);
-        } else if (GCSS::ItemUID::key2str(uids[i].uid) == GC_INPUT) {
-            int nodeWidth = 0, nodeHeight = 0;
-            int32_t iMbusFormat = gcu::getMBusFormat(get_fourcc(fourccFormat[0],
-                                                                fourccFormat[1],
-                                                                fourccFormat[2],
-                                                                fourccFormat[3]));
-            addFormatParams(name, width, height, uids[i].pad,
-                            iMbusFormat, 0, 0, mediaCtlConfig);
-
-            // Get isp input crop  info
-            ret = getNodeInfo(GCSS_KEY_IMGU_IAC, *pipe, &nodeWidth, &nodeHeight);
-            if (ret != OK) {
-                LOGW("pipe log name: %s can't get info!", name.c_str());
-                return UNKNOWN_ERROR;
-            } else
-                addSelectionParams(name, nodeWidth, nodeHeight, 0, 0, V4L2_SEL_TGT_CROP, uids[i].pad, mediaCtlConfig);
-            /* TODO: related to sensor interface, see getMediaCtlData*/
-            addLinkParams(mCSIBE, 1, kImguName, 0, 1, MEDIA_LNK_FL_ENABLED, mediaCtlConfig);
-        } else if (GCSS::ItemUID::key2str(uids[i].uid) == GC_OUTPUT) {
-            int nodeWidth = 0, nodeHeight = 0;
-            int32_t oMbusFormat = gcu::getMBusFormat(get_fourcc(fourccFormat[0],
-                                                                fourccFormat[1],
-                                                                fourccFormat[2],
-                                                                fourccFormat[3]));
-            /* use limit range if test pattern mode is selected */
-            int quantization = testPatternMode != ANDROID_SENSOR_TEST_PATTERN_MODE_OFF ?
-                V4L2_QUANTIZATION_LIM_RANGE : V4L2_QUANTIZATION_DEFAULT;
-            addFormatParams(name, width, height, uids[i].pad,
-                            oMbusFormat, 0, quantization, mediaCtlConfig);
-            // Get isp output crop  info
-            ret = getNodeInfo(GCSS_KEY_IMGU_ISM, *pipe, &nodeWidth, &nodeHeight);
-            if (ret != OK) {
-                LOGW("pipe log name: %s can't get info!", name.c_str());
-                return UNKNOWN_ERROR;
-            } else
-                addSelectionParams(name, nodeWidth, nodeHeight, 0, 0, V4L2_SEL_TGT_CROP, uids[i].pad, mediaCtlConfig);
-            ispOutWidth = nodeWidth;
-            ispOutHeight = nodeHeight;
-        } else {
-            LOGE("pipe log name: wrong node %s !", GCSS::ItemUID::key2str(uids[i].uid));
-            return UNKNOWN_ERROR;
-        }
+    // Video and Preview Path
+    ret = getPathMediaCtlData(video, IMGU_NODE_VIDEO,
+                              ispOutWidth, ispOutHeight,
+                              testPatternMode,
+                              MEDIACTL_RSZ_VIDEONAME, MEDIACTL_VIDEONAME,
+                              mediaCtlConfig);
+    if (ret != OK) {
+        return UNKNOWN_ERROR;
+    }
+    ret = getPathMediaCtlData(preview, IMGU_NODE_PREVIEW,
+                              ispOutWidth, ispOutHeight,
+                              testPatternMode,
+                              MEDIACTL_RSZ_PREVIEWNAME, MEDIACTL_PREVIEWNAME,
+                              mediaCtlConfig);
+    if (ret != OK) {
+        return UNKNOWN_ERROR;
     }
 
     LOG2("Adding stats node");
     addImguVideoNode(IMGU_NODE_STAT, MEDIACTL_STATNAME, mediaCtlConfig);
-    addLinkParams(kImguName, 3, MEDIACTL_STATNAME, 0, 1, MEDIA_LNK_FL_ENABLED, mediaCtlConfig);
 
     LOG2("Adding parameter node");
     addImguVideoNode(IMGU_NODE_PARAM, MEDIACTL_PARAMETERNAME, mediaCtlConfig);
-    addLinkParams(MEDIACTL_PARAMETERNAME, 0, kImguName, 1, 1, MEDIA_LNK_FL_ENABLED, mediaCtlConfig);
+
     return ret;
 }
 
-void GraphConfig::setMediaCtlConfig(std::shared_ptr<MediaController> mediaCtl,
-                                    bool swapVideoPreview,
-                                    bool enableStill)
+void GraphConfig::setMediaCtlConfig(std::shared_ptr<MediaController> mediaCtl)
 {
     mMediaCtl = mediaCtl;
 }
@@ -2447,8 +2202,6 @@ status_t GraphConfig::addControls(const Node *sensorNode,
 
     if (!sourceInfo.pa.name.empty()) {
         entityName = sourceInfo.pa.name;
-    } else if (!sourceInfo.tpg.name.empty()) {
-        entityName = sourceInfo.tpg.name;
     } else {
         LOGE("Empty entity name");
         return UNKNOWN_ERROR;
@@ -2466,25 +2219,6 @@ status_t GraphConfig::addControls(const Node *sensorNode,
                      value, config);
     }
     return OK;
-}
-
-/**
- * Add video nodes into mediaCtlConfig
- *
- * \param csiBESocOutput[in]  use to determine whether csi be soc is enabled
- * \param mediaCtlConfig[out] populate this struct with given values
- */
-void GraphConfig::addVideoNodes(const Node* csiBESocOutput,
-                                MediaCtlConfig* config)
-{
-    CheckAndLogError((!config), VOID_VALUE, "@%s null ptr\n", __FUNCTION__);
-
-    MediaCtlElement mediaCtlElement;
-
-    // Imgu support
-    mediaCtlElement.isysNodeName = ISYS_NODE_RAW;
-    mediaCtlElement.name = mCSIBE;
-    config->mVideoNodes.push_back(mediaCtlElement);
 }
 
 void GraphConfig::addImguVideoNode(int nodeType, const string& nodeName, MediaCtlConfig *config)
@@ -2857,48 +2591,10 @@ GraphConfig::getSourceFrameParams(rk_aiq_frame_params &frameParams)
     status_t status = UNKNOWN_ERROR;
     if (mSourceType == SRC_SENSOR) {
         status = getSensorFrameParams(frameParams);
-    } else if (mSourceType == SRC_TPG) {
-        status = getTPGFrameParams(frameParams);
     } else {
         LOGE("wrong source");
     }
     return status;
-}
-
-/**
- * Retrieve the resolution of the tpg in use.
- */
-status_t
-GraphConfig::getTPGFrameParams(rk_aiq_frame_params &tpgFrameParams)
-{
-    css_err_t ret = css_err_none;
-
-    if (mSourceType == SRC_TPG) {
-        int32_t w,h;
-        Node *tpgPortNode = nullptr;
-        ret = mSettings->getDescendantByString(TPG_PORT_NAME, &tpgPortNode);
-        if (CC_UNLIKELY(ret != css_err_none)) {
-            LOGE("Error: Couldn't get tpg port_0 node from the graph");
-            return UNKNOWN_ERROR;
-        }
-
-        ret = getDimensions(tpgPortNode, w, h);
-        if (CC_UNLIKELY(ret != css_err_none)) {
-            LOGE("Failed to get dimension for tpg port_0 Node");
-            return UNKNOWN_ERROR;
-        }
-
-        tpgFrameParams.cropped_image_width = w;
-        tpgFrameParams.cropped_image_height = h;
-        tpgFrameParams.horizontal_crop_offset = 0;
-        tpgFrameParams.vertical_crop_offset = 0;
-        tpgFrameParams.horizontal_scaling_numerator = 1;
-        tpgFrameParams.horizontal_scaling_denominator = 1;
-        tpgFrameParams.vertical_scaling_numerator = 1;
-        tpgFrameParams.vertical_scaling_denominator = 1;
-        return OK;
-    }
-    return UNKNOWN_ERROR;
 }
 
 /**

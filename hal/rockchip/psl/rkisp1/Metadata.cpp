@@ -348,8 +348,8 @@ status_t Metadata::fillTonemapCurve(RequestCtrlState &reqState)
             LOG2("Not enough curve points. Linear interpolation is used.");
         } else {
             mMaxCurvePoints = results.gamma_y.gamma_y_cnt;
-            if (mMaxCurvePoints > CIFISP_GAMMA_OUT_MAX_SAMPLES)
-                mMaxCurvePoints = CIFISP_GAMMA_OUT_MAX_SAMPLES;
+            if (mMaxCurvePoints > RKISP1_CIF_ISP_GAMMA_OUT_MAX_SAMPLES_V10)
+                mMaxCurvePoints = RKISP1_CIF_ISP_GAMMA_OUT_MAX_SAMPLES_V10;
         }
 
         if (mRGammaLut == nullptr ||

@@ -17,12 +17,9 @@
 GCSS_KEY (IMGU, imgu)
 GCSS_KEY (IMGU_PREVIEW, preview)
 GCSS_KEY (IMGU_VIDEO, video)
-GCSS_KEY (IMGU_STILL, still)
-GCSS_KEY (IMGU_RAW, raw)
 GCSS_KEY (IMGU_IAC, iac) /* input acq size, acq_in or acq_out is dicided by driver*/
 GCSS_KEY (IMGU_ISM, ism) /* image stable  size */
 GCSS_KEY (IMGU_PCRP, pcrp) /* path crop size */
 GCSS_KEY (IMGU_PRSZ, prsz) /* path resizer size */
-GCSS_KEY (IMGU_PIPE_OUTPUT_ID, pipe_output_id)
 GCSS_KEY (IMGU_STATS, stats)
 GCSS_KEY (IMGU_PARAMETERS, parameters)

@@ -88,7 +88,7 @@ status_t StatisticsWorker::prepareRun(std::shared_ptr<DeviceMessage> msg)
     return OK;
 }
 
-static void dumpAE(struct cifisp_ae_stat& ae) {
+static void dumpAE(struct rkisp1_cif_isp_ae_stat& ae) {
     LOG2("AecStatDump:exp_mean(%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d), bls_val(%d,%d,%d,%d)",
          ae.exp_mean[0],ae.exp_mean[1],ae.exp_mean[2],ae.exp_mean[3],ae.exp_mean[4],ae.exp_mean[5],ae.exp_mean[6],ae.exp_mean[7],
          ae.exp_mean[8],ae.exp_mean[9],ae.exp_mean[10],ae.exp_mean[11],ae.exp_mean[12],ae.exp_mean[13],ae.exp_mean[14],ae.exp_mean[15],
@@ -96,7 +96,7 @@ static void dumpAE(struct cifisp_ae_stat& ae) {
          ae.bls_val.meas_r, ae.bls_val.meas_gr, ae.bls_val.meas_gb, ae.bls_val.meas_b);
 }
 
-static void dumpAWB(struct cifisp_awb_stat& awb) {
+static void dumpAWB(struct rkisp1_cif_isp_awb_stat& awb) {
     LOG2("AwbStatDump:awb:mean:cnt(%d), awb:mean:y_or_g(%d), awb:mean:cb_or_b(%d), awb:mean:cr_or_r(%d)",
          awb.awb_mean[0].cnt,
          awb.awb_mean[0].mean_y_or_g,
@@ -104,14 +104,14 @@ static void dumpAWB(struct cifisp_awb_stat& awb) {
          awb.awb_mean[0].mean_cr_or_r);
 }
 
-static void dumpAF(struct cifisp_af_stat& af) {
+static void dumpAF(struct rkisp1_cif_isp_af_stat& af) {
     LOG2("AfStatDump:window[1] (%d, %d), window[2] (%d, %d), window[3] (%d, %d) ",
          af.window[0].sum, af.window[0].lum,
          af.window[1].sum, af.window[1].lum,
          af.window[2].sum, af.window[2].lum);
 }
 
-static void dumpHIST(struct cifisp_hist_stat& hist) {
+static void dumpHIST(struct rkisp1_cif_isp_hist_stat& hist) {
     for (int i = 0; i < 2; i++) {
         LOG2("HistStatDump:hist_bins[%d-%d]: %d, %d, %d, %d, %d, %d, %d, %d",
              i*8, i*8+7, hist.hist_bins[i*8], hist.hist_bins[i*8+1], hist.hist_bins[i*8+2], hist.hist_bins[i*8+3], hist.hist_bins[i*8+4], hist.hist_bins[i*8+5], hist.hist_bins[i*8+6], hist.hist_bins[i*8+7]);
@@ -192,9 +192,9 @@ statusConvertor::~statusConvertor()
 {
 }
 
-void statusConvertor::convertAwbStats(struct cifisp_awb_stat* awb_stats, rk_aiq_awb_measure_result* aiq_awb_stats)
+void statusConvertor::convertAwbStats(struct rkisp1_cif_isp_awb_stat* awb_stats, rk_aiq_awb_measure_result* aiq_awb_stats)
 {
-    for (int i = 0; i < CIFISP_AWB_MAX_GRID; i++) {
+    for (int i = 0; i < RKISP1_CIF_ISP_AWB_MAX_GRID; i++) {
         aiq_awb_stats->awb_meas[i].num_white_pixel = awb_stats->awb_mean[i].cnt;
         aiq_awb_stats->awb_meas[i].mean_y__g = awb_stats->awb_mean[i].mean_y_or_g;
         aiq_awb_stats->awb_meas[i].mean_cb__b = awb_stats->awb_mean[i].mean_cb_or_b;
@@ -202,24 +202,24 @@ void statusConvertor::convertAwbStats(struct cifisp_awb_stat* awb_stats, rk_aiq_
     }
 }
 
-void statusConvertor::convertAeStats(struct cifisp_ae_stat* ae_stats, rk_aiq_aec_measure_result* aiq_ae_stats)
+void statusConvertor::convertAeStats(struct rkisp1_cif_isp_ae_stat* ae_stats, rk_aiq_aec_measure_result* aiq_ae_stats)
 {
-    for (int i = 0; i < CIFISP_AE_MEAN_MAX; i++) {
+    for (int i = 0; i < RKISP1_CIF_ISP_AE_MEAN_MAX_V10; i++) {
         aiq_ae_stats->exp_mean[i] = ae_stats->exp_mean[i];
     }
 }
 
-void statusConvertor::convertAfStats(struct cifisp_af_stat* af_stats, rk_aiq_af_meas_stat* aiq_af_stats)
+void statusConvertor::convertAfStats(struct rkisp1_cif_isp_af_stat* af_stats, rk_aiq_af_meas_stat* aiq_af_stats)
 {
-    for (int i = 0; i < CIFISP_AFM_MAX_WINDOWS; i++) {
+    for (int i = 0; i < RKISP1_CIF_ISP_AFM_MAX_WINDOWS; i++) {
         aiq_af_stats->window[i].lum = af_stats->window[i].lum;
         aiq_af_stats->window[i].sum = af_stats->window[i].sum;
     }
 }
 
-void statusConvertor::convertHistStats(struct cifisp_hist_stat* hist_stats, rk_aiq_aec_measure_result* aiq_hist_stats)
+void statusConvertor::convertHistStats(struct rkisp1_cif_isp_hist_stat* hist_stats, rk_aiq_aec_measure_result* aiq_hist_stats)
 {
-    for (int i = 0; i < CIFISP_HIST_BIN_N_MAX; i++) {
+    for (int i = 0; i < RKISP1_CIF_ISP_HIST_BIN_N_MAX_V10; i++) {
         aiq_hist_stats->hist_bin[i] = hist_stats->hist_bins[i];
     }
 }

@@ -45,10 +45,6 @@ public:
     status_t configurePipe(IStreamConfigProvider &graphConfigMgr,
                            IStreamConfigProvider::MediaType pipeType,
                            bool resetFormat = false);
-    bool isMediaTypeForPipe(IStreamConfigProvider::MediaType pipeType) const {
-        return (pipeType == IStreamConfigProvider::IMGU_VIDEO
-             || pipeType == IStreamConfigProvider::IMGU_STILL);
-    }
     status_t configureImguNodes(IStreamConfigProvider &graphConfigMgr);
 
     std::map<NodeTypes, std::shared_ptr<V4L2VideoNode>> getConfiguredNodesPerName()

@@ -911,12 +911,8 @@ int PSLConfParser::getControlIdAsValue(const char* format)
  */
 int PSLConfParser::getIsysNodeNameAsValue(const char* isysNodeName)
 {
-    if (!strcmp(isysNodeName, "ISYS_NODE_RAW")) {
-        return ISYS_NODE_RAW;
-    } else {
-        LOGE("Unknown ISYS node name (%s)", isysNodeName);
-        return IMGU_NODE_NULL;
-    }
+    LOGE("Unknown ISYS node name (%s)", isysNodeName);
+    return IMGU_NODE_NULL;
 }
 
 /**

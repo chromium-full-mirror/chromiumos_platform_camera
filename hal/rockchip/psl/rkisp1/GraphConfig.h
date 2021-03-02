@@ -38,25 +38,20 @@ class GraphConfigNode;
 
 #define NODE_NAME(x) (getNodeName(x).c_str())
 
+#define MEDIACTL_IMGUNAME "rkisp1_isp"
+#define MEDIACTL_STATNAME "rkisp1_stats"
+#define MEDIACTL_PARAMETERNAME "rkisp1_params"
+#define MEDIACTL_RSZ_VIDEONAME "rkisp1_resizer_mainpath"
+#define MEDIACTL_VIDEONAME "rkisp1_mainpath"
+#define MEDIACTL_RSZ_PREVIEWNAME "rkisp1_resizer_selfpath"
+#define MEDIACTL_PREVIEWNAME "rkisp1_selfpath"
+#define MEDIACTL_PAD_IN_NUM 0
+#define MEDIACTL_PAD_OUTPUT_NUM 2
+
 namespace android {
 namespace camera2 {
 
 class GraphConfigManager;
-
-const int32_t ACTIVE_ISA_OUTPUT_BUFFER = 2;
-const int32_t MAX_STREAMS = 4; // max number of streams
-const uint32_t MAX_KERNEL_COUNT = 30; // max number of kernels in the kernel list
-const std::string SENSOR_PORT_NAME("sensor:port_0");
-const std::string TPG_PORT_NAME("tpg:port_0");
-// Declare string consts
-const std::string CSI_BE = "rockchip-sy-mipi-dphy";
-
-const std::string GC_INPUT = "input";
-const std::string GC_OUTPUT = "output";
-const std::string GC_PREVIEW = "preview";
-const std::string GC_VIDEO = "video";
-const std::string GC_STILL = "still";
-const std::string GC_RAW = "raw";
 
 /**
  * Stream id associated with the ISA PG that runs on Psys.
@@ -275,9 +270,7 @@ public:
     bool isStillPipe() { return mPipeType == PIPE_STILL; }
 
 public:
-    void setMediaCtlConfig(std::shared_ptr<MediaController> mediaCtl,
-                           bool swapVideoPreview,
-                           bool enableStill);
+    void setMediaCtlConfig(std::shared_ptr<MediaController> mediaCtl);
 
 private:
     /* Helper structures to access Sensor Node information easily */
@@ -359,15 +352,11 @@ private:
     status_t getMediaCtlData(MediaCtlConfig* mediaCtlConfig);
     status_t getImguMediaCtlData(int32_t cameraId,
                                  int32_t testPatternMode,
-                                 MediaCtlConfig* mediaCtlConfig,
-                                 MediaCtlConfig* mediaCtlConfigVideo,
-                                 MediaCtlConfig* mediaCtlConfigStill);
+                                 MediaCtlConfig* mediaCtlConfig);
     status_t addControls(const Node *sensorNode,
                          const SourceNodeInfo &sensorInfo,
                          MediaCtlConfig* config);
 
-    void addVideoNodes(const Node* csiBESocOutput,
-                       MediaCtlConfig* config);
     void addImguVideoNode(int nodeType, const string& nodeName, MediaCtlConfig* config);
     status_t getBinningFactor(const Node *node,
                               int32_t &hBin, int32_t &vBin) const;
@@ -424,7 +413,12 @@ private:
     void createKernelListStructures();
     status_t generateKernelListsForStreams();
     status_t getTPGFrameParams(rk_aiq_frame_params &tpgFrameParams);
-
+    status_t getWidthHeightFormat(Node* node, int &width, int &height, string& fourccFormat);
+    status_t getPathMediaCtlData(Node* pipe, int nodeType,
+                                 int ispOutWidth, int ispOutHeight,
+                                 int32_t testPatternMode,
+                                 string resizerName, string pathName,
+                                 MediaCtlConfig *mediaCtlConfig);
 public:
     // Imgu used from ParameterWorker
     status_t getSensorFrameParams(rk_aiq_frame_params &sensorFrameParams);
@@ -448,10 +442,8 @@ private:
     enum SourceType {
         SRC_NONE = 0,
         SRC_SENSOR,
-        SRC_TPG,
     };
     SourceType mSourceType;
-    std::string mSourcePortName; // Sensor or TPG port name
 
     /**
      * pre-computed state done *per request*.
@@ -490,7 +482,6 @@ private:
      */
     std::map<int32_t, int32_t> mStream2TuningMap;
 
-    std::string mCSIBE;
     std::shared_ptr<MediaController> mMediaCtl;
 
     string mMainNodeName;

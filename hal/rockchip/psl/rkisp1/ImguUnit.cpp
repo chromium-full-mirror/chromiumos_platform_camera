@@ -37,7 +37,6 @@ ImguUnit::ImguUnit(int cameraId,
         mCameraId(cameraId),
         mGCM(gcm),
         mCameraThread("ImguThread"),
-        mCurPipeConfig(nullptr),
         mMediaCtlHelper(mediaCtl, nullptr, true),
         mPollerThread(new PollerThread("ImguPollerThread")),
         mFlushing(false),
@@ -88,12 +87,9 @@ ImguUnit::~ImguUnit()
 
 void ImguUnit::clearWorkers()
 {
-    for (size_t i = 0; i < PIPE_NUM; i++) {
-        PipeConfiguration* config = &(mPipeConfigs[i]);
-        config->deviceWorkers.clear();
-        config->pollableWorkers.clear();
-        config->nodes.clear();
-    }
+    mPipeConfig.deviceWorkers.clear();
+    mPipeConfig.pollableWorkers.clear();
+    mPipeConfig.nodes.clear();
     mMetaConfig.deviceWorkers.clear();
     mMetaConfig.pollableWorkers.clear();
     mMetaConfig.nodes.clear();
@@ -114,7 +110,6 @@ ImguUnit::configStreams(std::vector<camera3_stream_t*> &activeStreams)
     mActiveStreams.inputStream = nullptr;
     mFirstRequest = true;
     mNeedRestartPoll = true;
-    mCurPipeConfig = nullptr;
     mTakingPicture = false;
     mFlushing = false;
 
@@ -149,7 +144,7 @@ ImguUnit::configStreams(std::vector<camera3_stream_t*> &activeStreams)
        return UNKNOWN_ERROR;
     }
 
-    status = mPollerThread->init(mCurPipeConfig->nodes,
+    status = mPollerThread->init(mPipeConfig.nodes,
                                  this, POLLPRI | POLLIN | POLLOUT | POLLERR, false);
     status |= mPollerThreadMeta->init(mMetaConfig.nodes,
                                  this, POLLPRI | POLLIN | POLLOUT | POLLERR, false);
@@ -195,8 +190,7 @@ status_t ImguUnit::mapStreamWithDeviceNode()
 
     if (streamNum == 1) {
         // Force use video, rk use the IMGU_NODE_VIDEO firstly.
-        //if second stream is needed, then IMGU_NODE_VF_PREVIEW will be usde.
-        //and rk has no IMGU_NODE_PV_PREVIEW.
+        // if second stream is needed, then IMGU_NODE_PREVIEW will be usde.
         videoIdx = 0;
     } else if (streamNum == 2) {
         videoIdx = (streamSizeGE(availableStreams[0], availableStreams[1])) ? 0 : 1;
@@ -220,7 +214,7 @@ status_t ImguUnit::mapStreamWithDeviceNode()
             listenerIdx = (previewIdx == 1) ? 2 : 1; // For preview callback stream
             if (streamSizeGT(availableStreams[0], availableStreams[previewIdx])) {
                 videoIdx = 0; // For JPEG stream
-                listenToNode = IMGU_NODE_VF_PREVIEW;
+                listenToNode = IMGU_NODE_PREVIEW;
             } else {
                 videoIdx = previewIdx;
                 previewIdx = 0; // For JPEG stream
@@ -233,8 +227,7 @@ status_t ImguUnit::mapStreamWithDeviceNode()
     }
 
     if (previewIdx >= 0) {
-        mStreamNodeMapping[IMGU_NODE_VF_PREVIEW] = availableStreams[previewIdx];
-        mStreamNodeMapping[IMGU_NODE_PV_PREVIEW] = mStreamNodeMapping[IMGU_NODE_VF_PREVIEW];
+        mStreamNodeMapping[IMGU_NODE_PREVIEW] = availableStreams[previewIdx];
         LOG1("@%s, %d stream %p size preview: %dx%d, format %s", __FUNCTION__,
              previewIdx, availableStreams[previewIdx],
              availableStreams[previewIdx]->width, availableStreams[previewIdx]->height,
@@ -281,12 +274,7 @@ ImguUnit::createProcessingTasks(std::shared_ptr<GraphConfig> graphConfig)
         LOGE("ERROR: Graph config is nullptr");
         return UNKNOWN_ERROR;
     }
-
     clearWorkers();
-    // Open and configure imgu video nodes
-
-    // rk only has video config, set it as default,zyc
-    mCurPipeConfig = &mPipeConfigs[PIPE_VIDEO_INDEX];
 
     status = mMediaCtlHelper.configure(mGCM, IStreamConfigProvider::CIO2);
     if (status != OK) {
@@ -294,22 +282,9 @@ ImguUnit::createProcessingTasks(std::shared_ptr<GraphConfig> graphConfig)
         return status;
     }
 
-    status = mMediaCtlHelper.configure(mGCM, IStreamConfigProvider::IMGU_COMMON);
+    status = mMediaCtlHelper.configure(mGCM, IStreamConfigProvider::IMGU_VIDEO);
     if (status != OK)
         return UNKNOWN_ERROR;
-    if (mGCM.getMediaCtlConfig(IStreamConfigProvider::IMGU_STILL)) {
-        status = mMediaCtlHelper.configurePipe(mGCM, IStreamConfigProvider::IMGU_STILL, true);
-        if (status != OK)
-            return UNKNOWN_ERROR;
-        mCurPipeConfig = &mPipeConfigs[PIPE_STILL_INDEX];
-    }
-    // Set video pipe by default
-    if (mGCM.getMediaCtlConfig(IStreamConfigProvider::IMGU_VIDEO)) {
-        status = mMediaCtlHelper.configurePipe(mGCM, IStreamConfigProvider::IMGU_VIDEO, true);
-        if (status != OK)
-            return UNKNOWN_ERROR;
-        mCurPipeConfig = &mPipeConfigs[PIPE_VIDEO_INDEX];
-    }
 
     mConfiguredNodesPerName = mMediaCtlHelper.getConfiguredNodesPerName();
     if (mConfiguredNodesPerName.size() == 0) {
@@ -320,11 +295,6 @@ ImguUnit::createProcessingTasks(std::shared_ptr<GraphConfig> graphConfig)
     if (mapStreamWithDeviceNode() != OK)
         return UNKNOWN_ERROR;
 
-    PipeConfiguration* videoConfig = &(mPipeConfigs[PIPE_VIDEO_INDEX]);
-    PipeConfiguration* stillConfig = &(mPipeConfigs[PIPE_STILL_INDEX]);
-
-    std::shared_ptr<OutputFrameWorker> vfWorker = nullptr;
-    std::shared_ptr<OutputFrameWorker> pvWorker = nullptr;
     const camera_metadata_t *meta = PlatformData::getStaticMetadata(mCameraId);
     camera_metadata_ro_entry entry;
     CLEAR(entry);
@@ -344,70 +314,35 @@ ImguUnit::createProcessingTasks(std::shared_ptr<GraphConfig> graphConfig)
         } else if (it.first == IMGU_NODE_PARAM) {
             worker = std::make_shared<ParameterWorker>(it.second, mActiveStreams, mCameraId, pipelineDepth);
             mFirstWorkers.push_back(worker);
-            videoConfig->deviceWorkers.push_back(worker); // parameters
-        } else if (it.first == IMGU_NODE_STILL || it.first == IMGU_NODE_VIDEO) {
+            mPipeConfig.deviceWorkers.push_back(worker); // parameters
+        } else if (it.first == IMGU_NODE_VIDEO) {
             std::shared_ptr<OutputFrameWorker> outWorker =
                 std::make_shared<OutputFrameWorker>(it.second, mCameraId,
                     mStreamNodeMapping[it.first], it.first, pipelineDepth);
-            videoConfig->deviceWorkers.push_back(outWorker);
-            videoConfig->pollableWorkers.push_back(outWorker);
-            videoConfig->nodes.push_back(outWorker->getNode());
+            mPipeConfig.deviceWorkers.push_back(outWorker);
+            mPipeConfig.pollableWorkers.push_back(outWorker);
+            mPipeConfig.nodes.push_back(outWorker->getNode());
             setStreamListeners(it.first, outWorker);
             //shutter event for non isys, zyc
             mListenerDeviceWorkers.push_back(outWorker.get());
-        } else if (it.first == IMGU_NODE_VF_PREVIEW) {
-            vfWorker = std::make_shared<OutputFrameWorker>(it.second, mCameraId,
-                mStreamNodeMapping[it.first], it.first, pipelineDepth);
+        } else if (it.first == IMGU_NODE_PREVIEW) {
+            std::shared_ptr<OutputFrameWorker> vfWorker =
+                std::make_shared<OutputFrameWorker>(it.second, mCameraId,
+                    mStreamNodeMapping[it.first], it.first, pipelineDepth);
+            mPipeConfig.deviceWorkers.insert(mPipeConfig.deviceWorkers.begin(), vfWorker);
+            mPipeConfig.pollableWorkers.insert(mPipeConfig.pollableWorkers.begin(), vfWorker);
+            mPipeConfig.nodes.insert(mPipeConfig.nodes.begin(), vfWorker->getNode());
             setStreamListeners(it.first, vfWorker);
             //shutter event for non isys, zyc
             mListenerDeviceWorkers.push_back(vfWorker.get());
-        } else if (it.first == IMGU_NODE_PV_PREVIEW) {
-            pvWorker = std::make_shared<OutputFrameWorker>(it.second, mCameraId,
-                mStreamNodeMapping[it.first], it.first, pipelineDepth);
-            setStreamListeners(it.first, pvWorker);
-            //shutter event for non isys, zyc
-            mListenerDeviceWorkers.push_back(pvWorker.get());
-        } else if (it.first == IMGU_NODE_RAW) {
-            LOGW("Not implemented"); // raw
-            continue;
         } else {
             LOGE("Unknown NodeName: %d", it.first);
             return UNKNOWN_ERROR;
         }
     }
 
-    if (pvWorker.get()) {
-        // Copy common part for still pipe, then add pv
-        *stillConfig = *videoConfig;
-        stillConfig->deviceWorkers.insert(stillConfig->deviceWorkers.begin(), pvWorker);
-        stillConfig->pollableWorkers.insert(stillConfig->pollableWorkers.begin(), pvWorker);
-        stillConfig->nodes.insert(stillConfig->nodes.begin(), pvWorker->getNode());
-
-        if (mCurPipeConfig == videoConfig) {
-            LOG1("%s: configure postview in advance", __FUNCTION__);
-            pvWorker->configure(graphConfig);
-        }
-    }
-
-    // Prepare for video pipe
-    if (vfWorker.get()) {
-        videoConfig->deviceWorkers.insert(videoConfig->deviceWorkers.begin(), vfWorker);
-        videoConfig->pollableWorkers.insert(videoConfig->pollableWorkers.begin(), vfWorker);
-        videoConfig->nodes.insert(videoConfig->nodes.begin(), vfWorker->getNode());
-
-        // vf node provides source frame during still preview instead of pv node.
-        if (pvWorker.get()) {
-            setStreamListeners(IMGU_NODE_PV_PREVIEW, vfWorker);
-        }
-
-        if (mCurPipeConfig == stillConfig) {
-            LOG1("%s: configure preview in advance", __FUNCTION__);
-            vfWorker->configure(graphConfig);
-        }
-    }
-
     status_t ret = OK;
-    for (const auto &it : mCurPipeConfig->deviceWorkers) {
+    for (const auto &it : mPipeConfig.deviceWorkers) {
         ret = (*it).configure(graphConfig);
 
         if (ret != OK) {
@@ -517,7 +452,7 @@ status_t ImguUnit::handleCompleteReq(DeviceMessage msg)
     std::shared_ptr<DeviceMessage> tmp = std::make_shared<DeviceMessage>(msg);
     mMessagesPending.push_back(tmp);
 
-    mCurPipeConfig->nodes.clear();
+    mPipeConfig.nodes.clear();
     status = processNextRequest();
     if (status != OK) {
         LOGE("Process request %d failed", request->getId());
@@ -530,7 +465,7 @@ status_t ImguUnit::handleCompleteReq(DeviceMessage msg)
      */
     LOG2("%s:%d: poll request id(%d)", __func__, __LINE__, request->getId());
     status |= mPollerThread->pollRequest(request->getId(), 3000,
-                                         &(mCurPipeConfig->nodes));
+                                         &(mPipeConfig.nodes));
 
     if (status != NO_ERROR)
         LOGE("error %d in handling message: %d",
@@ -601,18 +536,18 @@ status_t ImguUnit::processNextRequest()
         mNeedRestartPoll = false;
     }
 
-    std::vector<std::shared_ptr<IDeviceWorker>>::iterator it = mCurPipeConfig->deviceWorkers.begin();
-    for (;it != mCurPipeConfig->deviceWorkers.end(); ++it) {
+    std::vector<std::shared_ptr<IDeviceWorker>>::iterator it = mPipeConfig.deviceWorkers.begin();
+    for (;it != mPipeConfig.deviceWorkers.end(); ++it) {
         status |= (*it)->prepareRun(msg);
     }
 
-    mCurPipeConfig->nodes.clear();
+    mPipeConfig.nodes.clear();
     mRequestToWorkMap[request->getId()].clear();
-    std::vector<std::shared_ptr<FrameWorker>>::iterator pollDevice = mCurPipeConfig->pollableWorkers.begin();
-    for (;pollDevice != mCurPipeConfig->pollableWorkers.end(); ++pollDevice) {
+    std::vector<std::shared_ptr<FrameWorker>>::iterator pollDevice = mPipeConfig.pollableWorkers.begin();
+    for (;pollDevice != mPipeConfig.pollableWorkers.end(); ++pollDevice) {
         bool needsPolling = (*pollDevice)->needPolling();
         if (needsPolling) {
-            mCurPipeConfig->nodes.push_back((*pollDevice)->getNode());
+            mPipeConfig.nodes.push_back((*pollDevice)->getNode());
             mRequestToWorkMap[request->getId()].push_back((std::shared_ptr<IDeviceWorker>&)(*pollDevice));
         }
     }
@@ -663,7 +598,7 @@ ImguUnit::kickstart()
         return status;
     }
 
-    for (const auto &it : mCurPipeConfig->deviceWorkers) {
+    for (const auto &it : mPipeConfig.deviceWorkers) {
         // parameter work has been started before
         auto& worker = *it;
         if (typeid(worker) == typeid(ParameterWorker))
@@ -740,7 +675,7 @@ ImguUnit::startProcessing(DeviceMessage pollmsg)
 
     /* tell workers and AAL that device error occured */
     if (deviceError) {
-        for (const auto &it : mCurPipeConfig->deviceWorkers)
+        for (const auto &it : mPipeConfig.deviceWorkers)
              (*it).deviceError();
 
         for (const auto &it : mMetaConfig.deviceWorkers)
@@ -986,23 +921,21 @@ status_t ImguUnit::handleFlush(void)
     mPollerThread->flush(true);
     mPollerThreadMeta->flush(true);
 
-    // Stop all video nodes
-    if (mCurPipeConfig) {
-        status_t status;
-        for (const auto &it : mMetaConfig.deviceWorkers) {
-            status = (*it).stopWorker();
-            if (status != OK) {
-                LOGE("Fail to stop wokers");
-                return status;
-            }
-        }
 
-        for (const auto &it : mCurPipeConfig->deviceWorkers) {
-            status = (*it).stopWorker();
-            if (status != OK) {
-                LOGE("Fail to stop wokers");
-                return status;
-            }
+    status_t status;
+    for (const auto &it : mMetaConfig.deviceWorkers) {
+        status = (*it).stopWorker();
+        if (status != OK) {
+            LOGE("Fail to stop wokers");
+            return status;
+        }
+    }
+
+    for (const auto &it : mPipeConfig.deviceWorkers) {
+        status = (*it).stopWorker();
+        if (status != OK) {
+            LOGE("Fail to stop wokers");
+            return status;
         }
     }
 

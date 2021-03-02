@@ -50,11 +50,6 @@ MediaCtlHelper::~MediaCtlHelper()
 status_t MediaCtlHelper::configure(IStreamConfigProvider &graphConfigMgr, IStreamConfigProvider::MediaType type)
 {
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL1);
-    if (isMediaTypeForPipe(type)) {
-        LOGE("%d is type for pipe!", type);
-        return BAD_VALUE;
-    }
-
     LOG1("%s: in ,type %s", __FUNCTION__, (type == IStreamConfigProvider::CIO2) ? "CIO2" : "IMGU");
 
     std::shared_ptr<GraphConfig> gc = graphConfigMgr.getBaseGraphConfig();
@@ -160,9 +155,6 @@ status_t MediaCtlHelper::configure(IStreamConfigProvider &graphConfigMgr, IStrea
     }
 
     for (auto& it :mMediaCtlConfig->mSelectionParams) {
-        //TODO, only isp subdev can set selection params now ,zyc
-        if (it.entityName.find("isp-subdev") == string::npos)
-            continue;
         status = mMediaCtl->setSelection(it.entityName.c_str(), it.pad, it.target, it.top, it.left, it.width, it.height);
         if (status != NO_ERROR) {
             LOGE("Cannot set subdev MediaCtl format selection (ret = %d)", status);
@@ -217,10 +209,6 @@ status_t MediaCtlHelper::configurePipe(IStreamConfigProvider &graphConfigMgr,
 {
     LOG1("%s: %d ->%d", __FUNCTION__, mConfigedPipeType, pipeType);
     status_t status = OK;
-    if (!isMediaTypeForPipe(pipeType)) {
-        LOGE("%d is not type for pipe!", pipeType);
-        return BAD_VALUE;
-    }
 
     if (mConfigedPipeType == pipeType)
         return OK;
