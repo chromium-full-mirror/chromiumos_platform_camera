@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2020 Intel Corporation.
+ * Copyright (C) 2015-2021 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -564,6 +564,8 @@ void RequestThread::handleRequest(CameraRequest& request, long applyingSeq)
         if (request.mParams.get()) {
             mParamGenerator->updateParameters(effectSeq, request.mParams.get());
         }
+        LOG2("%s: Reprocess request: seq %ld, out buffer %d", __func__,
+             effectSeq, request.mBufferNum);
     } else {
         mLastRequestId++;
         if (request.mParams.get()) {
@@ -580,10 +582,11 @@ void RequestThread::handleRequest(CameraRequest& request, long applyingSeq)
 
         mParamGenerator->saveParameters(effectSeq, mLastRequestId, request.mParams.get());
         mLastEffectSeq = effectSeq;
+
+        LOG2("%s: Process request: %ld:%ld, out buffer %d, param? %s", __func__,
+             mLastRequestId, effectSeq, request.mBufferNum,
+             request.mParams.get() ? "true" : "false");
     }
-    LOG2("%s: Process request: %ld:%ld, out buffer %d, param? %s", __func__,
-          mLastRequestId, effectSeq, request.mBufferNum,
-          request.mParams.get() ? "true" : "false");
 
     // Sent event to handle request buffers
     EventRequestData requestData;
