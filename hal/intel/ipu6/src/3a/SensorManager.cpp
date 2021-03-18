@@ -208,11 +208,6 @@ uint32_t SensorManager::updateSensorExposure(SensorExpGroup sensorExposures, lon
     return ((uint32_t)effectSeq);
 }
 
-int SensorManager::setFrameRate(float fps)
-{
-    return mSensorHwCtrl->setFrameRate(fps);
-}
-
 int SensorManager::getSensorInfo(ia_aiq_frame_params &frameParams,
                                  ia_aiq_exposure_sensor_descriptor &sensorDescriptor)
 {

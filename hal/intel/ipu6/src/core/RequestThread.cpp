@@ -508,6 +508,11 @@ bool RequestThread::threadLoop()
             }
 
             mLastAppliedSeq = applyingSeq;
+            if ((mLastAppliedSeq + PlatformData::getExposureLag(mCameraId)) <= mLastEffectSeq) {
+                mRequestTriggerEvent = NONE_EVENT;
+                LOG2("%s, skip processing request for AE delay issue", __func__);
+                return true;
+            }
             LOG2("%s, trigger event %x, SOF %ld, predict %ld, processed %d request id %d",
                  __func__, mRequestTriggerEvent, mLastSofSeq, mLastAppliedSeq,
                  mRequestsInProcessing, mLastRequestId);
@@ -557,7 +562,7 @@ void RequestThread::handleReconfig()
 
 void RequestThread::handleRequest(CameraRequest& request, long applyingSeq)
 {
-    long effectSeq = -1;
+    long effectSeq = mLastEffectSeq + 1;
     // Raw reprocessing case, don't run 3A.
     if (request.mBuffer[0]->sequence >= 0 && request.mBuffer[0]->timestamp > 0) {
         effectSeq = request.mBuffer[0]->sequence;
@@ -573,11 +578,9 @@ void RequestThread::handleRequest(CameraRequest& request, long applyingSeq)
         }
         m3AControl->run3A(mLastRequestId, applyingSeq, &effectSeq);
 
-        // Check the final prediction value
+        // Check the final prediction value from 3A
         if (effectSeq <= mLastEffectSeq) {
-            // Skip 3A cases, just increase it
             LOG2("predict effectSeq %ld, last effect %ld", effectSeq, mLastEffectSeq);
-            effectSeq = mLastEffectSeq + 1;
         }
 
         mParamGenerator->saveParameters(effectSeq, mLastRequestId, request.mParams.get());
