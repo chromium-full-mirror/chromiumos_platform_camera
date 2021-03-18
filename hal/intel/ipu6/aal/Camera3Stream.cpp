@@ -133,12 +133,14 @@ void Camera3Stream::drainRequest() {
     std::shared_ptr<CaptureResult> result = captureResult->second;
     uint32_t frameNumber = captureResult->first;
 
+    CheckError(result == nullptr, VOID_VALUE, "%s, capture result is nullptr", __func__);
     buffer_handle_t handle = result->handle;
     if (mBuffers.find(handle) != mBuffers.end() && mBuffers[handle] != nullptr) {
         std::shared_ptr<Camera3Buffer> ccBuf = mBuffers[handle];
         mBuffers.erase(handle);
         camera3_stream_buffer* buf = &result->outputBuffer;
 
+        CheckError(ccBuf == nullptr, VOID_VALUE, "%s, ccBuf is nullptr", __func__);
         ccBuf->unlock();
         ccBuf->deinit();
         ccBuf->getFence(buf);

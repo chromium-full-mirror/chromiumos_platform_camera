@@ -285,9 +285,7 @@ bool isCompressionTerminal(int terminalId) {
     */
     if (terminalId == psys_ipu6_isa_lb_input_high_uid ||
         terminalId == psys_ipu6_isa_lb_output_uid ||
-        terminalId == psys_ipu6_bb_input_uid ||
-        terminalId == psys_ipu6_bb_tnr_ref_in_uid ||
-        terminalId == psys_ipu6_bb_tnr_ref_out_uid) {
+        terminalId == psys_ipu6_bb_input_uid) {
         cmp = true;
     }
 
