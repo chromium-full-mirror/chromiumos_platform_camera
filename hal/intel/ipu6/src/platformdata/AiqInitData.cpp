@@ -33,6 +33,8 @@ using std::string;
 
 namespace icamera {
 
+static const char* CAMERA_AIQD_PATH = "/run/camera/";
+
 AiqData::AiqData(const std::string& fileName, int maxSize) : mDataPtr(nullptr) {
     LOG1("%s, file name %s", __func__, fileName.c_str());
 
@@ -314,7 +316,7 @@ ia_binary_data* AiqInitData::getNvm(int cameraId) {
 
 std::string AiqInitData::getAiqdFileNameWithPath(TuningMode mode) {
     std::string aiqdFileName;
-    aiqdFileName.append(CAMERA_CACHE_DIR);
+    aiqdFileName.append(CAMERA_AIQD_PATH);
     aiqdFileName.append(mSensorName);
     aiqdFileName.append("_");
     aiqdFileName.append(CameraUtils::tuningMode2String(mode));
@@ -342,6 +344,10 @@ void AiqInitData::saveAiqd(TuningMode mode, const ia_binary_data& data) {
     CheckError(!aiqd, VOID_VALUE, "@%s, aiqd is nullptr", __func__);
 
     aiqd->saveData(data);
+
+    // After saved aiqd data, the aiqd data should be reloaded next time.
+    delete aiqd;
+    mAiqd.erase(mode);
 }
 
 int AiqInitData::initMakernote(int cameraId, TuningMode tuningMode) {
