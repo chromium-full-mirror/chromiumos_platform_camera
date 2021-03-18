@@ -981,9 +981,17 @@ int PGCommon::allocateTnrDataBuffers() {
         uint8_t* buffer = nullptr;
         int ret = posix_memalign((void**)&buffer, PAGE_SIZE_U, PAGE_ALIGN(size));
         CheckError(ret, NO_MEMORY, "%s, alloc %d tnr data buf fails", __func__, i);
+        memset(buffer, 0, PAGE_ALIGN(size));
         mTnrDataBuffers.push_back(buffer);
 
-        CIPR::Buffer* ciprBuf = registerUserBuffer(size, buffer);
+        CIPR::Buffer* ciprBuf = nullptr;
+        /* use flush mode for still stream tnr buffers, since still stream will copy data buffer
+         * from video stream as its refer buffer, flush the cache after the copy to fix
+         * garbage image in compression mode */
+        if (mStreamId == STILL_STREAM_ID && isCompression)
+            ciprBuf = registerUserBuffer(size, buffer, true);
+        else
+            ciprBuf = registerUserBuffer(size, buffer);
         CheckError(!ciprBuf, NO_MEMORY, "%s, register %d tnr buf %p fails", __func__, i, buffer);
 
         if (i == PAIR_BUFFER_IN_INDEX) mTerminalBuffers[mTnrTerminalPair.inId] = ciprBuf;
