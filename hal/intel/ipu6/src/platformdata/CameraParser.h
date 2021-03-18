@@ -63,7 +63,11 @@ private:
     int mCurrentSensor;
     std::string mI2CBus;
     std::string mCsiPort;
-    std::unordered_map<std::string, std::string> mAvailableSensor;
+    struct AvailableSensorInfo {
+        std::string sinkEntityName;
+        bool sensorFlag;
+    };
+    std::unordered_map<std::string, AvailableSensorInfo> mAvailableSensor;
     PlatformData::StaticCfg::CameraInfo *pCurrentCam;
     bool mInMediaCtlCfg;
     bool mInStaticMetadata;
@@ -88,6 +92,7 @@ private:
     std::vector<std::string> getAvailableSensors(const std::string &ipuName,
                                                  const std::vector<std::string> &sensorsList);
     void getSensorDataFromXmlFile(void);
+    void getCsiPortAndI2CBus(CameraParser *profiles);
     void checkField(CameraParser *profiles, const char *name, const char **atts);
 
     void handleSensor(CameraParser *profiles, const char *name, const char **atts);
