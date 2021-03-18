@@ -107,7 +107,7 @@ int GPUExecutor::createPGs() {
 
 int GPUExecutor::start() {
     LOG1("%s executor:%s", __func__, mName.c_str());
-    if (mStreamId == STILL_STREAM_ID &&
+    if (mStreamId == STILL_TNR_STREAM_ID &&
         getStillTnrTG(mPSysDag->getTuningMode(-1), &mStillTnrTG) != OK) {
         mStillTnrTG = DEFAULT_TNR_THRESHOLD_GAIN;
         LOGW("%s can't get threshold gain from aiqb, use default", __func__);
@@ -263,7 +263,7 @@ int GPUExecutor::getTotalGain(int64_t seq, float* totalGain) {
 }
 
 bool GPUExecutor::isBypassStillTnr(int64_t seq) {
-    if (mStreamId != STILL_STREAM_ID) return false;
+    if (mStreamId != STILL_TNR_STREAM_ID) return true;
 
     float totalGain = 0.0f;
     int ret = getTotalGain(seq, &totalGain);
@@ -356,7 +356,7 @@ int GPUExecutor::processNewFrame() {
     ret = runTnrFrame(inBuf, outBuf);
     CheckError(ret != OK, ret, "@%s: run tnr failed", __func__);
 
-    if (CameraDump::isDumpTypeEnable(DUMP_GPU_TNR) && mStreamId == STILL_STREAM_ID) {
+    if (CameraDump::isDumpTypeEnable(DUMP_GPU_TNR) && mStreamId == STILL_TNR_STREAM_ID) {
         CameraDump::dumpImage(mCameraId, inBuf, M_GPUTNR, inBuffers.begin()->first);
         CameraDump::dumpImage(mCameraId, outBuf, M_GPUTNR, outBuffers.begin()->first);
     }
@@ -531,7 +531,7 @@ int GPUExecutor::runTnrFrame(const std::shared_ptr<CameraBuffer>& inBuf,
             LOG2("%s executor name:%s, skip frame sequence: %ld", __func__, mName.c_str(),
                  inBuf->getSequence());
             return OK;
-        } else if (mStreamId == STILL_STREAM_ID) {
+        } else if (mStreamId == STILL_TNR_STREAM_ID) {
             mGPULock.lock();
         }
     }
@@ -556,7 +556,7 @@ int GPUExecutor::runTnrFrame(const std::shared_ptr<CameraBuffer>& inBuf,
         // when use internal tnr buffer, we don't need to use fd map buffer
         dstFd = -1;
     }
-    bool isTnrParamSyncUpdate = mStreamId == STILL_STREAM_ID ? true : false;
+    bool isTnrParamSyncUpdate = mStreamId == STILL_TNR_STREAM_ID ? true : false;
     ret = mIntelTNR->runTnrFrame(inBuf->getBufferAddr(), dstBuf, inBuf->getBufferSize(), dstSize,
                                  mTnr7usParam, isTnrParamSyncUpdate, dstFd);
 

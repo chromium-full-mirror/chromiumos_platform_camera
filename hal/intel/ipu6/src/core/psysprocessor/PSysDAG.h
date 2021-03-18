@@ -120,6 +120,7 @@ private:
 
     int queueBuffers(const PSysTaskData& task);
     int returnBuffers(PSysTaskData& result);
+    bool isInactiveStream(int streamId, const PSysTaskData* task);
 
     void dumpExternalPortMap();
 
@@ -143,6 +144,7 @@ private:
     std::map<Port, std::vector<int32_t> > mOutputPortToStreamIds;
     PipeExecutor* mVideoTnrExecutor;
     PipeExecutor* mStillTnrExecutor;
+    PipeExecutor* mStillExecutor;
 
     // A lock for protecting task data from being accessed by different threads.
     Mutex mTaskLock;
