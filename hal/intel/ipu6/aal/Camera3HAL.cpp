@@ -139,6 +139,7 @@ Camera3HAL::~Camera3HAL() {
     LOG1("@%s", __func__);
 
     if (mRequestManager) {
+        mRequestManager->flush();
         mRequestManager->deinit();
 
         mRequestManager.reset();  // mRequestManager must be released before device deinit

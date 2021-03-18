@@ -312,9 +312,12 @@ int CameraUtils::getBpp(int format)
 int CameraUtils::getBpe(int format, int bpp) {
     int bpe = bpp;
     switch (format) {
+        case V4L2_PIX_FMT_NV21:
+        case V4L2_PIX_FMT_NV12:
+        case GET_FOURCC_FMT('I','Y','U','V'):
         case V4L2_PIX_FMT_YUYV:
-        case V4L2_PIX_FMT_UYVY:
         case GET_FOURCC_FMT('Y','U','Y','2'):
+        case V4L2_PIX_FMT_NV16:
             bpe = 8;
             break;
         default:
