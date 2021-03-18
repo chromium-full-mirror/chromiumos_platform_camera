@@ -1407,4 +1407,15 @@ int PlatformData::getTnrExtraFrameCount(int cameraId)
 {
     return getInstance()->mStaticCfg.mCameras[cameraId].mTnrExtraFrameNum;
 }
+
+void PlatformData::setSensorOrientation(int cameraId, int orientation)
+{
+    getInstance()->mStaticCfg.mCameras[cameraId].mSensorOrientation = orientation;
+}
+
+int PlatformData::getSensorOrientation(int cameraId)
+{
+    return getInstance()->mStaticCfg.mCameras[cameraId].mSensorOrientation;
+}
+
 } // namespace icamera

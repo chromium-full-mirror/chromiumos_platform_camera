@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2020 Intel Corporation
+ * Copyright (C) 2017-2021 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -206,7 +206,9 @@ static int hal_init(void) {
                "%s, Connect to algo service fails", __func__);
 #endif
 
-    int crosCameraNum = camera3::HalV3Utils::getCrosConfigCameraNumber();
+    auto infos = camera3::HalV3Utils::getCrosCameraInfo();
+
+    int crosCameraNum = camera3::HalV3Utils::getCrosConfigCameraNumber(infos);
     int xmlCameraNum = icamera::PlatformData::getXmlCameraNumber();
     int currentCameraNum = icamera::PlatformData::numberOfCameras();
 
@@ -225,6 +227,8 @@ static int hal_init(void) {
         int ret = icamera::camera_hal_init();
         CheckError(ret != icamera::OK, -EINVAL, "@%s, camera_hal_init fails, ret:%d",
                    __func__, ret);
+        // Update orientation
+        camera3::HalV3Utils::updateOrientation(infos);
     }
 
     return 0;
