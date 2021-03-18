@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2020 Intel Corporation.
+ * Copyright (C) 2015-2021 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -733,6 +733,12 @@ int IspParamAdaptor::runIspAdaptL(ia_isp_bxt_program_group *pgPtr, ia_isp_bxt_gd
                         aiqResults->mAiqParam.yuvColorRangeMode;
                     LOG2("%s: ofa yuv color range mode %d", __func__,
                          inputParams->program_group.base.run_kernels[i].metadata[3]);
+                    break;
+                case ia_pal_uuid_isp_bxt_blc:
+                    if (aiqResults->mAiqParam.testPatternMode != TEST_PATTERN_OFF) {
+                        LOG2("%s: disable blc in test pattern case.", __func__);
+                        inputParams->program_group.base.run_kernels[i].enable = false;
+                    }
                     break;
             }
         }
