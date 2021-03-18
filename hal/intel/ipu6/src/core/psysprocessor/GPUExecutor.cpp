@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 Intel Corporation
+ * Copyright (C) 2020-2021 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -108,7 +108,7 @@ int GPUExecutor::createPGs() {
 int GPUExecutor::start() {
     LOG1("%s executor:%s", __func__, mName.c_str());
     if (mStreamId == STILL_STREAM_ID &&
-        getStillTnrTG(mPSysDag->getTuningMode(0), &mStillTnrTG) != OK) {
+        getStillTnrTG(mPSysDag->getTuningMode(-1), &mStillTnrTG) != OK) {
         mStillTnrTG = DEFAULT_TNR_THRESHOLD_GAIN;
         LOGW("%s can't get threshold gain from aiqb, use default", __func__);
     }
