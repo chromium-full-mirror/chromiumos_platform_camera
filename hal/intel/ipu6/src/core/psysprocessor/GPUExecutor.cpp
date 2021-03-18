@@ -48,6 +48,7 @@ namespace icamera {
 
 #define STILL_TNR_THRESHOLD_GAIN_ID 722
 #define DEFAULT_TNR_THRESHOLD_GAIN 2.0f
+#define TNR7US_RESTART_THRESHOLD 5
 
 std::mutex GPUExecutor::mGPULock;
 
@@ -573,10 +574,8 @@ int GPUExecutor::runTnrFrame(const std::shared_ptr<CameraBuffer>& inBuf,
         // when use internal tnr buffer, we don't need to use fd map buffer
         dstFd = -1;
     }
-    bool isTnrParamSyncUpdate = mStreamId == STILL_TNR_STREAM_ID ? true : false;
     ret = mIntelTNR->runTnrFrame(inBuf->getBufferAddr(), dstBuf, inBuf->getBufferSize(), dstSize,
-                                 mTnr7usParam, isTnrParamSyncUpdate, dstFd);
-
+                                 mTnr7usParam, false, dstFd);
     if (ret == OK) {
         if (useInternalBuffer) {
             MEMCPY_S(outPtr, bufferSize, tnrOutBuf->second, mOutBufferSize);
@@ -603,16 +602,14 @@ int GPUExecutor::runTnrFrame(const std::shared_ptr<CameraBuffer>& inBuf,
     CheckError(ret != OK, UNKNOWN_ERROR, " %s tnr7us run frame failed", __func__);
     mLastSequence = sequence;
 
-    if (!isTnrParamSyncUpdate) {
-        // still stream will update params in tnr7us, skip async update
-        float totalGain = 0.0f;
-        ret = getTotalGain(sequence, &totalGain);
-        CheckError(ret, UNKNOWN_ERROR, "@%s, Failed to get total gain", __func__);
-
-        // update tnr param when total gain changes
-        bool isTnrParamForceUpdate = icamera::PlatformData::isTnrParamForceUpdate();
-        ret = mIntelTNR->asyncParamUpdate(static_cast<int>(totalGain), isTnrParamForceUpdate);
-    }
+    // update tnr parameters after GPU thread finished
+    float totalGain = 0.0f;
+    ret = getTotalGain(sequence, &totalGain);
+    CheckError(ret, UNKNOWN_ERROR, "@%s, Failed to get total gain", __func__);
+    // update tnr param when total gain changes
+    bool isTnrParamForceUpdate = icamera::PlatformData::isTnrParamForceUpdate();
+    // multiply totalGain by 100, to avoid lose accuracy
+    ret = mIntelTNR->asyncParamUpdate(static_cast<int>(totalGain * 100), isTnrParamForceUpdate);
 
     LOG2("Exit %s executor name:%s, sequence: %u", __func__, mName.c_str(), inBuf->getSequence());
     return ret;
