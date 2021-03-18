@@ -143,15 +143,17 @@ AiqInitData::AiqInitData(const std::string& sensorName, const std::string& camCf
         std::string cameraModule;
         int ret = getCameraModuleFromEEPROM(mNvmPath, &cameraModule);
         if (ret == OK) {
+            if (camModuleName) *camModuleName = cameraModule;
             DIR* dir = opendir(camCfgDir.c_str());
             if (dir) {
                 std::string aiqbName("camera_");
+                std::string postfix(".aiqb");
                 aiqbName.append(cameraModule);
                 struct dirent* direntPtr = nullptr;
                 while ((direntPtr = readdir(dir)) != nullptr) {
-                    if (strncmp(direntPtr->d_name, aiqbName.c_str(), aiqbName.length()) == 0) {
+                    if ((strncmp(direntPtr->d_name, aiqbName.c_str(), aiqbName.length()) == 0) &&
+                        (strstr(direntPtr->d_name, postfix.c_str()) != nullptr)) {
                         aiqbNameFromModuleInfo.assign(direntPtr->d_name);
-                        if (camModuleName) *camModuleName = cameraModule;
                         break;
                     }
                 }
@@ -287,10 +289,9 @@ int AiqInitData::getCpf(TuningMode mode, ia_binary_data* cpfData) {
 }
 
 ia_binary_data* AiqInitData::getNvm(int cameraId) {
-    if (!mNvm) {
-        CheckError(mNvmPath.length() == 0, nullptr,
-                   "@%s, NVM dirctory from config is null", __func__);
+    if (mNvmPath.length() == 0) return nullptr;
 
+    if (!mNvm) {
         LOG2("NVM data for %s is located in %s", mSensorName.c_str(), mNvmPath.c_str());
 
         mNvm = new AiqData(mNvmPath, mMaxNvmSize);
