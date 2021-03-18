@@ -210,6 +210,11 @@ bool PSysDAG::isBypassStillTnr(int64_t seq)
            (mStillTnrExecutor != nullptr ? mStillTnrExecutor->isBypassStillTnr(seq) : true);
 }
 
+int PSysDAG::getTnrExtraFrameCount(int64_t seq)
+{
+    return mStillTnrExecutor != nullptr ? mStillTnrExecutor->getTnrExtraFrameCount(seq) : 0;
+}
+
 /* multi-streams can bind to the same output port, but only one stream is active */
 bool PSysDAG::isInactiveStream(int streamId, const PSysTaskData* task)
 {

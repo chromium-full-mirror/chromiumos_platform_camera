@@ -58,8 +58,8 @@ GPUExecutor::GPUExecutor(int cameraId, const ExecutorPolicy& policy, vector<stri
           mIntelTNR(nullptr),
           mLastSequence(UINT32_MAX),
           mUseInternalTnrBuffer(useTnrOutBuffer),
-          mOutBufferSize(0),
-          mStillTnrTG(DEFAULT_TNR_THRESHOLD_GAIN) {
+          mOutBufferSize(0) {
+    CLEAR(mStillTnrTriggerInfo);
     LOG1("@%s %s", __func__, mName.c_str());
 }
 
@@ -108,8 +108,7 @@ int GPUExecutor::createPGs() {
 int GPUExecutor::start() {
     LOG1("%s executor:%s", __func__, mName.c_str());
     if (mStreamId == STILL_TNR_STREAM_ID &&
-        getStillTnrTG(mPSysDag->getTuningMode(-1), &mStillTnrTG) != OK) {
-        mStillTnrTG = DEFAULT_TNR_THRESHOLD_GAIN;
+        getStillTnrTriggerInfo(mPSysDag->getTuningMode(-1)) != OK) {
         LOGW("%s can't get threshold gain from aiqb, use default", __func__);
     }
 
@@ -235,15 +234,14 @@ bool GPUExecutor::fetchTnrOutBuffer(int64_t seq, std::shared_ptr<CameraBuffer> b
     return false;
 }
 
-int GPUExecutor::getStillTnrTG(TuningMode mode, float* tg) {
-    CheckError(!tg, UNKNOWN_ERROR, "invalid input");
+int GPUExecutor::getStillTnrTriggerInfo(TuningMode mode) {
     IntelCca* intelCca = IntelCca::getInstance(mCameraId, mode);
     CheckError(!intelCca, UNKNOWN_ERROR, "%s, cca is nullptr, mode:%d", __func__, mode);
     cca::cca_cmc cmc;
     ia_err ret = intelCca->getCMC(&cmc);
     CheckError(ret != OK, BAD_VALUE, "@%s get cmc data failed", __func__);
-    *tg = cmc.tnr7us_threshold_gain;
-    LOG1("%s threshold gain is %f", __func__, cmc.tnr7us_threshold_gain);
+    mStillTnrTriggerInfo = cmc.tnr7us_trigger_info;
+    LOG2("%s still tnr trigger gain num: %d", mName.c_str(), mStillTnrTriggerInfo.num_gains);
     return OK;
 }
 
@@ -268,8 +266,27 @@ bool GPUExecutor::isBypassStillTnr(int64_t seq) {
     float totalGain = 0.0f;
     int ret = getTotalGain(seq, &totalGain);
     CheckError(ret, true, "@%s, Failed to get total gain", __func__);
-    if (totalGain <= mStillTnrTG) return true;
+    if (totalGain <= mStillTnrTriggerInfo.tnr7us_threshold_gain) return true;
     return false;
+}
+
+int GPUExecutor::getTnrExtraFrameCount(int64_t seq) {
+    if (mStreamId != STILL_TNR_STREAM_ID) return 0;
+    float totalGain = 0.0f;
+    int ret = getTotalGain(seq, &totalGain);
+    CheckError(ret, 0, "@%s, Failed to get total gain", __func__);
+
+    if (!mStillTnrTriggerInfo.num_gains)
+        return PlatformData::getTnrExtraFrameCount(mCameraId);
+
+    int index = 0;
+    for (int i = 1; i < mStillTnrTriggerInfo.num_gains; i++) {
+        if (fabs(mStillTnrTriggerInfo.trigger_infos[i].gain - totalGain) <
+            fabs(mStillTnrTriggerInfo.trigger_infos[i - 1].gain - totalGain))
+            index = i;
+    }
+    /* the frame_count is total tnr7 frame count, already run 1 frame */
+    return mStillTnrTriggerInfo.trigger_infos[index].frame_count - 1;
 }
 
 int GPUExecutor::allocTnrOutBufs(uint32_t bufSize) {

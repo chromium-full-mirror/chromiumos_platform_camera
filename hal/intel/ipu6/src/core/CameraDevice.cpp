@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2020 Intel Corporation.
+ * Copyright (C) 2015-2021 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1129,7 +1129,7 @@ int CameraDevice::getParameters(Parameters& param, long sequence)
     LOG1("@%s mCameraId:%d", __func__, mCameraId);
     AutoMutex   m(mDeviceLock);
 
-    if (sequence >= 0) {
+    if (sequence >= 0 && mState != DEVICE_STOP) {
         // fetch target parameter and results
         return mParamGenerator->getParameters(sequence, &param, false);
     }
