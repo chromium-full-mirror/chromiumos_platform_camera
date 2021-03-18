@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2020 Intel Corporation
+ * Copyright (C) 2015-2021 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,16 +27,17 @@
 #include "PlatformData.h"
 #include "ia_types.h"
 #include "iutils/CameraLog.h"
+#include "iutils/CameraDump.h"
 
 using std::string;
 
 namespace icamera {
 
-AiqData::AiqData(const std::string& fileName) : mDataPtr(nullptr) {
+AiqData::AiqData(const std::string& fileName, int maxSize) : mDataPtr(nullptr) {
     LOG1("%s, file name %s", __func__, fileName.c_str());
 
     mFileName = fileName;
-    loadFile(fileName, &mData);
+    loadFile(fileName, &mData, maxSize);
 }
 
 AiqData::~AiqData() {
@@ -60,7 +61,7 @@ void AiqData::saveData(const ia_binary_data& data) {
     saveDataToFile(mFileName, &mData);
 }
 
-void AiqData::loadFile(const std::string& fileName, ia_binary_data* data) {
+void AiqData::loadFile(const std::string& fileName, ia_binary_data* data, int maxSize) {
     LOG1("%s, file name %s", __func__, fileName.c_str());
     CheckError(data == nullptr, VOID_VALUE, "data is nullptr");
 
@@ -73,23 +74,26 @@ void AiqData::loadFile(const std::string& fileName, ia_binary_data* data) {
         return;
     }
 
+    int64_t usedFileSize = fileStat.st_size;
+    if (maxSize > 0 && maxSize < fileStat.st_size) usedFileSize = maxSize;
+
     // Open file
     FILE* fp = fopen(fileName.c_str(), "rb");
     CheckWarning(fp == nullptr, VOID_VALUE, "Failed to open file %s, error %s",
                  fileName.c_str(), strerror(errno));
 
-    std::unique_ptr<char[]> dataPtr(new char[fileStat.st_size]);
+    std::unique_ptr<char[]> dataPtr(new char[usedFileSize]);
 
     // Read data
-    size_t readSize = fread(dataPtr.get(), sizeof(char), fileStat.st_size, fp);
+    size_t readSize = fread(dataPtr.get(), sizeof(char), usedFileSize, fp);
     fclose(fp);
 
-    CheckWarning(readSize != (size_t)fileStat.st_size, VOID_VALUE, "Failed to read %s, error %s",
+    CheckWarning(readSize != (size_t)usedFileSize, VOID_VALUE, "Failed to read %s, error %s",
                  fileName.c_str(), strerror(errno));
 
     mDataPtr = move(dataPtr);
     data->data = mDataPtr.get();
-    data->size = fileStat.st_size;
+    data->size = usedFileSize;
     LOG1("%s, file %s, size %d", __func__, fileName.c_str(), data->size);
 }
 
@@ -282,14 +286,26 @@ int AiqInitData::getCpf(TuningMode mode, ia_binary_data* cpfData) {
     return OK;
 }
 
-ia_binary_data* AiqInitData::getNvm() {
+ia_binary_data* AiqInitData::getNvm(int cameraId) {
     if (!mNvm) {
         CheckError(mNvmPath.length() == 0, nullptr,
                    "@%s, NVM dirctory from config is null", __func__);
 
-    LOG2("NVM data for %s is located in %s", mSensorName.c_str(), mNvmPath.c_str());
+        LOG2("NVM data for %s is located in %s", mSensorName.c_str(), mNvmPath.c_str());
 
-        mNvm = new AiqData(mNvmPath);
+        mNvm = new AiqData(mNvmPath, mMaxNvmSize);
+
+        if (CameraDump::isDumpTypeEnable(DUMP_NVM_DATA)) {
+            ia_binary_data* nvmData = mNvm->getData();
+            if (nvmData && nvmData->data && nvmData->size > 0) {
+                BinParam_t bParam;
+                bParam.bType = BIN_TYPE_GENERAL;
+                bParam.mType = M_NVM;
+                bParam.sequence = 0;
+                bParam.gParam.appendix = "nvm_data";
+                CameraDump::dumpBinary(cameraId, nvmData->data, nvmData->size, &bParam);
+            }
+        }
     }
 
     return mNvm->getData();
