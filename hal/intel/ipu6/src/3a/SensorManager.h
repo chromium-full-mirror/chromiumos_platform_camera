@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2020 Intel Corporation.
+ * Copyright (C) 2015-2021 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,9 +58,6 @@ class SensorManager : public EventListener {
 public:
     SensorManager(int cameraId, SensorHwCtrl *sensorHw);
     ~SensorManager();
-
-    int init();
-    int deinit();
     void reset();
 
     // get EventListener

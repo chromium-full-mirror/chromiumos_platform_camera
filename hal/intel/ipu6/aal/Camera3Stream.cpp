@@ -152,7 +152,6 @@ void Camera3Stream::drainRequest() {
     mCaptureResultMap.erase(frameNumber);
 }
 
-
 bool Camera3Stream::threadLoop() {
     LOG1("[%p] isHALStream: %d @%s", this, mIsHALStream, __func__);
 

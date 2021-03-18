@@ -1,5 +1,5 @@
 #
-#  Copyright (C) 2019-2020 Intel Corporation
+#  Copyright (C) 2019-2021 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -62,7 +62,6 @@ shared_library("libcamhal") {
     "src/3a/AiqResult.cpp",
     "src/3a/AiqResultStorage.cpp",
     "src/3a/AiqSetting.cpp",
-    "src/3a/AiqStatistics.cpp",
     "src/3a/AiqUnit.cpp",
     "src/3a/AiqUtils.cpp",
     "src/3a/I3AControlFactory.cpp",
@@ -361,6 +360,7 @@ shared_library("libcam_algo") {
     "pvl_mouth_detection",
     "gcss",
     "ia_aiqb_parser",
+    "rt",
   ]
   pkg_deps = [
     "libcros_camera",
@@ -448,6 +448,7 @@ if (use.ipu6se) {
     libs = [
       "ia_log",
       "tnr7_cm",
+      "rt",
     ]
     pkg_deps = [
       "libcros_camera",
