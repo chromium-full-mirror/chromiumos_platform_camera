@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2020 Intel Corporation.
+ * Copyright (C) 2015-2021 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,6 +71,7 @@ private:
     CameraMetadata mMetadata;
     std::string mCameraModuleName;
     CameraMetadata mCameraModuleMetadata;
+    std::string mNvmNodeName;
 
     long* mMetadataCache;
     static const int mMetadataCacheSize = 4096;
@@ -125,6 +126,7 @@ private:
     void parseOutputMap(const char *str, std::vector<UserToPslOutputMap> &outputMap);
 
     std::string replaceStringInXml(CameraParser *profiles, const char *value);
+    void getNVMDirectory(CameraParser* profiles);
 };
 
 } // namespace icamera
