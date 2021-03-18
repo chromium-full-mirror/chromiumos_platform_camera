@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2020 Intel Corporation
+ * Copyright (C) 2017-2021 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -756,6 +756,7 @@ int MetadataConvert::convertControlMetadata(const android::CameraMetadata& setti
     icamera::camera_window_list_t windows;
     if (entry.count > 0) {
         if (convertToHalWindow(entry.data.i32, entry.count, &windows) == 0) {
+            parameter->setBlcAreaMode(icamera::BLC_AREA_MODE_ON);
             parameter->setAeRegions(windows);
         }
     }
