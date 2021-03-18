@@ -981,9 +981,9 @@ int PGCommon::allocateTnrDataBuffers() {
 
         CIPR::Buffer* ciprBuf = nullptr;
         /* use flush mode for still stream tnr buffers, since still stream will copy data buffer
-         * from video stream as its refer buffer, flush the cache after the copy to fix
-         * garbage image in compression mode */
-        if (mStreamId == STILL_STREAM_ID && isCompression)
+         * from video stream as its refer buffer.
+         */
+        if (mStreamId == STILL_STREAM_ID)
             ciprBuf = registerUserBuffer(size, buffer, true);
         else
             ciprBuf = registerUserBuffer(size, buffer);
