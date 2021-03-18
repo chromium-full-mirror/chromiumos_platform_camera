@@ -18,6 +18,8 @@
 
 #include <hardware/camera3.h>
 
+#include <vector>
+
 #include "Parameters.h"
 #include "iutils/CameraLog.h"
 
@@ -26,12 +28,22 @@ namespace camera3 {
 #define IS_ZSL_USAGE(usage) (((usage)&GRALLOC_USAGE_HW_CAMERA_ZSL) == GRALLOC_USAGE_HW_CAMERA_ZSL)
 
 namespace HalV3Utils {
+
+struct CrosCameraInfo {
+    int orientation;
+    int facing;
+};
+
 const char* getCamera3StreamType(int type);
 int HALFormatToV4l2Format(int cameraId, int halFormat, int usage);
 int getRotationDegrees(const camera3_stream_t& stream);
 bool isSameRatioWithSensor(const icamera::stream_t *stream, int cameraId);
 int fillHALStreams(int cameraId, const camera3_stream_t& camera3Stream, icamera::stream_t* stream);
-int getCrosConfigCameraNumber();
+
+int getCrosConfigCameraNumber(const std::vector<CrosCameraInfo>& infos);
+void updateOrientation(const std::vector<CrosCameraInfo>& infos);
+std::vector<CrosCameraInfo> getCrosCameraInfo();
+
 }  // namespace HalV3Utils
 
 }  // namespace camera3
