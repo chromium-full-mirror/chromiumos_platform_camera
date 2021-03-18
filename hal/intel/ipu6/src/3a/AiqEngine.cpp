@@ -284,7 +284,6 @@ AiqEngine::AiqState AiqEngine::prepareInputParam(AiqStatistics* aiqStats)
 
     // Update sensor info for the first-run of AIQ
     if (mFirstAiqRunning) {
-        mSensorManager->setFrameRate(mAiqParam.fps);
         // set sensor info if needed
         ia_aiq_exposure_sensor_descriptor sensorDescriptor = {};
         ia_aiq_frame_params frameParams = {};

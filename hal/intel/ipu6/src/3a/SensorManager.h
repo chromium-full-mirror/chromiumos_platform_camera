@@ -69,7 +69,6 @@ public:
     int getSensorInfo(ia_aiq_frame_params &frameParams,
                       ia_aiq_exposure_sensor_descriptor &sensorDescriptor);
 
-    int setFrameRate(float fps);
     int getCurrentExposureAppliedDelay();
     uint64_t getSofTimestamp(long sequence);
 private:
