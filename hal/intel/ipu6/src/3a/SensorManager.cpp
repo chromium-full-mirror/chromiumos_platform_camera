@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2020 Intel Corporation.
+ * Copyright (C) 2015-2021 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,27 +56,12 @@ SensorManager::~SensorManager()
     LOG1("@%s mCameraId = %d", __func__, mCameraId);
 }
 
-int SensorManager::init()
-{
-    AutoMutex l(mLock);
-    LOG1("@%s mCameraId = %d", __func__, mCameraId);
-
-    reset();
-    return OK;
-}
-
-int SensorManager::deinit()
-{
-    AutoMutex l(mLock);
-    LOG1("@%s mCameraId = %d", __func__, mCameraId);
-
-    return OK;
-}
-
 void SensorManager::reset()
 {
-    mLastSofSequence = -1;
+    LOG1("@%s mCameraId = %d", __func__, mCameraId);
 
+    AutoMutex l(mLock);
+    mLastSofSequence = -1;
     mExposureDataMap.clear();
     mAnalogGainMap.clear();
     mDigitalGainMap.clear();

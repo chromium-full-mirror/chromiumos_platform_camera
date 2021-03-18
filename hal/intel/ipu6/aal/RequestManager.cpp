@@ -876,8 +876,7 @@ int RequestManager::chooseHALStreams(const uint32_t requestStreamNum, int* halSt
     return activeHALNum;
 }
 
-void RequestManager::waitAllRequestsDone()
-{
+void RequestManager::waitAllRequestsDone() {
     LOG1("@%s", __func__);
 
     std::unique_lock<std::mutex> lock(mRequestLock);
