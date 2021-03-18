@@ -977,6 +977,7 @@ int PGCommon::allocateTnrDataBuffers() {
         uint8_t* buffer = nullptr;
         int ret = posix_memalign((void**)&buffer, PAGE_SIZE_U, PAGE_ALIGN(size));
         CheckError(ret, NO_MEMORY, "%s, alloc %d tnr data buf fails", __func__, i);
+        memset(buffer, 0, PAGE_ALIGN(size));
         mTnrDataBuffers.push_back(buffer);
 
         CIPR::Buffer* ciprBuf = nullptr;
