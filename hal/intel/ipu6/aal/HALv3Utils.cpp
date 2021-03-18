@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Intel Corporation
+ * Copyright (C) 2019-2021 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include <base/strings/stringprintf.h>
 #include <chromeos-config/libcros_config/cros_config.h>
@@ -170,32 +171,69 @@ int fillHALStreams(int cameraId, const camera3_stream_t& camera3Stream, icamera:
     return icamera::OK;
 }
 
-// Only when /camera/devices exists in CrOS config on the board, it returns the
-// real camera number, otherwise it returns 0.
-int getCrosConfigCameraNumber() {
-    int cameraNumber = 0;
-    brillo::CrosConfig crosConfig;
-    bool status = crosConfig.Init();
-    CheckWarning(!status, -1, "@%s, Failed to initialize CrOS config", __func__);
+int getCrosConfigCameraNumber(const std::vector<CrosCameraInfo>& infos) {
+    return infos.size();
+}
 
-    // Get MIPI camera count from "devices" array in Chrome OS config. The structure looks like:
+// Only when /camera/devices exists in CrOS config on the board, it returns the
+// cros camera info vector, otherwise it returns empty vector.
+std::vector<CrosCameraInfo> getCrosCameraInfo() {
+    brillo::CrosConfig crosConfigReader;
+    bool status = crosConfigReader.Init();
+    std::vector<CrosCameraInfo> infos;
+    CheckWarning(!status, infos, "@%s, Failed to initialize CROS config", __func__);
+    int cameraIdx = 0;
+
+    // Get MIPI camera info from "devices" array in Chrome OS config. The structure looks like:
     //     camera - devices + 0 + interface (mipi, usb)
     //                      |   + facing (front, back)
     //                      |   + orientation (0, 90, 180, 270)
     //                      |   ...
     //                      + 1 + interface
     //                          ...
-    for (int i = 0;; ++i) {
-        std::string interface;
-        if (!crosConfig.GetString(base::StringPrintf("/camera/devices/%i", i), "interface",
-                                  &interface)) {
+    while (true) {
+        std::string interfaceType;
+        if (!crosConfigReader.GetString(base::StringPrintf("/camera/devices/%i", cameraIdx),
+                "interface", &interfaceType)) {
             break;
         }
-        if (interface == "mipi") {
-            ++cameraNumber;
+        if (interfaceType == "mipi") {
+            std::string orient;
+            std::string facing;
+            CrosCameraInfo info = {0, 0};
+
+            if (crosConfigReader.GetString(base::StringPrintf("/camera/devices/%i", cameraIdx),
+                            "orientation", &orient)) {
+                info.orientation = atoi(orient.c_str());
+            }
+            if (crosConfigReader.GetString(base::StringPrintf("/camera/devices/%i", cameraIdx),
+                            "facing", &facing)) {
+                if (facing == "front") {
+                    info.facing = icamera::FACING_FRONT;
+                } else {
+                    info.facing = icamera::FACING_BACK;
+                }
+            }
+            infos.push_back(info);
+        }
+        ++cameraIdx;
+    }
+    return infos;
+}
+
+void updateOrientation(const std::vector<CrosCameraInfo>& infos) {
+    for (size_t i = 0; i < infos.size(); ++i) {
+        for (size_t j = 0; j < infos.size(); ++j) {
+            icamera::camera_info_t info;
+            icamera::get_camera_info(j, info);
+
+            if (info.facing == infos[i].facing) {
+                LOG1("%s@, cameraID %d's orient = %d ", __func__, j, infos[i].orientation);
+                icamera::PlatformData::setSensorOrientation(j, infos[i].orientation);
+            }
         }
     }
-    return cameraNumber;
 }
+
 }  // namespace HalV3Utils
 }  // namespace camera3
