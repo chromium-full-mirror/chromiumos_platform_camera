@@ -71,4 +71,5 @@ typedef struct
     cmc_parsed_pipe_compand_t const *direct_cmc_parsed_pipe_compand_t;
     cmc_parsed_pipe_decompand_t const* direct_cmc_parsed_pipe_decompand_t;
     ia_tnr7_t const* direct_ia_tnr7_t;
+    ia_aiq_ir_weight_t const* direct_ia_aiq_ir_weight_grid;
 } ia_pal_direct_results;

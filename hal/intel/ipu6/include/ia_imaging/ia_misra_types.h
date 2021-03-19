@@ -13,16 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#pragma once
 
-namespace cca {
+/*! \file ia_misra_types.h
+   \brief MISRA typedefs
+*/
+#ifndef _IA_MISRA_TYPES_H_
+#define _IA_MISRA_TYPES_H_
 
-// TODO: port AiqResult.cpp/.h into this class, along with deep copy functions
-//       from AiqUtils.cpp/.h from libcamhal.
+#ifndef BUILDIN_TYPE
+#define BUILDIN_TYPE
+typedef float float32_t;
+typedef double float64_t;
+#endif
 
-class AIQResult {
-public:
-    AIQResult();
-    virtual ~AIQResult();
-};
-}//cca
+
+#endif /* _IA_MISRA_TYPES_H_ */

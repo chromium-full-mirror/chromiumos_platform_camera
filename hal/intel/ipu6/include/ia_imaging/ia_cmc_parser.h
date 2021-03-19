@@ -35,7 +35,7 @@ extern "C" {
 LIBEXPORT ia_cmc_t*
 ia_cmc_parser_init_v1(
     const ia_binary_data *a_aiqb_binary,
-    const ia_binary_data *a_nvm_data);
+    const ia_binary_data *a_nvm_binary);
 
 LIBEXPORT void
 ia_cmc_parser_deinit(ia_cmc_t *ia_cmc);

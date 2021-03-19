@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-#include "ia_types.h"
-
 #ifndef _IA_LOG_H_
 #define _IA_LOG_H_
+
+#include "ia_types.h"
 
 #ifdef __cplusplus
 extern "C" {

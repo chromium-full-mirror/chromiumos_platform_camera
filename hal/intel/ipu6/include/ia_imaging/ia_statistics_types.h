@@ -20,7 +20,7 @@
 #include "ia_types.h"
 #include "ia_configuration.h"
 
-#define IA_RGBS_GRID_SIZE (IA_RGBS_GRID_WIDTH * IA_RGBS_GRID_HEIGHT)
+#define IA_RGBS_GRID_SIZE ((IA_RGBS_GRID_WIDTH) * (IA_RGBS_GRID_HEIGHT))
 
  /*!
  * \brief Bayer color channels grouped into one structure.

@@ -23,10 +23,10 @@
 #define IA_ISP_BXT_DEPRECATED_H_
 
 #include "ia_aiq_types.h"
+#include "ia_aiq_types_deprecated.h"
 #include "ia_types.h"
 #include "ia_isp_bxt_types.h"
 #include "ia_bcomp_types.h"
-#include "ia_aiq_deprecated.h"
 #include "ia_cmc_types.h"
 
 #ifdef __cplusplus

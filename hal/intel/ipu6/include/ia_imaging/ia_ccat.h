@@ -96,6 +96,15 @@ ia_ccat_register_percentile_frame(
     float a_percentile);
 
 /*!
+ * \brief Registers percentile that will be calculated from histograms covering whole frame.
+ */
+LIBEXPORT ia_err
+ia_ccat_get_percentile_list_frame(
+    ia_ccat *a_ccat_ptr,                    /*!< \param[in] Analysis toolbox internal data structure. */
+    uint32_t *num_percentiles,              /*!< \param[out] number of percentiles for frame.*/
+    const float **percentile_list);               /*!< \param[out] address of percentiles list for frame.*/
+
+/*!
  * \brief Reserves frame into use.
  * \return Error code.
  */
@@ -116,7 +125,7 @@ ia_ccat_get_frame_percentile(
     float a_percentile,
     unsigned int a_exposure_index,
     ia_ccat_histogram_type a_histogram_type,
-    float *a_percentile_bin);
+    float *a_percentile_bin_ptr);
 
 LIBEXPORT ia_err
 ia_ccat_get_frame_normalized_percentile(
@@ -225,6 +234,11 @@ LIBEXPORT ia_err
 ia_ccat_get_frame_sa_results(
     ia_ccat_frame_info *a_frame_info_ptr,
     const ia_aiq_sa_results_v1 **a_sa_results_ptr);
+
+LIBEXPORT ia_err
+ia_ccat_get_frame_pa_results(
+    ia_ccat_frame_info *a_frame_info_ptr,
+    const ia_aiq_pa_results_v1 **a_pa_results_ptr);
 
 LIBEXPORT ia_err
 ia_ccat_get_frame_exposure_result(
@@ -336,6 +350,19 @@ ia_ccat_calculate_weighted_ccm(
     cmc_chromaticity a_point,                                            /*!< [in] Chromaticity to calculate distance (x and y axis) against input list of chromaticities in R/G and B/G plane. */
     float (*a_out_ccm)[3][3],                                            /*!< [out] Resulting CCM. */
     float (*ccm_weights)[CMC_NUM_LIGHTSOURCES]);                       /*!< [out] CCM weight. */
+
+LIBEXPORT ia_err
+ia_ccat_calculate_weighted_acm_cct_based(
+    const cmc_parsed_advanced_color_matrices_ls_t *a_parsed_acm_ls,
+    unsigned int a_num_color_matrices,
+    unsigned int a_sector_count,
+    float a_point_x,
+    float a_point_y,
+    const locus_t* a_locus_ptr,
+    int num_of_cct_segments,
+    ia_aiq_advanced_ccm_t *a_out_acm,
+    float* a_out_ccm,
+    float* a_ccm_weights);
 
 LIBEXPORT ia_err
 ia_ccat_get_frame_scaled_cmc_lens_shading(
@@ -677,7 +704,7 @@ ia_ccat_lse_run(
     uint16_t* a_prev_lse_weights_ptr,
     const uint16_t* a_lsc_weights_cct_range_ptr,
     const ia_cmc_t *a_cmc_ptr,
-    chromaticity_characterization_t *a_sensor_chromaticity_characterization_ptr,
+    chromaticity_characterization_t *a_sensor_chroma_chara_ptr,
     const crop_params *a_lsc_crop_params_ptr,
     unsigned int a_final_cct_estimate,
     const unsigned int *a_cmc_cct,
@@ -691,6 +718,25 @@ ia_ccat_remap_ir_light_sources(
     float *a_ir_proportion);
 #endif /* IA_CCAT_LIGHT_SOURCE_ESTIMATION_ENABLED */
 
+LIBEXPORT ia_err
+ia_ccat_set_frame_athena_mode(
+    ia_ccat_frame_info *a_frame_info_ptr,
+    bool athena_mode);
+
+LIBEXPORT ia_err
+ia_ccat_set_frame_min_gamma_gtm(
+    ia_ccat_frame_info *a_frame_info_ptr,
+    float min_gamma_gtm);
+
+LIBEXPORT ia_err
+ia_ccat_get_frame_athena_mode(
+    ia_ccat_frame_info *a_frame_info_ptr,
+    bool *athena_mode);
+
+LIBEXPORT ia_err
+ia_ccat_get_frame_min_gamma_gtm(
+    ia_ccat_frame_info *a_frame_info_ptr,
+    float *min_gamma_gtm);
 #ifdef __cplusplus
 }
 #endif

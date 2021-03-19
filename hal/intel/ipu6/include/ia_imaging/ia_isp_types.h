@@ -103,6 +103,11 @@ typedef struct
     int execution_interval;         /* Execution interval in us, when the mode is ia_isp_call_rate_reduce_on_converged. */
 } ia_isp_call_rate_control;
 
+typedef struct
+{
+    int32_t rgb2yuv_coef[9];        /* One 3x3 martix for RGB to YUV conversion, each value is normalized to 1000 */
+} ia_isp_bxt_csc;
+
 #ifdef __cplusplus
 }
 #endif
