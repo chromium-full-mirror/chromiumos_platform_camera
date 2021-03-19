@@ -669,6 +669,19 @@ void IspParamAdaptor::applyMediaFormat(const AiqResult* aiqResult,
     }
 }
 
+void IspParamAdaptor::applyCscMatrix(ia_isp_bxt_csc* cscMatrix) {
+    size_t matrixCount = sizeof(cscMatrix->rgb2yuv_coef) / sizeof(int32_t);
+    // This is one standard RGB2YUV matrix reverse from YUV2RGB matrix in ITS
+    const float oriMatrix[] = {0.299, 0.587, 0.114, -0.169, -0.331, 0.5, 0.5, -0.419, -0.081};
+    CheckError(matrixCount != (sizeof(oriMatrix) / sizeof(float)), VOID_VALUE,
+               "Matrix count mismatching with algo: %zu", matrixCount);
+
+    const int cscNorm = 1000;  // this value need to align with algo
+    for (size_t i = 0; i < matrixCount; i++) {
+        cscMatrix->rgb2yuv_coef[i] = static_cast<int32_t>(oriMatrix[i] * cscNorm);
+    }
+}
+
 int IspParamAdaptor::runIspAdaptL(ia_isp_bxt_program_group *pgPtr, ia_isp_bxt_gdc_limits *mbrData,
                                   const IspSettings* ispSettings, long requestId, long settingSequence,
                                   ia_binary_data *binaryData, int streamId) {
@@ -690,6 +703,11 @@ int IspParamAdaptor::runIspAdaptL(ia_isp_bxt_program_group *pgPtr, ia_isp_bxt_gd
     applyMediaFormat(aiqResults, &inputParams->media_format, &useLinearGamma);
     LOG2("%s, media format: 0x%x, gamma lut size: %d", __func__,
          inputParams->media_format, aiqResults->mGbceResults.gamma_lut_size);
+
+    if (inputParams->media_format == media_format_custom) {
+        applyCscMatrix(&inputParams->csc_matrix);
+        dumpCscMatrix(&inputParams->csc_matrix);
+    }
 
     if (VIDEO_STREAM_ID == streamId) {
         inputParams->call_rate_control.mode = ia_isp_call_rate_never_on_converged;
@@ -868,6 +886,13 @@ void IspParamAdaptor::dumpProgramGroup(ia_isp_bxt_program_group *pgPtr) {
                  pgPtr->pipe[i].flags);
         }
     }
+}
+
+void IspParamAdaptor::dumpCscMatrix(const ia_isp_bxt_csc* cscMatrix) {
+    LOG2("%s, manual rgb2yuv matrix: %d, %d, %d, %d, %d, %d, %d, %d, %d", __func__,
+         cscMatrix->rgb2yuv_coef[0], cscMatrix->rgb2yuv_coef[1], cscMatrix->rgb2yuv_coef[2],
+         cscMatrix->rgb2yuv_coef[3], cscMatrix->rgb2yuv_coef[4], cscMatrix->rgb2yuv_coef[5],
+         cscMatrix->rgb2yuv_coef[6], cscMatrix->rgb2yuv_coef[7], cscMatrix->rgb2yuv_coef[8]);
 }
 
 } // namespace icamera
