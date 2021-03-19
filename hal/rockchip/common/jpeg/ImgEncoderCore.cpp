@@ -318,8 +318,7 @@ int ImgEncoderCore::doSwEncode(std::shared_ptr<CameraBuffer> srcBuf,
                                              width, height, quality,
                                              nullptr, 0,
                                              destBuf->size(), pDst,
-                                             &outSize,
-                                             cros::JpegCompressor::Mode::kSwOnly);
+                                             &outSize, false);
     LOG1("%s: encoding ret:%d, %dx%d need %" PRId64 "ms, jpeg size %u, quality %d)",
          __FUNCTION__, ret, destBuf->width(), destBuf->height(),
          (systemTime() - startTime) / 1000000, outSize, quality);
