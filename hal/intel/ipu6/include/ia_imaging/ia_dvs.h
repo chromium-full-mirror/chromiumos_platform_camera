@@ -34,8 +34,8 @@
 #include <stdint.h>
 #include "ia_dvs_types.h"
 #include "ia_aiq_types.h"
+#include "ia_aiq_types_deprecated.h"
 #include "ia_cmc_types.h"
-#include "ia_aiq.h"
 #include "ia_dvs_deprecated.h"
 #ifdef __cplusplus
 extern "C" {
