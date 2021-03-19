@@ -8313,6 +8313,8 @@ typedef struct
 {
     /*!< gmv_en ff enable/disable flag*/
     int32_t gmv_en;
+    /*!< is_first_frame Set to 1 on first frame. If 1, the input features are ignored, fixed (fake) matches are produced*/
+    int32_t is_first_frame;
     /*!< additional_bin_input set to 1 if 4x binning is required before processing, otherwise image is binned 2x*/
     int32_t additional_bin_input;
     /*!< kappa kappa for Harris grade calculation*/
@@ -8759,6 +8761,194 @@ typedef struct
     int32_t reserved_1_3;
 
 } ia_pal_isp_io_buffer_t;
+
+/*! \isp struct io_buffer_1_1
+
+*/
+typedef struct
+{
+    /*!< input_width Input width counted in number of pixels components per line*/
+    int32_t input_width;
+    /*!< input_height Input height counted in number of lines*/
+    int32_t input_height;
+    /*!< output_width Output width counted in number of pixels components per line*/
+    int32_t output_width;
+    /*!< output_height Output height counted in number of lines*/
+    int32_t output_height;
+    /*!< x_output_offset Output horizontal offset from the input, counted in number of pixels components per line, 16b signed (if negative padding is required)*/
+    int32_t x_output_offset;
+    /*!< y_output_offset Output vertical offset from the input counted in number of lines, 16b signed*/
+    int32_t y_output_offset;
+    /*!< use_attributes This capability impact the ODR. When set, ODR should use the EOL/EOF attributes to detect frame dimensions. In general, this capability is used when the height or width or both are not known or cannot be expressed. Using this capability disable the option using crop/pad mechanism and force SW to provide the same dimension in input/output region (if known) and zero the offset values.*/
+    int32_t use_attributes;
+    /*!< espa_luma_shift_left 1-perform shift left on the luma/bayer componenets, 0-perfrom shift right on the luma/bayer components*/
+    int32_t espa_luma_shift_left;
+    /*!< espa_luma_shift_count shift amount to the luma/bayer component where sign is kept and shift right done with rounding*/
+    int32_t espa_luma_shift_count;
+    /*!< espa_chroma_shift_left 1-perform shift left on the chroma componenets, 0-perfrom shift right on the chroma components*/
+    int32_t espa_chroma_shift_left;
+    /*!< espa_chroma_shift_count shift amount to the chroma component where sign is kept and shift right done with rounding*/
+    int32_t espa_chroma_shift_count;
+    /*!< espa_range_reduction_output_resolution Set the output resolution to be used at the range reduction calculation*/
+    int32_t espa_range_reduction_output_resolution;
+    /*!< espa_range_reduction_enable enable range reduction calculation for all components*/
+    int32_t espa_range_reduction_enable;
+    /*!< espa_luma_clipping_min_enable clipping the luma components to clipping_min value*/
+    int32_t espa_luma_clipping_min_enable;
+    /*!< espa_luma_clipping_max_enable clipping the luma components to clipping_max value*/
+    int32_t espa_luma_clipping_max_enable;
+    /*!< espa_chroma_clipping_min_enable clipping the chroma components to clipping_min value*/
+    int32_t espa_chroma_clipping_min_enable;
+    /*!< espa_chroma_clipping_max_enable clipping the chroma components to clipping_max value*/
+    int32_t espa_chroma_clipping_max_enable;
+    /*!< espa_luma_clipping_min_value Min value (S15) to clip the component after the shift using sign arithmetic*/
+    int32_t espa_luma_clipping_min_value;
+    /*!< espa_luma_clipping_max_value Max value (S15) to clip the component after the shift using sign arithmetic*/
+    int32_t espa_luma_clipping_max_value;
+    /*!< espa_luma_offset_value Offset value (S15) to be added to the component using sign arithmetic*/
+    int32_t espa_luma_offset_value;
+    /*!< espa_chroma_clipping_min_value Min value (S15) to clip the component after the shift using sign arithmetic*/
+    int32_t espa_chroma_clipping_min_value;
+    /*!< espa_chroma_clipping_max_value Max value (S15) to clip the component after the shift using sign arithmetic*/
+    int32_t espa_chroma_clipping_max_value;
+    /*!< espa_chroma_offset_value Offset value (S15) to be added to the component using sign arithmetic*/
+    int32_t espa_chroma_offset_value;
+    /*!< espa_enable Enable espa*/
+    int32_t espa_enable;
+    /*!< component_precision Pixel element precision in bits: 0=>8b, 1=>10b, 2=>12b, 3=>16, 4=>32, 5=>2, 6=>4, 7..15=>reserved*/
+    int32_t component_precision;
+    /*!< unpack_alignment Valid for unpacked vectors: 0-element located at LSB and MSB is zero; 1-element located at MSB and LSB is zero*/
+    int32_t unpack_alignment;
+    /*!< vertical_ordering_enable If set, the walking order should be vertical using the sub_line value to indicate how many CL generate vertical movement*/
+    int32_t vertical_ordering_enable;
+    /*!< vertical_ordering_sub_line valid when vertical_ordering is set, indicates the size of the sub line to generate vertical step in CL granularity*/
+    int32_t vertical_ordering_sub_line;
+    /*!< num_of_queues Amount of total active queues (YUV FP - 4, YUV SP - 3 YUV SP Tile - 2. RGB - 1,1,1. Bayer -2). Must be up to amount of maximum queue supported. Can be changed per frame. At LBFF used dynamicly for PDAF*/
+    int32_t num_of_queues;
+    /*!< vector_format Vector CL format: 0-unpacked using 2B container; 1-packed*/
+    int32_t vector_format;
+    /*!< tile_mode Valid for IO that can provide tile format: 0-no tiling; 1-the IO should use tiling with the configured height, width, and tiling type (internal tiling or external Tile-4)*/
+    int32_t tile_mode;
+    /*!< tiling_type Tiling Type: 0 - internal tiling; 1 - external tiling (Tile-4)*/
+    int32_t tiling_type;
+    /*!< compression_mode Valid for streaming that are tiled: 1-the stream is written/fetched to/from DDR through compression engine; 0-not going through compression*/
+    int32_t compression_mode;
+    /*!< buffer_1d_enable Valid only for 1 plane and 1 queue streams. 0-the buffer is described as 2D; 1-the buffer is described as 1D (continues from start to end w/o stride ignoring lines)*/
+    int32_t buffer_1d_enable;
+    /*!< num_of_planes Amount of valid planes (supported 1, 2, 3, 4 - depends also on HW parameter of max planes and data type)*/
+    int32_t num_of_planes;
+    /*!< plane_stride[3] Per plane: provides the difference between two horizontal pixels, in bytes, CL aligned, unsigned.  At tile mode - provide the difference between two lines of tiles in bytes*/
+    uint32_t plane_stride[3];
+    /*!< plane_offset_start_address[3] Per plane: Start offset address of plane with regarding to the base_offset, in bytes, CL aligned, unsigned.*/
+    uint32_t plane_offset_start_address[3];
+    /*!< plane_offset_end_address[3] Per plane: End offset address of plane with regarding to the base_offset, in bytes, CL aligned, unsigned.*/
+    uint32_t plane_offset_end_address[3];
+    /*!< plane_tile_width[3] Per plane: buffer tile width configuration in bytes*/
+    int32_t plane_tile_width[3];
+    /*!< plane_tile_height[3] Per plane: buffer tile height configuration in lines*/
+    int32_t plane_tile_height[3];
+    /*!< chroma_planes_order Chroma planes ordering: 0 - U before V; 1 - V before U (valid for half planer configuration)*/
+    int32_t chroma_planes_order;
+    /*!< chroma_duplication Valid when format 420 is configured to provide 422 (2P2Q with SIF count of 4 or 2). when reset - duplicate the chroma and provide the same value each two Y lines, when set - send the chroma components only with the even Y (at odd Y lines doesn’t send any chroma)*/
+    int32_t chroma_duplication;
+    /*!< onep_pixel_order Set the ordering of the first plane (lines-N, pixels-M) 4PPC: 0-(N, M), (N, M+1), (N+1, M), (N+1, M+1), horizontal raster; 1-(N, M), (N+1, M), (N, M+1), (N+1, M+1), vertical raster 2PPC: 0-first cyc: (N, M), (N+1, M), second cyc: (N, M+1), (N+1, M+1); 1-first cyc: (N, M), (N, M+1),*/
+    int32_t onep_pixel_order;
+    /*!< zlr_transaction_enable when set enable sending zlr request for prefetch address translation and compression status*/
+    int32_t zlr_transaction_enable;
+    /*!< streaming_mode The streaming unified buffer protocol:  0-static offline (producer/consumer write/read from DDR after kick);  1-dynamic offline (producer/consumer send wr/rd EOF/SOF, producer write after kick, consumer read after full frame at DDR);  2-buffer chasing large memory (producer/consumer send wr/rd EOF/SOF, producer send wr update, consumer read according to wr update);  3-buffer chasing on small memory (producer/consumer send wr/rd EOF/SOF, producer write released buffers and sends wr pointers, consumer read valid buffer and sends rd pointer);  4-S&R like 3 with option to change the link (supporting modes 2 and 3 with dynamic change) 5-buffer chasing small memory - fix starting point, single buffer 6-buffer chasing small memory - float starting point 7-buffer chasing small memory - fix starting point, double buffer*/
+    int32_t streaming_mode;
+    /*!< streaming_sw_managed When set - the SW verify the shared buffer is fully consumed by  the producer and can be written immediately*/
+    int32_t streaming_sw_managed;
+    /*!< local_link_id indicates the stream used at the current connectlon*/
+    int32_t local_link_id;
+    /*!< stride_ratio provides the BCSM max_stride/stride ratio with possible values of 1-8, 16, 32, 64, 128*/
+    int32_t stride_ratio;
+    /*!< granularity_pointer_update Valid according the streaming mode: number of lines (LB)/lines of blocks (BB) to be written/release before sending a pointer update (reporting always done with producer view)*/
+    int32_t granularity_pointer_update;
+    /*!< max_stride provides the maximum stride value to be used at the connection*/
+    uint32_t max_stride;
+    /*!< block_width buffer block width configuration in pixels*/
+    int32_t block_width;
+    /*!< block_height buffer block height configuration in lines*/
+    int32_t block_height;
+    /*!< first_row_blocks_height buffer block height configuration in lines of all the blocks in the first row of blocks. If zero - use streaming_buffer_blocks_height*/
+    int32_t first_row_blocks_height;
+    /*!< last_row_blocks_height buffer block height configuration in lines of all the blocks in the last row of blocks. If zero - use streaming_buffer_blocks_height*/
+    int32_t last_row_blocks_height;
+    /*!< plane_max_burst_size[3] Plane maximum burst size: used to specify the transfer size in CL granularity (Max limited to 16, possible values - 1, 2, 4, 8, 16)*/
+    int32_t plane_max_burst_size[3];
+    /*!< plane_horiz_subsample_config[3] Plane Horiz subsample (width>>N).  Affect tile width and width resolution=>Bayer - 0, Y/UV at YUV SP - 0, Y at YUV FP -0, UV U/V at YUV FP-1)*/
+    int32_t plane_horiz_subsample_config[3];
+    /*!< plane_vert_subsample_config[3] Plane Vertical subsample (height>>N). Affect tile highet and highet resolution=>Bayer - 0, Y atYUV SP - 0, UV at YUV SP - 1, Y at YUV FP -0, U/V at YUV FP-1)*/
+    int32_t plane_vert_subsample_config[3];
+    /*!< plane_zlr_granularity[3] Plane ZLR page granularity: if 0 - 4KB, if 1 - 2KB. Valid only if ZLR is enalbe*/
+    int32_t plane_zlr_granularity[3];
+    /*!< progress_message_line Provides the line number that when is done generate progress message (IFD - last byte of the line arrive, ODR - last byte of the line acked by nbuf)*/
+    int32_t progress_message_line;
+    /*!< pace_message_ref_line Provides the line number that when start indicating start measuring the pace and active  (ODR - send first WR of the line, IFD send first RD of line)*/
+    int32_t pace_message_ref_line;
+    /*!< pace_message_pace_line Provides the line number indicating to stop measuring the activity and pace and sending pace meesage (at IFD - get the last data of the line, at ODR - getnon-buf ack on last data of the line)*/
+    int32_t pace_message_pace_line;
+    /*!< component_in_valid_pixel Provides amount of valid component per valid pixel*/
+    int32_t component_in_valid_pixel;
+    /*!< pixels_in_valid_cycle Provides amount of valid pixels per valid cycle*/
+    int32_t pixels_in_valid_cycle;
+    /*!< subsample_YUV444_to_YUV422 Used by ODR to convert YUV444 to YUV422: 0-use amount of element as written at components_in_valid_cycle, 1-drop the chroma components any odd cycle*/
+    int32_t subsample_YUV444_to_YUV422;
+    /*!< middle_ack_line_number Valid if ack enable  If enabled, the device should generate middle ack when delivers the EOL of the configured line (global number) assuming the first line delievered at SOF is zero.  In case of multiple planes the counting is done using plane1 but only when all the planes are synced*/
+    int32_t middle_ack_line_number;
+    /*!< middle_ack_enable If set, enable the mechansim to generate middle ack when consumed amount of configured lines*/
+    int32_t middle_ack_enable;
+    /*!< middle_ack_mode_stall Valid only when ack_enable is set When set, the device should stall once sending the middle ack*/
+    int32_t middle_ack_mode_stall;
+    /*!< stream_dt stream data type as need to be used by the MIPI*/
+    int32_t stream_dt;
+    /*!< stream_vc stream virtual channel number as need to be used in MIPI*/
+    int32_t stream_vc;
+    /*!< proc_ff_bypass when set indicates the FF in the pipe (FCVT & ESPA) need to be bypass*/
+    int32_t proc_ff_bypass;
+    /*!< dpa_bypass When set indicate the end of MIPI frame (used for MIPI CSI sub frames)*/
+    int32_t dpa_bypass;
+    /*!< stream_dt_for_mipi_packet stream data type as need to be used in the header of mipi packet - not affect the proc*/
+    int32_t stream_dt_for_mipi_packet;
+    /*!< arbiter_pin MIPI CSI arbiter pin location of the stream*/
+    int32_t arbiter_pin;
+    /*!< user_reserved user_reserved*/
+    int32_t user_reserved;
+    /*!< aligner_data_size amount of valid bits per valid cycle to be accumulate and use the aligner (valid when dpa_bypass is set). LSB represent 2b resolution (meaning value can be 2, 4, 6, 8, … up to 72 which is the size bus)*/
+    int32_t aligner_data_size;
+    /*!< mipi_csi_eof When set indicate the end of MIPI frame (used for MIPI CSI sub frames)*/
+    int32_t mipi_csi_eof;
+    /*!< ppc provides the amount of pixel per cycle*/
+    int32_t ppc;
+    /*!< stream_wc stream word count as need to be used by the MIPI*/
+    int32_t stream_wc;
+    /*!< max_credits provides the maximum amount of credits for eliminating the need to calculate it in HW according the next formula: (end_address-start_address)/Max_Stride*/
+    uint32_t max_credits;
+    /*!< reserved_0_0 Reserved for future use*/
+    int32_t reserved_0_0;
+    /*!< reserved_0_1 Reserved for future use*/
+    int32_t reserved_0_1;
+    /*!< reserved_0_2 Reserved for future use*/
+    int32_t reserved_0_2;
+    /*!< reserved_0_3 Reserved for future use*/
+    int32_t reserved_0_3;
+    /*!< reserved_1_0 Reserved for future use*/
+    int32_t reserved_1_0;
+    /*!< reserved_1_1 Reserved for future use*/
+    int32_t reserved_1_1;
+    /*!< reserved_1_2 Reserved for future use*/
+    int32_t reserved_1_2;
+    /*!< reserved_1_3 Reserved for future use*/
+    int32_t reserved_1_3;
+    /*!< chroma_non_duplication_location Valid when format 420 is configured to provide 422 (2P2Q with SIF count of 4 or 2) and chroma_duplication is disabled. when reset - add the chroma lines w/ the even luma lines, when set - add the chroma lines w/ the odd luma lines*/
+    int32_t chroma_non_duplication_location;
+    /*!< input_width_msb provides bits [19:16] to the input width resolution*/
+    int32_t input_width_msb;
+    /*!< output_width_msb provides bits [19:16] to the output width resolution*/
+    int32_t output_width_msb;
+
+} ia_pal_isp_io_buffer_1_1_t;
 
 /*! \isp struct irs_1_0
 
@@ -10603,6 +10793,62 @@ typedef struct
     int32_t paf_abs_shifter;
 
 } ia_pal_isp_pafstatistics_1_1_t;
+
+/*! \isp struct pafstatistics_1_2
+PAF Statistics
+*/
+typedef struct
+{
+    /*!< paf_en 0: FF will not write to the PAF  array; 1: FF will write*/
+    int32_t paf_en;
+    /*!< paf_frame_width width of PAF frame (in PAF pixels)*/
+    int32_t paf_frame_width;
+    /*!< paf_frame_height height of PAF frame (in PAF lines)*/
+    int32_t paf_frame_height;
+    /*!< skip_horizontal_start number of skipped PAF pixel pairs at the start of each line pair*/
+    int32_t skip_horizontal_start;
+    /*!< skip_vertical_start number of skipped PAF line pairs at the start of the frame*/
+    int32_t skip_vertical_start;
+    /*!< block_width number of PAF pixel pairs per block in horizontal direction*/
+    int32_t block_width;
+    /*!< block_height number of PAF pixel pairs per block in vertical direction*/
+    int32_t block_height;
+    /*!< accum_horizontal number of consecutive PAF pixel pairs accumulated in horizontal direction*/
+    int32_t accum_horizontal;
+    /*!< skip_horizontal number of PAF pixel pairs skipped between accumulated pixel pairs in horizontal direction*/
+    int32_t skip_horizontal;
+    /*!< accum_vertical number of consecutive PAF pixel pairs accumulated in vertical direction*/
+    int32_t accum_vertical;
+    /*!< skip_vertical number of PAF line pairs skipped between accumulated pixel pairs in vertical direction*/
+    int32_t skip_vertical;
+    /*!< min_shift minimum evaluation shift in steps*/
+    int32_t min_shift;
+    /*!< shift_steps number of evaluation points, starting from m_paf_min_shift*/
+    int32_t shift_steps;
+    /*!< paf_shift_step_size phase evaluation step size in pixels*/
+    int32_t paf_shift_step_size;
+    /*!< paf_shifter configured so that the accumulated phase difference fits in the output register*/
+    int32_t paf_shifter;
+    /*!< split_accross_multiple_lines 0: SOP = SOL, EOP = EOL; 1: SOF determined by the reset, EOL determined by pixels per line*/
+    int32_t split_accross_multiple_lines;
+    /*!< pixels_per_line number of pixels per line; pixels_per_line <= paf_frame_width*/
+    int32_t pixels_per_line;
+    /*!< input_modes 0: RRRR+LLLL; 1: LLLL+RRRR; 2: RLRL; 3: LRLR; 4: RRRR+LLLL_ALT; 5: LLLL+RRRR_ALT; 6: RLRL_ALT; 7: LRLR_ALT*/
+    int32_t input_modes;
+    /*!< input_bpp 0: 8 bits; 1: 10 bits; 2: 12 bits; 3: 14 bits; 4: 16 bits; 5: 15 bits (for PDAF3type)*/
+    int32_t input_bpp;
+    /*!< int_prec internal precision of PAF pixels*/
+    int32_t int_prec;
+    /*!< paf_blacklevel Black level to be subtracted from raw PDAF pixel values*/
+    int32_t paf_blacklevel;
+    /*!< shading_coeff_l[192] Shading correction coefficients for L PDAF values (arrangement is the same as PDAF grid: 16x12)*/
+    int32_t shading_coeff_l[192];
+    /*!< shading_coeff_r[192] Shading correction coefficients for R PDAF values (arrangement is the same as PDAF grid: 16x12)*/
+    int32_t shading_coeff_r[192];
+    /*!< paf_abs_shifter Bit right shift after abs-operation, to compensate for the shading gains*/
+    int32_t paf_abs_shifter;
+
+} ia_pal_isp_pafstatistics_1_2_t;
 
 /*! \isp struct pext_1_0
 
@@ -13565,6 +13811,8 @@ typedef struct
     int32_t global_protection_motion_level;
     /*!< global_protection_motion_level_user average alignment conf of previous frame (specified by user during offline calibration)*/
     int32_t global_protection_motion_level_user;
+    /*!< global_protection_inv_num_pixels inverse of number of pixels in frame - prec is U0.20*/
+    int32_t global_protection_inv_num_pixels;
 
 } ia_pal_isp_tnr7_bc_1_1_t;
 
@@ -13955,6 +14203,28 @@ typedef struct
     int32_t metadata_avg_shift;
 
 } ia_pal_isp_tvs_1_0_t;
+
+/*! \isp struct upscaler_1_0
+
+*/
+typedef struct
+{
+    /*!< enable enable scaling filter*/
+    int32_t enable;
+    /*!< scaling_ratio U5.16 , upscale - less than 1, equals to 1/uspcale_factor*/
+    int32_t scaling_ratio;
+    /*!< horizontal_offset S13.16,Position of first output pixel luma channel for scaler*/
+    int32_t horizontal_offset;
+    /*!< half_support_size full support = half x 2 , u1.0 (triangle kernel: 1, bicubic: 2)*/
+    int32_t half_support_size;
+    /*!< output_height U13.0, Height of output image Y plane for scaler (even)*/
+    int32_t output_height;
+    /*!< output_width U13.0, Width of output image Y plane for scaler (even)*/
+    int32_t output_width;
+    /*!< kernel_LUT[129] S1.10 Y+UV channels Interpolation vertical kernel coefficients for scaler*/
+    int32_t kernel_LUT[129];
+
+} ia_pal_isp_upscaler_1_0_t;
 
 /*! \isp struct vcr_3_1
 
@@ -16070,6 +16340,138 @@ typedef struct
     uint8_t zlr_transaction_enable;
 
 } ia_pal_system_api_io_buffer_t;
+
+/*! \system api struct io_buffer_1_1
+
+*/
+typedef struct
+{
+    /*!< aligner_data_size amount of valid bits per valid cycle to be accumulate and use the aligner (valid when dpa_bypass is set). LSB represent 2b resolution (meaning value can be 2, 4, 6, 8, … up to 72 which is the size bus)*/
+    int32_t aligner_data_size;
+    /*!< arbiter_pin MIPI CSI arbiter pin location of the stream*/
+    int32_t arbiter_pin;
+    /*!< block_height buffer block height configuration in lines*/
+    uint16_t block_height;
+    /*!< block_width buffer block width configuration in pixels*/
+    uint16_t block_width;
+    /*!< buffer_1d_enable Valid only for 1 plane and 1 queue streams. 0-the buffer is described as 2D; 1-the buffer is described as 1D (continues from start to end w/o stride ignoring lines)*/
+    uint8_t buffer_1d_enable;
+    /*!< chroma_base_conversion chroma converted from zero-based to half-based or vice versa*/
+    uint8_t chroma_base_conversion;
+    /*!< chroma_duplication Valid when format 420 is configured to provide 422 (2P2Q with SIF count of 4 or 2). when reset - duplicate the chroma and provide the same value each two Y lines, when set - send the chroma components only with the even Y (at odd Y lines doesn’t send any chroma)*/
+    uint8_t chroma_duplication;
+    /*!< chroma_non_duplication_location Valid when format 420 is configured to provide 422 (2P2Q with SIF count of 4 or 2) and chroma_duplication is disabled. when reset - add the chroma lines w/ the even luma lines, when set - add the chroma lines w/ the odd luma lines*/
+    uint8_t chroma_non_duplication_location;
+    /*!< chroma_planes_order Chroma planes ordering: 0 - U before V; 1 - V before U (valid for half planer configuration)*/
+    uint8_t chroma_planes_order;
+    /*!< component_in_valid_pixel Provides amount of valid component per valid pixel*/
+    uint8_t component_in_valid_pixel;
+    /*!< component_precision Pixel element precision in bits: 0=>8b, 1=>10b, 2=>12b, 3=>16, 4=>32, 5=>2, 6=>4, 7..15=>reserved*/
+    uint8_t component_precision;
+    /*!< compression_mode Valid for streaming that are tiled: 1-the stream is written/fetched to/from DDR through compression engine; 0-not going through compression*/
+    uint8_t compression_mode;
+    /*!< dpa_bypass When set indicate the end of MIPI frame (used for MIPI CSI sub frames)*/
+    uint8_t dpa_bypass;
+    /*!< first_row_blocks_height buffer block height configuration in lines of all the blocks in the first row of blocks. If zero - use streaming_buffer_blocks_height*/
+    uint16_t first_row_blocks_height;
+    /*!< granularity_pointer_update Valid according the streaming mode: number of lines (LB)/lines of blocks (BB) to be written/release before sending a pointer update (reporting always done with producer view)*/
+    uint16_t granularity_pointer_update;
+    /*!< in_chroma_signed chroma in input is signed (1) or unsigned (0)*/
+    uint8_t in_chroma_signed;
+    /*!< in_luma_signed luma in input is signed (1) or unsigned (0)*/
+    uint8_t in_luma_signed;
+    /*!< last_row_blocks_height buffer block height configuration in lines of all the blocks in the last row of blocks. If zero - use streaming_buffer_blocks_height*/
+    uint16_t last_row_blocks_height;
+    /*!< local_link_id indicates the stream used at the current connectlon*/
+    uint8_t local_link_id;
+    /*!< luma_base_conversion luma converted from zero-based to half-based or vice versa*/
+    uint8_t luma_base_conversion;
+    /*!< max_credits provides the maximum amount of credits for eliminating the need to calculate it in HW according the next formula: (end_address-start_address)/Max_Stride*/
+    uint32_t max_credits;
+    /*!< max_stride provides the maximum stride value to be used at the connection*/
+    uint32_t max_stride;
+    /*!< middle_ack_enable If set, enable the mechansim to generate middle ack when consumed amount of configured lines*/
+    uint8_t middle_ack_enable;
+    /*!< middle_ack_line_number Valid if ack enable  If enabled, the device should generate middle ack when delivers the EOL of the configured line (global number) assuming the first line delievered at SOF is zero.  In case of multiple planes the counting is done using plane1 but only when all the planes are synced*/
+    uint16_t middle_ack_line_number;
+    /*!< middle_ack_mode_stall Valid only when ack_enable is set When set, the device should stall once sending the middle ack*/
+    uint8_t middle_ack_mode_stall;
+    /*!< mipi_csi_eof When set indicate the end of MIPI frame (used for MIPI CSI sub frames)*/
+    uint8_t mipi_csi_eof;
+    /*!< num_of_planes Amount of valid planes (supported 1, 2, 3, 4 - depends also on HW parameter of max planes and data type)*/
+    uint8_t num_of_planes;
+    /*!< num_of_queues Amount of total active queues (YUV FP - 4, YUV SP - 3 YUV SP Tile - 2. RGB - 1,1,1. Bayer -2). Must be up to amount of maximum queue supported. Can be changed per frame. At LBFF used dynamicly for PDAF*/
+    uint8_t num_of_queues;
+    /*!< onep_pixel_order Set the ordering of the first plane (lines-N, pixels-M) 4PPC: 0-(N, M), (N, M+1), (N+1, M), (N+1, M+1), horizontal raster; 1-(N, M), (N+1, M), (N, M+1), (N+1, M+1), vertical raster 2PPC: 0-first cyc: (N, M), (N+1, M), second cyc: (N, M+1), (N+1, M+1); 1-first cyc: (N, M), (N, M+1),*/
+    uint8_t onep_pixel_order;
+    /*!< out_chroma_signed chroma in output is signed (1) or unsigned (0)*/
+    uint8_t out_chroma_signed;
+    /*!< out_luma_signed luma in output is signed (1) or unsigned (0)*/
+    uint8_t out_luma_signed;
+    /*!< pace_message_pace_line Provides the line number indicating to stop measuring the activity and pace and sending pace meesage (at IFD - get the last data of the line, at ODR - getnon-buf ack on last data of the line)*/
+    uint16_t pace_message_pace_line;
+    /*!< pace_message_ref_line Provides the line number that when start indicating start measuring the pace and active  (ODR - send first WR of the line, IFD send first RD of line)*/
+    uint16_t pace_message_ref_line;
+    /*!< pixels_in_valid_cycle Provides amount of valid pixels per valid cycle*/
+    uint8_t pixels_in_valid_cycle;
+    /*!< plane_horiz_subsample_config[3] Plane Horiz subsample (width>>N).  Affect tile width and width resolution=>Bayer - 0, Y/UV at YUV SP - 0, Y at YUV FP -0, UV U/V at YUV FP-1)*/
+    uint8_t plane_horiz_subsample_config[3];
+    /*!< plane_max_burst_size[3] Plane maximum burst size: used to specify the transfer size in CL granularity (Max limited to 16, possible values - 1, 2, 4, 8, 16)*/
+    uint8_t plane_max_burst_size[3];
+    /*!< plane_offset_end_address[3] Per plane: End offset address of plane with regarding to the base_offset, in bytes, CL aligned, unsigned.*/
+    uint32_t plane_offset_end_address[3];
+    /*!< plane_offset_start_address[3] Per plane: Start offset address of plane with regarding to the base_offset, in bytes, CL aligned, unsigned.*/
+    uint32_t plane_offset_start_address[3];
+    /*!< plane_stride[3] Per plane: provides the difference between two horizontal pixels, in bytes, CL aligned, unsigned.  At tile mode - provide the difference between two lines of tiles in bytes*/
+    uint32_t plane_stride[3];
+    /*!< plane_tile_height[3] Per plane: buffer tile height configuration in lines*/
+    uint8_t plane_tile_height[3];
+    /*!< plane_tile_width[3] Per plane: buffer tile width configuration in bytes*/
+    uint8_t plane_tile_width[3];
+    /*!< plane_vert_subsample_config[3] Plane Vertical subsample (height>>N). Affect tile highet and highet resolution=>Bayer - 0, Y atYUV SP - 0, UV at YUV SP - 1, Y at YUV FP -0, U/V at YUV FP-1)*/
+    uint8_t plane_vert_subsample_config[3];
+    /*!< plane_zlr_granularity[3] Plane ZLR page granularity: if 0 - 4KB, if 1 - 2KB. Valid only if ZLR is enalbe*/
+    uint8_t plane_zlr_granularity[3];
+    /*!< ppc provides the amount of pixel per cycle*/
+    uint8_t ppc;
+    /*!< proc_ff_bypass when set indicates the FF in the pipe (FCVT & ESPA) need to be bypass*/
+    uint8_t proc_ff_bypass;
+    /*!< progress_message_line Provides the line number that when is done generate progress message (IFD - last byte of the line arrive, ODR - last byte of the line acked by nbuf)*/
+    uint16_t progress_message_line;
+    /*!< stream_dt stream data type as need to be used by the MIPI*/
+    uint8_t stream_dt;
+    /*!< stream_dt_for_mipi_packet stream data type as need to be used in the header of mipi packet - not affect the proc*/
+    int32_t stream_dt_for_mipi_packet;
+    /*!< stream_vc stream virtual channel number as need to be used in MIPI*/
+    uint8_t stream_vc;
+    /*!< stream_wc stream word count as need to be used by the MIPI*/
+    uint16_t stream_wc;
+    /*!< streaming_mode The streaming unified buffer protocol:  0-static offline (producer/consumer write/read from DDR after kick);  1-dynamic offline (producer/consumer send wr/rd EOF/SOF, producer write after kick, consumer read after full frame at DDR);  2-buffer chasing large memory (producer/consumer send wr/rd EOF/SOF, producer send wr update, consumer read according to wr update);  3-buffer chasing on small memory (producer/consumer send wr/rd EOF/SOF, producer write released buffers and sends wr pointers, consumer read valid buffer and sends rd pointer);  4-S&R like 3 with option to change the link (supporting modes 2 and 3 with dynamic change) 5-buffer chasing small memory - fix starting point, single buffer 6-buffer chasing small memory - float starting point 7-buffer chasing small memory - fix starting point, double buffer*/
+    uint8_t streaming_mode;
+    /*!< streaming_sw_managed When set - the SW verify the shared buffer is fully consumed by  the producer and can be written immediately*/
+    uint8_t streaming_sw_managed;
+    /*!< stride_ratio provides the BCSM max_stride/stride ratio with possible values of 1-8, 16, 32, 64, 128*/
+    uint8_t stride_ratio;
+    /*!< subsample_YUV444_to_YUV422 Used by ODR to convert YUV444 to YUV422: 0-use amount of element as written at components_in_valid_cycle, 1-drop the chroma components any odd cycle*/
+    uint8_t subsample_YUV444_to_YUV422;
+    /*!< tile_mode Valid for IO that can provide tile format: 0-no tiling; 1-the IO should use tiling with the configured height, width, and tiling type (internal tiling or external Tile-4)*/
+    uint8_t tile_mode;
+    /*!< tiling_type Tiling Type: 0 - internal tiling; 1 - external tiling (Tile-4)*/
+    uint8_t tiling_type;
+    /*!< unpack_alignment Valid for unpacked vectors: 0-element located at LSB and MSB is zero; 1-element located at MSB and LSB is zero*/
+    uint8_t unpack_alignment;
+    /*!< use_attributes This capability impact the ODR. When set, ODR should use the EOL/EOF attributes to detect frame dimensions. In general, this capability is used when the height or width or both are not known or cannot be expressed. Using this capability disable the option using crop/pad mechanism and force SW to provide the same dimension in input/output region (if known) and zero the offset values.*/
+    uint8_t use_attributes;
+    /*!< vector_format Vector CL format: 0-unpacked using 2B container; 1-packed*/
+    uint8_t vector_format;
+    /*!< vertical_ordering_enable If set, the walking order should be vertical using the sub_line value to indicate how many CL generate vertical movement*/
+    uint8_t vertical_ordering_enable;
+    /*!< vertical_ordering_sub_line valid when vertical_ordering is set, indicates the size of the sub line to generate vertical step in CL granularity*/
+    uint8_t vertical_ordering_sub_line;
+    /*!< zlr_transaction_enable when set enable sending zlr request for prefetch address translation and compression status*/
+    uint8_t zlr_transaction_enable;
+
+} ia_pal_system_api_io_buffer_1_1_t;
 
 /*! \system api struct lsc_1_2
 Lens shading correction up to 24 bit

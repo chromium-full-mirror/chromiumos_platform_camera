@@ -570,26 +570,6 @@ LIBEXPORT ia_err
 ia_aiq_get_aiqd_data(ia_aiq *ia_aiq_ptr,
                 ia_binary_data *out_ia_aiq_data);
 
-
-
-/*!
-* \brief Data from external sensors
-*/
-typedef struct
-{
-    ia_aiq_sensor_data *accelerometer_events;                       /*!< The data holds information on the acceleration of the device in mg/sec (miligravity per second).
-                                                                         Acceleration = Gravity + Linear Acceleration*/
-    unsigned int num_accelerometer_events;                          /*!< Number of accelerometer events */
-    ia_aiq_sensor_data *gravity_events;                             /*!< The data holds information on the gravitation of the device in mg/sec (miligravity per second) */
-    unsigned int num_gravity_events;                                /*!< Number of gravity events */
-    ia_aiq_sensor_data *gyroscope_events;                           /*!< The data holds information on the angular velocity of the device in rad/sec */
-    unsigned int num_gyroscope_events;                              /*!< Number of gyroscope events */
-    ia_aiq_ambient_light_events_v1 *ambient_light_events;           /*!< The data holds information on the ambient light */
-    unsigned int num_ambient_light_events;                          /*!< Number of ambient light events */
-    ia_aiq_dmd_sensor_events *dmd_events;                           /*!< Device Movement Detector (DMD) virtual sensor */
-    unsigned int num_dmd_events;                                    /*!< Number of DMD sensor events */
-} ia_aiq_sensor_events_v1;
-
 /*!
  * \brief Set event statistics.
  * Some of the AIQ algorithms benefit from sensor information which tells about the conditions in which the device is in use

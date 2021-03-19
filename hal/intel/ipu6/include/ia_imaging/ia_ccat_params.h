@@ -36,6 +36,10 @@ extern "C" {
 #define IA_AEC_FLASHES_NUM 2
 #define MAX_NUM_PERCENTILES 20
 
+#define MIN_LUMINANCE_SATURATED_TARGET 92
+#define MIN_LUMINANCE_BRIGHT_TARGET 50
+#define LUMINANCE_BASED_MOTION_THRESHOLD 8
+
 #ifdef __cplusplus
 }
 #endif
