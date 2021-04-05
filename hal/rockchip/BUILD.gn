@@ -133,6 +133,7 @@ shared_library("libcamera_hal") {
     "REMOTE_3A_SERVER",
     "USING_DECLARED_NAMESPACE=using namespace android::camera2",
   ]
+  libs = [ "rt" ]
   deps = [ ":libcam_algo" ]
 }
 

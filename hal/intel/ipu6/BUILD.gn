@@ -187,6 +187,7 @@ shared_library("libcamhal") {
   libs = [
     "jpeg",
     "dl",
+    "rt",
   ]
   pkg_deps = [
     "expat",

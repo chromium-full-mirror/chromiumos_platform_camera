@@ -129,6 +129,7 @@ shared_library("libcamera_hal") {
     "HAL_PIXEL_FORMAT_NV12_LINEAR_CAMERA_INTEL=0x10F",
     "MACRO_KBL_AIC",
   ]
+  libs= [ "rt" ]
   pkg_deps = [
     "expat",
     "libchrome",
