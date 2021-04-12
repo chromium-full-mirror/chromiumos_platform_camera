@@ -131,6 +131,7 @@ void Intel3AParameter::initAfParameter()
 
 void Intel3AParameter::initAwbParameter()
 {
+    mAwbParams.is_bypass = false;
     mAwbParams.scene_mode = ia_aiq_awb_operation_mode_auto;
     mAwbParams.manual_convergence_time = -1;
 
@@ -571,9 +572,6 @@ void Intel3AParameter::updateAwbParameter(const aiq_parameter_t& param)
 
 void Intel3AParameter::updateAfParameter(const aiq_parameter_t& param)
 {
-    mAfParams.lens_position = param.lensPosition;
-    mAfParams.lens_movement_start_timestamp = param.lensMovementStartTimestamp;
-
     // Mode
     if (mAfMode != param.afMode) {
         // Reset af parameter
@@ -588,6 +586,9 @@ void Intel3AParameter::updateAfParameter(const aiq_parameter_t& param)
         mAfForceLock = false;
         mDuringAfTriggerScan = false;
     }
+
+    mAfParams.lens_position = param.lensPosition;
+    mAfParams.lens_movement_start_timestamp = param.lensMovementStartTimestamp;
     mAfParams.frame_use = AiqUtils::convertFrameUsageToIaFrameUsage(param.frameUsage);
 
     // Trigger

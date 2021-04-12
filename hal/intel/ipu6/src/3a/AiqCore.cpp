@@ -341,10 +341,15 @@ int AiqCore::runAiq(long requestId, AiqResult *aiqResult) {
     mAiqParams->bitmap = 0;
 
     // fill the parameter
-    if ((aaaRunType & IMAGING_ALGO_AWB) &&
-        (!mAwbForceLock && (mAwbRunTime % mIntel3AParameter->mAwbPerTicks == 0))) {
-        mAiqParams->bitmap |= cca::CCA_MODULE_AWB;
+    if (aaaRunType & IMAGING_ALGO_AWB) {
+        if (!mAwbForceLock && (mAwbRunTime % mIntel3AParameter->mAwbPerTicks == 0)) {
+            mIntel3AParameter->mAwbParams.is_bypass = false;
+        } else {
+            mIntel3AParameter->mAwbParams.is_bypass = true;
+        }
         mAiqParams->awb_input = mIntel3AParameter->mAwbParams;
+        LOG3A("AWB bypass %d", mAiqParams->awb_input.is_bypass);
+        mAiqParams->bitmap |= cca::CCA_MODULE_AWB;
     }
 
     if (aaaRunType & IMAGING_ALGO_AF && !mAfForceLock) {
