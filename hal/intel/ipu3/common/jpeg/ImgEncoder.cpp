@@ -80,7 +80,7 @@ bool ImgEncoder::encodeSync(EncodePackage& package)
       LOGE("%s: encode input type and output type does not match", __FUNCTION__);
       return false;
     }
-    LOGE("%s: encoding ret:%d, %dx%d need %" PRId64 "ms, jpeg size %u, quality %d)", __FUNCTION__,
+    LOG1("%s: encoding ret:%d, %dx%d need %" PRId64 "ms, jpeg size %u, quality %d)", __FUNCTION__,
          ret, dstBuf->width(), dstBuf->height(), (systemTime() - startTime) / 1000000,
          package.encodedDataSize, package.quality);
     return ret && package.encodedDataSize > 0;
