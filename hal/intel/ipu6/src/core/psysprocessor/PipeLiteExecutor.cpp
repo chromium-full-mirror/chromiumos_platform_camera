@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Intel Corporation
+ * Copyright (C) 2019-2021 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@
 #include "PipeLiteExecutor.h"
 #include "PSysDAG.h"
 
-#include "FormatUtils.h"
 #include "iutils/CameraDump.h"
 #include "SyncManager.h"
 
@@ -493,7 +492,7 @@ bool PipeLiteExecutor::isSameStreamConfig(const stream_t& internal, const stream
                                           ConfigMode configMode, bool checkStreamId) const
 {
     // The internal format is ia_fourcc based format, so need to convert it to V4L2 format.
-    int internalFormat = graphconfig::utils::getV4L2Format(internal.format);
+    int internalFormat = CameraUtils::getV4L2Format(internal.format);
     int internalStride = CameraUtils::getStride(internalFormat, internal.width);
     int externalStride = CameraUtils::getStride(external.format, external.width);
 

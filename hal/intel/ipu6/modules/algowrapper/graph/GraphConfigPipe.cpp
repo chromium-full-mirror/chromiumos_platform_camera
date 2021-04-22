@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2020 Intel Corporation
+ * Copyright (C) 2018-2021 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@
 
 #include <algorithm>
 
-#include "FormatUtils.h"
 #include "GraphUtils.h"
 #include "iutils/CameraLog.h"
 #include "iutils/Errors.h"
@@ -36,7 +35,6 @@
 using GCSS::GraphConfigNode;
 using std::string;
 using std::vector;
-namespace gcu = graphconfig::utils;
 
 namespace icamera {
 #define STRINGIFY1(x) #x
@@ -1783,7 +1781,7 @@ status_t GraphConfigPipe::portGetFormat(Node* port, IGraphType::PortFormatSettin
 
     const char* pFormat = fourccFormat.c_str();
     format->fourcc = CameraUtils::string2IaFourccCode(pFormat);
-    format->bpl = gcu::getBpl(format->fourcc, format->width);
+    format->bpl = CameraUtils::getBpl(format->fourcc, format->width);
     LOG2("bpl set to %d for %s", format->bpl, fourccFormat.c_str());
 
     // if settings are specifying bpl, owerwrite the calculated one
@@ -1794,7 +1792,7 @@ status_t GraphConfigPipe::portGetFormat(Node* port, IGraphType::PortFormatSettin
         format->bpl = bplFromSettings;
     }
 
-    format->bpp = gcu::getBppFromCommon(format->fourcc);
+    format->bpp = CameraUtils::getBpp(format->fourcc);
 
     return OK;
 }

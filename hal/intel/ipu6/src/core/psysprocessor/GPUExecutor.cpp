@@ -31,7 +31,6 @@ extern "C" {
 #include "3a/AiqResult.h"
 #include "3a/AiqResultStorage.h"
 #include "AiqInitData.h"
-#include "FormatUtils.h"
 #include "PSysDAG.h"
 #include "SyncManager.h"
 #include "ia_pal_output_data.h"

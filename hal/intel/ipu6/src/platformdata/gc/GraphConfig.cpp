@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Intel Corporation
+ * Copyright (C) 2019-2021 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -110,7 +110,7 @@ int GraphConfig::getStreamIdByPgName(string pgName) {
         }
     }
 
-    LOGE("%s, Failed to get stream id for pgName: %s", __func__, pgName.c_str());
+    LOG2("%s, There is not stream id for pgName: %s", __func__, pgName.c_str());
     return -1;
 }
 
@@ -125,7 +125,7 @@ int GraphConfig::getPgIdByPgName(string pgName) {
         }
     }
 
-    LOGE("%s, Failed to get pg id for pgName: %s", __func__, pgName.c_str());
+    LOG2("%s, There is not pg id for pgName: %s", __func__, pgName.c_str());
     return -1;
 }
 

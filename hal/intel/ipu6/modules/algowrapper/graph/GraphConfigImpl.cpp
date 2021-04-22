@@ -24,7 +24,6 @@
 #include <algorithm>
 #include <unordered_map>
 
-#include "FormatUtils.h"
 #include "GraphUtils.h"
 #include "iutils/CameraLog.h"
 
@@ -548,11 +547,13 @@ status_t GraphConfigImpl::selectSetting(
     map<HalStream*, uid_t>& streamToSinkIdMap = mStreamToSinkIdMap[useCase];
     vector<GCSS::IGraphConfig*> secondQueryResults;
     if (internalQueryResults.size() > 1) {
+        LOG2("There are multiple query results, use format to do new round");
         map<GCSS::ItemUID, std::string> queryItem;
         for (auto const& item : streamToSinkIdMap) {
             HalStream* s = item.first;
             ItemUID formatKey = {(ia_uid)item.second, GCSS_KEY_FORMAT};
-            string fmt = graphconfig::utils::format2string(s->format());
+            string fmt = CameraUtils::format2string(s->format());
+            LOG2("The stream: %dx%d, format: %s", s->width(), s->height(), fmt.c_str());
             queryItem[formatKey] = fmt;
         }
 

@@ -59,6 +59,7 @@ static const FormatMap sFormatMapping[] = {
     { V4L2_PIX_FMT_SGRBG12, IA_CSS_DATA_FORMAT_RAW, 16, 16 },
     { V4L2_PIX_FMT_SGRBG10, IA_CSS_DATA_FORMAT_RAW, 16, 16 },
     { V4L2_PIX_FMT_SGRBG8,  IA_CSS_DATA_FORMAT_RAW, 8, 8 },
+    { V4L2_PIX_FMT_P010,    IA_CSS_DATA_FORMAT_P010, 24, 16 },
 
     { GET_FOURCC_FMT('Y', 'U', 'Y', 'V'), IA_CSS_DATA_FORMAT_YUYV, 16, 8 },
     { GET_FOURCC_FMT('Y', 'U', 'Y', '2'), IA_CSS_DATA_FORMAT_YUYV, 16, 8 },
@@ -144,6 +145,9 @@ int getCssBpp(int v4l2Fmt, bool compression) {
             case IA_CSS_DATA_FORMAT_NV12:
                 bpp = 8;
                 break;
+            case IA_CSS_DATA_FORMAT_P010:
+                bpp = 24;
+                break;
             default:
                 LOGW("%s format %d compress not supported", __func__, v4l2Fmt);
                 break;
@@ -178,6 +182,9 @@ int getCssBpe(int v4l2Fmt, bool compression) {
             case IA_CSS_DATA_FORMAT_YUV420:
             case IA_CSS_DATA_FORMAT_NV12:
                 bpe = 8;
+                break;
+            case IA_CSS_DATA_FORMAT_P010:
+                bpe = 16;
                 break;
             default:
                 LOGW("%s format %d compress not supported", __func__, v4l2Fmt);
@@ -215,6 +222,9 @@ int getStride(int cssFmt, int width) {
             stride = width;
             break;
         case IA_CSS_DATA_FORMAT_YUYV:
+            stride = ALIGN_64(width * 2);
+            break;
+        case IA_CSS_DATA_FORMAT_P010:
             stride = ALIGN_64(width * 2);
             break;
         default:

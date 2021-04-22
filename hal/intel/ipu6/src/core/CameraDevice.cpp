@@ -407,6 +407,7 @@ int CameraDevice::configCcaDvsData(int cameraId, ConfigMode configMode, cca::cca
             gc = GCM->getGraphConfig(configMode);
         }
     }
+
     CheckWarning(gc == nullptr, BAD_VALUE, "Failed to get GC in DVS");
     ia_isp_bxt_resolution_info_t resolution;
     uint32_t gdcKernelId;
