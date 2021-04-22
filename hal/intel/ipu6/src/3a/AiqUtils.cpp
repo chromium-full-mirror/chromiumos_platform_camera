@@ -123,6 +123,8 @@ int AiqUtils::dumpGbceResults(const cca::cca_gbce_params& gbceResult)
     LOG3A("gamma_lut_size: %u, tone_map_lut_size: %u",
           gbceResult.gamma_lut_size, gbceResult.tone_map_lut_size);
 
+    if (gbceResult.gamma_lut_size <= 0 || gbceResult.tone_map_lut_size <= 0) return OK;
+
     LOG3A("gamma table: R: 0(%f), %u(%f), %u(%f)", gbceResult.r_gamma_lut[0],
           (gbceResult.gamma_lut_size / 2), gbceResult.r_gamma_lut[gbceResult.gamma_lut_size / 2],
           (gbceResult.gamma_lut_size - 1),  gbceResult.r_gamma_lut[gbceResult.gamma_lut_size - 1]);

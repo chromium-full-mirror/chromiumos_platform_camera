@@ -140,8 +140,8 @@ void PlatformData::releaseGraphConfigNodes()
 {
     std::shared_ptr<GraphConfig> graphConfig = std::make_shared<GraphConfig>();
     graphConfig->releaseGraphNodes();
-    for (uint8_t cameraId = 0; cameraId < mStaticCfg.mCameras.size(); cameraId++) {
-        IGraphConfigManager::releaseInstance(cameraId);
+    for (size_t i = 0; i < mStaticCfg.mCameras.size(); ++i) {
+        IGraphConfigManager::releaseInstance(i);
     }
 }
 

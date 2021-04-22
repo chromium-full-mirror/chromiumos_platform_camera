@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2020 Intel Corporation.
+ * Copyright (C) 2015-2021 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 #define LOG_TAG "CaptureUnit"
 
 #include <poll.h>
+#include <fcntl.h>
 
 #include "iutils/CameraLog.h"
 #include "iutils/CameraDump.h"
@@ -43,7 +44,21 @@ CaptureUnit::CaptureUnit(int cameraId, int memType) :
     LOG1("%s, mCameraId:%d", __func__, mCameraId);
 
     mPollThread = new PollThread(this);
+    mFlushFd[0] = -1;
+    mFlushFd[1] = -1;
 
+    int ret = pipe(mFlushFd);
+    if (ret >= 0) {
+        ret = fcntl(mFlushFd[0], F_SETFL, O_NONBLOCK);
+        if (ret < 0) {
+            LOG1("failed to set flush pipe flag: %s", strerror(errno));
+            close(mFlushFd[0]);
+            close(mFlushFd[1]);
+            mFlushFd[0] = -1;
+            mFlushFd[1] = -1;
+        }
+        LOG1("%s, mFlushFd [%d-%d]", __func__, mFlushFd[0], mFlushFd[1]);
+    }
     mMaxBuffersInDevice = PlatformData::getExposureLag(mCameraId) + 1;
     if (mMaxBuffersInDevice < 2) {
         mMaxBuffersInDevice = 2;
@@ -54,6 +69,9 @@ CaptureUnit::~CaptureUnit()
 {
     PERF_CAMERA_ATRACE();
     LOG1("%s, mCameraId:%d", __func__, mCameraId);
+
+    if (mFlushFd[0] != -1) close(mFlushFd[0]);
+    if (mFlushFd[1] != -1) close(mFlushFd[1]);
 
     delete mPollThread;
 }
@@ -172,6 +190,12 @@ int CaptureUnit::start()
         return ret;
     }
 
+    if (mFlushFd[0] != -1) {
+        // read pipe just in case there is data in pipe.
+        char readBuf;
+        int readSize = read(mFlushFd[0], reinterpret_cast<void*>(&readBuf), sizeof(char));
+        LOG1("%s, readSize %d", __func__, readSize);
+    }
     mPollThread->run("CaptureUnit", PRIORITY_URGENT_AUDIO);
     mState = CAPTURE_START;
     mExitPending = false;
@@ -201,6 +225,12 @@ int CaptureUnit::stop()
     }
 
     mExitPending = true;
+    if (mFlushFd[1] != -1) {
+        char buf = 0xf;    // random value to write to flush fd.
+        int size = write(mFlushFd[1], &buf, sizeof(char));
+        LOG1("%s, write size %d", __func__, size);
+    }
+
     mPollThread->requestExit();
     streamOff();
     mPollThread->requestExitAndWait();
@@ -412,7 +442,7 @@ int CaptureUnit::poll()
             return -1;
         }
 
-        V4L2DevicePoller poller {pollDevs, -1};
+        V4L2DevicePoller poller {pollDevs, mFlushFd[0]};
         ret = poller.Poll(poll_timeout, POLLPRI | POLLIN | POLLOUT | POLLERR, &readyDevices);
 
         LOG2("@%s: automation checkpoint: flag: poll_buffer, ret:%d", __func__, ret);

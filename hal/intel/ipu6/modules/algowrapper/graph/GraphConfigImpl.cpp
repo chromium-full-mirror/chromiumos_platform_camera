@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2020 Intel Corporation
+ * Copyright (C) 2015-2021 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -119,8 +119,18 @@ void GraphConfigImpl::addCustomKeyMap() {
 status_t GraphConfigImpl::parse(int cameraId, const char* graphDescFile, const char* settingsFile) {
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL1);
 
+    {
+        AutoMutex lock(sLock);
+        auto it = mGraphNode.find(cameraId);
+        if (it != mGraphNode.end()) {
+            LOG2("The graph config for cameraId: %d has been parsed", cameraId);
+            return OK;
+        }
+    }
+
     GCSSParser parser;
     GraphConfigNodes* nodes = new GraphConfigNodes;
+    LOG2("Start to parse graph config file for cameraId: %d", cameraId);
 
     parser.parseGCSSXmlFile(graphDescFile, &nodes->mDesc);
     if (!nodes->mDesc) {
@@ -137,12 +147,6 @@ status_t GraphConfigImpl::parse(int cameraId, const char* graphDescFile, const c
     }
 
     AutoMutex lock(sLock);
-    // Destory the old item
-    auto it = mGraphNode.find(cameraId);
-    if (it != mGraphNode.end()) {
-        delete it->second;
-        mGraphNode.erase(it);
-    }
     mGraphNode[cameraId] = nodes;
 
     return OK;
@@ -164,8 +168,18 @@ status_t GraphConfigImpl::parse(int cameraId, char* graphDescData, size_t descDa
                                 char* settingsData, size_t settingsDataSize) {
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL1);
 
+    {
+        AutoMutex lock(sLock);
+        auto it = mGraphNode.find(cameraId);
+        if (it != mGraphNode.end()) {
+            LOG2("The graph config for cameraId: %d has been parsed", cameraId);
+            return OK;
+        }
+    }
+
     GCSSParser parser;
     GraphConfigNodes* nodes = new GraphConfigNodes;
+    LOG2("Start to parse graph config data for cameraId: %d", cameraId);
 
     parser.parseGCSSXmlData(graphDescData, descDataSize, &nodes->mDesc);
     if (!nodes->mDesc) {
@@ -182,12 +196,6 @@ status_t GraphConfigImpl::parse(int cameraId, char* graphDescData, size_t descDa
     }
 
     AutoMutex lock(sLock);
-    // Destory the old item
-    auto it = mGraphNode.find(cameraId);
-    if (it != mGraphNode.end()) {
-        delete it->second;
-        mGraphNode.erase(it);
-    }
     mGraphNode[cameraId] = nodes;
 
     return OK;
