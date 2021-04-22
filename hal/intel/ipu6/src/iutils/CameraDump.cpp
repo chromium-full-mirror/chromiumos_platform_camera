@@ -255,6 +255,10 @@ static string getAiqSettingAppendix(int cameraId, long sequence)
             dg = nSteps * PlatformData::getSensorDigitalGain(cameraId, exposure->digital_gain);
             ispDg = nSteps * PlatformData::getIspDigitalGain(cameraId, exposure->digital_gain);
             LOG2("%s: converted AG: %f, DG: %f ispDG: %f for %s", __func__, ag, dg, ispDg, sensorName);
+        } else if (strstr(sensorName, "IMX390") != nullptr) {
+            ag = nSteps * pow(10, (double)sensorExposure->analog_gain_code_global * 0.3 / 20);
+            dg = 1.0 * nSteps;
+            LOG2("%s: converted AG: %f, DG: %f for %s", __func__, ag, dg, sensorName);
         }
 
         if (aiqResults->mAeResults.num_exposures == 2) {

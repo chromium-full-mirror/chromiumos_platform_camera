@@ -39,6 +39,7 @@ namespace icamera {
 
 Intel3AParameter::Intel3AParameter(int cameraId) :
     mCameraId(cameraId),
+    mTestPatternMode(TEST_PATTERN_OFF),
     mUseManualAwbGain(false),
     mUseManualColorMatrix(false),
     mWeightGridMode(WEIGHT_GRID_AUTO),
@@ -75,6 +76,7 @@ int Intel3AParameter::init()
     initAeParameter();
     initAfParameter();
     initAwbParameter();
+    mTestPatternMode = TEST_PATTERN_OFF;
 
     mWeightGridMode = WEIGHT_GRID_AUTO;
     mAePerTicks = 1;
@@ -164,6 +166,7 @@ int Intel3AParameter::updateParameter(aiq_parameter_t param)
     updateAeParameter(param);
     updateAwbParameter(param);
     updateAfParameter(param);
+    mTestPatternMode = param.testPatternMode;
 
     return OK;
 }

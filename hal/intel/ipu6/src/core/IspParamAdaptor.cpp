@@ -753,8 +753,10 @@ int IspParamAdaptor::runIspAdaptL(ia_isp_bxt_program_group *pgPtr, ia_isp_bxt_gd
                          inputParams->program_group.base.run_kernels[i].metadata[3]);
                     break;
                 case ia_pal_uuid_isp_bxt_blc:
+                case ia_pal_uuid_isp_b2i_sie_1_1:
                     if (aiqResults->mAiqParam.testPatternMode != TEST_PATTERN_OFF) {
-                        LOG2("%s: disable blc in test pattern case.", __func__);
+                        LOG2("%s: disable kernel(%d) in test pattern mode", __func__,
+                             inputParams->program_group.base.run_kernels[i].kernel_uuid);
                         inputParams->program_group.base.run_kernels[i].enable = false;
                     }
                     break;

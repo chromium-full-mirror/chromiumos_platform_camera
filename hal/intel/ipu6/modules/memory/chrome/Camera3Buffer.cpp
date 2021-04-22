@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2020 Intel Corporation
+ * Copyright (C) 2013-2021 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -97,7 +97,7 @@ Camera3Buffer::Camera3Buffer(int w, int h, int stride, int v4l2fmt, void* usrPtr
         mHalBuffer.addr = usrPtr;
         mInit = true;
         mHalBuffer.s.size =
-            dataSizeOverride ? dataSizeOverride : CameraUtils::getFrameSize(v4l2fmt, stride, h);
+            dataSizeOverride ? dataSizeOverride : CameraUtils::getFrameSize(v4l2fmt, w, h);
     } else {
         LOGE("Tried to initialize a buffer with nullptr ptr!!");
     }
@@ -155,7 +155,7 @@ icamera::status_t Camera3Buffer::init(const camera3_stream_buffer* aBuffer, int 
     // Use actual width from platform native handle for stride
     mHalBuffer.s.stride = mGbmBufferManager->GetPlaneStride(*aBuffer->buffer, 0);
     mHalBuffer.s.size =
-        CameraUtils::getFrameSize(mHalBuffer.s.format, mHalBuffer.s.stride, mHalBuffer.s.height);
+        CameraUtils::getFrameSize(mHalBuffer.s.format, mHalBuffer.s.width, mHalBuffer.s.height);
     mHalBuffer.flags = camera_buffer_flags_t::BUFFER_FLAG_SW_WRITE;
     mLocked = false;
     mInit = true;
@@ -478,7 +478,7 @@ std::shared_ptr<Camera3Buffer> allocateHeapBuffer(int w, int h, int stride, int 
     void* dataPtr;
 
     int dataSize = dataSizeOverride ? PAGE_ALIGN(dataSizeOverride)
-                                    : CameraUtils::getFrameSize(v4l2Fmt, stride, h);
+                                    : CameraUtils::getFrameSize(v4l2Fmt, w, h);
     LOG1("@%s, dataSize:%d", __func__, dataSize);
 
     int ret = posix_memalign(&dataPtr, sysconf(_SC_PAGESIZE), dataSize);

@@ -342,7 +342,8 @@ int AiqCore::runAiq(long requestId, AiqResult *aiqResult) {
 
     // fill the parameter
     if (aaaRunType & IMAGING_ALGO_AWB) {
-        if (!mAwbForceLock && (mAwbRunTime % mIntel3AParameter->mAwbPerTicks == 0)) {
+        if (!mAwbForceLock && (mAwbRunTime % mIntel3AParameter->mAwbPerTicks == 0)
+            && mIntel3AParameter->mTestPatternMode == TEST_PATTERN_OFF) {
             mIntel3AParameter->mAwbParams.is_bypass = false;
         } else {
             mIntel3AParameter->mAwbParams.is_bypass = true;
@@ -361,7 +362,8 @@ int AiqCore::runAiq(long requestId, AiqResult *aiqResult) {
         mGbceParams.gbce_on = (mTonemapMaxCurvePoints > 0) ? true : false;
 
         //run gbce with bypass level if AE lock and ev shift isn't changed
-        if (mAeForceLock && mGbceParams.ev_shift == mLastEvShift) {
+        if ((mAeForceLock && mGbceParams.ev_shift == mLastEvShift)
+            || mIntel3AParameter->mTestPatternMode != TEST_PATTERN_OFF) {
             mGbceParams.is_bypass = true;
         } else {
             mGbceParams.is_bypass = false;

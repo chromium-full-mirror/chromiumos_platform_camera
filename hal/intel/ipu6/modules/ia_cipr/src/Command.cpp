@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 Intel Corporation.
+ * Copyright (C) 2020-2021 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -159,7 +159,7 @@ Result Command::setConfig(const PSysCommandConfig& cfg) {
     mCmd->pg = cfg.pg;
     if (cfg.pg && cfg.pg->mMemoryDesc.sysBuff) {
         CheckError(!((cfg.pg->mMemoryDesc.sysBuff)->flags & IPU_BUFFER_FLAG_DMA_HANDLE),
-                   Result::GeneralError, "Wrong flag!", __func__);
+                   Result::GeneralError, "@%s, Wrong flag!", __func__);
 
         mCmd->iocCmd.pg = cfg.pg->mMemoryDesc.sysBuff->base.fd;
     }

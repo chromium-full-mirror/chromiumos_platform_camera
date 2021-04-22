@@ -180,10 +180,11 @@ int ParameterGenerator::getParameters(long sequence, Parameters *param, bool res
 {
     CheckError((param == nullptr), UNKNOWN_ERROR, "nullptr to get param!");
 
-    if (!resultOnly && sequence < 0) {
-        *param = mLastParam;
-    } else if (!resultOnly) {
-        if (mRequestParamMap.find(sequence) != mRequestParamMap.end()) {
+    if (!resultOnly) {
+        AutoMutex l(mParamsLock);
+        if (sequence < 0) {
+            *param = mLastParam;
+        } else if (mRequestParamMap.find(sequence) != mRequestParamMap.end()) {
             *param = mRequestParamMap[sequence]->param;
         } else {
             LOGE("Can't find settings for seq %ld", sequence);
