@@ -178,6 +178,7 @@ int PSysProcessor::start()
     }
 
     mThreadRunning = true;
+    CLEAR(mSofTimestamp);
     mProcessThread->run("PsysProcessor", PRIORITY_NORMAL);
     for (auto &psysDAGPair : mPSysDAGs) {
         if (!psysDAGPair.second) continue;
@@ -224,7 +225,6 @@ void PSysProcessor::stop()
 
 int PSysProcessor::setParameters(const Parameters& param)
 {
-    LOG1("%s camera id:%d", __func__, mCameraId);
     // Process image enhancement related settings.
     camera_image_enhancement_t enhancement;
     int ret = param.getImageEnhancement(enhancement);
@@ -430,7 +430,6 @@ bool PSysProcessor::needSwitchPipe(long sequence)
 
 void PSysProcessor::handleEvent(EventData eventData)
 {
-    LOG2("%s: got event type %d", __func__, eventData.type);
     // Process registered events
     switch (eventData.type) {
         case EVENT_ISYS_SOF:
@@ -503,10 +502,14 @@ int PSysProcessor::processNewFrame() {
         }
 
         // push all the pending buffers to task
+        int64_t waitTime = SOF_EVENT_MARGIN;
+        // Don't need to catch sof for 1st frame or sof time out
+        if (TIMEVAL2NSECS(mSofTimestamp) == 0 || sofInterval >= SOF_EVENT_MAX_MARGIN)
+            waitTime = 0;
         while (true) {
             {
                 ConditionLock lock(mBufferQueueLock);
-                ret = waitFreeBuffersInQueue(lock, srcBuffers, dstBuffers, SOF_EVENT_MARGIN);
+                ret = waitFreeBuffersInQueue(lock, srcBuffers, dstBuffers, waitTime);
 
                 // Already stopped
                 if (!mThreadRunning) return -1;

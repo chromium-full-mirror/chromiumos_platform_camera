@@ -825,12 +825,14 @@ void PSysDAG::tuningReconfig(TuningMode newTuningMode)
 
 void PSysDAG::dumpExternalPortMap()
 {
+    if (!Log::isDebugLevelEnable(CAMERA_DEBUG_LOG_LEVEL2)) return;
+
     for (auto& inputMap : mInputMaps) {
         if (inputMap.mExecutor) {
             LOG2("@%s: Input port %d, executor: %s:%d", __func__, inputMap.mDagPort,
                  inputMap.mExecutor->getName(), inputMap.mExecutorPort);
         } else {
-            LOGE("%s: no executro for input port %d!", __func__, inputMap.mDagPort);
+            LOGE("%s: no executor for input port %d!", __func__, inputMap.mDagPort);
         }
     }
     for (auto& outputMap : mOutputMaps) {
@@ -838,7 +840,7 @@ void PSysDAG::dumpExternalPortMap()
             LOG2("@%s: Output port %d, executor: %s:%d", __func__, outputMap.mDagPort,
                  outputMap.mExecutor->getName(), outputMap.mExecutorPort);
         } else {
-            LOGE("%s: no executro for output port %d!", __func__, outputMap.mDagPort);
+            LOGE("%s: no executor for output port %d!", __func__, outputMap.mDagPort);
         }
     }
 }
