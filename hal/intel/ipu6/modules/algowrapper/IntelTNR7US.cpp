@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 Intel Corporation
+ * Copyright (C) 2020-2021 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,8 @@ IntelTNR7US::IntelTNR7US(int cameraId)
           mWidth(0),
           mHeight(0),
           mTnrType(TNR_INSTANCE_MAX),
-          mTnrParam(nullptr) {
+          mTnrParam(nullptr),
+          mParamUpdating(false) {
     LOG1("%s mCameraId %d", __func__, mCameraId);
 }
 
@@ -45,6 +46,15 @@ IntelTNR7US::~IntelTNR7US() {
         destroyCMSurface(surface.second);
     }
     mCMSurfaceMap.clear();
+
+    int ret = pthread_cond_destroy(&mUpdateDoneCondition);
+    if (ret != 0) {
+        LOGE("@%s, call pthread_cond_destroy fails, ret:%d", __func__, ret);
+    }
+
+    ret = pthread_mutex_destroy(&mLock);
+    CheckError(ret != 0, VOID_VALUE, "@%s, call pthread_mutex_destroy fails, ret:%d", __func__,
+               ret);
 }
 
 int IntelTNR7US::init(int width, int height, TnrType type) {
@@ -52,6 +62,33 @@ int IntelTNR7US::init(int width, int height, TnrType type) {
     mWidth = width;
     mHeight = height;
     mTnrType = type;
+
+    pthread_condattr_t attr;
+    int ret = pthread_condattr_init(&attr);
+    if (ret != 0) {
+        LOGE("@%s, call pthread_condattr_init fails, ret:%d", __func__, ret);
+        return UNKNOWN_ERROR;
+    }
+
+    ret = pthread_condattr_setclock(&attr, CLOCK_MONOTONIC);
+    if (ret != 0) {
+        LOGE("@%s, call pthread_condattr_setclock fails, ret:%d", __func__, ret);
+        pthread_condattr_destroy(&attr);
+        return UNKNOWN_ERROR;
+    }
+
+    ret = pthread_cond_init(&mUpdateDoneCondition, &attr);
+    if (ret != 0) {
+        LOGE("@%s, call pthread_cond_init fails, ret:%d", __func__, ret);
+        pthread_condattr_destroy(&attr);
+        return UNKNOWN_ERROR;
+    }
+
+    pthread_condattr_destroy(&attr);
+
+    ret = pthread_mutex_init(&mLock, NULL);
+    CheckError(ret != 0, UNKNOWN_ERROR, "@%s, call pthread_mutex_init fails, ret:%d", __func__,
+               ret);
 
     std::string threadName = "IntelTNR7US" + std::to_string(type + (mCameraId << 1));
     mThread = std::unique_ptr<base::Thread>(new base::Thread(threadName));
@@ -119,6 +156,27 @@ int IntelTNR7US::runTnrFrame(const void* inBufAddr, void* outBufAddr, uint32_t i
     }
     CheckError(outSurface == nullptr, UNKNOWN_ERROR, "Failed to get CMSurface for output buffer");
 
+    /* the frame N gpu tnr run should wait for parameters of frame N-1 update completed */
+    nsecs_t startTime = CameraUtils::systemTime();
+    pthread_mutex_lock(&mLock);
+    if (mParamUpdating) {
+        int ret = 0;
+        struct timespec ts = {0, 0};
+        clock_gettime(CLOCK_MONOTONIC, &ts);
+        ts.tv_sec += kMaxDuration;
+        while (mParamUpdating && !ret) {
+            ret = pthread_cond_timedwait(&mUpdateDoneCondition, &mLock, &ts);
+        }
+
+        if (ret != 0) {
+            LOGE("@%s, call pthread_cond_timedwait fail, ret:%d, it takes %" PRId64 "ms", __func__,
+                 ret, (CameraUtils::systemTime() - startTime) / 1000000);
+            pthread_mutex_unlock(&mLock);
+            return UNKNOWN_ERROR;
+        }
+    }
+    pthread_mutex_unlock(&mLock);
+
     /* call Tnr api to run tnr for the inSurface and store the result in outSurface */
     int ret =
         run_tnr7us_frame(mWidth, mHeight, mWidth, inSurface, outSurface, &tnrParam->scale,
@@ -134,6 +192,10 @@ int IntelTNR7US::runTnrFrame(const void* inBufAddr, void* outBufAddr, uint32_t i
 int IntelTNR7US::asyncParamUpdate(int gain, bool forceUpdate) {
     LOG1("%s gain: %d", __func__, gain);
 
+    pthread_mutex_lock(&mLock);
+    mParamUpdating = true;
+    pthread_mutex_unlock(&mLock);
+
     if (mThread->task_runner()) {
         mThread->task_runner()->PostTask(
             FROM_HERE,
@@ -145,7 +207,14 @@ int IntelTNR7US::asyncParamUpdate(int gain, bool forceUpdate) {
 void IntelTNR7US::handleParamUpdate(int gain, bool forceUpdate) {
     LOG1("%s gain: %d", __func__, gain);
     // gain value is from AE expore analog_gain * digital_gain
+
     tnr7usParamUpdate(gain, forceUpdate, mTnrType);
+    pthread_mutex_lock(&mLock);
+    mParamUpdating = false;
+    int ret = pthread_cond_signal(&mUpdateDoneCondition);
+    pthread_mutex_unlock(&mLock);
+
+    CheckError(ret != 0, VOID_VALUE, "@%s, call pthread_cond_signal fails, ret:%d", __func__, ret);
 }
 
 CmSurface2DUP* IntelTNR7US::getBufferCMSurface(void* bufAddr) {
