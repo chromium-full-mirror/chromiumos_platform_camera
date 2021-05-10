@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//common-mk/mojom_bindings_generator.gni")
-
 group("all") {
   deps = [
     "//platform_camera/hal/mediatek/mtkcam/3rdparty:libmtkcam_3rdparty",

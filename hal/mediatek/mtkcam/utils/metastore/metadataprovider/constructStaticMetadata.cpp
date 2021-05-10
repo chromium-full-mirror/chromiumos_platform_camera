@@ -35,7 +35,7 @@
 #include <string>
 #include <vector>
 
-#include "mojo/cros_camera_enum.mojom.h"
+#include "camera/mojo/cros_camera_enum.mojom.h"
 
 using NSCam::Type2Type;
 using NSMetadataProvider::MetadataProvider;
