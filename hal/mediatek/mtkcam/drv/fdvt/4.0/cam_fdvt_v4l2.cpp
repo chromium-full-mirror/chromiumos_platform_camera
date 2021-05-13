@@ -847,8 +847,8 @@ static int open_fdvt_media_entities() {
     snprintf(device_namee, sizeof(device_namee), "/dev/media%d", index);
     media_fd = open(device_namee, O_RDWR);
     if (media_fd < 0) {
-      MY_LOGE("Cannot open %s:%d", device_namee, errno);
-      return -1;
+      MY_LOGW("Cannot open %s:%d", device_namee, errno);
+      continue;
     }
     MY_LOGD("check %s, fd=%d", device_namee, media_fd);
     ret = xioctl(media_fd, MEDIA_IOC_DEVICE_INFO, &info);
