@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <v4l2_device.h>
+#include <cros-camera/v4l2_device.h>
 
 #include <string>
 

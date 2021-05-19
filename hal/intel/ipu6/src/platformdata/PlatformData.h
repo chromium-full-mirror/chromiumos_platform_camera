@@ -17,7 +17,7 @@
 #pragma once
 
 #include <limits.h>
-#include <v4l2_device.h>
+#include <cros-camera/v4l2_device.h>
 
 #include <vector>
 #include <string>

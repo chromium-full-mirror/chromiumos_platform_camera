@@ -32,7 +32,7 @@
 #include <linux/media.h>
 #include <expat.h>
 
-#include <v4l2_device.h>
+#include <cros-camera/v4l2_device.h>
 
 #include "CameraTypes.h"
 #include "iutils/Thread.h"

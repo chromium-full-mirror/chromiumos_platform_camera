@@ -17,7 +17,7 @@
 #pragma once
 
 #include <linux/videodev2.h>
-#include <v4l2_device.h>
+#include <cros-camera/v4l2_device.h>
 
 #include <string.h>
 #include <vector>

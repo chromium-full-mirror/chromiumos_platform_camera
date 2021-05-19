@@ -21,7 +21,7 @@
 #include <vector>
 
 #include <linux/videodev2.h>
-#include <v4l2_device.h>
+#include <cros-camera/v4l2_device.h>
 
 #include "api/Parameters.h"
 #include "iutils/Utils.h"
