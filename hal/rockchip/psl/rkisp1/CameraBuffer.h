@@ -22,7 +22,7 @@
 #include <hardware/camera3.h>
 #include "Camera3V4l2Format.h"
 #include "UtilityMacros.h"
-#include <camera_buffer_manager.h>
+#include <cros-camera/camera_buffer_manager.h>
 #include <memory>
 #include <vector>
 
