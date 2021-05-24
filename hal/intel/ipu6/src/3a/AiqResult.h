@@ -52,6 +52,7 @@ public:
     float mAfDistanceDiopters;
     bool mSkip;
     camera_range_t mFocusRange;
+    uint32_t mLensPosition;
 
     cca::cca_ae_results mAeResults;
     cca::cca_awb_results mAwbResults;
