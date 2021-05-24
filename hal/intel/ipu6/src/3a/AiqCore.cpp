@@ -421,6 +421,7 @@ int AiqCore::runAiq(long requestId, AiqResult *aiqResult) {
         aiqResult->mAfResults = mAiqResults->af_output;
         AiqUtils::dumpAfResults(aiqResult->mAfResults);
 
+        aiqResult->mLensPosition = mIntel3AParameter->mAfParams.lens_position;
         mIntel3AParameter->fillAfTriggerResult(&aiqResult->mAfResults);
     }
 

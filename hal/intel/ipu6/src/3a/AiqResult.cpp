@@ -30,6 +30,7 @@ AiqResult::AiqResult(int cameraId) :
     mTuningMode(TUNING_MODE_VIDEO),
     mAfDistanceDiopters(0.0f),
     mSkip(false),
+    mLensPosition(0),
     mFrameDuration(0),
     mRollingShutter(0)
 {
@@ -87,6 +88,7 @@ AiqResult &AiqResult::operator=(const AiqResult &other)
     mTuningMode = other.mTuningMode;
     mAfDistanceDiopters = other.mAfDistanceDiopters;
     mSkip = other.mSkip;
+    mLensPosition = other.mLensPosition;
     mFocusRange = other.mFocusRange;
 
     mAeResults = other.mAeResults;
