@@ -283,17 +283,15 @@ int ParameterGenerator::updateWithAiqResultsL(long sequence, Parameters *params)
     params->setAfState(afState);
 
     bool lensMoving = false;
-    float distance = 0.0;
     camera_af_mode_t afMode = AF_MODE_OFF;
     params->getAfMode(afMode);
-    if (afMode == AF_MODE_OFF) {
-        params->getFocusDistance(distance);
-    }
     if (afState == AF_STATE_LOCAL_SEARCH || afState == AF_STATE_EXTENDED_SEARCH) {
         lensMoving = (aiqResult->mAfResults.final_lens_position_reached == false);
-    } else if (afState == AF_STATE_SUCCESS && afMode == AF_MODE_OFF &&
-              fabs(distance - aiqResult->mAfDistanceDiopters) > 0.1) {
-        lensMoving = true;
+    } else if (afState == AF_STATE_SUCCESS && afMode == AF_MODE_OFF) {
+        /* In manual focus mode, AF_STATE_SUCCESS is set immediately after running algo,
+         * but lens is moving and will stop moving in next frame.
+         */
+        lensMoving = (aiqResult->mLensPosition != aiqResult->mAfResults.next_lens_position);
     }
     params->setLensState(lensMoving);
     params->setFocusDistance(aiqResult->mAfDistanceDiopters);
