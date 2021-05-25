@@ -267,6 +267,7 @@ int V4L2TuningPipeMgr::enqueTuningBufToDrv(IImageBuffer* pImage) {
 
   auto r = m_pTuningPipe->enque(buf_info);
   if (r) {
+    std::unique_lock<std::mutex> lk(m_enqMutex);
     m_enqCount++;
     m_enqCond.notify_all();
   }
