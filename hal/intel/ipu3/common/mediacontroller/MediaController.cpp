@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2018 Intel Corporation
+ * Copyright (C) 2014-2021 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -467,28 +467,34 @@ status_t MediaController::configureLink(const MediaCtlLinkParams &linkParams)
         linkDesc.flags &= ~MEDIA_LNK_FL_ENABLED;
     }
 
-    status = setupLink(linkDesc);
+    struct media_entity_desc entityDesc = {};
+    srcEntity->getEntityDesc(entityDesc);
+    std::unique_ptr<media_link_desc[]> links =
+        std::unique_ptr<media_link_desc[]>(new media_link_desc[entityDesc.links]());
+
+    struct media_links_enum linksEnum = {};
+    linksEnum.entity = entityDesc.id;
+    linksEnum.pads = nullptr;
+    linksEnum.links = links.get();
+    status = enumLinks(linksEnum);
+    CheckAndLogError(status != NO_ERROR, status, "Enum links failed");
+
+    for (int i = 0; i < entityDesc.links; i++) {
+        if (linksEnum.links[i].sink.entity == linkDesc.sink.entity &&
+            linksEnum.links[i].source.entity == linkDesc.source.entity) {
+            if (!(linksEnum.links[i].flags & MEDIA_LNK_FL_IMMUTABLE)) {
+                status = setupLink(linkDesc);
+            }
+            break;
+        }
+    }
 
     // refresh source entity links
     if (status == NO_ERROR) {
-        struct media_entity_desc entityDesc;
-        struct media_links_enum linksEnum;
-        entityDesc = {};
-        linksEnum = {};
-        struct media_link_desc *links = nullptr;
-
-        srcEntity->getEntityDesc(entityDesc);
-        links = new struct media_link_desc[entityDesc.links];
-        memset(links, 0, sizeof(struct media_link_desc) * entityDesc.links);
-
-        linksEnum.entity = entityDesc.id;
-        linksEnum.pads = nullptr;
-        linksEnum.links = links;
         status = enumLinks(linksEnum);
         if (status == NO_ERROR) {
             srcEntity->updateLinks(linksEnum.links);
         }
-        delete[] links;
     }
 
     return status;
