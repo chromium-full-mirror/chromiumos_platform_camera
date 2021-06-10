@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2018 Intel Corporation.
+ * Copyright (C) 2016-2021 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -106,11 +106,10 @@ status_t FrameWorker::allocateWorkerBuffers(uint32_t usage, int pixelFormat)
                      __FUNCTION__);
     std::shared_ptr<CameraBuffer> buf = nullptr;
     for (unsigned int i = 0; i < mPipelineDepth; i++) {
-        LOG2("@%s allocate format: %s size: %d %dx%d bytesperline: %d", __func__, v4l2Fmt2Str(mFormat.PixelFormat()),
+        LOG2("@%s allocate format: %s size: %d %dx%d", __func__, v4l2Fmt2Str(mFormat.PixelFormat()),
                 mFormat.SizeImage(0),
                 mFormat.Width(),
-                mFormat.Height(),
-                mFormat.BytesPerLine(0));
+                mFormat.Height());
         buffer_handle_t handle;
         uint32_t stride;
         int width = (pixelFormat == HAL_PIXEL_FORMAT_BLOB) ?
