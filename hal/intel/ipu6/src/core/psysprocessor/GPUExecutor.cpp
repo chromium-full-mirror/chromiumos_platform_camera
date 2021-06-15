@@ -242,7 +242,8 @@ int GPUExecutor::getStillTnrTriggerInfo(TuningMode mode) {
     ia_err ret = intelCca->getCMC(&cmc);
     CheckError(ret != OK, BAD_VALUE, "@%s get cmc data failed", __func__);
     mStillTnrTriggerInfo = cmc.tnr7us_trigger_info;
-    LOG2("%s still tnr trigger gain num: %d", mName.c_str(), mStillTnrTriggerInfo.num_gains);
+    LOG2("%s still tnr trigger gain num: %d threshold: %f", mName.c_str(),
+         mStillTnrTriggerInfo.num_gains, mStillTnrTriggerInfo.tnr7us_threshold_gain);
     return OK;
 }
 
@@ -258,6 +259,7 @@ int GPUExecutor::getTotalGain(int64_t seq, float* totalGain) {
     }
     *totalGain = (aiqResults->mAeResults.exposures[0].exposure->analog_gain *
                   aiqResults->mAeResults.exposures[0].exposure->digital_gain);
+    LOG2("%s totalGain: %f", mName.c_str(), *totalGain);
     return OK;
 }
 
@@ -277,8 +279,7 @@ int GPUExecutor::getTnrExtraFrameCount(int64_t seq) {
     int ret = getTotalGain(seq, &totalGain);
     CheckError(ret, 0, "@%s, Failed to get total gain", __func__);
 
-    if (!mStillTnrTriggerInfo.num_gains)
-        return PlatformData::getTnrExtraFrameCount(mCameraId);
+    if (!mStillTnrTriggerInfo.num_gains) return PlatformData::getTnrExtraFrameCount(mCameraId);
 
     int index = 0;
     for (int i = 1; i < mStillTnrTriggerInfo.num_gains; i++) {
