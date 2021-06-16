@@ -386,7 +386,7 @@ typedef enum
     ia_pal_uuid_isp_tnr7_rme_1_0 = 8230,
     ia_pal_uuid_isp_tnr7_spatial_1_0 = 3133,
     ia_pal_uuid_isp_tvs_1_0 = 64291,
-    ia_pal_uuid_isp_upscaler_1_0 = 50903,
+    ia_pal_uuid_isp_upscaler_1_0 = 42734,
     ia_pal_uuid_isp_vcr_3_1 = 36035,
     ia_pal_uuid_isp_vcr3 = 32600,
     ia_pal_uuid_isp_vcsc_2_0 = 6086,
@@ -406,7 +406,7 @@ typedef enum
 typedef enum
 {
     ia_pal_uuid_system_api_bnlm_3_3 = 5901,
-    ia_pal_uuid_system_api_gdc7 = 62512,
+    ia_pal_uuid_system_api_gdc7 = 60738,
     ia_pal_uuid_system_api_io_buffer = 47777,
     ia_pal_uuid_system_api_io_buffer_1_1 = 56474,
     ia_pal_uuid_system_api_lsc_1_2 = 19967,

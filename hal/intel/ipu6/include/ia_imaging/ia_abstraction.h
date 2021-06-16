@@ -152,7 +152,7 @@ typedef uint16_t half;
 
 
 
-#define IA_MAX_FIXEDPOINT(integer_bits, frac_bits) ((float64_t)((((integer_bits) > 0)?(2<<((integer_bits)-1)):1)) - (1.0f/((float64_t)(((frac_bits) > 0)?((unsigned long)2<<((frac_bits)-1)):0))))
+#define IA_MAX_FIXEDPOINT(integer_bits, frac_bits) ((float64_t)((((integer_bits) > 0)?(2U<<((integer_bits)-1)):1)) - (1.0f/((float64_t)(((frac_bits) > 0)?((unsigned long)2<<((frac_bits)-1)):0))))
 #define IA_MIN_FIXEDPOINT(integer_bits, frac_bits) (-IA_MAX_FIXEDPOINT((integer_bits), frac_bits))
 #define IA_MAX_Q0_FIXEDPOINT(frac_bits) (1.0 - (1.0f/((float64_t)(frac_bits?((unsigned long)2<<(frac_bits-1)):0))))
 

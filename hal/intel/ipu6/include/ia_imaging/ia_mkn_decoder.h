@@ -40,7 +40,7 @@ extern "C" {
  */
 LIBEXPORT bool
 ia_mkn_is_valid(const ia_binary_data *a_mknt_data_ptr,
-                const unsigned int a_tag);
+                const uint32_t a_tag);
 
 /*!
  * \brief Changes endianness of given makernote buffer.
@@ -52,7 +52,7 @@ ia_mkn_is_valid(const ia_binary_data *a_mknt_data_ptr,
  * \return                          Error code.
  */
 LIBEXPORT ia_err
-ia_mkn_change_endianness(ia_binary_data *mknt_data);
+ia_mkn_change_endianness(ia_binary_data *a_mknt_data_ptr);
 
 /*!
  * \brief Prints all records contents.
@@ -129,7 +129,7 @@ ia_mkn_get_record(const ia_binary_data *a_mknt_data_ptr,
  */
 LIBEXPORT ia_err
 ia_mkn_get_record_headers(const ia_binary_data *a_mknt_data_ptr,
-                          int *a_num_mkn_records,
+                          int32_t *a_num_mkn_records,
                           ia_mkn_record_header *a_mkn_record_headers_ptr);
 
 #ifdef __cplusplus

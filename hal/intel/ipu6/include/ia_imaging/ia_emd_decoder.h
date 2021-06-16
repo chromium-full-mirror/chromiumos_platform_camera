@@ -19,8 +19,8 @@
  * \brief Definitions of functions in Embedded Data decoder.
 */
 
-#ifndef _IA_EMD_DECODER_H_
-#define _IA_EMD_DECODER_H_
+#ifndef IA_EMD_DECODER_H_
+#define IA_EMD_DECODER_H_
 
 #include "ia_aiq_types.h"
 #include "ia_emd_types.h"
@@ -51,7 +51,7 @@ extern "C" {
  */
 LIBEXPORT ia_emd_decoder_t *
 ia_emd_decoder_init(
-    const ia_cmc_t *ia_cmc);
+    const ia_cmc_t * a_ia_cmc);
 
 
 /*!
@@ -62,7 +62,7 @@ ia_emd_decoder_init(
  * \return                                  None.
  */
 LIBEXPORT void
-ia_emd_decoder_deinit(ia_emd_decoder_t *emd_decoder);
+ia_emd_decoder_deinit(ia_emd_decoder_t * a_emd_decoder_p);
 
 
 /*!
@@ -80,13 +80,13 @@ ia_emd_decoder_deinit(ia_emd_decoder_t *emd_decoder);
  */
 LIBEXPORT ia_err
 ia_emd_decoder_run(
-    const ia_binary_data *emd_bin,
-    const ia_emd_mode_t *emd_mode,
-    const ia_aiq_exposure_sensor_descriptor *sensor_descriptor,
-    ia_emd_decoder_t *emd_decoder);
+    const ia_binary_data * a_emd_bin_p,
+    const ia_emd_mode_t * a_emd_mode_p,
+    const ia_aiq_exposure_sensor_descriptor * a_sensor_descriptor,
+    ia_emd_decoder_t * a_emd_decoder_p);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* _IA_EMD_DECODER_H_ */
+#endif /* IA_EMD_DECODER_H_ */

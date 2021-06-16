@@ -20,8 +20,8 @@
  * \brief Definitions and declarations of Intel AEC algorithm.
  */
 
-#ifndef _IA_AEC_H_
-#define _IA_AEC_H_
+#ifndef IA_AEC_H_
+#define IA_AEC_H_
 
 #include "ia_configuration.h"
 #include "ia_types.h"
@@ -78,4 +78,4 @@ ia_aec_run(
 }
 #endif
 
-#endif /* _IA_AEC_H_ */
+#endif /* IA_AEC_H_ */

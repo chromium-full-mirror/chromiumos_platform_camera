@@ -1480,7 +1480,7 @@ typedef struct
     int32_t frame_count;
 } trigger_info_t;
 
-#define MAX_TNR7US_TRIGGER_INFO_COUNT   8U
+#define MAX_TNR7US_TRIGGER_INFO_COUNT   16U
 typedef struct
 {
     float tnr7us_threshold_gain;

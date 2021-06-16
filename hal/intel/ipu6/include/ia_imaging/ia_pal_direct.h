@@ -43,6 +43,7 @@ typedef enum
     ia_pal_direct_results_uuid_cmc_optomechanics,
     ia_pal_direct_results_uuid_view_params,
     ia_pal_direct_results_uuid_bcomp_results,
+    ia_pal_direct_results_uuid_rgbir_results,
     ia_pal_direct_results_uuid_count, /* Keep this last */
 } ia_pal_direct_results_uuid;
 
@@ -72,4 +73,5 @@ typedef struct
     cmc_parsed_pipe_decompand_t const* direct_cmc_parsed_pipe_decompand_t;
     ia_tnr7_t const* direct_ia_tnr7_t;
     ia_aiq_ir_weight_t const* direct_ia_aiq_ir_weight_grid;
+    ia_aiq_rgbir_t const* direct_ia_aiq_rgbir_t;
 } ia_pal_direct_results;

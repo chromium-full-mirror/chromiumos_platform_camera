@@ -295,6 +295,7 @@ typedef struct
     bool is_bypass;                         /*!< Optional. Don't run gbce, just use last results*/
     float ev_shift;                         /*!< Optional. Exposure Value shift [-4,4]. */
     bool gbce_on;                           /*!< Optional. This flag is used to return gamma table in output params*/
+    bool athena_mode;                       /*!< Optional. This flag is used to indicate whethe athena mode is enabled in ful_gtm algo*/
 } cca_gbce_input_params;
 
 /*!
@@ -346,6 +347,8 @@ typedef struct
 {
     uint32_t      num_faces;                 /*!< Number of faces in the recently processed input frame. */
     ia_atbx_face  faces[MAX_FACE_NUM];       /*!< Array of face information. */
+    bool updated;                            /*!< The update status of face. true is the real statistics, and false is the false statistics that have not been updated. */
+    bool is_video_conf;                      /*!< video confenerce mode. */
 } cca_face_state;
 
 /*!

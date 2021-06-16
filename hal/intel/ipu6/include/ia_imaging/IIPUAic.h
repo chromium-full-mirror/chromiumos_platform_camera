@@ -33,6 +33,7 @@ typedef struct {
     const ia_bcomp_results* bcomp_settings;     /*!< BComp result for lens VCM and PWM setting. */
     ia_binary_data* stats;                      /*!< statistics binary. */
     bool need_decode_dvs_stats;                 /*!< need process DVS statistics. */
+    const ia_aiq_ir_weight_t* ir_weight;        /*!< ir weight from PA. */
 } cca_dec_stats_input;
 
 /*!
@@ -166,7 +167,7 @@ public:
      * \return                           Error code.
      */
     virtual ia_err init(const ia_binary_data *aiqb, const ia_cmc_t *cmc, uint32_t max_stats_width,
-                        uint32_t max_stats_height, uint32_t max_num_stats_in, ia_mkn *mkn) = 0;
+                        uint32_t max_stats_height, uint32_t max_num_stats_in, const ia_mkn *mkn) = 0;
 
     /*!
      * \brief update tuning file aiqb.
@@ -228,7 +229,7 @@ public:
      *                                   sequence id for streaming.
      * \return                           Error code.
      */
-    virtual ia_err decodeStats(int groupId, long seqId) = 0;
+    virtual ia_err decodeStats(int32_t groupId, int64_t seqId) = 0;
 
     /*!
      * \brief run AIC parameters with graph config & Intel3A results.

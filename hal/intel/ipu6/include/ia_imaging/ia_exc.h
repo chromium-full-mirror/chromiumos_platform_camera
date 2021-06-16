@@ -37,81 +37,81 @@ extern "C" {
 /*!
  * \brief Convert exposure time from generic units to sensor units (line & pixel values).
  * AEC will use default formula for conversion, if not given
- * \param[in]  exposure_range          Structure containing coarse and fine integration sensor register ranges. Can be set to NULL if not available.
- * \param[in]  sensor_descriptor       Structure containing coarse and fine integration time limits and step size.
- * \param[in]  exposure_time_us        Exposure time to convert.
- * \param[out] coarse_integration_time Coarse (rows of integration) for rolling shutter cameras.
- * \param[out] fine_integration_time   Fine (pixels of integration remaining after coarse quantization) for rolling shutter cameras.
+ * \param[in]  a_exposure_range          Structure containing coarse and fine integration sensor register ranges. Can be set to NULL if not available.
+ * \param[in]  a_sensor_limits           Structure containing coarse and fine integration time limits and step size.
+ * \param[in]  a_exposure_time           Exposure time to convert.
+ * \param[out] a_coarse_integration_time Coarse (rows of integration) for rolling shutter cameras.
+ * \param[out] a_fine_integration_time   Fine (pixels of integration remaining after coarse quantization) for rolling shutter cameras.
  * \return                             Error code.
  */
 LIBEXPORT ia_err
 ia_exc_exposure_time_to_sensor_units(
-    const cmc_exposure_range_t *exposure_range,
-    const ia_aiq_exposure_sensor_descriptor *sensor_descriptor,
-    const unsigned int exposure_time_us,
-    unsigned short *coarse_integration_time,
-    unsigned short *fine_integration_time);
+    const cmc_exposure_range_t *a_exposure_range,
+    const ia_aiq_exposure_sensor_descriptor *a_sensor_limits,
+    const uint32_t a_exposure_time,
+    uint16_t *a_coarse_integration_time,
+    uint16_t *a_fine_integration_time);
 
 /*!
  * \brief Converts gain from generic units to sensor units.
  * AEC will use default formulae for conversion, if not given
  * Converts gain value to sensor units, limiting the value according to sensor specific limits.
- * \param[in]  gain_conversion   Structure containing gain to code mapping information.
- * \param[in]  gain              Gain in generic units.
- * \param[out] gain_code         Calculated gain code.
+ * \param[in]  a_gain_conversion   Structure containing gain to code mapping information.
+ * \param[in]  a_gain              Gain in generic units.
+ * \param[out] a_gain_code         Calculated gain code.
  * \return                       Error code.
  */
 LIBEXPORT ia_err
 ia_exc_gain_to_sensor_units(
-    const cmc_gain_conversion_t *gain_conversion,
-    const float gain,
-    unsigned short *gain_code);
+    const cmc_gain_conversion_t *a_gain_conversion,
+    const float a_gain,
+    uint16_t *a_gain_code);
 
 /*!
  * \brief Convert exposure time from sensor units to generic units.
  * AEC will use default formula for conversion, if not given
- * \param[in]  sensor_descriptor       Structure containing pixel clock frequency needed in exposure conversion.
- * \param[in]  coarse_integration_time Coarse (rows of integration) for rolling shutter cameras.
- * \param[in]  fine_integration_time   Fine (pixels of integration remaining after coarse quantization) for rolling shutter cameras.
- * \param[out] exposure_time           Calculated exposure value in microseconds.
+ * \param[in]  a_sensor_limits       Structure containing pixel clock frequency needed in exposure conversion.
+ * \param[in]  a_coarse_integration_time Coarse (rows of integration) for rolling shutter cameras.
+ * \param[in]  a_fine_integration_time   Fine (pixels of integration remaining after coarse quantization) for rolling shutter cameras.
+ * \param[out] a_exposure_time           Calculated exposure value in microseconds.
  * \return                             Error code.
  */
 LIBEXPORT ia_err
 ia_exc_sensor_units_to_exposure_time(
-    const ia_aiq_exposure_sensor_descriptor *sensor_descriptor,
-    const unsigned short coarse_integration_time,
-    const unsigned short fine_integration_time,
-    unsigned int *exposure_time);
+    const ia_aiq_exposure_sensor_descriptor *a_sensor_limits,
+    const uint16_t a_coarse_integration_time,
+    const uint16_t a_fine_integration_time,
+    uint32_t *a_exposure_time);
 
 /*!
 * \brief Convert gain from sensor units to generic units.
 * Using the sensor characteristics info, calculate gain from sensor register values.
-* \param[in]  gain_conversion   Structure containing gain to gain code conversion tables.
-* \param[in]  gain_code         Gain code in sensor specific units.
-* \param[out] gain              Calculated gain.
+* \param[in]  a_gain_conversion   Structure containing gain to gain code conversion tables.
+* \param[in]  a_gain_code         Gain code in sensor specific units.
+* \param[out] a_gain              Calculated gain.
 * \return                       Error code.
 */
 LIBEXPORT ia_err
 ia_exc_sensor_units_to_gain(
-    const cmc_gain_conversion_t *gain_conversion,
-    const unsigned short gain_code,
-    float *gain);
+    const cmc_gain_conversion_t *a_gain_conversion,
+    const uint16_t a_gain_code,
+    float *a_gain);
 
 /*!
 * \brief Gets gain and code based on current code.
 * Offset is used to retrieve previous or next gain code pairs from the CMC gain conversion tables.
-* \param[in]  gain_conversion   Structure containing gain to gain code conversion tables.
-* \param[in]  gain_code         Gain code in sensor specific units.
-* \param[in]  gain_code_offset  Offset of code to resolve (-1 or 1).
-* \param[out] indexed_gain_code Gain code matching the offset.
+* \param[in]  a_gain_conversion   Structure containing gain to gain code conversion tables.
+* \param[in]  a_gain_code         Gain code in sensor specific units.
+* \param[in]  a_gain_code_offset  Offset of code to resolve (-1 or 1).
+* \param[out] a_indexed_gain_code Gain code matching the offset.
 * \return                       Error code.
 */
 LIBEXPORT ia_err
 ia_exc_get_gain_code(
-    const cmc_gain_conversion_t *gain_conversion,
-    const unsigned short gain_code,
-    const int gain_code_offset,
-    unsigned short *indexed_gain_code);
+    const cmc_gain_conversion_t *a_gain_conversion,
+    const uint16_t a_gain_code,
+    const int32_t a_gain_code_offset,
+    uint16_t* a_indexed_gain_code);
 
 /*!
  * \brief Converts ISO to gains and codes.
@@ -125,26 +125,26 @@ ia_exc_get_gain_code(
  */
 LIBEXPORT ia_err
 ia_exc_convert_iso_to_multi_gains(
-    const cmc_multi_gain_conversions_t *multi_gain_conversions,
-    const cmc_sensitivity_t *sensitivity,
-    const int iso,
-    float gains[IA_CMC_GAINS_MAX_NUM],
-    int gain_codes[IA_CMC_GAINS_MAX_NUM]);
+    const cmc_multi_gain_conversions_t *a_multi_gain_conversions,
+    const cmc_sensitivity_t * a_sensitivity,
+    const int32_t a_iso,
+    float a_gains[IA_CMC_GAINS_MAX_NUM],
+    int32_t a_gain_codes[IA_CMC_GAINS_MAX_NUM]);
 
 /*!
  * \brief Converts gain codes to ISO.
- * \param[in]  multi_gain_conversions   Structure containing gain to gain code conversion tables. Can be NULL, if sensor doesn't support any gains.
- * \param[in]  sensitivity              Structure containing sensor sensitivity information.
- * \param[in]  gain_codes               Array of gain codes. Each element can be -1 if not available.
- * \param[out] iso                      Gain codes converted into ISO value. -1 if not available.
+ * \param[in]  a_multi_gain_conversions   Structure containing gain to gain code conversion tables. Can be NULL, if sensor doesn't support any gains.
+ * \param[in]  a_sensitivity              Structure containing sensor sensitivity information.
+ * \param[in]  a_gain_codes               Array of gain codes. Each element can be -1 if not available.
+ * \param[out] a_iso                      Gain codes converted into ISO value. -1 if not available.
  * \return                              Error code.
  */
 LIBEXPORT ia_err
 ia_exc_convert_multi_gain_codes_to_iso(
-    const cmc_multi_gain_conversions_t *multi_gain_conversions,
-    const cmc_sensitivity_t *sensitivity,
-    const int gain_codes[IA_CMC_GAINS_MAX_NUM],
-    int *iso);
+    const cmc_multi_gain_conversions_t *a_multi_gain_conversions,
+    const cmc_sensitivity_t *a_sensitivity,
+    const int32_t a_gain_codes[IA_CMC_GAINS_MAX_NUM],
+    int32_t *a_iso);
 
 #ifdef __cplusplus
 }

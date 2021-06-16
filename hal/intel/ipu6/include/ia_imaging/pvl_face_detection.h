@@ -35,6 +35,7 @@ extern "C" {
 enum pvl_mode {
     normal,     /**< Most accurate face detection. */
     low_power,  /**< Accuracy is sacrificed to get CPU load to minimun. */
+    ultra_low_power, /**< Only concentrate on the biggest face. */
     high_accuracy = normal,
 };
 
@@ -60,6 +61,9 @@ struct pvl_face_detection_parameters {
 
     uint32_t num_rollover_frames;      /**< The number of rollover frames indicating how many frames the entire scanning will be distributed.
                                             The value works in the preview mode, only. */
+    uint16_t search_mode;              /**< The mode of searching face. If search_mode=1, then it will only search the face bigger than the one tracked. */
+
+    uint32_t num_faces_avoid_full_run; /**< The number of faces that avoid full run to save time. */
 };
 typedef struct pvl_face_detection_parameters pvl_face_detection_parameters;
 

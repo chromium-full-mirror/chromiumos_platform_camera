@@ -84,8 +84,8 @@ typedef struct
  * \param[in] count Size of buffer to sum in bytes.
  * \return          Calculated checksum.
  */
-LIBEXPORT unsigned int
-ia_aiqb_parse_calculate_checksum(void *data, size_t size);
+LIBEXPORT uint32_t
+ia_aiqb_parse_calculate_checksum(void * a_data_ptr, size_t a_size);
 
 
 /*!
@@ -99,11 +99,11 @@ ia_aiqb_parse_calculate_checksum(void *data, size_t size);
 * ia_aiqd_parser_offset_map maps[maps_info.num_maps];
 * ia_aiqd_parser_maps_info maps_info;
 *
-* \param[in,out] record AIQB record buffer including all data listed above (header + data). 
+* \param[in,out] record AIQB record buffer including all data listed above (header + data).
 * \return               Error code.
 */
 LIBEXPORT ia_err
-ia_aiqb_parse_record(ia_mkn_record_header *record);
+ia_aiqb_parse_record(ia_mkn_record_header * a_record_ptr);
 
 /*!
  * \brief Replace pointers in the AIQB data from map.
@@ -114,7 +114,7 @@ ia_aiqb_parse_record(ia_mkn_record_header *record);
  * \return                    Error code.
  */
 LIBEXPORT ia_err
-ia_aiqb_parse(ia_binary_data *aiqb_binary);
+ia_aiqb_parse(ia_binary_data * a_aiqb_binary_ptr);
 
 #ifdef __cplusplus
 }

@@ -10551,13 +10551,13 @@ typedef struct
     int32_t enable;
     /*!< scaling_ratio U5.16 , downscale - greater than 1*/
     int32_t scaling_ratio;
-    /*!< horizontal_offset_luma S13.16,Position of first output pixel luma channel for scaler*/
+    /*!< horizontal_offset_luma S12.16(29 incl S bit),Position of first output pixel luma channel for scaler*/
     int32_t horizontal_offset_luma;
-    /*!< vertical_offset_luma S13.16, Position of first output line luma channel for scaler*/
+    /*!< vertical_offset_luma S12.16(29 incl S bit), Position of first output line luma channel for scaler*/
     int32_t vertical_offset_luma;
-    /*!< horizontal_offset_chroma S13.16, Position of first output pixel chroma channel for scaler*/
+    /*!< horizontal_offset_chroma S12.16(29 incl S bit), Position of first output pixel chroma channel for scaler*/
     int32_t horizontal_offset_chroma;
-    /*!< vertical_offset_chroma S13.16, Position of first output line chroma channel for scaler*/
+    /*!< vertical_offset_chroma S12.16(29 incl S bit), Position of first output line chroma channel for scaler*/
     int32_t vertical_offset_chroma;
     /*!< output_height U13.0, Height of output image Y plane for scaler (even)*/
     int32_t output_height;
@@ -14209,20 +14209,30 @@ typedef struct
 */
 typedef struct
 {
-    /*!< enable enable scaling filter*/
-    int32_t enable;
+    /*!< upscale_enable enable scaling filter*/
+    int32_t upscale_enable;
     /*!< scaling_ratio U5.16 , upscale - less than 1, equals to 1/uspcale_factor*/
     int32_t scaling_ratio;
-    /*!< horizontal_offset S13.16,Position of first output pixel luma channel for scaler*/
-    int32_t horizontal_offset;
-    /*!< half_support_size full support = half x 2 , u1.0 (triangle kernel: 1, bicubic: 2)*/
-    int32_t half_support_size;
-    /*!< output_height U13.0, Height of output image Y plane for scaler (even)*/
+    /*!< output_height Output height counted in number of lines*/
     int32_t output_height;
-    /*!< output_width U13.0, Width of output image Y plane for scaler (even)*/
+    /*!< output_width Output width counted in number of pixels components per line*/
     int32_t output_width;
     /*!< kernel_LUT[129] S1.10 Y+UV channels Interpolation vertical kernel coefficients for scaler*/
     int32_t kernel_LUT[129];
+    /*!< chroma_kernel_LUT[129] S1.10 Y+UV channels Interpolation vertical kernel coefficients for scaler*/
+    int32_t chroma_kernel_LUT[129];
+    /*!< cropper_input_width cropper Input width counted in number of pixels components per line*/
+    int32_t cropper_input_width;
+    /*!< cropper_input_height cropper Input height counted in number of lines*/
+    int32_t cropper_input_height;
+    /*!< cropper_x_output_offset Output horizontal offset from the input, counted in number of pixels components per line, 16b signed (if negative padding is required)*/
+    int32_t cropper_x_output_offset;
+    /*!< cropper_y_output_offset cropper Output vertical offset from the input counted in number of lines, 16b signed*/
+    int32_t cropper_y_output_offset;
+    /*!< cropper_output_width cropper Output width ,, equals upscaler input height*/
+    int32_t cropper_output_width;
+    /*!< cropper_output_height cropper Output height , equals upscaler input height*/
+    int32_t cropper_output_height;
 
 } ia_pal_isp_upscaler_1_0_t;
 
@@ -16208,6 +16218,8 @@ typedef struct
 {
     /*!< gdc_sp_standalone indicated if gdc_sp is used in standalone mode ( 0: used with gdc_FP, 1: used in standalone)*/
     uint8_t gdc_sp_standalone;
+    /*!< small_memory Indicates whether we work with small memory or not, to enable/disable max_distortion mechanism (enabled only when working with small memory)*/
+    uint8_t small_memory;
 
 } ia_pal_system_api_gdc7_t;
 

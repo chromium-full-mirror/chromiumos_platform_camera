@@ -331,7 +331,7 @@ public:
     *
     * \return                   Error code for status. zero on success, non-zero on failure
     */
-    ia_err decodeStats(int groupId, long seqId);
+    ia_err decodeStats(int32_t groupId, int64_t seqId);
 
     /*!
     *
@@ -423,7 +423,7 @@ private:
     void deInitLtm();
 #endif
 #endif
-    ia_err initBcomp(ia_bcomp_dol_mode_t mode, float ratio);
+    ia_err initBcomp(ia_bcomp_dol_mode_t mode, float32_t ratio);
     ia_err updateBcomp();
     void deinitBcomp();
     void runAIC_(uint64_t frameId, const cca_pal_input_params& params, cca_3a_plus_results* results);
@@ -518,7 +518,7 @@ private:
     ia_dvs_configuration_v1 mDVSConfig;
     bool mEnableVideoStablization;
     bool mEnableDVS;
-    float mDvsZoomRatio;
+    float32_t mDvsZoomRatio;
     CCADVSOutputType mDvsOutputType;
 
     /*
@@ -542,7 +542,7 @@ private:
     * mEnableUsingLardResultToInitCCA - whether using lard result to init cca
     */
     bool mEnableUsingLardResultToInitCCA;
-    char reserve[24];
+    int8_t reserve[24];
 };
 }//cca
 #endif //INTELCCA_H_
