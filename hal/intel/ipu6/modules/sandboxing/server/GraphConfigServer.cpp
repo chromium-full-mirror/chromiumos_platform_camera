@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Intel Corporation
+ * Copyright (C) 2019-2021 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,7 +70,9 @@ status_t GraphConfigServer::configStreams(void* pData, size_t dataSize) {
     GraphBaseInfo info;
     GraphSettingType type;
     std::vector<HalStream*> streams;
-    bool ret = mIpc.serverUnflattenConfigStreams(pData, dataSize, &info, &type, &streams);
+    bool dummyStillSink;
+    bool ret = mIpc.serverUnflattenConfigStreams(pData, dataSize, &info, &type,
+                                                 &dummyStillSink, &streams);
     CheckAndLogError(ret == false, UNKNOWN_ERROR,
                      "@%s, serverUnflattenConfigStreams fails", __func__);
 
@@ -81,7 +83,7 @@ status_t GraphConfigServer::configStreams(void* pData, size_t dataSize) {
     }
     std::shared_ptr<GraphConfigImpl> graphConfigImpl =
         std::make_shared<GraphConfigImpl>(info.cameraId, info.configMode, type);
-    status_t rt = graphConfigImpl->configStreams(streams);
+    status_t rt = graphConfigImpl->configStreams(streams, dummyStillSink);
     CheckAndLogError(
         rt != OK, ret,
         "@%s, Failed to configStreams, cameraId: %d, configMode: %d", __func__,

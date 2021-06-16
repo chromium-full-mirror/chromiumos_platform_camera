@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Intel Corporation
+ * Copyright (C) 2019-2021 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -109,14 +109,15 @@ void GraphConfigImpl::releaseGraphNodes() {
     CheckAndLogError(!ret, VOID_VALUE, "@%s, requestSync fails", __func__);
 }
 
-status_t GraphConfigImpl::configStreams(const vector<HalStream*>& activeStreams) {
+status_t GraphConfigImpl::configStreams(const vector<HalStream*>& activeStreams,
+                                        bool dummyStillSink) {
     LOGIPC("@%s", __func__);
     CheckAndLogError(!mInitialized, UNKNOWN_ERROR, "@%s, mInitialized is false",
                      __func__);
 
     GraphBaseInfo info = {mCameraId, mConfigMode};
     bool ret = mIpc.clientFlattenConfigStreams(mMemConfig.mAddr, mMemConfig.mSize, info, mType,
-                                               activeStreams);
+                                               dummyStillSink, activeStreams);
     CheckAndLogError(!ret, UNKNOWN_ERROR,
                      "@%s, clientFlattenConfigStreams fails", __func__);
 

@@ -216,7 +216,8 @@ void GraphConfigImpl::releaseGraphNodes() {
  * Create the query rule for current stream configuration based
  * on stream list and graph setting type.
  */
-status_t GraphConfigImpl::createQueryRule(const vector<HalStream*>& activeStreams) {
+status_t GraphConfigImpl::createQueryRule(const vector<HalStream*>& activeStreams,
+                                          bool dummyStillSink) {
     mQuery.clear();
     mStreamToSinkIdMap.clear();
 
@@ -314,8 +315,17 @@ status_t GraphConfigImpl::createQueryRule(const vector<HalStream*>& activeStream
 
         // Add active outputs for still
         if (!stillStreamToSinkIdMap.empty()) {
-            LOG2("The still output number: %zu", stillStreamToSinkIdMap.size());
-            stillQuery[streamCount] = std::to_string(stillStreamToSinkIdMap.size());
+            if (dummyStillSink) {
+                /* User will always requests 1 still stream still0. there will be a stilltnr0
+                ** stream in graph setting when dummy sink enabled, and HAL will create 2 still
+                ** pipe for common still capture and for tnr still capture
+                */
+                LOG2("The still output number: %zu", stillStreamToSinkIdMap.size() + 1);
+                stillQuery[streamCount] = std::to_string(stillStreamToSinkIdMap.size() + 1);
+            } else {
+                LOG2("The still output number: %zu", stillStreamToSinkIdMap.size());
+                stillQuery[streamCount] = std::to_string(stillStreamToSinkIdMap.size());
+            }
             mQuery[USE_CASE_STILL_CAPTURE] = stillQuery;
             dumpQuery(USE_CASE_STILL_CAPTURE, mQuery[USE_CASE_STILL_CAPTURE]);
             mStreamToSinkIdMap[USE_CASE_STILL_CAPTURE] = stillStreamToSinkIdMap;
@@ -353,10 +363,11 @@ status_t GraphConfigImpl::getRawInputSize(GCSS::IGraphConfig* query, camera_reso
 /*
  * According to the stream list to query graph setting and create GraphConfigPipe
  */
-status_t GraphConfigImpl::configStreams(const vector<HalStream*>& activeStreams) {
+status_t GraphConfigImpl::configStreams(const vector<HalStream*>& activeStreams,
+                                        bool dummyStillSink) {
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL1);
 
-    status_t ret = createQueryRule(activeStreams);
+    status_t ret = createQueryRule(activeStreams, dummyStillSink);
     CheckAndLogError(ret != OK, ret, "Failed to create the query rule");
 
     mQueryResult.clear();

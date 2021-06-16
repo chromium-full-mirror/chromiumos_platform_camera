@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2018 Intel Corporation.
+ * Copyright (C) 2015-2021 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,15 +65,17 @@ enum  {
     /* Bitmask to enable a concrete set of traces */
     CAMERA_DEBUG_LOG_REQ_STATE = 1 << 2,
     CAMERA_DEBUG_LOG_AIQ = 1 << 3,
+
     CAMERA_DEBUG_LOG_XML = 1 << 4,
     CAMERA_DEBUG_LOG_VC_SYNC = 1 << 5,
     CAMERA_DEBUG_LOG_FPS = 1 << 6,
+    CAMERA_DEBUG_LOG_CCA = 1 << 7,
+
     CAMERA_DEBUG_LOG_KERNEL_TOGGLE = 1 << 8,
     CAMERA_DEBUG_LOG_SANDBOXING = 1 << 9,
 
     /* Make logs persistent, retrying if logcat is busy */
     CAMERA_DEBUG_LOG_PERSISTENT = 1 << 12, /* 4096 */
-
     /* reserved for any components */
     CAMERA_DEBUG_LOG_GRAPH = 1 << 13,
 

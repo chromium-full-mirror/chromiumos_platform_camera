@@ -17,6 +17,7 @@
 #pragma once
 
 #include <limits.h>
+
 #include <cros-camera/v4l2_device.h>
 
 #include <vector>
@@ -147,7 +148,8 @@ public:
                 mSwProcessingAlignWithIsp(false),
                 mMaxNvmDataSize(0),
                 mVideoStreamNum(DEFAULT_VIDEO_STREAM_NUM),
-                mTnrExtraFrameNum(DEFAULT_TNR_EXTRA_FRAME_NUM)
+                mTnrExtraFrameNum(DEFAULT_TNR_EXTRA_FRAME_NUM),
+                mDummyStillSink(false)
             {
             }
 
@@ -239,6 +241,7 @@ public:
             std::vector<IGraphType::ScalerInfo> mScalerInfo;
             int mVideoStreamNum;
             int mTnrExtraFrameNum;
+            bool mDummyStillSink;
         };
 
         std::vector<CameraInfo> mCameras;
@@ -1234,5 +1237,13 @@ public:
      * \return sensor orientation
      */
     static int getSensorOrientation(int cameraId);
+
+    /**
+    * check if support dummy still stream
+    *
+    * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
+    * \return true if supported.
+    */
+    static bool isDummyStillSink(int cameraId);
 };
 } /* namespace icamera */

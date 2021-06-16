@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2020 Intel Corporation.
+ * Copyright (C) 2015-2021 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -204,7 +204,7 @@ void print_log(bool enable, const char *module, const int level, const char *for
 __attribute__((__format__ (__printf__, 1, 0)))
 void ccaPrintError(const char *fmt, va_list ap)
 {
-    if (gLogLevel & CAMERA_DEBUG_LOG_AIQ) {
+    if (gLogLevel & CAMERA_DEBUG_LOG_CCA) {
         printLog("CCA_DEBUG", CAMERA_DEBUG_LOG_ERR, fmt, ap);
     }
 }
@@ -212,7 +212,7 @@ void ccaPrintError(const char *fmt, va_list ap)
 __attribute__((__format__ (__printf__, 1, 0)))
 void ccaPrintInfo(const char *fmt, va_list ap)
 {
-    if (gLogLevel & CAMERA_DEBUG_LOG_AIQ) {
+    if (gLogLevel & CAMERA_DEBUG_LOG_CCA) {
         printLog("CCA_DEBUG", CAMERA_DEBUG_LOG_INFO, fmt, ap);
     }
 }
@@ -220,7 +220,7 @@ void ccaPrintInfo(const char *fmt, va_list ap)
 __attribute__((__format__ (__printf__, 1, 0)))
 void ccaPrintDebug(const char *fmt, va_list ap)
 {
-    if (gLogLevel & CAMERA_DEBUG_LOG_AIQ) {
+    if (gLogLevel & CAMERA_DEBUG_LOG_CCA) {
         printLog("CCA_DEBUG", CAMERA_DEBUG_LOG_DBG, fmt, ap);
     }
 }

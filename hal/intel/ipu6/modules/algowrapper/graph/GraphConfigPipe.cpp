@@ -22,6 +22,7 @@
 #include <gcss.h>
 #include <gcss_utils.h>
 #include <ia_pal_types_isp_ids_autogen.h>
+
 #include <cros-camera/v4l2_device.h>
 
 #include <algorithm>

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Intel Corporation
+ * Copyright (C) 2019-2021 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -109,7 +109,7 @@ bool IPCGraphConfig::serverUnflattenParse(void* pData, uint32_t size,
 }
 
 bool IPCGraphConfig::clientFlattenConfigStreams(void* pData, uint32_t size, GraphBaseInfo info,
-                                                GraphSettingType type,
+                                                GraphSettingType type, bool dummyStillSink,
                                                 const std::vector<HalStream*>& streams) {
     LOGIPC("@%s, pData:%p, cameraId: %d, configMode: %d", __func__, pData, info.cameraId,
            info.configMode);
@@ -130,12 +130,12 @@ bool IPCGraphConfig::clientFlattenConfigStreams(void* pData, uint32_t size, Grap
         params->streamPriv[i] = *(static_cast<stream_t*>(streams[i]->mPrivate));
         params->streamNum++;
     }
-
+    params->dummyStillSink = dummyStillSink;
     return true;
 }
 
 bool IPCGraphConfig::serverUnflattenConfigStreams(void* pData, uint32_t size, GraphBaseInfo* info,
-                                                  GraphSettingType* type,
+                                                  GraphSettingType* type, bool* dummyStillSink,
                                                   std::vector<HalStream*>* streams) {
     LOGIPC("@%s, pData:%p, size: %zu", __func__, pData, size);
 
@@ -149,6 +149,7 @@ bool IPCGraphConfig::serverUnflattenConfigStreams(void* pData, uint32_t size, Gr
 
     *info = params->baseInfo;
     *type = params->type;
+    *dummyStillSink = params->dummyStillSink;
     for (uint32_t i = 0; i < params->streamNum; ++i) {
         params->streamCfg[i].mPrivate = static_cast<void*>(&(params->streamPriv[i]));
         streams->push_back(&(params->streamCfg[i]));

@@ -58,9 +58,9 @@ void GraphConfig::releaseGraphNodes() {
 status_t GraphConfig::configStreams(const vector<HalStream*> &activeStreams) {
     LOG1("@%s", __func__);
 
-    int ret = mGraphConfigImpl->configStreams(activeStreams);
-    CheckAndLogError(ret != OK, UNKNOWN_ERROR, "%s, Failed to config streams",
-                     __func__);
+    bool dummyStillSink = PlatformData::isDummyStillSink(mCameraId);
+    int ret = mGraphConfigImpl->configStreams(activeStreams, dummyStillSink);
+    CheckAndLogError(ret != OK, UNKNOWN_ERROR, "%s, Failed to config streams", __func__);
 
     ret = mGraphConfigImpl->getGraphConfigData(&mGraphData);
     CheckAndLogError(ret != OK, UNKNOWN_ERROR,

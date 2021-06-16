@@ -511,6 +511,8 @@ void CameraParser::handleSensor(CameraParser *profiles, const char *name, const 
     } else if (strcmp(name, "tnrExtraFrameNum") == 0) {
         int val = atoi(atts[1]);
         pCurrentCam->mTnrExtraFrameNum = val > 0 ? val : DEFAULT_TNR_EXTRA_FRAME_NUM;
+    } else if (strcmp(name, "dummyStillSink") == 0) {
+        pCurrentCam->mDummyStillSink = strcmp(atts[1], "true") == 0;
     }
 }
 

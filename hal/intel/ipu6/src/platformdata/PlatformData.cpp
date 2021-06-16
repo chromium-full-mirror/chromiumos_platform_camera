@@ -1451,4 +1451,8 @@ int PlatformData::getSensorOrientation(int cameraId)
     return getInstance()->mStaticCfg.mCameras[cameraId].mSensorOrientation;
 }
 
+bool PlatformData::isDummyStillSink(int cameraId)
+{
+    return getInstance()->mStaticCfg.mCameras[cameraId].mDummyStillSink;
+}
 } // namespace icamera

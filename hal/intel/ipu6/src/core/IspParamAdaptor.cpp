@@ -21,6 +21,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <utility>
+#include <memory>
 
 #include "3a/AiqResultStorage.h"
 #include "iutils/Utils.h"

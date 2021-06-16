@@ -77,6 +77,7 @@ struct GraphConfigStreamParams {
     uint32_t streamNum;
     HalStream streamCfg[MAX_STREAM];
     stream_t streamPriv[MAX_STREAM];
+    bool dummyStillSink;
 };
 
 struct GraphGetDataParams {
@@ -136,9 +137,11 @@ class IPCGraphConfig {
                             const char* settingsFile);
     bool serverUnflattenParse(void* pData, uint32_t size, GraphParseParams** parseParam);
     bool clientFlattenConfigStreams(void* pData, uint32_t size, GraphBaseInfo info,
-                                    GraphSettingType type, const std::vector<HalStream*>& streams);
+                                    GraphSettingType type,  bool dummyStillSink,
+                                    const std::vector<HalStream*>& streams);
     bool serverUnflattenConfigStreams(void* pData, uint32_t size, GraphBaseInfo* info,
-                                      GraphSettingType* type, std::vector<HalStream*>* streams);
+                                      GraphSettingType* type, bool* dummyStillSink,
+                                      std::vector<HalStream*>* streams);
     bool clientFlattenGetGraphData(void* pData, uint32_t size, GraphBaseInfo info);
     bool serverUnflattenGetGraphData(void* pData, uint32_t size, GraphBaseInfo* info);
     bool serverFlattenGetGraphData(void* pData, uint32_t size,

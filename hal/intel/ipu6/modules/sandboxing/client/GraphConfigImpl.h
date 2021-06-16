@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Intel Corporation
+ * Copyright (C) 2019-2021 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ class GraphConfigImpl {
     status_t parse(int cameraId, const char* graphDescFile, const char* settingsFile);
     void releaseGraphNodes();
 
-    status_t configStreams(const std::vector<HalStream*>& activeStreams);
+    status_t configStreams(const std::vector<HalStream*>& activeStreams, bool dummyStillSink);
     status_t getGraphConfigData(IGraphType::GraphConfigData* data);
 
     int getProgramGroup(std::string pgName, ia_isp_bxt_program_group* programGroupForPG);
