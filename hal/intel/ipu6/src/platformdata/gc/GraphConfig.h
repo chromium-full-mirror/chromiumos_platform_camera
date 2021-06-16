@@ -52,6 +52,7 @@ public:
     void releaseGraphNodes();
 
     // These public methods called by GraphConfigManager
+    status_t queryGraphSettings(const std::vector<HalStream*> &activeStreams);
     status_t configStreams(const std::vector<HalStream*> &activeStreams);
     int getSelectedMcId() { return mGraphData.mcId; }
     virtual int getGraphId(void) { return mGraphData.graphId; }

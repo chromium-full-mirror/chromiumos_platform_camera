@@ -55,6 +55,17 @@ void GraphConfig::releaseGraphNodes() {
     mGraphConfigImpl->releaseGraphNodes();
 }
 
+/*
+ * Query graph setting according to activeStreams
+ */
+status_t GraphConfig::queryGraphSettings(const std::vector<HalStream*> &activeStreams) {
+    LOG2("@%s", __func__);
+
+    bool ret = mGraphConfigImpl->queryGraphSettings(activeStreams);
+
+    return ret ? OK : NO_ENTRY;
+}
+
 status_t GraphConfig::configStreams(const vector<HalStream*> &activeStreams) {
     LOG1("@%s", __func__);
 

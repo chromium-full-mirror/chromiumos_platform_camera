@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2020 Intel Corporation
+ * Copyright (C) 2015-2021 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,15 +37,15 @@ GraphConfigManager::~GraphConfigManager()
 {
     mGraphConfigMap.clear();
     mGcConfigured = false;
-    releaseHalStream();
+    releaseHalStream(&mHalStreamVec);
 }
 
-void GraphConfigManager::releaseHalStream()
+void GraphConfigManager::releaseHalStream(std::vector<HalStream*> *halStreamVec)
 {
-    for(auto &halStream : mHalStreamVec) {
+    for (auto &halStream : *halStreamVec) {
         delete halStream;
     }
-    mHalStreamVec.clear();
+    (*halStreamVec).clear();
 }
 
 /*
@@ -60,6 +60,85 @@ StreamUseCase GraphConfigManager::getUseCaseFromStream(ConfigMode configMode, co
     return USE_CASE_PREVIEW;
 }
 
+/*
+ * Create hal stream vector.
+ */
+int GraphConfigManager::createHalStreamVector(ConfigMode configMode,
+                                              const stream_config_t *streamList,
+                                              std::vector<HalStream*> *halStreamVec) {
+    CheckAndLogError(!streamList, BAD_VALUE, "%s: Null streamList configured", __func__);
+    LOG2("%s", __func__);
+
+    // Convert the stream_t to HalStream
+    // Use the stream list with descending order to find graph settings.
+    for (int i = 0; i < streamList->num_streams; i++) {
+        // Don't handle input stream or opaque RAW stream when configure graph configuration.
+        if (streamList->streams[i].streamType == CAMERA_STREAM_INPUT ||
+            streamList->streams[i].usage == CAMERA_STREAM_OPAQUE_RAW) continue;
+
+        bool stored = false;
+        StreamUseCase useCase = getUseCaseFromStream(configMode, streamList->streams[i]);
+        streamProps props = {
+            static_cast<uint32_t>(streamList->streams[i].width),
+            static_cast<uint32_t>(streamList->streams[i].height),
+            streamList->streams[i].format,
+            streamList->streams[i].id,
+            useCase,
+        };
+        HalStream* halStream = new HalStream(props, static_cast<void*>(&streamList->streams[i]));
+        if (!halStream) {
+            LOGE("Failed to create hal stream");
+            releaseHalStream(halStreamVec);
+            return NO_MEMORY;
+        }
+
+        for (size_t j = 0; j < (*halStreamVec).size(); j++) {
+            if (halStream->width() * halStream->height() >
+                (*halStreamVec)[j]->width() * (*halStreamVec)[j]->height()) {
+                stored = true;
+                (*halStreamVec).insert(((*halStreamVec).begin() + j), halStream);
+                break;
+            }
+        }
+        if (!stored)
+            (*halStreamVec).push_back(halStream);
+    }
+
+    return OK;
+}
+
+/*
+ * Query graph setting according to streamList
+ */
+status_t GraphConfigManager::queryGraphSettings(const stream_config_t *streamList) {
+    LOG2("%s", __func__);
+    CheckError(!streamList, false, "%s: Null streamList configured", __func__);
+
+    vector<ConfigMode> configModes;
+    int ret = PlatformData::getConfigModesByOperationMode(mCameraId, streamList->operation_mode,
+                                                          configModes);
+    CheckError(ret != OK, ret, "%s, get ConfigMode failed %d", __func__, ret);
+    std::vector<HalStream*> halStreamVec;
+    ret = createHalStreamVector(configModes[0], streamList, &halStreamVec);
+    CheckError(ret != OK, ret, "%s, create hal stream failed %d", __func__, ret);
+
+    for (auto mode : configModes) {
+        LOG1("%s, Mapping the operationMode %d to ConfigMode %d", __func__,
+             streamList->operation_mode, mode);
+
+        std::shared_ptr<GraphConfig> graphConfig = std::make_shared<GraphConfig>(mCameraId, mode);
+        CheckError(!graphConfig, UNKNOWN_ERROR, "%s, Failed to create graphConfig", __func__);
+        ret = graphConfig->queryGraphSettings(halStreamVec);
+        if (ret != OK) {
+            LOG2("%s, There is no graph settings for real ConfigMode %x", __func__, mode);
+            break;
+        }
+    }
+
+    releaseHalStream(&halStreamVec);
+    return ret;
+}
+
 /**
  * Initialize the state of the GraphConfigManager after parsing the stream
  * configuration.
@@ -71,45 +150,17 @@ StreamUseCase GraphConfigManager::getUseCaseFromStream(ConfigMode configMode, co
 status_t GraphConfigManager::configStreams(const stream_config_t *streamList)
 {
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL1);
-    CheckAndLogError(!streamList, BAD_VALUE, "%s: Null streamList configured",
-                     __func__);
+    CheckError(!streamList, BAD_VALUE, "%s: Null streamList configured", __func__);
 
     vector <ConfigMode> configModes;
     int ret = PlatformData::getConfigModesByOperationMode(mCameraId, streamList->operation_mode, configModes);
-    CheckAndLogError(ret != OK, ret, "%s, get ConfigMode failed %d", __func__,
-                     ret);
+    CheckError(ret != OK, ret, "%s, get ConfigMode failed %d", __func__, ret);
 
     // Convert the stream_t to HalStream
     // Use the stream list with descending order to find graph settings.
-    releaseHalStream();
-    for (int i = 0; i < streamList->num_streams; i++) {
-        // Don't handle input stream or opaque RAW stream when configure graph configuration.
-        if (streamList->streams[i].streamType == CAMERA_STREAM_INPUT ||
-            streamList->streams[i].usage == CAMERA_STREAM_OPAQUE_RAW) continue;
-
-        bool stored = false;
-        StreamUseCase useCase = getUseCaseFromStream(configModes[0], streamList->streams[i]);
-        streamProps props = {
-            static_cast<uint32_t>(streamList->streams[i].width),
-            static_cast<uint32_t>(streamList->streams[i].height),
-            streamList->streams[i].format,
-            streamList->streams[i].id,
-            useCase,
-        };
-        HalStream* halStream = new HalStream(props, static_cast<void*>(&streamList->streams[i]));
-        CheckAndLogError(!halStream, UNKNOWN_ERROR,
-                         "Failed to create hal stream");
-
-        for (size_t j = 0; j < mHalStreamVec.size(); j++) {
-            if (halStream->width() * halStream->height() > mHalStreamVec[j]->width() * mHalStreamVec[j]->height()) {
-                stored = true;
-                mHalStreamVec.insert((mHalStreamVec.begin() + j), halStream);
-                break;
-            }
-        }
-        if (!stored)
-            mHalStreamVec.push_back(halStream);
-    }
+    releaseHalStream(&mHalStreamVec);
+    ret = createHalStreamVector(configModes[0], streamList, &mHalStreamVec);
+    CheckError(ret != OK, ret, "%s, create hal stream failed %d", __func__, ret);
 
     //debug
     dumpStreamConfig();

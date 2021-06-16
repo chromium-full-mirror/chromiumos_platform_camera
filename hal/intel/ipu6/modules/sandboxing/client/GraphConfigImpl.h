@@ -42,6 +42,7 @@ class GraphConfigImpl {
     status_t parse(int cameraId, const char* graphDescFile, const char* settingsFile);
     void releaseGraphNodes();
 
+    bool queryGraphSettings(const std::vector<HalStream*>& activeStreams);
     status_t configStreams(const std::vector<HalStream*>& activeStreams, bool dummyStillSink);
     status_t getGraphConfigData(IGraphType::GraphConfigData* data);
 
@@ -57,6 +58,7 @@ class GraphConfigImpl {
     IntelAlgoCommon mCommon;
 
     ShmMemInfo mMemParse;
+    ShmMemInfo mMemQueryGraphSettings;
     ShmMemInfo mMemConfig;
     ShmMemInfo mMemGetData;
     ShmMemInfo mMemGetPgId;

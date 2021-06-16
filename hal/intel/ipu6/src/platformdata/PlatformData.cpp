@@ -139,6 +139,17 @@ void PlatformData::parseGraphFromXmlFile() {
     }
 }
 
+int PlatformData::queryGraphSettings(int cameraId, const stream_config_t *streamList) {
+    if (PlatformData::getGraphConfigNodes(cameraId)) {
+        IGraphConfigManager *gcInstance = IGraphConfigManager::getInstance(cameraId);
+        if (gcInstance != nullptr && OK != gcInstance->queryGraphSettings(streamList)) {
+            LOG2("@%s Failed to queryGraphSettings cameraId: %d", __func__, cameraId);
+            return NO_ENTRY;
+        }
+    }
+    return OK;
+}
+
 void PlatformData::releaseGraphConfigNodes()
 {
     std::shared_ptr<GraphConfig> graphConfig = std::make_shared<GraphConfig>();

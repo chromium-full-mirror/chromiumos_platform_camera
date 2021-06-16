@@ -362,6 +362,46 @@ status_t GraphConfigImpl::getRawInputSize(GCSS::IGraphConfig* query, camera_reso
     return UNKNOWN_ERROR;
 }
 
+status_t GraphConfigImpl::queryAllMatchedResults(const std::vector<HalStream*>& activeStreams,
+                                    bool dummyStillSink,
+                                    std::map<int, std::vector<GCSS::IGraphConfig*>> *queryResults) {
+    CheckError(!queryResults, UNKNOWN_ERROR, "%s, The queryResults is nullptr", __func__);
+
+    status_t ret = createQueryRule(activeStreams, dummyStillSink);
+    CheckAndLogError(ret != OK, ret, "Failed to create the query rule");
+
+    LOG2("%s, The mQuery size: %zu", __func__, mQuery.size());
+    for (auto& query : mQuery) {
+        mFirstQueryResults.clear();
+        mGraphQueryManager->queryGraphs(query.second, mFirstQueryResults);
+        if (mFirstQueryResults.empty()) {
+            LOG2("%s, Failed to query the result, please check the settings xml", __func__,
+                 mConfigMode);
+            return BAD_VALUE;
+        }
+
+        // select setting from multiple results
+        ret = selectSetting(query.first, queryResults);
+        if (ret != OK) {
+            LOG2("%s, There is no the settings for ConfigMode (0x%x)in results", __func__,
+                 mConfigMode);
+            return UNKNOWN_ERROR;
+        }
+    }
+
+    if ((*queryResults).empty()) {
+        LOG2("%s, There isn't matched result after filtering with first query rule", __func__);
+        return UNKNOWN_ERROR;
+    }
+    return OK;
+}
+
+bool GraphConfigImpl::queryGraphSettings(const std::vector<HalStream*>& activeStreams) {
+    std::map<int, std::vector<GCSS::IGraphConfig*> > useCaseToQueryResults;
+    status_t ret = queryAllMatchedResults(activeStreams, false, &useCaseToQueryResults);
+    return ret == OK ? true : false;
+}
+
 /*
  * According to the stream list to query graph setting and create GraphConfigPipe
  */
@@ -369,33 +409,9 @@ status_t GraphConfigImpl::configStreams(const vector<HalStream*>& activeStreams,
                                         bool dummyStillSink) {
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL1);
 
-    status_t ret = createQueryRule(activeStreams, dummyStillSink);
-    CheckAndLogError(ret != OK, ret, "Failed to create the query rule");
-
-    mQueryResult.clear();
     map<int, vector<GCSS::IGraphConfig*> > useCaseToQueryResults;
-
-    LOG2("The mQuery size: %zu", mQuery.size());
-    for (auto& query : mQuery) {
-        mFirstQueryResults.clear();
-        dumpQuery(query.first, query.second);
-        mGraphQueryManager->queryGraphs(query.second, mFirstQueryResults);
-        CheckAndLogError(
-            mFirstQueryResults.empty(), BAD_VALUE,
-            "Failed to query the result, please check the settings xml");
-
-        // select setting from multiple results
-        ret = selectSetting(query.first, &useCaseToQueryResults);
-        CheckAndLogError(
-            ret != OK, BAD_VALUE,
-            "Failed to select the settings for ConfigMode (0x%x)in results",
-            mConfigMode);
-    }
-
-    CheckAndLogError(
-        useCaseToQueryResults.empty(), UNKNOWN_ERROR,
-        "%s, There isn't matched result after filtering with first query rule",
-        __func__);
+    status_t ret = queryAllMatchedResults(activeStreams, dummyStillSink, &useCaseToQueryResults);
+    CheckAndLogError(ret != OK, UNKNOWN_ERROR, "%s, Faild to queryAllMatchedResults", __func__);
     // Filter the results with same isys output if there are
     // multiple items in useCaseToQueryResults map
     if (useCaseToQueryResults.size() > 1) {

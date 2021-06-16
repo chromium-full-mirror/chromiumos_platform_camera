@@ -311,6 +311,11 @@ public:
     static void parseGraphFromXmlFile();
 
     /**
+     * Query GraphSettings
+     */
+    static int queryGraphSettings(int cameraId, const stream_config_t *streamList);
+
+    /**
      * get the camera numbers
      *
      * \return int: the camera numbers

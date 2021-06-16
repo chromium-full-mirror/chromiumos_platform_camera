@@ -320,6 +320,14 @@ int RequestManager::configureStreams(camera3_stream_configuration_t* stream_list
     icamera::stream_config_t streamCfg = {
         halStreamNum, mHALStream,
         icamera::camera_stream_configuration_mode_t::CAMERA_STREAM_CONFIGURATION_MODE_AUTO};
+    if (fdChooseStream && isIPUSupportFD) {
+        ret = icamera::PlatformData::queryGraphSettings(mCameraId, &streamCfg);
+        if (ret != icamera::OK) {
+            isIPUSupportFD = false;
+            streamCfg = {--halStreamNum, mHALStream,
+                icamera::camera_stream_configuration_mode_t::CAMERA_STREAM_CONFIGURATION_MODE_AUTO};
+        }
+    }
 
     for (int i = 0; i < requestStreamNum; i++) {
         const icamera::stream_t& s = requestStreams[i];
@@ -339,21 +347,10 @@ int RequestManager::configureStreams(camera3_stream_configuration_t* stream_list
     }
 
     ret = icamera::camera_device_config_streams(mCameraId, &streamCfg);
-    if (fdChooseStream && isIPUSupportFD) {
-        if (ret == icamera::OK) {
-            requestStreamForFD = mHALStream[halStreamNum - 1];
-            halStreamNum--;
-        } else {
-            halStreamNum--;
-            LOG2("@%s, No available graph setting to process face detection", __func__);
-            icamera::stream_config_t streamCfg = {
-                halStreamNum, mHALStream,
-                icamera::camera_stream_configuration_mode_t::CAMERA_STREAM_CONFIGURATION_MODE_AUTO};
-            ret = icamera::camera_device_config_streams(mCameraId, &streamCfg);
-            isIPUSupportFD = false;
-        }
+    if (fdChooseStream && isIPUSupportFD && ret == icamera::OK) {
+        requestStreamForFD = mHALStream[halStreamNum - 1];
+        halStreamNum--;
     }
-
     CheckAndLogError(ret != icamera::OK, ret, "failed to configure stream, ret %d", ret);
 
     // Create Stream for new streams

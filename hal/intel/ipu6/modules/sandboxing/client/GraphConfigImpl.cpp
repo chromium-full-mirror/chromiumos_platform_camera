@@ -48,12 +48,15 @@ GraphConfigImpl::GraphConfigImpl(int32_t camId, ConfigMode mode, GraphSettingTyp
           mType(type),
           mInitialized(false) {
     uintptr_t personal = reinterpret_cast<uintptr_t>(this);
+    std::string queryGraphSettings = "/graphQueryGraph" + std::to_string(personal) + "Shm";
     std::string configStreamsName = "/graphConfigStreams" + std::to_string(personal) + "Shm";
     std::string getGraphDataName = "/graphGetData" + std::to_string(personal) + "Shm";
     std::string getPgIdName = "/graphGetPgId" + std::to_string(personal) + "Shm";
     std::string getConnection = "/graphGetConnection" + std::to_string(personal) + "Shm";
 
-    mMems = {{configStreamsName.c_str(), sizeof(GraphConfigStreamParams), &mMemConfig, false},
+    mMems = {{queryGraphSettings.c_str(), sizeof(GraphQueryGraphParams), &mMemQueryGraphSettings,
+              false},
+             {configStreamsName.c_str(), sizeof(GraphConfigStreamParams), &mMemConfig, false},
              {getGraphDataName.c_str(), sizeof(GraphGetDataParams), &mMemGetData, false},
              {getPgIdName.c_str(), sizeof(GraphGetPgIdParams), &mMemGetPgId, false},
              {getConnection.c_str(), sizeof(GraphGetConnectionParams), &mMemGetConnection, false}};
@@ -107,6 +110,24 @@ void GraphConfigImpl::releaseGraphNodes() {
 
     bool ret = mCommon.requestSync(IPC_GRAPH_RELEASE_NODES);
     CheckAndLogError(!ret, VOID_VALUE, "@%s, requestSync fails", __func__);
+}
+
+bool GraphConfigImpl::queryGraphSettings(const vector<HalStream*>& activeStreams) {
+    LOGIPC("@%s", __func__);
+    CheckError(!mInitialized, false, "@%s, mInitialized is false", __func__);
+
+    GraphBaseInfo info = {mCameraId, mConfigMode};
+    memset(mMemQueryGraphSettings.mAddr, 0, sizeof(GraphQueryGraphParams));
+    bool ret = mIpc.clientFlattenConfigStreams(mMemQueryGraphSettings.mAddr, mMemConfig.mSize,
+                                               info, mType, false, activeStreams);
+    CheckError(!ret, false, "@%s, clientFlattenConfigStreams fails", __func__);
+
+    ret = mCommon.requestSync(IPC_GRAPH_QUERY_GRAPH_SETTINGS, mMemQueryGraphSettings.mHandle);
+    CheckError(!ret, false, "@%s, requestSync fails", __func__);
+
+    GraphQueryGraphParams* params =
+        static_cast<GraphQueryGraphParams*>(mMemQueryGraphSettings.mAddr);
+    return params->isHasGraphSettings;
 }
 
 status_t GraphConfigImpl::configStreams(const vector<HalStream*>& activeStreams,

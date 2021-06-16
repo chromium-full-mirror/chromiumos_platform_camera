@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 Intel Corporation.
+ * Copyright (C) 2020-2021 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -98,6 +98,9 @@ void IntelCPUAlgoServer::handleRequest(const MsgReq& msg) {
             break;
         case IPC_GRAPH_RELEASE_NODES:
             mGraph.releaseGraphNodes();
+            break;
+        case IPC_GRAPH_QUERY_GRAPH_SETTINGS:
+            status = mGraph.queryGraphSettings(addr, requestSize);
             break;
         case IPC_GRAPH_CONFIG_STREAMS:
             mGraph.configStreams(addr, requestSize);

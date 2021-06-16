@@ -62,6 +62,26 @@ void GraphConfigServer::releaseGraphNodes() {
     mGraphConfigMap.begin()->second->releaseGraphNodes();
 }
 
+status_t GraphConfigServer::queryGraphSettings(void* pData, size_t dataSize) {
+    LOGIPC("@%s, pData:%p, dataSize:%zu", __func__, pData, dataSize);
+    CheckError(pData == nullptr, UNKNOWN_ERROR, "@%s, pData is nullptr", __func__);
+
+    GraphBaseInfo info;
+    GraphSettingType type;
+    std::vector<HalStream*> streams;
+    bool dummyStillSink;
+    bool ret = mIpc.serverUnflattenConfigStreams(pData, dataSize, &info, &type, &dummyStillSink,
+                                                 &streams);
+    CheckError(ret == false, UNKNOWN_ERROR, "@%s, clientFlattenConfigStreams fails", __func__);
+
+    GraphQueryGraphParams* params = static_cast<GraphQueryGraphParams*>(pData);
+    std::shared_ptr<GraphConfigImpl> graphConfigImpl =
+        std::make_shared<GraphConfigImpl>(info.cameraId, info.configMode, type);
+    params->isHasGraphSettings = graphConfigImpl->queryGraphSettings(streams);
+
+    return OK;
+}
+
 status_t GraphConfigServer::configStreams(void* pData, size_t dataSize) {
     LOGIPC("@%s, pData:%p, dataSize:%zu", __func__, pData, dataSize);
     CheckAndLogError(pData == nullptr, UNKNOWN_ERROR, "@%s, pData is nullptr",

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Intel Corporation.
+ * Copyright (C) 2019-2021 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,6 +78,11 @@ struct GraphConfigStreamParams {
     HalStream streamCfg[MAX_STREAM];
     stream_t streamPriv[MAX_STREAM];
     bool dummyStillSink;
+};
+
+struct GraphQueryGraphParams {
+    GraphConfigStreamParams configParams;
+    bool isHasGraphSettings;
 };
 
 struct GraphGetDataParams {

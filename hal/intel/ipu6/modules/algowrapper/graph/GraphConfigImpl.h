@@ -98,6 +98,7 @@ class GraphConfigImpl {
     void releaseGraphNodes();
 
     // These public methods called by GraphConfig
+    bool queryGraphSettings(const std::vector<HalStream*>& activeStreams);
     status_t configStreams(const std::vector<HalStream*>& activeStreams, bool dummyStillSink);
     status_t getGraphConfigData(IGraphType::GraphConfigData* data);
 
@@ -113,9 +114,12 @@ class GraphConfigImpl {
     bool isVideoStream(HalStream* stream);
     status_t selectSetting(int useCase,
                            std::map<int, std::vector<GCSS::IGraphConfig*> >* queryResults);
+    status_t queryGraphs(const std::vector<HalStream*>& activeStreams, bool dummyStillSink);
     status_t createQueryRule(const std::vector<HalStream*>& activeStreams, bool dummyStillSink);
     status_t getRawInputSize(GCSS::IGraphConfig* query, camera_resolution_t* reso);
 
+    status_t queryAllMatchedResults(const std::vector<HalStream*>& activeStreams,
+                bool dummyStillSink, std::map<int, std::vector<GCSS::IGraphConfig*>> *queryResults);
     status_t getGdcKernelSetting(uint32_t* kernelId, ia_isp_bxt_resolution_info_t* resolution);
     status_t graphGetStreamIds(std::vector<int32_t>* streamIds);
     int getStreamIdByPgName(std::string pgName);
