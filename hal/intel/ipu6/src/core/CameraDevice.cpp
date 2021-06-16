@@ -1487,8 +1487,11 @@ int CameraDevice::initDefaultParameters()
     // Init mParameter to camera's capability first and then add some others default settings
     mParameter = *info.capability;
 
-    // TODO: Figure out a better place to set default parameters since they may be platform specified.
     camera_range_t fps = {10, 60};
+    camera_range_array_t fpsRanges;
+    if (mParameter.getSupportedFpsRange(fpsRanges) == OK) {
+        fps = fpsRanges.back();
+    }
     mParameter.setFpsRange(fps);
     mParameter.setFrameRate(30);
 

@@ -61,7 +61,7 @@ class FaceDetection : public Thread {
 
  private:
     bool faceRunningByCondition();
-    int getFaceDetectionResult(FaceDetectionResult *mResult);
+    int getFaceDetectionResult(FaceDetectionResult *mResult, bool resetRes = false);
     FaceDetectionRunParams *acquireRunBuf();
     void returnRunBuf(FaceDetectionRunParams *memRunBuf);
     void getCurrentFrameWidthAndHight(int *frameWidth, int *frameHigth);

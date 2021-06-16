@@ -250,6 +250,7 @@ void FaceDetection::runFaceDetectionBySync(const camera_buffer_t &buffer) {
         AutoMutex l(mFaceResultLock);
         if (ret == OK) {
             mResult = params->results;
+            mResult.faceUpdated = true;
         } else {
             CLEAR(mResult);
         }
@@ -320,6 +321,7 @@ bool FaceDetection::threadLoop() {
         AutoMutex l(mFaceResultLock);
         if (ret == OK) {
             mResult = faceParams->results;
+            mResult.faceUpdated = true;
         } else {
             CLEAR(mResult);
         }
@@ -338,7 +340,7 @@ int FaceDetection::getFaceNum() {
 }
 
 /* The result is pvl's original reuslt */
-int FaceDetection::getFaceDetectionResult(FaceDetectionResult *result) {
+int FaceDetection::getFaceDetectionResult(FaceDetectionResult *result, bool resetRes) {
     LOG1("@%s", __func__);
     CheckAndLogError(mInitialized == false, UNKNOWN_ERROR,
                      "mInitialized is false");
@@ -346,6 +348,11 @@ int FaceDetection::getFaceDetectionResult(FaceDetectionResult *result) {
 
     AutoMutex l(mFaceResultLock);
     MEMCPY_S(result, sizeof(FaceDetectionResult), &mResult, sizeof(FaceDetectionResult));
+
+    if (resetRes) {
+        mResult.faceUpdated = false;
+    }
+
     return OK;
 }
 
@@ -389,9 +396,8 @@ int FaceDetection::getResult(int cameraId, cca::cca_face_state *faceState) {
         FaceDetection *fdInstance = FaceDetection::getInstance(cameraId);
         CheckAndLogError(!fdInstance, UNKNOWN_ERROR, "Failed to get instance");
 
-        int ret = fdInstance->getFaceDetectionResult(&faceDetectionResult);
-        CheckAndLogError(ret != OK, UNKNOWN_ERROR,
-                         "Failed to get result, ret %d", ret);
+        int ret = fdInstance->getFaceDetectionResult(&faceDetectionResult, true);
+        CheckAndLogError(ret != OK, UNKNOWN_ERROR, "Failed to get result, ret %d", ret);
         fdInstance->getCurrentFrameWidthAndHight(&width, &height);
         fdInstance->getHalStreamId(&halStreamId);
     }
@@ -421,9 +427,11 @@ int FaceDetection::getResult(int cameraId, cca::cca_face_state *faceState) {
     float offsetW = (1.0 - fovRatioWTmp) / 2.0 * (IA_COORDINATE_RIGHT - IA_COORDINATE_LEFT);
     float offsetH = (1.0 - fovRatioHTmp) / 2.0 * (IA_COORDINATE_BOTTOM - IA_COORDINATE_TOP);
 
-    LOG1("@%s, faceNum:%d, mHeight:%d, mWidth:%d", __func__,
-         faceDetectionResult.faceNum, height, width);
+    LOG1("@%s, faceNum:%d, mHeight:%d, mWidth:%d, faceUpdated: %d", __func__,
+         faceDetectionResult.faceNum, height, width, faceDetectionResult.faceUpdated);
 
+    faceState->is_video_conf = true;
+    faceState->updated = faceDetectionResult.faceUpdated;
     faceState->num_faces = faceDetectionResult.faceNum;
 
     for (int i = 0; i < faceDetectionResult.faceNum; i++) {

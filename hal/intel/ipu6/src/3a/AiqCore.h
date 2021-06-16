@@ -66,10 +66,8 @@ public:
 
     /**
      * \brief AiqCore configure
-     *
-     * Configure AiqPlus ConfigMode
      */
-    int configure(const std::vector<ConfigMode>& configModes);
+    int configure();
 
     /**
      * \brief Set sensor and frame info

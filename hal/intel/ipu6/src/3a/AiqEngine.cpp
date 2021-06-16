@@ -80,12 +80,12 @@ int AiqEngine::deinit()
     return OK;
 }
 
-int AiqEngine::configure(const std::vector<ConfigMode>& configModes)
+int AiqEngine::configure()
 {
     LOG1("%s, mCameraId = %d", __func__, mCameraId);
 
     AutoMutex l(mEngineLock);
-    mAiqCore->configure(configModes);
+    mAiqCore->configure();
 
     return OK;
 }

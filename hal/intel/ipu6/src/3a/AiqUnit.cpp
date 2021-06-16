@@ -138,7 +138,7 @@ int AiqUnit::configure(const stream_config_t *streamList)
     int ret = mAiqSetting->configure(streamList);
     CheckAndLogError(ret != OK, ret, "configure AIQ settings error: %d", ret);
 
-    ret = mAiqEngine->configure(configModes);
+    ret = mAiqEngine->configure();
     CheckAndLogError(ret != OK, ret, "configure AIQ engine error: %d", ret);
     // INTEL_DVS_S
     if (mDvs) {

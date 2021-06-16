@@ -296,7 +296,7 @@ int RequestManager::configureStreams(camera3_stream_configuration_t* stream_list
     bool isIPUSupportFD = icamera::PlatformData::isIPUSupportFD(mCameraId);
     Camera3Stream* faceDetectionOwner = nullptr;
     camera3_stream_t* fdChooseStream = nullptr;
-    icamera::stream_t requestStreamForFD;
+    icamera::stream_t requestStreamForFD = {};
     bool isFaceAeEnabled = icamera::PlatformData::isFaceAeEnabled(mCameraId);
     // Mark one camera3Stream run face detection
     if (isFaceAeEnabled) {

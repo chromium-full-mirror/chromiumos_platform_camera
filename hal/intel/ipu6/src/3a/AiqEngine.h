@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2020 Intel Corporation.
+ * Copyright (C) 2015-2021 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,7 +54,7 @@ public:
     /**
      * \brief configure with ConfigMode
      */
-    int configure(const std::vector<ConfigMode>& configModes);
+    int configure();
 
     /**
      * \brief Calculate and set frame and sensor info, and run 3a with default setting.

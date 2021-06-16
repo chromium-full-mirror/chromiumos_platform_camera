@@ -41,7 +41,6 @@ namespace icamera {
 #define STRINGIFY1(x) #x
 #define STRINGIFY(x) STRINGIFY1(x)
 
-// TODO: Change the format attribute natively as integer attribute
 #ifndef VIDEO_RECORDING_FORMAT
 #define VIDEO_RECORDING_FORMAT TILE
 #endif
@@ -405,18 +404,14 @@ Node* GraphConfigPipe::getOutputPortForSink(const string& sinkName) {
 
 /**
  * Update the option-list to the graph tree.
- * TODO: Add more options.
+ *
  * \return OK in case of success
  * \return UNKNOWN_ERROR if graph update failed.
  */
 status_t GraphConfigPipe::handleDynamicOptions() {
     status_t status = setPortFormats();
-    if (status != OK) {
-        LOGE("Failed to update metadata");
-        return UNKNOWN_ERROR;
-    }
+    CheckError(status != OK, status, "Failed to set port format");
 
-    // TODO add other options
     return status;
 }
 
@@ -1179,7 +1174,7 @@ status_t GraphConfigPipe::pipelineGetConnections(
             }
 
             aConnection.hasEdgePort = false;
-            if (isPipeEdgePort(port)) {
+            if (portIsEdgePort(port)) {
                 int32_t direction = portGetDirection(port);
                 if (direction == GraphConfigPipe::PORT_DIRECTION_INPUT) {
                     aConnection.connectionConfig.mConnectionType = IGraphType::connection_type_push;
@@ -1431,7 +1426,7 @@ status_t GraphConfigPipe::pipelineGetConnections(
             }
 
             aConnection.hasEdgePort = false;
-            if (isPipeEdgePort(port)) {
+            if (portIsEdgePort(port)) {
                 int32_t direction = portGetDirection(port);
                 if (direction == GraphConfigPipe::PORT_DIRECTION_INPUT) {
                     aConnection.connectionConfig.mConnectionType = IGraphType::connection_type_push;
@@ -1948,7 +1943,7 @@ status_t GraphConfigPipe::portGetClientStream(Node* port, HalStream** stream) {
  * Here we check for both conditions and return true if this port is at either
  * edge of a pipeline
  */
-bool GraphConfigPipe::isPipeEdgePort(Node* port) {
+bool GraphConfigPipe::portIsEdgePort(Node* port) {
     CheckAndLogError(!port, false, "%s, the port is nullptr", __func__);
     Node* peer = nullptr;
     Node* peerAncestor = nullptr;

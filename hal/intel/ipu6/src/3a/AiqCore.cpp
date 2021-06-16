@@ -144,7 +144,7 @@ int AiqCore::deinit() {
     return OK;
 }
 
-int AiqCore::configure(const std::vector<ConfigMode>& configModes) {
+int AiqCore::configure() {
     LOG3A("@%s", __func__);
 
     if (mAiqState == AIQ_CONFIGURED) {
