@@ -1331,7 +1331,7 @@ int CameraDevice::reconfigure(stream_config_t *streamList)
 
         mProducer->deinit();
 
-        /* TODO: Currently kernel have issue and need reopen subdevices
+        /* Currently kernel have issue and need reopen subdevices
          * when stream off and on. Remove below delete and recreate code
          * when all kernel issues got fixed.
          */
@@ -1399,7 +1399,7 @@ int CameraDevice::reconfigure(stream_config_t *streamList)
         LOG2("%s: reconfigure CameraDevice done", __func__);
     } else {
 
-        /* TODO: scene mode based psys-only auto switch here will be used to
+        /* Scene mode based psys-only auto switch here will be used to
          * replace current auto-switch mechanism in AiqSetting:updateTuningMode,
          * which is for non-DOL sensor auto-switch. The switch stabilization
          * counting in AiqSetting:updateTuningMode will also be replaced by the

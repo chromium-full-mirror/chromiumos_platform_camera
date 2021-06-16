@@ -127,6 +127,8 @@ class Camera3Stream : public icamera::Thread {
 
     void drainRequest();
 
+    bool isLockUserBufferNeeded(const std::shared_ptr<Camera3Buffer>& inputCam3Buf);
+
  private:
     const uint64_t kMaxDuration = 2000000000;  // 2000ms
 

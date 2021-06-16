@@ -228,7 +228,7 @@ int getStride(int cssFmt, int width) {
             stride = ALIGN_64(width * 2);
             break;
         default:
-            LOG2("TODO for format: %d", cssFmt);
+            LOG2("unsupported css format: %d", cssFmt);
             break;
     }
     return stride;

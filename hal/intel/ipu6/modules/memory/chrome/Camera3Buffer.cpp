@@ -182,7 +182,6 @@ icamera::status_t Camera3Buffer::init(const camera3_stream_buffer* aBuffer, int 
         return UNKNOWN_ERROR;
     }
 
-    /* TODO: add some consistency checks here and return an error */
     return icamera::OK;
 }
 

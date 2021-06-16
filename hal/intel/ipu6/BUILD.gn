@@ -113,7 +113,7 @@ shared_library("libcamhal") {
     "src/jpeg/EXIFMetaData.cpp",
     "src/jpeg/ExifCreater.cpp",
     "src/jpeg/JpegMaker.cpp",
-    "src/jpeg/chrome/JpegEncoderCore.cpp",  # TODO: Migrate to hardware JPEG encoding later
+    "src/jpeg/chrome/JpegEncoderCore.cpp",
     "src/metadata/CameraMetadata.cpp",
     "src/metadata/ParameterGenerator.cpp",
     "src/metadata/ParameterHelper.cpp",

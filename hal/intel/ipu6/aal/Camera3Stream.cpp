@@ -74,7 +74,9 @@ Camera3Stream::~Camera3Stream() {
     setActive(false);
 
     for (auto& buf : mBuffers) {
-        buf.second->unlock();
+        if (buf.second->isLocked()) {
+            buf.second->unlock();
+        }
     }
 
     mBuffers.clear();
@@ -134,9 +136,10 @@ void Camera3Stream::drainRequest() {
         mBuffers.erase(handle);
         camera3_stream_buffer* buf = &result->outputBuffer;
 
-        CheckAndLogError(ccBuf == nullptr, VOID_VALUE, "%s, ccBuf is nullptr",
-                         __func__);
-        ccBuf->unlock();
+        CheckAndLogError(ccBuf == nullptr, VOID_VALUE, "%s, ccBuf is nullptr", __func__);
+        if (ccBuf->isLocked()) {
+            ccBuf->unlock();
+        }
         ccBuf->deinit();
         ccBuf->getFence(buf);
 
@@ -357,7 +360,9 @@ bool Camera3Stream::threadLoop() {
     if (mHALStream.usage != icamera::CAMERA_STREAM_OPAQUE_RAW) {
         ccBuf->dumpImage(frameNumber, icamera::DUMP_AAL_OUTPUT, dumpOutputFmt);
     }
-    ccBuf->unlock();
+    if (ccBuf->isLocked()) {
+        ccBuf->unlock();
+    }
     ccBuf->deinit();
     ccBuf->getFence(&result->outputBuffer);
 
@@ -391,6 +396,18 @@ void Camera3Stream::requestExit() {
     }
 }
 
+bool Camera3Stream::isLockUserBufferNeeded(const std::shared_ptr<Camera3Buffer>& inputCam3Buf) {
+    LOG2("[%p]@%s", this, __func__);
+
+    return (mHALStream.usage == icamera::CAMERA_STREAM_OPAQUE_RAW ||
+            mPostProcessType != icamera::POST_PROCESS_NONE ||
+            mFaceDetection != nullptr ||
+            inputCam3Buf != nullptr ||
+            !mListeners.empty() ||
+            !mIsHALStream ||
+            icamera::CameraDump::isDumpTypeEnable(icamera::DUMP_AAL_OUTPUT));
+}
+
 int Camera3Stream::processRequest(const std::shared_ptr<Camera3Buffer>& inputCam3Buf,
                                   const camera3_stream_buffer_t& outputBuffer,
                                   uint32_t frame_number) {
@@ -412,11 +429,11 @@ int Camera3Stream::processRequest(const std::shared_ptr<Camera3Buffer>& inputCam
     CheckAndLogError(status != icamera::OK, icamera::BAD_VALUE,
                      "Failed to init CameraBuffer");
     status = ccBuf->waitOnAcquireFence();
-    CheckAndLogError(status != icamera::OK, icamera::BAD_VALUE,
-                     "Failed to sync CameraBuffer");
-    status = ccBuf->lock();
-    CheckAndLogError(status != icamera::OK, icamera::BAD_VALUE,
-                     "Failed to lock buffer");
+    CheckAndLogError(status != icamera::OK, icamera::BAD_VALUE, "Failed to sync CameraBuffer");
+    if (isLockUserBufferNeeded(inputCam3Buf)) {
+        status = ccBuf->lock();
+        CheckAndLogError(status != icamera::OK, icamera::BAD_VALUE, "Failed to lock buffer");
+    }
 
     std::shared_ptr<StreamComInfo> streamInfo = std::make_shared<StreamComInfo>();
     streamInfo->cam3Buf = nullptr;
