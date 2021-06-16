@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Intel Corporation
+ * Copyright (C) 2019-2021 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -112,13 +112,10 @@ FaceDetectionRunParams* IntelFaceDetection::prepareRunBuffer(unsigned int index)
 }
 
 status_t IntelFaceDetection::run(FaceDetectionRunParams* runParams, int dataSize, int dmafd) {
-    CheckAndLogError(!mInitialized, UNKNOWN_ERROR, "@%s, mInitialized is false",
-                     __func__);
-    CheckAndLogError(!runParams, UNKNOWN_ERROR, "@%s,runParams is nullptr",
-                     __func__);
-    CheckAndLogError(
-        dataSize < static_cast<int>(sizeof(FaceDetectionRunParams)),
-        UNKNOWN_ERROR, "@%s, buffer is small", __func__);
+    CheckAndLogError(!mInitialized, UNKNOWN_ERROR, "@%s, mInitialized is false", __func__);
+    CheckAndLogError(!runParams, UNKNOWN_ERROR, "@%s,runParams is nullptr", __func__);
+    CheckAndLogError(dataSize < static_cast<int>(sizeof(FaceDetectionRunParams)),
+                     UNKNOWN_ERROR, "@%s, buffer is small", __func__);
 
     if (dmafd >= 0) {
         runParams->bufferHandle = mCommon.registerGbmBuffer(dmafd);
@@ -127,8 +124,7 @@ status_t IntelFaceDetection::run(FaceDetectionRunParams* runParams, int dataSize
     }
 
     int32_t runBufHandle = mCommon.getShmMemHandle(static_cast<void*>(runParams));
-    CheckAndLogError(runBufHandle < 0, UNKNOWN_ERROR,
-                     "@%s, getShmMemHandle fails", __func__, runParams);
+    CheckAndLogError(runBufHandle < 0, UNKNOWN_ERROR, "@%s, getShmMemHandle fails", __func__);
 
     bool ret = mCommon.requestSync(IPC_FD_RUN, runBufHandle);
     CheckAndLogError(ret == false, UNKNOWN_ERROR, "@%s, requestSync fails",

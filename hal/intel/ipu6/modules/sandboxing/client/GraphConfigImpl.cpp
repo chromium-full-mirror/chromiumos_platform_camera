@@ -65,7 +65,7 @@ GraphConfigImpl::GraphConfigImpl(int32_t camId, ConfigMode mode, GraphSettingTyp
     }
 
     mInitialized = true;
-    LOGIPC("@%s, done, cameraId: %d, configMode: %d, type", __func__, mCameraId, mConfigMode,
+    LOGIPC("@%s, done, cameraId: %d, configMode: %d, type %d", __func__, mCameraId, mConfigMode,
            mType);
 }
 

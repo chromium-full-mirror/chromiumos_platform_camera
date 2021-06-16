@@ -97,8 +97,7 @@ int PipeLiteExecutor::initPipe()
                      mName.c_str());
 
     ret = createPGs();
-    CheckAndLogError(ret != OK, ret, "Failed to create PGs for executor: %s",
-                     ret, mName.c_str());
+    CheckAndLogError(ret != OK, ret, "Failed to create PGs for executor: %s", mName.c_str());
 
     ret = analyzeConnections(connVector);
     CheckAndLogError(ret != OK, ret,

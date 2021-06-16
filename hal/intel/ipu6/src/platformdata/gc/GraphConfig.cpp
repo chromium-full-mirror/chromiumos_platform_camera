@@ -140,7 +140,7 @@ ia_isp_bxt_program_group* GraphConfig::getProgramGroup(int32_t streamId) {
         }
     }
 
-    LOGE("%s, Failed to get programGroup for streamId", __func__, streamId);
+    LOGE("%s, Failed to get programGroup for streamId %d", __func__, streamId);
     return nullptr;
 }
 

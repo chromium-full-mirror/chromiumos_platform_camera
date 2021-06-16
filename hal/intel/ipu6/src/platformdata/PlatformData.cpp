@@ -1166,8 +1166,13 @@ bool PlatformData::isTPGReceiver(int cameraId)
 int PlatformData::getSupportAeExposureTimeRange(int cameraId, camera_scene_mode_t sceneMode,
                                                 camera_range_t& etRange)
 {
+    Parameters* param = &getInstance()->mStaticCfg.mCameras[cameraId].mCapability;
+    int ret = param->getSupportedSensorExposureTimeRange(etRange);
+    if (ret == OK)
+        return OK;
+
     vector<camera_ae_exposure_time_range_t> ranges;
-    getInstance()->mStaticCfg.mCameras[cameraId].mCapability.getSupportedAeExposureTimeRange(ranges);
+    param->getSupportedAeExposureTimeRange(ranges);
 
     if (ranges.empty())
         return NAME_NOT_FOUND;

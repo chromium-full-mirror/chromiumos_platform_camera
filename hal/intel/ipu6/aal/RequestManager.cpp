@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2020 Intel Corporation
+ * Copyright (C) 2017-2021 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,16 +39,22 @@
 #include "Utils.h"
 
 namespace camera3 {
+#define VGA_WIDTH 640
+#define VGA_HEIGHT 480
+#define VGA_360P 360
+
 RequestManager::RequestManager(int cameraId)
         : mCameraId(cameraId),
           mCallbackOps(nullptr),
           mCameraDeviceStarted(false),
           mResultProcessor(nullptr),
           mInputStreamConfigured(false),
-          mRequestInProgress(0) {
+          mRequestInProgress(0),
+          mFDStream(nullptr) {
     LOG1("@%s", __func__);
 
     CLEAR(mCameraBufferInfo);
+    CLEAR(mFDStreamsInfo);
 }
 
 RequestManager::~RequestManager() {
@@ -61,6 +67,13 @@ RequestManager::~RequestManager() {
 
 int RequestManager::init(const camera3_callback_ops_t* callback_ops) {
     LOG1("@%s", __func__);
+
+    /* If it supports one more video output to process face detection */
+    if (icamera::PlatformData::isIPUSupportFD(mCameraId)) {
+        mFDStreamsInfo.stream_type = CAMERA3_STREAM_OUTPUT;
+        mFDStreamsInfo.width = VGA_WIDTH;
+        mFDStreamsInfo.height = VGA_HEIGHT;
+    }
 
     // Update the default settings from camera HAL
     icamera::Parameters parameter;
@@ -116,6 +129,7 @@ int RequestManager::deinit() {
     LOG1("@%s done", __func__);
 
     StaticCapability::releaseInstance(mCameraId);
+
     return icamera::OK;
 }
 
@@ -278,6 +292,31 @@ int RequestManager::configureStreams(camera3_stream_configuration_t* stream_list
         }
     }
 
+    /* If it supports one more video output to process face detection */
+    bool isIPUSupportFD = icamera::PlatformData::isIPUSupportFD(mCameraId);
+    Camera3Stream* faceDetectionOwner = nullptr;
+    camera3_stream_t* fdChooseStream = nullptr;
+    icamera::stream_t requestStreamForFD;
+    bool isFaceAeEnabled = icamera::PlatformData::isFaceAeEnabled(mCameraId);
+    // Mark one camera3Stream run face detection
+    if (isFaceAeEnabled) {
+        LOG1("Face detection is enable");
+        fdChooseStream = chooseStreamForFaceDetection(streamsNum, stream_list->streams);
+        if (fdChooseStream && isIPUSupportFD) {
+            if (VGA_WIDTH * fdChooseStream->height != fdChooseStream->width * VGA_HEIGHT) {
+                mFDStreamsInfo.height = VGA_360P;
+            }
+            mFDStreamsInfo.usage = fdChooseStream->usage;
+            mFDStreamsInfo.format = fdChooseStream->format;
+            ret = HalV3Utils::fillHALStreams(mCameraId, mFDStreamsInfo, &requestStreamForFD);
+            CheckError(ret != icamera::OK, ret, "failed to fill requestStreamForFD ret:%d", ret);
+            mHALStream[halStreamNum] = requestStreamForFD;
+            halStreamNum++;
+            LOG1("@%s, mStreamsVGA: w:%d, h:%d, f:%d, u:%d", __func__, mFDStreamsInfo.width,
+                 mFDStreamsInfo.height, mFDStreamsInfo.format, mFDStreamsInfo.usage);
+        }
+    }
+
     icamera::stream_config_t streamCfg = {
         halStreamNum, mHALStream,
         icamera::camera_stream_configuration_mode_t::CAMERA_STREAM_CONFIGURATION_MODE_AUTO};
@@ -299,17 +338,23 @@ int RequestManager::configureStreams(camera3_stream_configuration_t* stream_list
         stream->setActive(false);
     }
 
-    int enableFDStreamNum = -1;
-    Camera3Stream* faceDetectionOwner = nullptr;
-    // Mark one camera3Stream run face detection
-    if (icamera::PlatformData::isFaceAeEnabled(mCameraId)) {
-        LOG1("Face detection is enable");
-        chooseStreamForFaceDetection(streamsNum, stream_list->streams, &enableFDStreamNum);
+    ret = icamera::camera_device_config_streams(mCameraId, &streamCfg);
+    if (fdChooseStream && isIPUSupportFD) {
+        if (ret == icamera::OK) {
+            requestStreamForFD = mHALStream[halStreamNum - 1];
+            halStreamNum--;
+        } else {
+            halStreamNum--;
+            LOG2("@%s, No available graph setting to process face detection", __func__);
+            icamera::stream_config_t streamCfg = {
+                halStreamNum, mHALStream,
+                icamera::camera_stream_configuration_mode_t::CAMERA_STREAM_CONFIGURATION_MODE_AUTO};
+            ret = icamera::camera_device_config_streams(mCameraId, &streamCfg);
+            isIPUSupportFD = false;
+        }
     }
 
-    ret = icamera::camera_device_config_streams(mCameraId, &streamCfg);
-    CheckAndLogError(ret != icamera::OK, ret,
-                     "failed to configure stream, ret %d", ret);
+    CheckAndLogError(ret != icamera::OK, ret, "failed to configure stream, ret %d", ret);
 
     // Create Stream for new streams
     requestStreamNum = 0;
@@ -340,7 +385,7 @@ int RequestManager::configureStreams(camera3_stream_configuration_t* stream_list
         LOGI("OUTPUT max buffer %d, usage %x, format %x", stream->max_buffers, stream->usage,
              stream->format);
 
-        if (enableFDStreamNum == i) {
+        if (fdChooseStream == stream) {
             faceDetectionOwner = static_cast<Camera3Stream*>(stream->priv);
         }
     }
@@ -354,16 +399,21 @@ int RequestManager::configureStreams(camera3_stream_configuration_t* stream_list
             mCamera3StreamVector[halStreamFlag[i]]->addListener(mCamera3StreamVector[i]);
     }
 
-    if (faceDetectionOwner != nullptr) {
+    if (isFaceAeEnabled && isIPUSupportFD) {
+        /* create Camera3Stream for face detection */
+        mFDStream = new PrivateStreamFD(mCameraId, requestStreamForFD, mFDStreamsInfo);
+        LOG1("@%s, Create PrivateStreamFD for face detection", __func__);
+    } else if (faceDetectionOwner != nullptr) {
         unsigned int maxFacesNum = icamera::PlatformData::getMaxFaceDetectionNumber(mCameraId);
         faceDetectionOwner->activateFaceDetection(maxFacesNum);
+        LOG1("@%s, Create Camera3Stream for face detection", __func__);
     }
 
     return icamera::OK;
 }
 
-void RequestManager::chooseStreamForFaceDetection(uint32_t streamsNum, camera3_stream_t** streams,
-                                                  int* enableFDStreamNum) {
+camera3_stream_t *RequestManager::chooseStreamForFaceDetection(uint32_t streamsNum,
+                                                               camera3_stream_t** streams) {
     LOG1("@%s", __func__);
     camera3_stream_t* preStream = nullptr;
     camera3_stream_t* yuvStream = nullptr;
@@ -372,14 +422,16 @@ void RequestManager::chooseStreamForFaceDetection(uint32_t streamsNum, camera3_s
     int preStreamNum = -1;
     int yuvStreamNum = -1;
 
+    bool isIPUSupportFD = icamera::PlatformData::isIPUSupportFD(mCameraId);
     for (uint32_t i = 0; i < streamsNum; i++) {
         camera3_stream_t* s = streams[i];
-        if (!s || s->stream_type != CAMERA3_STREAM_OUTPUT || s->width > maxWidth ||
-            s->height > maxHeight) {
+        if (!s || s->stream_type != CAMERA3_STREAM_OUTPUT || ((s->width > maxWidth ||
+            s->height > maxHeight) && (!isIPUSupportFD))) {
             continue;
         }
 
-        LOG1("stream information:format=%d, width=%d, height=%d", s->format, s->width, s->height);
+        LOG1("%s, stream information:format=%d, width=%d, height=%d", __func__, s->format, s->width,
+             s->height);
         // We assume HAL_PIXEL_FORMAT_IMPLEMENTATION_DEFINED stream is the
         // preview stream and it's requested in every capture request.
         // If there are two HAL_PIXEL_FORMAT_IMPLEMENTATION_DEFINED streams,
@@ -401,13 +453,13 @@ void RequestManager::chooseStreamForFaceDetection(uint32_t streamsNum, camera3_s
         }
     }
 
-    *enableFDStreamNum = -1;
     if (preStreamNum >= 0) {
-        *enableFDStreamNum = preStreamNum;
+        return preStream;
     } else if (yuvStreamNum >= 0) {
-        *enableFDStreamNum = yuvStreamNum;
+        return yuvStream;
     }
-    LOG1("enableFDStreamNum %d", *enableFDStreamNum);
+
+    return nullptr;
 }
 
 int RequestManager::constructDefaultRequestSettings(int type, const camera_metadata_t** meta) {
@@ -514,7 +566,7 @@ int RequestManager::processCaptureRequest(camera3_capture_request_t* request) {
     MetadataConvert::requestMetadataToHALMetadata(mLastSettings, &param, forceConvert);
 
     mResultProcessor->registerRequest(request, inputCam3Buf);
-
+    icamera::camera_buffer_t *faceDetectionBuf = nullptr;
     if (!inputCam3Buf || opaqueRawInfo.sequence >= 0) {
         icamera::camera_buffer_t* buffer[kMaxStreamNum] = {nullptr};
         int numBuffers = 0;
@@ -527,6 +579,19 @@ int RequestManager::processCaptureRequest(camera3_capture_request_t* request) {
                 numBuffers++;
             }
         }
+
+        // it supports one more video output to process face detection, it should trigger
+        // the corresponding camera3Stream run. Only when bufferFd is not null, it will be processed
+        if (mFDStream) {
+            faceDetectionBuf = mFDStream->fetchRequestBuffers(request->frame_number);
+            if (faceDetectionBuf) {
+                buffer[numBuffers] = faceDetectionBuf;
+                numBuffers++;
+                LOG2("%s, find available internal FD buffer for frame_number %d", __func__,
+                     request->frame_number);
+            }
+        }
+
         ret = icamera::camera_stream_qbuf(mCameraId, buffer, numBuffers, &param);
         CheckAndLogError(ret != icamera::OK, ret,
                          "@%s, camera_stream_qbuf fails,ret:%d", __func__, ret);
@@ -550,6 +615,9 @@ int RequestManager::processCaptureRequest(camera3_capture_request_t* request) {
         s->queueBufferDone(request->frame_number,
                            opaqueRawInfo.sequence >= 0 ? nullptr : inputCam3Buf,
                            request->output_buffers[i], param);
+    }
+    if (mFDStream && faceDetectionBuf) {
+        mFDStream->queueBufferDone(request->frame_number);
     }
 
     for (auto& stream : mCamera3StreamVector) {
@@ -597,6 +665,11 @@ void RequestManager::deleteStreams(bool inactiveOnly) {
         } else {
             ++i;
         }
+    }
+
+    if (mFDStream) {
+        delete mFDStream;
+        mFDStream = nullptr;
     }
 }
 

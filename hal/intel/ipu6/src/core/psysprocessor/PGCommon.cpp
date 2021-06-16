@@ -1111,7 +1111,7 @@ int PGCommon::prepareTerminalBuffers(const ia_binary_data *ipuParameters,
         if (buffer) {
             bool flush = buffer->getUsage() == BUFFER_USAGE_GENERAL ? true : false;
             ciprBuf = (buffer->getMemory() == V4L2_MEMORY_DMABUF) \
-                     ? registerUserBuffer(buffer->getBufferSize(), buffer->getFd(), flush) \
+                     ? registerUserBuffer(buffer->getBufferSize(), buffer->getFd()) \
                      : registerUserBuffer(buffer->getBufferSize(), buffer->getBufferAddr(), flush);
             CheckAndLogError(!ciprBuf, NO_MEMORY,
                              "%s, register buffer size %d for terminal %d fail",

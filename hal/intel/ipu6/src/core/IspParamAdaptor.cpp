@@ -841,7 +841,7 @@ int IspParamAdaptor::runIspAdaptL(ia_isp_bxt_program_group *pgPtr, ia_isp_bxt_gd
     if (cnt > 0) {
         CheckAndLogError(
             cnt > cca::MAX_CUSTOM_CONTROLS_PARAM_SIZE, UNKNOWN_ERROR,
-            "%s, buffer for custom control is too small", __func__, cnt);
+            "%s, buffer for custom control[%d] is too small", __func__, cnt);
 
         MEMCPY_S(inputParams->custom_controls.parameters, cnt,
                  aiqResults->mCustomControls.parameters, cca::MAX_CUSTOM_CONTROLS_PARAM_SIZE);

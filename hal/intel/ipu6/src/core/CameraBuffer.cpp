@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2020 Intel Corporation.
+ * Copyright (C) 2015-2021 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,7 @@ CameraBuffer::CameraBuffer(int cameraId, int usage, int memory, uint32_t size, i
 
     mU = new camera_buffer_t;
     CLEAR(*mU);
+    mBufferflag = BUFFER_FLAG_INTERNAL;
     mU->flags = BUFFER_FLAG_INTERNAL;
     mU->sequence = -1;
 
@@ -85,7 +86,7 @@ CameraBuffer::~CameraBuffer()
 
     freeMemory();
 
-    if (mU->flags & BUFFER_FLAG_INTERNAL) {
+    if (mBufferflag & BUFFER_FLAG_INTERNAL) {
         delete mU;
     }
 }
@@ -156,6 +157,7 @@ void CameraBuffer::setUserBufferInfo(camera_buffer_t *ubuffer)
 
     if (mU->flags & BUFFER_FLAG_INTERNAL) delete mU;
     mU = ubuffer;
+    mBufferflag = mU->flags;
 
     LOG1("%s: ubuffer->s.MemType: %d, addr: %p, fd: %d", __func__, ubuffer->s.memType,
          ubuffer->addr, ubuffer->dmafd);

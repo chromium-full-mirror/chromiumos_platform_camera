@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 Intel Corporation.
+ * Copyright (C) 2020-2021 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -246,8 +246,7 @@ Buffer::Buffer(uint32_t size, MemoryFlag flags, const MemoryDesc* userMemory) {
 
     if (userMemory) {
         ret = createWithUserMemory(size, flags, userMemory);
-        CheckAndLogError(ret != Result::OK, VOID_VALUE,
-                         "@s: Buffer::Buffer Error", __func__);
+        CheckAndLogError(ret != Result::OK, VOID_VALUE, "@s: Buffer::Buffer Error", __func__);
         mMemoryDesc.flags |= userMemory->flags;
     }
 
