@@ -423,7 +423,7 @@ void IntelCca::deinit() {
 
 ia_err IntelCca::decodeStats(uint64_t statsPointer, uint32_t statsSize,
                              ia_isp_bxt_statistics_query_results_t* results) {
-    LOGIPC("@%s, mCameraId:%d, tuningMode:%d, statsPointer:0x%x, statsSize:%d", __func__,
+    LOGIPC("@%s, mCameraId:%d, tuningMode:%d, statsPointer:0x%lx, statsSize:%d", __func__,
            mCameraId, mTuningMode, statsPointer, statsSize);
     CheckAndLogError(!results, ia_err_argument, "@%s, results is nullptr",
                      __func__);

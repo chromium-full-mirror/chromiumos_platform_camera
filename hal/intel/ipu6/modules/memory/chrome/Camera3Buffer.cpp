@@ -98,8 +98,8 @@ Camera3Buffer::Camera3Buffer(int w, int h, int stride, int v4l2fmt, void* usrPtr
     if (usrPtr != nullptr) {
         mHalBuffer.addr = usrPtr;
         mInit = true;
-        mHalBuffer.s.size =
-            dataSizeOverride ? dataSizeOverride : CameraUtils::getFrameSize(v4l2fmt, w, h);
+        mHalBuffer.s.size =  dataSizeOverride ?
+            dataSizeOverride : CameraUtils::getFrameSize(v4l2fmt, w, h, false, false, false);
     } else {
         LOGE("Tried to initialize a buffer with nullptr ptr!!");
     }
@@ -156,8 +156,8 @@ icamera::status_t Camera3Buffer::init(const camera3_stream_buffer* aBuffer, int 
     mHalBuffer.s.format = mGbmBufferManager->GetV4L2PixelFormat(mHandle);
     // Use actual width from platform native handle for stride
     mHalBuffer.s.stride = mGbmBufferManager->GetPlaneStride(*aBuffer->buffer, 0);
-    mHalBuffer.s.size =
-        CameraUtils::getFrameSize(mHalBuffer.s.format, mHalBuffer.s.width, mHalBuffer.s.height);
+    mHalBuffer.s.size = CameraUtils::getFrameSize(mHalBuffer.s.format, mHalBuffer.s.width,
+                                                  mHalBuffer.s.height, false, false, false);
     mHalBuffer.flags = camera_buffer_flags_t::BUFFER_FLAG_SW_WRITE;
     mLocked = false;
     mUsage = aBuffer->stream->usage;
@@ -478,7 +478,7 @@ std::shared_ptr<Camera3Buffer> allocateHeapBuffer(int w, int h, int stride, int 
     void* dataPtr;
 
     int dataSize = dataSizeOverride ? PAGE_ALIGN(dataSizeOverride)
-                                    : CameraUtils::getFrameSize(v4l2Fmt, w, h);
+                                    : CameraUtils::getFrameSize(v4l2Fmt, w, h, false, false, false);
     LOG1("@%s, dataSize:%d", __func__, dataSize);
 
     int ret = posix_memalign(&dataPtr, sysconf(_SC_PAGESIZE), dataSize);

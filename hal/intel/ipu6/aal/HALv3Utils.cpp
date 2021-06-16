@@ -136,8 +136,8 @@ int fillHALStreams(int cameraId, const camera3_stream_t& camera3Stream, icamera:
 
     stream->field = 0;
     stream->stride = icamera::CameraUtils::getStride(stream->format, stream->width);
-    stream->size =
-        icamera::CameraUtils::getFrameSize(stream->format, stream->width, stream->height);
+    stream->size = icamera::CameraUtils::getFrameSize(stream->format, stream->width,
+                                                      stream->height, false, false, false);
     stream->memType = V4L2_MEMORY_USERPTR;
     stream->streamType = icamera::CAMERA_STREAM_OUTPUT;
     // CAMERA_STREAM_PREVIEW is for user preview stream

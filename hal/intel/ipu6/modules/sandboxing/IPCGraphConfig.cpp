@@ -222,7 +222,7 @@ bool IPCGraphConfig::serverFlattenGetGraphData(void* pData, uint32_t size,
         params->pgInfoData[i].rbmByte = graphData.pgInfo[i].rbmValue.rbm_bytes;
 
         if (params->pgInfoData[i].rbmByte > 0) {
-            MEMCPY_S(params->pgInfoData[i].rbmData, MAX_NAME_LENGTH,
+            MEMCPY_S(params->pgInfoData[i].rbmData, MAX_RBM_STR_SIZE,
                      graphData.pgInfo[i].rbmValue.rbm, graphData.pgInfo[i].rbmValue.rbm_bytes);
         }
     }
@@ -306,12 +306,10 @@ bool IPCGraphConfig::clientUnflattenGetGraphData(void* pData, uint32_t size,
         info.pgName = params->pgInfoData[i].pgName;
         info.pgId = params->pgInfoData[i].pgId;
         info.streamId = params->pgInfoData[i].streamId;
+        info.rbmValue.rbm_bytes = params->pgInfoData[i].rbmByte;
         if (params->pgInfoData[i].rbmByte > 0) {
-            info.rbmValue.rbm_bytes = params->pgInfoData[i].rbmByte;
-            info.rbmValue.rbm = params->pgInfoData[i].rbmData;
-        } else {
-            info.rbmValue.rbm = nullptr;
-            info.rbmValue.rbm_bytes = 0;
+            MEMCPY_S(info.rbmValue.rbm, MAX_RBM_STR_SIZE, params->pgInfoData[i].rbmData,
+                     params->pgInfoData[i].rbmByte);
         }
         graphData->pgInfo.push_back(info);
     }

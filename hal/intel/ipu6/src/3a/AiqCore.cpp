@@ -320,9 +320,8 @@ int AiqCore::setStatsParams(const cca::cca_stats_params &statsParams) {
 }
 
 int AiqCore::runAe(long requestId, AiqResult* aiqResult) {
-    LOG3A("@%s, aiqResult:%p, requestId:%d", __func__, aiqResult, requestId);
-    CheckAndLogError(!aiqResult, BAD_VALUE, "@%s, aiqResult is nullptr",
-                     __func__);
+    LOG3A("@%s, aiqResult:%p, requestId:%ld", __func__, aiqResult, requestId);
+    CheckAndLogError(!aiqResult, BAD_VALUE, "@%s, aiqResult is nullptr", __func__);
 
     // run AE
     return runAEC(requestId, &aiqResult->mAeResults);

@@ -579,9 +579,17 @@ status_t GraphConfigPipe::getPgRbmValue(string pgName, IGraphType::StageAttr* st
     if (ret != css_err_none) return NAME_NOT_FOUND;
 
     GCSS::GraphCameraUtil mGCSSCameraUtil;
-    stageAttr->rbm = mGCSSCameraUtil.numString2binary(rbmString, &stageAttr->rbm_bytes);
-    CheckAndLogError(!stageAttr->rbm, NO_MEMORY, "%s get rbm value: %s",
-                     __func__, rbmString.c_str());
+    void *rbmAddr = mGCSSCameraUtil.numString2binary(rbmString, &stageAttr->rbm_bytes);
+    CheckAndLogError(!rbmAddr, NO_MEMORY, "%s get rbm value: %s", __func__, rbmString.c_str());
+
+    if (stageAttr->rbm_bytes > MAX_RBM_STR_SIZE) {
+        LOGE("%s, memory is too small to save rbm value: %d, %zu", __func__,
+             stageAttr->rbm_bytes, MAX_RBM_STR_SIZE);
+        stageAttr->rbm_bytes = 0;
+        return NO_MEMORY;
+    }
+    MEMCPY_S(stageAttr->rbm, MAX_RBM_STR_SIZE, rbmAddr, stageAttr->rbm_bytes);
+    mGCSSCameraUtil.releaseBinary(rbmAddr);
 
     return OK;
 }

@@ -51,6 +51,8 @@ static const int32_t STILL_TNR_STREAM_ID = 60009;
 // Stream id associated with still capture.
 static const int32_t STILL_STREAM_ID = 60000;
 
+#define MAX_RBM_STR_SIZE    128
+
 namespace IGraphType {
 class ConnectionConfig {
  public:
@@ -118,9 +120,9 @@ struct PipelineConnection {
 };
 
 struct StageAttr{
-    void *rbm;
+    char rbm[MAX_RBM_STR_SIZE];
     uint32_t rbm_bytes;
-    StageAttr() : rbm(nullptr), rbm_bytes(0) {}
+    StageAttr() : rbm_bytes(0) {}
 };
 
 enum terminal_connection_type {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2020 Intel Corporation
+ * Copyright (C) 2017-2021 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,8 +80,8 @@ icamera::status_t PostProcessor::configure(const camera3_stream_t& stream,
         info.outputInfo.height = inputStreamInfo.width;
         info.outputInfo.stride = inputStreamInfo.height;
         info.outputInfo.format = inputStreamInfo.format;
-        info.outputInfo.size = icamera::CameraUtils::getFrameSize(
-            info.outputInfo.format, info.outputInfo.width, info.outputInfo.height);
+        info.outputInfo.size = icamera::CameraUtils::getFrameSize(info.outputInfo.format,
+            info.outputInfo.width, info.outputInfo.height, false, false, false);
         LOG2("%s, Rotate: input %dx%d, output: %dx%d, angle: %d", __func__, inputStreamInfo.width,
              inputStreamInfo.height, info.outputInfo.width, info.outputInfo.height, angle);
 
@@ -106,8 +106,8 @@ icamera::status_t PostProcessor::configure(const camera3_stream_t& stream,
         }
         info.outputInfo.format = inputStreamInfo.format;
         info.outputInfo.stride = info.outputInfo.width;
-        info.outputInfo.size = icamera::CameraUtils::getFrameSize(
-            info.outputInfo.format, info.outputInfo.width, info.outputInfo.height);
+        info.outputInfo.size = icamera::CameraUtils::getFrameSize(info.outputInfo.format,
+            info.outputInfo.width, info.outputInfo.height, false, false, false);
         LOG2("%s, Crop: input %dx%d, output: %dx%d", __func__, inputStreamInfo.width,
              inputStreamInfo.height, info.outputInfo.width, info.outputInfo.height);
 
@@ -125,8 +125,8 @@ icamera::status_t PostProcessor::configure(const camera3_stream_t& stream,
         info.outputInfo.height = stream.height;
         info.outputInfo.stride = stream.width;
         info.outputInfo.format = inputStreamInfo.format;
-        info.outputInfo.size = icamera::CameraUtils::getFrameSize(
-            info.outputInfo.format, info.outputInfo.width, info.outputInfo.height);
+        info.outputInfo.size = icamera::CameraUtils::getFrameSize(info.outputInfo.format,
+            info.outputInfo.width, info.outputInfo.height, false, false, false);
         LOG2("%s, Scale: input %dx%d, output: %dx%d", __func__, inputStreamInfo.width,
              inputStreamInfo.height, info.outputInfo.width, info.outputInfo.height);
 
@@ -146,8 +146,8 @@ icamera::status_t PostProcessor::configure(const camera3_stream_t& stream,
         info.outputInfo.stride = stream.width;
         info.outputInfo.format =
             HalV3Utils::HALFormatToV4l2Format(mCameraId, stream.format, stream.usage);
-        info.outputInfo.size = icamera::CameraUtils::getFrameSize(
-            info.outputInfo.format, info.outputInfo.width, info.outputInfo.height);
+        info.outputInfo.size = icamera::CameraUtils::getFrameSize(info.outputInfo.format,
+            info.outputInfo.width, info.outputInfo.height, false, false, false);
         LOG2("%s, Convert: input %dx%d, output: %dx%d", __func__, inputStreamInfo.width,
              inputStreamInfo.height, info.outputInfo.width, info.outputInfo.height);
 
@@ -166,8 +166,8 @@ icamera::status_t PostProcessor::configure(const camera3_stream_t& stream,
         info.outputInfo.stride = stream.width;
         info.outputInfo.format =
             HalV3Utils::HALFormatToV4l2Format(mCameraId, stream.format, stream.usage);
-        info.outputInfo.size = icamera::CameraUtils::getFrameSize(
-            info.outputInfo.format, info.outputInfo.width, info.outputInfo.height);
+        info.outputInfo.size = icamera::CameraUtils::getFrameSize(info.outputInfo.format,
+            info.outputInfo.width, info.outputInfo.height, false, false, false);
         inputStreamInfo = info.outputInfo;
         processingOrder.push_back(info);
     }

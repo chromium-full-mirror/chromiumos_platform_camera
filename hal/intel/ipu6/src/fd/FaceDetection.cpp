@@ -394,8 +394,10 @@ int FaceDetection::getResult(int cameraId, cca::cca_face_state *faceState) {
     {
         AutoMutex lock(sLock);
         FaceDetection *fdInstance = FaceDetection::getInstance(cameraId);
-        CheckAndLogError(!fdInstance, UNKNOWN_ERROR, "Failed to get instance");
-
+        if (!fdInstance) {
+            LOG2("%s, It doesn't have face detection instance", __func__);
+            return UNKNOWN_ERROR;
+        }
         int ret = fdInstance->getFaceDetectionResult(&faceDetectionResult, true);
         CheckAndLogError(ret != OK, UNKNOWN_ERROR, "Failed to get result, ret %d", ret);
         fdInstance->getCurrentFrameWidthAndHight(&width, &height);
@@ -482,7 +484,10 @@ int FaceDetection::getResult(int cameraId, CVFaceDetectionAbstractResult *result
     {
         AutoMutex lock(sLock);
         FaceDetection *fdInstance = FaceDetection::getInstance(cameraId);
-        CheckAndLogError(!fdInstance, UNKNOWN_ERROR, "Failed to get instance");
+        if (!fdInstance) {
+            LOG2("%s, It doesn't have face detection instance", __func__);
+            return UNKNOWN_ERROR;
+        }
 
         int ret = fdInstance->getFaceDetectionResult(&faceDetectionResult);
         CheckAndLogError(ret != OK, UNKNOWN_ERROR, "Failed to get result");

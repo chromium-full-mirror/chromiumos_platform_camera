@@ -158,7 +158,7 @@ bool PrivateStream::threadLoop() {
     }
     CheckError(ret != icamera::OK || !buffer, true, "[%p]failed to dequeue buffer, ret %d", this,
                ret);
-    LOG2("[%p]@%s, buffer->timestamp:%lld addr %p, frameNumber %u", this, __func__,
+    LOG2("[%p]@%s, buffer->timestamp:%lu addr %p, frameNumber %u", this, __func__,
          buffer->timestamp, buffer->addr, frameNumber);
     std::shared_ptr<Camera3Buffer> outCam3Buf = nullptr;
     {

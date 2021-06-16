@@ -46,7 +46,7 @@ struct GraphPgInfo {
     uint32_t pgId;
     int streamId;
     uint32_t rbmByte;
-    char rbmData[MAX_NAME_LENGTH];
+    char rbmData[MAX_RBM_STR_SIZE];
 };
 
 struct GraphMbrInfo {

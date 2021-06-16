@@ -178,7 +178,8 @@ AiqInitData::AiqInitData(const std::string& sensorName, const std::string& camCf
             return;
         }
 
-        mCpf[cfg.tuningMode] = new AiqData(aiqbName);
+        if (mCpf.find(cfg.tuningMode) == mCpf.end())
+            mCpf[cfg.tuningMode] = new AiqData(aiqbName);
     }
 
     mMkn = std::unique_ptr<MakerNote>(new MakerNote);

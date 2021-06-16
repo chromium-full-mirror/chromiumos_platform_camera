@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Intel Corporation.
+ * Copyright (C) 2019-2021 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -192,7 +192,8 @@ std::shared_ptr<camera3::Camera3Buffer> JpegProcess::cropAndDownscaleThumbnail(i
         if (mCropBuffer && (mCropBuffer->width() != width || mCropBuffer->height() != height))
             mCropBuffer.reset();
         if (!mCropBuffer) {
-            int size = CameraUtils::getFrameSize(inBuf->v4l2Fmt(), width, height);
+            int size = CameraUtils::getFrameSize(inBuf->v4l2Fmt(), width, height,
+                                                 false, false, false);
             mCropBuffer = camera3::MemoryUtils::allocateHeapBuffer(width, height,
                                                                    width, inBuf->v4l2Fmt(),
                                                                    mCameraId, size);
@@ -214,7 +215,8 @@ std::shared_ptr<camera3::Camera3Buffer> JpegProcess::cropAndDownscaleThumbnail(i
             || mScaleBuffer->height() != thumbHeight))
             mScaleBuffer.reset();
         if (!mScaleBuffer) {
-            int size = CameraUtils::getFrameSize(inBuf->v4l2Fmt(), thumbWidth, thumbHeight);
+            int size = CameraUtils::getFrameSize(inBuf->v4l2Fmt(), thumbWidth, thumbHeight,
+                                                 false, false, false);
             mScaleBuffer = camera3::MemoryUtils::allocateHeapBuffer(thumbWidth, thumbHeight,
                                                                     thumbWidth, inBuf->v4l2Fmt(),
                                                                     mCameraId, size);

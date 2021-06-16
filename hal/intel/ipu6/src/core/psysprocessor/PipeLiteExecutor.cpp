@@ -100,14 +100,12 @@ int PipeLiteExecutor::initPipe()
     CheckAndLogError(ret != OK, ret, "Failed to create PGs for executor: %s", mName.c_str());
 
     ret = analyzeConnections(connVector);
-    CheckAndLogError(ret != OK, ret,
-                     "Failed to analyze connections for executor: %s", ret,
-                     mName.c_str());
+    CheckAndLogError(ret != OK, ret, "Failed to analyze connections for executor: %s, ret = %d",
+                     mName.c_str(), ret);
 
     ret = configurePGs();
-    CheckAndLogError(ret != OK, ret,
-                     "Failed to configure connections for executor: %s", ret,
-                     mName.c_str());
+    CheckAndLogError(ret != OK, ret, "Failed to configure connections for executor: %s, ret = %d",
+                     mName.c_str(), ret);
 
     assignDefaultPortsForTerminals();
     return OK;
@@ -253,7 +251,7 @@ int PipeLiteExecutor::configurePGs()
         unit.pg->setOutputInfo(outputInfos);
         unit.pg->setDisabledTerminals(disabledTerminals);
 
-        IGraphType::StageAttr stageAttr;
+        IGraphType::StageAttr stageAttr = {};
         if (mGraphConfig->getPgRbmValue(unit.pg->getName(), &stageAttr) == OK) {
             LOG1("%s: Set rbm for pgId %d, pgName: %s bytes %d",
                  __func__, unit.pgId, unit.pg->getName(), stageAttr.rbm_bytes);

@@ -352,11 +352,13 @@ status_t GraphConfigImpl::getRawInputSize(GCSS::IGraphConfig* query, camera_reso
         GCSS::IGraphConfig* isysNode = result->getDescendantByString(item.c_str());
         if (isysNode != nullptr) {
             GCSS::GraphCameraUtil::getDimensions(isysNode, &(reso->width), &(reso->height));
+            delete result;
             return OK;
         }
     }
 
     LOGE("Error: Couldn't get the resolution in isys output");
+    delete result;
     return UNKNOWN_ERROR;
 }
 

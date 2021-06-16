@@ -171,8 +171,9 @@ status_t GraphConfig::getPgRbmValue(string pgName, IGraphType::StageAttr *stageA
                      "%s, The pgInfo vector is empty", __func__);
 
     for (auto &info : mGraphData.pgInfo) {
-        if (info.pgName == pgName && info.rbmValue.rbm != nullptr) {
-            *stageAttr = info.rbmValue;
+        if (info.pgName == pgName && info.rbmValue.rbm_bytes > 0) {
+            stageAttr->rbm_bytes = info.rbmValue.rbm_bytes;
+            MEMCPY_S(stageAttr->rbm, MAX_RBM_STR_SIZE, info.rbmValue.rbm, stageAttr->rbm_bytes);
             return OK;
         }
     }
