@@ -59,7 +59,6 @@ GraphConfigImpl::GraphConfigImpl()
 
 GraphConfigImpl::GraphConfigImpl(int32_t camId, ConfigMode mode, GraphSettingType type)
         : mCameraId(camId),
-          mGraphQueryManager(new GraphQueryManager()),
           mConfigMode(mode),
           mType(type),
           mMcId(-1) {
@@ -69,8 +68,9 @@ GraphConfigImpl::GraphConfigImpl(int32_t camId, ConfigMode mode, GraphSettingTyp
     if (mGraphNode.find(camId) != mGraphNode.end()) {
         nodes = mGraphNode[camId];
     }
-    CheckAndLogError(!nodes, VOID_VALUE,
-                     "Failed to allocate Graph Query Manager");
+    CheckAndLogError(!nodes, VOID_VALUE, "Failed to allocate Graph Query Manager");
+
+    mGraphQueryManager = std::unique_ptr<GCSS::GraphQueryManager>(new GraphQueryManager());
     mGraphQueryManager->setGraphDescriptor(nodes->mDesc);
     mGraphQueryManager->setGraphSettings(nodes->mSettings);
 }

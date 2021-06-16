@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 Intel Corporation
+ * Copyright (C) 2019-2021 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -173,7 +173,6 @@ status_t ImageProcessorCore::rotateFrame(const std::shared_ptr<camera3::Camera3B
         rotateBuf.resize(input->size());
     }
 
-    // TODO: find a way to rotate NV12 directly.
     uint8_t* I420Buffer = rotateBuf.data();
 
     if (mRotationMode[angle] == libyuv::RotationMode::kRotate0) {

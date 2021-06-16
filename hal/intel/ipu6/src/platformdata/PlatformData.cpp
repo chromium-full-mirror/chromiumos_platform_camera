@@ -424,7 +424,6 @@ MediaCtlConf *PlatformData::getMediaCtlConf(int cameraId)
 
 int PlatformData::getCameraInfo(int cameraId, camera_info_t& info)
 {
-    // TODO correct the version info
     info.device_version = 1;
     info.facing = getInstance()->mStaticCfg.mCameras[cameraId].mFacing;
     info.orientation= getInstance()->mStaticCfg.mCameras[cameraId].mOrientation;

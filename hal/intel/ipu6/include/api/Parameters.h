@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2013 The Android Open Source Project
- * Copyright (C) 2015-2020 Intel Corporation.
+ * Copyright (C) 2015-2021 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -396,7 +396,7 @@ typedef enum {
      *           camera.scaler.cropRegion
      *           camera.statistics.faceDetectMode (if it is supported)
      *
-     * TODO: The high speed mode is not completely supported yet.
+     * Note: The high speed mode is not completely supported yet.
      *       1) Now the HAL supports up to 60fps@1080p.
      *       2) The static metadata camera.control.availableHighSpeedVideoConfigurations should be
      *           implemented.

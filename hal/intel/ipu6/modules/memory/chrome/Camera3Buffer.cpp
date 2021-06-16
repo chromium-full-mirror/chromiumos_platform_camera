@@ -48,6 +48,7 @@ Camera3Buffer::Camera3Buffer()
         : mFormat(0),
           mInit(false),
           mLocked(false),
+          mUsage(0),
           mType(BUF_TYPE_HANDLE),
           mHandlePtr(nullptr),
           mCameraId(0),
@@ -77,6 +78,7 @@ Camera3Buffer::Camera3Buffer(int w, int h, int stride, int v4l2fmt, void* usrPtr
         : mFormat(0),
           mInit(false),
           mLocked(true),
+          mUsage(0),
           mType(BUF_TYPE_MALLOC),
           mHandlePtr(nullptr),
           mCameraId(cameraId)
@@ -158,6 +160,7 @@ icamera::status_t Camera3Buffer::init(const camera3_stream_buffer* aBuffer, int 
         CameraUtils::getFrameSize(mHalBuffer.s.format, mHalBuffer.s.width, mHalBuffer.s.height);
     mHalBuffer.flags = camera_buffer_flags_t::BUFFER_FLAG_SW_WRITE;
     mLocked = false;
+    mUsage = aBuffer->stream->usage;
     mInit = true;
     mHalBuffer.addr = nullptr;
     mUserBuffer = *aBuffer;
@@ -185,6 +188,8 @@ icamera::status_t Camera3Buffer::init(const camera3_stream_buffer* aBuffer, int 
 
 icamera::status_t Camera3Buffer::init(const camera3_stream_t* stream, buffer_handle_t handle,
                                       int cameraId) {
+    CheckError(!handle, UNKNOWN_ERROR, "%s, handle is nullptr", __func__);
+
     mType = BUF_TYPE_HANDLE;
     mGbmBufferManager = cros::CameraBufferManager::GetInstance();
     mHandle = handle;
@@ -192,17 +197,16 @@ icamera::status_t Camera3Buffer::init(const camera3_stream_t* stream, buffer_han
     mHalBuffer.s.height = stream->height;
     mFormat = stream->format;
     mHalBuffer.s.memType = V4L2_MEMORY_USERPTR;
-    mHalBuffer.s.format = mGbmBufferManager->GetV4L2PixelFormat(mHandle);
+    mHalBuffer.s.format = mGbmBufferManager->GetV4L2PixelFormat(handle);
     // Use actual width from platform native handle for stride
     mHalBuffer.s.stride = mGbmBufferManager->GetPlaneStride(handle, 0);
     mHalBuffer.s.size = 0;
     mHalBuffer.flags = camera_buffer_flags_t::BUFFER_FLAG_SW_WRITE;
     mLocked = false;
+    mUsage = (stream->usage | GRALLOC_USAGE_SW_READ_MASK | GRALLOC_USAGE_SW_WRITE_MASK);
     mInit = true;
     mHalBuffer.addr = nullptr;
     mCameraId = cameraId;
-
-    CheckError(!mHandle, UNKNOWN_ERROR, "%s, Camera3Buffer init fails", __func__);
     mHalBuffer.dmafd = mHandle->data[0];
     LOG2("@%s, mHandle:%p, mFormat:%d, width:%d, height:%d, stride:%d", __func__, mHandle, mFormat,
          mHalBuffer.s.width, mHalBuffer.s.height, mHalBuffer.s.stride);
@@ -324,33 +328,25 @@ icamera::status_t Camera3Buffer::lock(int flags) {
 
 icamera::status_t Camera3Buffer::lock() {
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL1);
-    icamera::status_t status;
-    int lockMode;
-
-    if (!mInit) {
-        LOGE("@%s: Error: Cannot lock now this buffer, not initialized", __func__);
-        return INVALID_OPERATION;
-    }
+    CheckError(!mInit, INVALID_OPERATION,
+               "@%s: Error: Cannot lock now this buffer, not initialized", __func__);
 
     if (mType != BUF_TYPE_HANDLE) {
         mLocked = true;
         return icamera::OK;
     }
 
-    if (mLocked) {
-        LOGE("@%s: Error: Cannot lock buffer, already locked", __func__);
-        return INVALID_OPERATION;
-    }
+    CheckError(mLocked, INVALID_OPERATION, "@%s: Error: Cannot lock buffer, already locked",
+               __func__);
 
-    int usage = 0x20003;  // TODO: hard code the usage, fix to get the usage from stream later
-    lockMode = usage & (GRALLOC_USAGE_SW_READ_MASK | GRALLOC_USAGE_SW_WRITE_MASK |
-                        GRALLOC_USAGE_HW_CAMERA_MASK);
+    int lockMode = mUsage & (GRALLOC_USAGE_SW_READ_MASK | GRALLOC_USAGE_SW_WRITE_MASK |
+                   GRALLOC_USAGE_HW_CAMERA_MASK);
     if (!lockMode) {
         LOGW("@%s:trying to lock a buffer with no flags", __func__);
         return INVALID_OPERATION;
     }
 
-    status = lock(lockMode);
+    icamera::status_t status = lock(lockMode);
     if (status != icamera::OK) {
         mUserBuffer.status = CAMERA3_BUFFER_STATUS_ERROR;
     }
@@ -507,10 +503,7 @@ std::shared_ptr<Camera3Buffer> allocateHandleBuffer(int w, int h, int gfxFmt, in
 
     LOG1("%s, [wxh] = [%dx%d], format 0x%x, usage 0x%x", __func__, w, h, gfxFmt, usage);
     int ret = bufManager->Allocate(w, h, gfxFmt, usage, &handle, &stride);
-    if (ret != 0) {
-        LOGE("Allocate handle failed! %d", ret);
-        return nullptr;
-    }
+    CheckError(ret != 0, nullptr, "Allocate handle failed! ret:%d", ret);
 
     std::shared_ptr<Camera3Buffer> buffer(new Camera3Buffer());
     camera3_stream_t stream{};

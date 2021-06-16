@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2020 Intel Corporation
+ * Copyright (C) 2015-2021 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -330,10 +330,6 @@ int IntelAFModeContinuousPicture::processTriggers(uint8_t afTrigger, uint8_t afM
          * We can skip state transitions when allowed by the state
          * machine documentation, so skip INACTIVE, also skip PASSIVE_SCAN if
          * possible and go directly to either PASSIVE_FOCUSED or UNFOCUSED
-         *
-         * TODO: Remove this switch-statement, once triggering a scan starts to
-         * work. We could go directly to PASSIVE_SCAN always then, because a
-         * scan is really happening. Now it is not.
          */
         switch (mCurrentAfState) {
             case ANDROID_CONTROL_AF_STATE_PASSIVE_SCAN:

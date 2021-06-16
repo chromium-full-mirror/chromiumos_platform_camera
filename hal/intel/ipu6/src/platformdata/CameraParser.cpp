@@ -64,6 +64,7 @@ CameraParser::CameraParser(MediaControl *mc, PlatformData::StaticCfg *cfg) :
         {"control.maxRegions", CAMERA_CONTROL_MAX_REGIONS},
         {"statistics.info.availableFaceDetectModes", CAMERA_STATISTICS_INFO_AVAILABLE_FACE_DETECT_MODES},
         {"statistics.info.maxFaceCount", CAMERA_STATISTICS_INFO_MAX_FACE_COUNT},
+        {"sensor.maxAnalogSensitivity", CAMERA_SENSOR_MAX_ANALOG_SENSITIVITY},
         {"sensor.info.activeArraySize", CAMERA_SENSOR_INFO_ACTIVE_ARRAY_SIZE},
         {"sensor.info.pixelArraySize", CAMERA_SENSOR_INFO_PIXEL_ARRAY_SIZE},
         {"sensor.info.physicalSize", CAMERA_SENSOR_INFO_PHYSICAL_SIZE},

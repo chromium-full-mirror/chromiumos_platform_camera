@@ -180,7 +180,6 @@ int DeviceBase::dequeueBuffer()
     mNeedSkipFrame = needQueueBack(camBuffer);
     popBufferFromDevice();
 
-    // TODO: Will add device name info to distinguish different devices.
     PERF_CAMERA_ATRACE_PARAM3("grabFrame SeqID", camBuffer->getSequence(),
                               "csi2_port",       camBuffer->getCsi2Port(),
                               "virtual_channel", camBuffer->getVirtualChannel());

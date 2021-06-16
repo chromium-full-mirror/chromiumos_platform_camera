@@ -795,8 +795,8 @@ int MediaControl::setFormat(int cameraId, const McFormat *format, int targetWidt
     } else {
         mbusfmt.code = CameraUtils::getMBusFormat(cameraId, PlatformData::getISysFormat(cameraId));
     }
-    LOG2("set format %s [%d:%d] [%dx%d] [%dx%d] %s ", format->entityName.c_str(),
-            format->entity, format->pad, mbusfmt.width, mbusfmt.height,
+    LOG2("set format %s [%d:%d/%d] [%dx%d] [%dx%d] %s ", format->entityName.c_str(),
+            format->entity, format->pad, format->stream, mbusfmt.width, mbusfmt.height,
             targetWidth, targetHeight, CameraUtils::pixelCode2String(mbusfmt.code));
 
     struct v4l2_subdev_format fmt = {};

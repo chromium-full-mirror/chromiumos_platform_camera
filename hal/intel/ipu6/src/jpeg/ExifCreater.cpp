@@ -1,7 +1,7 @@
 /*
  * Copyright Samsung Electronics Co.,LTD.
  * Copyright (C) 2010 The Android Open Source Project
- * Copyright (C) 2016-2020 Intel Corporation
+ * Copyright (C) 2016-2021 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,9 @@
 
 static const char ExifAsciiPrefix[] = {0x41, 0x53, 0x43, 0x49, 0x49, 0x0, 0x0, 0x0};
 
+// the exif size without thumbnail is less than 2k
+#define EXIF_SIZE_WITHOUT_THUMBNAIL 0x800
+
 namespace icamera {
 
 ExifCreater::ExifCreater() {
@@ -42,9 +45,7 @@ ExifCreater::ExifCreater() {
 ExifCreater::~ExifCreater() {}
 
 exif_status ExifCreater::setThumbData(const void* thumbBuf, unsigned int thumbSize) {
-    // TODO: Maybe we should take into account the rest of the EXIF data as well here,
-    // not just the thumbnail size.
-    if (thumbSize >= EXIF_SIZE_LIMITATION) {
+    if ((thumbSize + EXIF_SIZE_WITHOUT_THUMBNAIL) >= EXIF_SIZE_LIMITATION) {
         LOGE("ERROR: Too big thumb size %d (limit: %d)", thumbSize, EXIF_SIZE_LIMITATION);
         m_thumbBuf = nullptr;
         m_thumbSize = 0;
@@ -65,7 +66,7 @@ exif_status ExifCreater::makeExif(void* exifOut, exif_attribute_t* exifInfo, siz
     LOG1("makeExif start");
 
     unsigned char *pCur, *pApp1Start, *pIfdStart, *pGpsIfdPtr, *pNextIfdOffset;
-    unsigned int tmp, LongerTagOffset = 0, LongerTagOffsetWithoutThumbnail;
+    unsigned int tmp, LongerTagOffset = 0;
     pApp1Start = pCur = static_cast<unsigned char*>(exifOut);
 
     // 2 Exif Identifier Code & TIFF Header
@@ -293,12 +294,8 @@ exif_status ExifCreater::makeExif(void* exifOut, exif_attribute_t* exifInfo, siz
         pCur += OFFSET_SIZE;
     }
 
-    // backup LongerTagOffset, if the total exif size is > 64K, we will use it.
-    LongerTagOffsetWithoutThumbnail = LongerTagOffset;
-    if (LongerTagOffsetWithoutThumbnail >= EXIF_SIZE_LIMITATION) {
-        LOGE("line:%d, in the makeExif, the size exceeds 64K", __LINE__);
-        return EXIF_FAIL;
-    }
+    CheckError(LongerTagOffset >= EXIF_SIZE_LIMITATION,
+               EXIF_FAIL, "%s, the size exceeds 64K, line:%d", __func__, __LINE__);
 
     // 2 1th IFD TIFF Tags
     if (exifInfo->enableThumb && (m_thumbBuf != nullptr) && (m_thumbSize > 0)) {

@@ -1745,8 +1745,15 @@ void MetadataConvert::fillSensorStaticMetadata(const icamera::Parameters& parame
     icamera::CameraMetadata meta;
     icamera::ParameterHelper::copyMetadata(parameter, &meta);
 
-    uint32_t tag = CAMERA_SENSOR_INFO_ACTIVE_ARRAY_SIZE;
+    uint32_t tag = CAMERA_SENSOR_MAX_ANALOG_SENSITIVITY;
     icamera_metadata_entry entry = meta.find(tag);
+    // Overwrite if tag exists.
+    if (entry.count == 1) {
+        settings->update(ANDROID_SENSOR_MAX_ANALOG_SENSITIVITY, entry.data.i32, entry.count);
+    }
+
+    tag = CAMERA_SENSOR_INFO_ACTIVE_ARRAY_SIZE;
+    entry = meta.find(tag);
     // Check if the count is correct
     if (entry.count == 4) {
         settings->update(ANDROID_SENSOR_INFO_ACTIVE_ARRAY_SIZE, entry.data.i32, entry.count);
