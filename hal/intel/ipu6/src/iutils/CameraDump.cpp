@@ -56,7 +56,8 @@ static const char *ModuleName[] = {
     "de-inter",
     "swip-op",
     "gpu-tnr",
-    "nvm"
+    "nvm",
+    "mkn"
 }; // map to the ModuleType
 
 static const char *StreamUsage[] = {

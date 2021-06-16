@@ -83,7 +83,7 @@ bool JpegEncoderCore::doJpegEncode(EncodePackage* pa) {
         LOGE("%s: Google encode input type and output type does not match", __func__);
     }
 
-    LOG1("@%s: Google encoding ret:%d, %dx%d need %u ms, jpeg size %u, quality %d)", __func__, ret,
+    LOG1("@%s: Google encoding ret:%d, %dx%d need %ld ms, jpeg size %u, quality %d)", __func__, ret,
          pa->outputWidth, pa->outputHeight, (CameraUtils::systemTime() - startTime) / 1000000,
          pa->encodedDataSize, pa->quality);
     return ret && pa->encodedDataSize > 0;

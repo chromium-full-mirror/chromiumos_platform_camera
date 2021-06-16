@@ -186,7 +186,7 @@ void CameraBuffer::setUserBufferInfo(camera_buffer_t *ubuffer)
             mV.SetTimestamp(timestamp);
         }
         mV.SetSequence(ubuffer->sequence);
-        LOG2("%s, input buffer sequence %lld, timestamp %ld", __func__, ubuffer->sequence,
+        LOG2("%s, input buffer sequence %ld, timestamp %ld", __func__, ubuffer->sequence,
              ubuffer->timestamp);
     }
 }

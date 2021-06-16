@@ -29,7 +29,7 @@ std::vector<IntelCca::CCAHandle> IntelCca::sCcaInstance;
 Mutex IntelCca::sLock;
 
 IntelCca* IntelCca::getInstance(int cameraId, TuningMode mode) {
-    LOG2("@%s, cameraId:%d, tuningMode:%d, cca instance size:%d", __func__,
+    LOG2("@%s, cameraId:%d, tuningMode:%d, cca instance size:%zu", __func__,
          cameraId, mode, sCcaInstance.size());
 
     AutoMutex lock(sLock);
@@ -65,7 +65,7 @@ void IntelCca::releaseInstance(int cameraId, TuningMode mode) {
 
 void IntelCca::releaseAllInstances() {
     AutoMutex lock(sLock);
-    LOG2("@%s, cca instance size:%d", __func__, sCcaInstance.size());
+    LOG2("@%s, cca instance size:%zu", __func__, sCcaInstance.size());
     for (auto &it : sCcaInstance) {
         for (auto &oneCcaHandle : it.ccaHandle) {
             IntelCca* intelCca = oneCcaHandle.second;
@@ -245,7 +245,7 @@ ia_err IntelCca::decodeStats(uint64_t statsPointer, uint32_t statsSize,
 
 uint32_t IntelCca::getPalDataSize(const cca::cca_program_group& programGroup) {
     uint32_t size = getIntelCCA()->getPalSize(programGroup);
-    LOG2("@%s, pal data size: %zu", __func__, size);
+    LOG2("@%s, pal data size: %u", __func__, size);
 
     return size;
 }

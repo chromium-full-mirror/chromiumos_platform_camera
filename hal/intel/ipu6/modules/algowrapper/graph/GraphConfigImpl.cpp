@@ -810,7 +810,7 @@ status_t GraphConfigImpl::pipelineGetConnections(
     CheckAndLogError(ret != OK, UNKNOWN_ERROR,
                      "Failed to get the connetction from still pipe");
 
-    LOG2("The connetction in video: %zu, in still: %zu; the scalera in video: %zu, in still: %uz",
+    LOG2("The connetction in video: %zu, in still: %zu; the scalera in video: %zu, in still: %zu",
          videoConnVector.size(), stillConnVector.size(), videoScalerInfo.size(),
          stillScalerInfo.size());
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2020 Intel Corporation.
+ * Copyright (C) 2018-2021 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,14 +89,15 @@ int MakerNote::deinit(int cameraId, TuningMode tuningMode) {
 int MakerNote::saveMakernoteData(int cameraId, camera_makernote_mode_t makernoteMode,
                                  int64_t sequence, TuningMode tuningMode) {
     LOG1("@%s", __func__);
-    if (makernoteMode == MAKERNOTE_MODE_OFF) return OK;
+    bool dump = CameraDump::isDumpTypeEnable(DUMP_MAKER_NOTE);
+    if ((makernoteMode == MAKERNOTE_MODE_OFF) && !dump) return OK;
 
     AutoMutex lock(mMknLock);
     CheckAndLogError(mMknState != INIT, NO_INIT, "@%s, mkn isn't initialized",
                      __func__);
 
-    ia_mkn_trg mknTrg =
-        (makernoteMode == MAKERNOTE_MODE_JPEG ? ia_mkn_trg_section_1 : ia_mkn_trg_section_2);
+    ia_mkn_trg mknTrg = ((makernoteMode == MAKERNOTE_MODE_JPEG) || dump
+                         ? ia_mkn_trg_section_1 : ia_mkn_trg_section_2);
     MakernoteData data = mMakernoteDataList.front();
 
     IntelCca* intelCca = IntelCca::getInstance(cameraId, tuningMode);
@@ -107,12 +108,23 @@ int MakerNote::saveMakernoteData(int cameraId, camera_makernote_mode_t makernote
     int ret = AiqUtils::convertError(iaErr);
     CheckAndLogError(ret != OK, ret, "@%s, Failed to getMKN", __func__);
 
-    mMakernoteDataList.pop_front();
-    data.sequence = sequence;
-    data.timestamp = 0;
-    LOG2("@%s, saved makernote %d for sequence %ld", __func__, makernoteMode, sequence);
+    if (dump) {
+        BinParam_t bParam;
+        bParam.bType = BIN_TYPE_GENERAL;
+        bParam.mType = M_MKN;
+        bParam.sequence = sequence;
+        bParam.gParam.appendix = "maker_note";
+        CameraDump::dumpBinary(cameraId, data.mknData->buf, data.mknData->size, &bParam);
+    }
 
-    mMakernoteDataList.push_back(data);
+    if (makernoteMode != MAKERNOTE_MODE_OFF) {
+        mMakernoteDataList.pop_front();
+        data.sequence = sequence;
+        data.timestamp = 0;
+        LOG2("@%s, saved makernote %d for sequence %ld", __func__, makernoteMode, sequence);
+
+        mMakernoteDataList.push_back(data);
+    }
     return OK;
 }
 

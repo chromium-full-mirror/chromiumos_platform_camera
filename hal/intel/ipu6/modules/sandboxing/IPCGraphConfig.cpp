@@ -66,7 +66,7 @@ status_t IPCGraphConfig::readDataFromXml(const char* fileName, char* dataPtr, si
 
 bool IPCGraphConfig::clientFlattenParse(void* pData, uint32_t size, int cameraId,
                                         const char* graphDescFile, const char* settingsFile) {
-    LOGIPC("@%s, pData:%p, size: %zu, cameraId: %d", __func__, pData, size, cameraId);
+    LOGIPC("@%s, pData:%p, size: %u, cameraId: %d", __func__, pData, size, cameraId);
 
     CheckAndLogError(!pData || !graphDescFile || !settingsFile, false,
                      "@%s, pData, graphDescFile or settingsFile is nullptr",
@@ -94,7 +94,7 @@ bool IPCGraphConfig::clientFlattenParse(void* pData, uint32_t size, int cameraId
 
 bool IPCGraphConfig::serverUnflattenParse(void* pData, uint32_t size,
                                           GraphParseParams** parseParam) {
-    LOGIPC("@%s, pData:%p, size: %zu", __func__, pData, size);
+    LOGIPC("@%s, pData:%p, size: %u", __func__, pData, size);
 
     CheckAndLogError(!pData, false, "@%s, pData is nullptr", __func__);
     CheckAndLogError(size < sizeof(GraphParseParams), false,
@@ -137,7 +137,7 @@ bool IPCGraphConfig::clientFlattenConfigStreams(void* pData, uint32_t size, Grap
 bool IPCGraphConfig::serverUnflattenConfigStreams(void* pData, uint32_t size, GraphBaseInfo* info,
                                                   GraphSettingType* type, bool* dummyStillSink,
                                                   std::vector<HalStream*>* streams) {
-    LOGIPC("@%s, pData:%p, size: %zu", __func__, pData, size);
+    LOGIPC("@%s, pData:%p, size: %u", __func__, pData, size);
 
     CheckAndLogError(!pData, false, "@%s, pData is nullptr", __func__);
     CheckAndLogError(size < sizeof(GraphConfigStreamParams), false,
@@ -175,7 +175,7 @@ bool IPCGraphConfig::clientFlattenGetGraphData(void* pData, uint32_t size, Graph
 }
 
 bool IPCGraphConfig::serverUnflattenGetGraphData(void* pData, uint32_t size, GraphBaseInfo* info) {
-    LOGIPC("@%s, pData:%p, size: %zu", __func__, pData, size);
+    LOGIPC("@%s, pData:%p, size: %u", __func__, pData, size);
 
     CheckAndLogError(!pData || !info, false, "@%s, pData or info is nullptr",
                      __func__);
@@ -190,7 +190,7 @@ bool IPCGraphConfig::serverUnflattenGetGraphData(void* pData, uint32_t size, Gra
 
 bool IPCGraphConfig::serverFlattenGetGraphData(void* pData, uint32_t size,
                                                IGraphType::GraphConfigData graphData) {
-    LOGIPC("@%s, pData:%p, size: %zu", __func__, pData, size);
+    LOGIPC("@%s, pData:%p, size: %u", __func__, pData, size);
 
     CheckAndLogError(!pData, false, "@%s, pData is nullptr", __func__);
     CheckAndLogError(size < sizeof(GraphGetDataParams), false,
@@ -278,7 +278,7 @@ bool IPCGraphConfig::serverFlattenGetGraphData(void* pData, uint32_t size,
 
 bool IPCGraphConfig::clientUnflattenGetGraphData(void* pData, uint32_t size,
                                                  IGraphType::GraphConfigData* graphData) {
-    LOGIPC("@%s, pData:%p, size: %zu", __func__, pData, size);
+    LOGIPC("@%s, pData:%p, size: %u", __func__, pData, size);
 
     CheckAndLogError(!pData || !graphData, false,
                      "@%s, pData or graphData is nullptr", __func__);

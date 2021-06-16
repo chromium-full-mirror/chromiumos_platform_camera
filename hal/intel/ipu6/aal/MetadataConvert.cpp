@@ -569,7 +569,7 @@ int MetadataConvert::HALMetadataToRequestMetadata(const icamera::Parameters& par
 
     // ANDROID_DEPTH
 
-    LOG1("@%s: convert entry count %d", __func__, settings->entryCount());
+    LOG1("@%s: convert entry count %zu", __func__, settings->entryCount());
     return icamera::OK;
 }
 

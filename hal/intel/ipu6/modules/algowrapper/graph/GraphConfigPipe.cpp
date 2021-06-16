@@ -1489,7 +1489,7 @@ status_t GraphConfigPipe::graphGetStreamIds(StreamsVector* streamIds) {
         streamIds->push_back(streamId);
     }
 
-    LOGG("%s: stream IDs size %d", __func__, streamIds->size());
+    LOGG("%s: stream IDs size %zu", __func__, streamIds->size());
     return OK;
 }
 

@@ -254,7 +254,7 @@ Result Context::registerBuffer(MemoryDesc* mem) {
     mem->sysBuff = ioc_buffer;
     mem->flags |= MemoryFlag::Migrated;
 
-    LOG2("%s: registered %p -> fd %d size:%u offset:%u bytes_used:%u", __func__,
+    LOG2("%s: registered %p -> fd %d size:%lu offset:%u bytes_used:%u", __func__,
                   mem->cpuPtr, ioc_buffer->base.fd, ioc_buffer->len, ioc_buffer->data_offset,
                   ioc_buffer->bytes_used);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Intel Corporation.
+ * Copyright (C) 2019-2021 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -267,7 +267,7 @@ int IntelPGParamServer::findPayloads(int32_t payloadCount, ia_binary_data* clien
             __func__, clientPayloads[i].data, i);
         ia_binary_data& alloc = allocated->at(clientPayloads[i].data);
         CheckAndLogError(alloc.size != clientPayloads[i].size, UNKNOWN_ERROR,
-                         "%s: payload size mismatch for term %d", __func__, i);
+                         "%s: payload size mismatch for term %zu", __func__, i);
         serverPayloads[i] = alloc;
     }
     return OK;

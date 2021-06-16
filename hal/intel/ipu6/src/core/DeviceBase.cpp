@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2020 Intel Corporation.
+ * Copyright (C) 2018-2021 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -403,7 +403,7 @@ int MainDevice::onDequeueBuffer(shared_ptr<CameraBuffer> buffer)
 
     if (mNeedSkipFrame) return OK;
 
-    LOG2("@%s, sequence:%ld, field:%d, timestamp: sec=%ld, usec=%ld",
+    LOG2("@%s, sequence:%u, field:%d, timestamp: sec=%ld, usec=%ld",
           __func__, buffer->getSequence(), buffer->getField(),
           buffer->getTimestamp().tv_sec, buffer->getTimestamp().tv_usec);
 
@@ -434,7 +434,7 @@ bool MainDevice::needQueueBack(shared_ptr<CameraBuffer> buffer)
         // On STR2MMIO error, enqueue this buffer back to V4L2 before notifying the
         // listener/consumer and return
         needSkipFrame = true;
-        LOGW("%s: buffer error, sequence %ld", __func__, buffer->getSequence());
+        LOGW("%s: buffer error, sequence %u", __func__, buffer->getSequence());
     }
     if (PlatformData::isEnableFrameSyncCheck(mCameraId)) {
         struct camera_buf_info sharedCamBufInfo;
@@ -442,7 +442,7 @@ bool MainDevice::needQueueBack(shared_ptr<CameraBuffer> buffer)
         sharedCamBufInfo.sof_ts = buffer->getTimestamp();
         SyncManager::getInstance()->updateCameraBufInfo(mCameraId, &sharedCamBufInfo);
         if (skipFrameAfterSyncCheck(buffer->getSequence())) {
-            LOG1("@%s: CameraID:%d sequence %ld been dropped due to frame not sync",
+            LOG1("@%s: CameraID:%d sequence %u been dropped due to frame not sync",
                   __func__, mCameraId, buffer->getSequence());
             needSkipFrame = true;
         }

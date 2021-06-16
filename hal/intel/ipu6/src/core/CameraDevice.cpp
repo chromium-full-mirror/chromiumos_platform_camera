@@ -89,9 +89,10 @@ CameraDevice::~CameraDevice()
     AutoMutex   m(mDeviceLock);
 
     // Clear the media control when close the device.
-    MediaCtlConf *mc = PlatformData::getMediaCtlConf(mCameraId);
-    if (mc) {
-        MediaControl::getInstance()->mediaCtlClear(mCameraId, mc);
+    MediaControl *mc = MediaControl::getInstance();
+    MediaCtlConf *mediaCtl = PlatformData::getMediaCtlConf(mCameraId);
+    if (mc && mediaCtl) {
+        mc->mediaCtlClear(mCameraId, mediaCtl);
     }
 
     mRequestThread->removeListener(EVENT_PROCESS_REQUEST, this);
