@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2020 Intel Corporation
+ * Copyright (C) 2017-2021 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,8 @@ class MetadataConvert {
     static int HALMetadataToRequestMetadata(const icamera::Parameters& parameter,
                                             android::CameraMetadata* settings, int cameraId);
     static int HALCapabilityToStaticMetadata(const icamera::Parameters& parameter,
-                                             android::CameraMetadata* settings);
+                                             android::CameraMetadata* settings,
+                                             int cameraId);
     static void dumpMetadata(const camera_metadata_t* meta);
     static void convertFaceDetectionMetadata(const icamera::CVFaceDetectionAbstractResult& fdResult,
                                              android::CameraMetadata* settings);
@@ -101,7 +102,8 @@ class MetadataConvert {
     static void fillScalerStaticMetadata(const icamera::Parameters& parameter,
                                          android::CameraMetadata* settings);
     static void fillSensorStaticMetadata(const icamera::Parameters& parameter,
-                                         android::CameraMetadata* settings);
+                                         android::CameraMetadata* settings,
+                                         int cameraId);
     static void fillLensStaticMetadata(const icamera::Parameters& parameter,
                                        android::CameraMetadata* settings);
     static void fillRequestStaticMetadata(const icamera::Parameters& parameter,

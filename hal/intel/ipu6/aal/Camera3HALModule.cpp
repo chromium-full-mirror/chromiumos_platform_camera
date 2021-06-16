@@ -101,7 +101,8 @@ static int hal_get_camera_info(int cameraId, struct camera_info* cameraInfo) {
     if (sCameraMetadata[cameraId] == nullptr) {
         sCameraMetadata[cameraId] = new android::CameraMetadata;
         MetadataConvert::HALCapabilityToStaticMetadata(*(info.capability),
-                                                       sCameraMetadata[cameraId]);
+                                                       sCameraMetadata[cameraId],
+                                                       cameraId);
     }
     int32_t tag = ANDROID_LENS_FACING;
     camera_metadata_entry entry = sCameraMetadata[cameraId]->find(tag);

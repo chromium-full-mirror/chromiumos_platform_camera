@@ -763,6 +763,14 @@ int PipeLiteExecutor::runPipe(map<Port, shared_ptr<CameraBuffer> > &inBuffers,
                          "%s: error in pipe iteration with %d", mName.c_str(),
                          ret);
 
+        if (CameraDump::isDumpTypeEnable(DUMP_PSYS_INTERM_BUFFER)) {
+            for (auto &item : unit.outputBuffers) {
+                char desc[MAX_NAME_LEN] = {'\0'};
+                snprintf(desc, (MAX_NAME_LEN - 1), "-%s-%d-%ld", unit.pg->getName(),
+                         item.first - unit.stageId - 1, sequence);
+                CameraDump::dumpImage(mCameraId, item.second, M_NA, INVALID_PORT, desc);
+            }
+        }
         statTotalNum += statsCount;
         if (sisCount > 0) {
             handleSisStats(unit.outputBuffers, outStatsBuffers[statTotalNum]); // Currently handle one sis output only

@@ -84,7 +84,7 @@ int RequestManager::init(const camera3_callback_ops_t* callback_ops) {
 
     android::CameraMetadata defaultRequestSettings;
     // Get static metadata
-    MetadataConvert::HALCapabilityToStaticMetadata(parameter, &defaultRequestSettings);
+    MetadataConvert::HALCapabilityToStaticMetadata(parameter, &defaultRequestSettings, mCameraId);
 
     // Get defalut settings
     MetadataConvert::constructDefaultMetadata(mCameraId, &defaultRequestSettings);
@@ -309,7 +309,8 @@ int RequestManager::configureStreams(camera3_stream_configuration_t* stream_list
             mFDStreamsInfo.usage = fdChooseStream->usage;
             mFDStreamsInfo.format = fdChooseStream->format;
             ret = HalV3Utils::fillHALStreams(mCameraId, mFDStreamsInfo, &requestStreamForFD);
-            CheckError(ret != icamera::OK, ret, "failed to fill requestStreamForFD ret:%d", ret);
+            CheckAndLogError(ret != icamera::OK, ret,
+                             "failed to fill requestStreamForFD ret:%d", ret);
             mHALStream[halStreamNum] = requestStreamForFD;
             halStreamNum++;
             LOG1("@%s, mStreamsVGA: w:%d, h:%d, f:%d, u:%d", __func__, mFDStreamsInfo.width,

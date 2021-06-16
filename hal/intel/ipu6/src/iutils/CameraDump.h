@@ -166,7 +166,7 @@ namespace CameraDump {
      * Dump image according to CameraBuffer properties
      */
     void dumpImage(int cameraId, const std::shared_ptr<CameraBuffer> &camBuffer,
-                   ModuleType_t mType = M_NA, Port port = INVALID_PORT);
+                   ModuleType_t mType = M_NA, Port port = INVALID_PORT, const char* desc = nullptr);
     /**
      * Dump any buffer to binary file
      */

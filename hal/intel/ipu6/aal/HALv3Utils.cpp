@@ -235,5 +235,38 @@ void updateOrientation(const std::vector<CrosCameraInfo>& infos) {
     }
 }
 
+// whitelevel is equal to 2^(sensor bits per pixel)-1.
+int32_t getDefaultRawWhiteLevel(int cameraId) {
+    int format = icamera::PlatformData::getISysRawFormat(cameraId);
+    // Use 10 bits as default.
+    int32_t whiteLevel = 1023;
+
+    switch (format) {
+    case V4L2_PIX_FMT_SBGGR8:
+    case V4L2_PIX_FMT_SGBRG8:
+    case V4L2_PIX_FMT_SGRBG8:
+    case V4L2_PIX_FMT_SRGGB8:
+        whiteLevel = 255;
+        break;
+    case V4L2_PIX_FMT_SBGGR10:
+    case V4L2_PIX_FMT_SGBRG10:
+    case V4L2_PIX_FMT_SGRBG10:
+    case V4L2_PIX_FMT_SRGGB10:
+        whiteLevel = 1023;
+        break;
+    case V4L2_PIX_FMT_SBGGR12:
+    case V4L2_PIX_FMT_SGBRG12:
+    case V4L2_PIX_FMT_SGRBG12:
+    case V4L2_PIX_FMT_SRGGB12:
+        whiteLevel = 4095;
+        break;
+    default:
+        LOGW("%s, Not suppport format %x", __func__, format);
+        break;
+    }
+
+    return whiteLevel;
+}
+
 }  // namespace HalV3Utils
 }  // namespace camera3

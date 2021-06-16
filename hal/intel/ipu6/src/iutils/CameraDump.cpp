@@ -361,7 +361,7 @@ static string formatBinFileName(int cameraId, const char *prefix, BinParam_t *bi
 }
 
 void CameraDump::dumpImage(int cameraId, const shared_ptr<CameraBuffer> &camBuffer,
-                           ModuleType_t type, Port port)
+                           ModuleType_t type, Port port, const char* desc)
 {
     CheckAndLogError(camBuffer == nullptr, VOID_VALUE, "invalid param");
 
@@ -377,6 +377,7 @@ void CameraDump::dumpImage(int cameraId, const shared_ptr<CameraBuffer> &camBuff
 
     string prefix   = getNamePrefix(cameraId, type, port, camBuffer->getUserBuffer()->s.usage);
     string appendix = getAiqSettingAppendix(cameraId, camBuffer->getSequence());
+    if (desc) appendix.append(desc);
 
     string fileName = formatFrameFileName(prefix.c_str(), appendix.c_str(),
                                           CameraUtils::format2string(camBuffer->getFormat()).c_str(),

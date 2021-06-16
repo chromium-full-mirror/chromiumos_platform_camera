@@ -365,7 +365,7 @@ status_t GraphConfigImpl::getRawInputSize(GCSS::IGraphConfig* query, camera_reso
 status_t GraphConfigImpl::queryAllMatchedResults(const std::vector<HalStream*>& activeStreams,
                                     bool dummyStillSink,
                                     std::map<int, std::vector<GCSS::IGraphConfig*>> *queryResults) {
-    CheckError(!queryResults, UNKNOWN_ERROR, "%s, The queryResults is nullptr", __func__);
+    CheckAndLogError(!queryResults, UNKNOWN_ERROR, "%s, The queryResults is nullptr", __func__);
 
     status_t ret = createQueryRule(activeStreams, dummyStillSink);
     CheckAndLogError(ret != OK, ret, "Failed to create the query rule");

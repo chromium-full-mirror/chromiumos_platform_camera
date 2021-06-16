@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2020 Intel Corporation
+ * Copyright (C) 2017-2021 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@ int fillHALStreams(int cameraId, const camera3_stream_t& camera3Stream, icamera:
 int getCrosConfigCameraNumber(const std::vector<CrosCameraInfo>& infos);
 void updateOrientation(const std::vector<CrosCameraInfo>& infos);
 std::vector<CrosCameraInfo> getCrosCameraInfo();
+int32_t getDefaultRawWhiteLevel(int cameraId);
 
 }  // namespace HalV3Utils
 

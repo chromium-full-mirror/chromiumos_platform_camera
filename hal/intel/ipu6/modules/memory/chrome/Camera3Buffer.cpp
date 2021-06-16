@@ -187,7 +187,7 @@ icamera::status_t Camera3Buffer::init(const camera3_stream_buffer* aBuffer, int 
 
 icamera::status_t Camera3Buffer::init(const camera3_stream_t* stream, buffer_handle_t handle,
                                       int cameraId) {
-    CheckError(!handle, UNKNOWN_ERROR, "%s, handle is nullptr", __func__);
+    CheckAndLogError(!handle, UNKNOWN_ERROR, "%s, handle is nullptr", __func__);
 
     mType = BUF_TYPE_HANDLE;
     mGbmBufferManager = cros::CameraBufferManager::GetInstance();
@@ -327,16 +327,16 @@ icamera::status_t Camera3Buffer::lock(int flags) {
 
 icamera::status_t Camera3Buffer::lock() {
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL1);
-    CheckError(!mInit, INVALID_OPERATION,
-               "@%s: Error: Cannot lock now this buffer, not initialized", __func__);
+    CheckAndLogError(!mInit, INVALID_OPERATION,
+                     "@%s: Error: Cannot lock now this buffer, not initialized", __func__);
 
     if (mType != BUF_TYPE_HANDLE) {
         mLocked = true;
         return icamera::OK;
     }
 
-    CheckError(mLocked, INVALID_OPERATION, "@%s: Error: Cannot lock buffer, already locked",
-               __func__);
+    CheckAndLogError(mLocked, INVALID_OPERATION, "@%s: Error: Cannot lock buffer, already locked",
+                     __func__);
 
     int lockMode = mUsage & (GRALLOC_USAGE_SW_READ_MASK | GRALLOC_USAGE_SW_WRITE_MASK |
                    GRALLOC_USAGE_HW_CAMERA_MASK);
@@ -502,7 +502,7 @@ std::shared_ptr<Camera3Buffer> allocateHandleBuffer(int w, int h, int gfxFmt, in
 
     LOG1("%s, [wxh] = [%dx%d], format 0x%x, usage 0x%x", __func__, w, h, gfxFmt, usage);
     int ret = bufManager->Allocate(w, h, gfxFmt, usage, &handle, &stride);
-    CheckError(ret != 0, nullptr, "Allocate handle failed! ret:%d", ret);
+    CheckAndLogError(ret != 0, nullptr, "Allocate handle failed! ret:%d", ret);
 
     std::shared_ptr<Camera3Buffer> buffer(new Camera3Buffer());
     camera3_stream_t stream{};

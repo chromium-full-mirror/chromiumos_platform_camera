@@ -574,7 +574,8 @@ int MetadataConvert::HALMetadataToRequestMetadata(const icamera::Parameters& par
 }
 
 int MetadataConvert::HALCapabilityToStaticMetadata(const icamera::Parameters& parameter,
-                                                   android::CameraMetadata* settings) {
+                                                   android::CameraMetadata* settings,
+                                                   int cameraId) {
     LOG1("@%s", __func__);
 
     CheckAndLogError(settings == nullptr, icamera::BAD_VALUE,
@@ -609,7 +610,7 @@ int MetadataConvert::HALCapabilityToStaticMetadata(const icamera::Parameters& pa
 
     // ANDROID_SENSOR
     // ANDROID_SENSOR_INFO
-    fillSensorStaticMetadata(parameter, settings);
+    fillSensorStaticMetadata(parameter, settings, cameraId);
 
     // ANDROID_STATISTICS
     // ANDROID_STATISTICS_INFO
@@ -1718,7 +1719,8 @@ void MetadataConvert::fillTonemapStaticMetadata(const icamera::Parameters& param
 }
 
 void MetadataConvert::fillSensorStaticMetadata(const icamera::Parameters& parameter,
-                                               android::CameraMetadata* settings) {
+                                               android::CameraMetadata* settings,
+                                               int cameraId) {
     icamera::camera_range_t timeRange;
     // Fill it if it is supported
     if (parameter.getSupportedSensorExposureTimeRange(timeRange) == 0) {
@@ -1789,7 +1791,13 @@ void MetadataConvert::fillSensorStaticMetadata(const icamera::Parameters& parame
         settings->update(ANDROID_SENSOR_AVAILABLE_TEST_PATTERN_MODES, entry.data.i32, entry.count);
     }
 
-    int32_t whiteLevel = 0;
+    int32_t whiteLevel = HalV3Utils::getDefaultRawWhiteLevel(cameraId);
+    tag = CAMERA_SENSOR_INFO_WHITE_LEVEL;
+    entry = meta.find(tag);
+    if (entry.count == 1) {
+        // Overwrite if tag exists.
+        whiteLevel = *entry.data.i32;
+    }
     settings->update(ANDROID_SENSOR_INFO_WHITE_LEVEL, &whiteLevel, 1);
 
     int32_t blackLevelPattern[4] = {0, 0, 0, 0};

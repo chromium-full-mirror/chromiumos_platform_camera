@@ -114,16 +114,16 @@ void GraphConfigImpl::releaseGraphNodes() {
 
 bool GraphConfigImpl::queryGraphSettings(const vector<HalStream*>& activeStreams) {
     LOGIPC("@%s", __func__);
-    CheckError(!mInitialized, false, "@%s, mInitialized is false", __func__);
+    CheckAndLogError(!mInitialized, false, "@%s, mInitialized is false", __func__);
 
     GraphBaseInfo info = {mCameraId, mConfigMode};
     memset(mMemQueryGraphSettings.mAddr, 0, sizeof(GraphQueryGraphParams));
     bool ret = mIpc.clientFlattenConfigStreams(mMemQueryGraphSettings.mAddr, mMemConfig.mSize,
                                                info, mType, false, activeStreams);
-    CheckError(!ret, false, "@%s, clientFlattenConfigStreams fails", __func__);
+    CheckAndLogError(!ret, false, "@%s, clientFlattenConfigStreams fails", __func__);
 
     ret = mCommon.requestSync(IPC_GRAPH_QUERY_GRAPH_SETTINGS, mMemQueryGraphSettings.mHandle);
-    CheckError(!ret, false, "@%s, requestSync fails", __func__);
+    CheckAndLogError(!ret, false, "@%s, requestSync fails", __func__);
 
     GraphQueryGraphParams* params =
         static_cast<GraphQueryGraphParams*>(mMemQueryGraphSettings.mAddr);

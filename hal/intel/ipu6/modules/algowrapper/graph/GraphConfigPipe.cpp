@@ -410,7 +410,7 @@ Node* GraphConfigPipe::getOutputPortForSink(const string& sinkName) {
  */
 status_t GraphConfigPipe::handleDynamicOptions() {
     status_t status = setPortFormats();
-    CheckError(status != OK, status, "Failed to set port format");
+    CheckAndLogError(status != OK, status, "Failed to set port format");
 
     return status;
 }

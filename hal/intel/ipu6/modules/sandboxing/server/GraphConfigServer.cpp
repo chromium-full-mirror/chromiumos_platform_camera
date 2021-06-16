@@ -64,7 +64,7 @@ void GraphConfigServer::releaseGraphNodes() {
 
 status_t GraphConfigServer::queryGraphSettings(void* pData, size_t dataSize) {
     LOGIPC("@%s, pData:%p, dataSize:%zu", __func__, pData, dataSize);
-    CheckError(pData == nullptr, UNKNOWN_ERROR, "@%s, pData is nullptr", __func__);
+    CheckAndLogError(pData == nullptr, UNKNOWN_ERROR, "@%s, pData is nullptr", __func__);
 
     GraphBaseInfo info;
     GraphSettingType type;
@@ -72,7 +72,8 @@ status_t GraphConfigServer::queryGraphSettings(void* pData, size_t dataSize) {
     bool dummyStillSink;
     bool ret = mIpc.serverUnflattenConfigStreams(pData, dataSize, &info, &type, &dummyStillSink,
                                                  &streams);
-    CheckError(ret == false, UNKNOWN_ERROR, "@%s, clientFlattenConfigStreams fails", __func__);
+    CheckAndLogError(ret == false, UNKNOWN_ERROR, "@%s, clientFlattenConfigStreams fails",
+                     __func__);
 
     GraphQueryGraphParams* params = static_cast<GraphQueryGraphParams*>(pData);
     std::shared_ptr<GraphConfigImpl> graphConfigImpl =

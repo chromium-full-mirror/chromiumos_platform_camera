@@ -71,6 +71,7 @@ CameraParser::CameraParser(MediaControl *mc, PlatformData::StaticCfg *cfg) :
         {"sensor.info.sensitivityRange", CAMERA_SENSOR_INFO_SENSITIVITY_RANGE},
         {"sensor.info.exposureTimeRange", CAMERA_SENSOR_INFO_EXPOSURE_TIME_RANGE},
         {"sensor.info.colorFilterArrangement", CAMERA_SENSOR_INFO_COLOR_FILTER_ARRANGEMENT},
+        {"sensor.info.whitelevel", CAMERA_SENSOR_INFO_WHITE_LEVEL},
         {"sensor.availableTestPatternModes", CAMERA_SENSOR_AVAILABLE_TEST_PATTERN_MODES},
         {"sensor.orientation", CAMERA_SENSOR_ORIENTATION},
         {"sensor.opaqueRawSize", CAMERA_SENSOR_OPAQUE_RAW_SIZE},
@@ -486,7 +487,7 @@ void CameraParser::handleSensor(CameraParser *profiles, const char *name, const 
             info.nodeName = tablePtr;
 
             tablePtr = strtok_r(nullptr, ",", &savePtr);
-            CheckError(tablePtr == nullptr, VOID_VALUE, "failed to parse nvmDeviceInfo");
+            CheckAndLogError(tablePtr == nullptr, VOID_VALUE, "failed to parse nvmDeviceInfo");
             info.dataSize = atoi(tablePtr);
 
             mNvmDeviceInfo.push_back(info);

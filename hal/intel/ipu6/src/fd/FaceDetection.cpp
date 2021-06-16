@@ -151,7 +151,7 @@ void FaceDetection::returnRunBuf(FaceDetectionRunParams *memRunBuf) {
 }
 
 bool FaceDetection::faceRunningByCondition() {
-    CheckError(mInitialized == false, false, "mInitialized is false");
+    CheckAndLogError(mInitialized == false, false, "mInitialized is false");
 
     LOG2("@%s", __func__);
 

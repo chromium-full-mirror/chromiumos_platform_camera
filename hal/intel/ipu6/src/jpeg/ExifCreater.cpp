@@ -294,8 +294,8 @@ exif_status ExifCreater::makeExif(void* exifOut, exif_attribute_t* exifInfo, siz
         pCur += OFFSET_SIZE;
     }
 
-    CheckError(LongerTagOffset >= EXIF_SIZE_LIMITATION,
-               EXIF_FAIL, "%s, the size exceeds 64K, line:%d", __func__, __LINE__);
+    CheckAndLogError(LongerTagOffset >= EXIF_SIZE_LIMITATION,
+                     EXIF_FAIL, "%s, the size exceeds 64K, line:%d", __func__, __LINE__);
 
     // 2 1th IFD TIFF Tags
     if (exifInfo->enableThumb && (m_thumbBuf != nullptr) && (m_thumbSize > 0)) {

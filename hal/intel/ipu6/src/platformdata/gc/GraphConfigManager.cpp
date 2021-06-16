@@ -112,22 +112,22 @@ int GraphConfigManager::createHalStreamVector(ConfigMode configMode,
  */
 status_t GraphConfigManager::queryGraphSettings(const stream_config_t *streamList) {
     LOG2("%s", __func__);
-    CheckError(!streamList, false, "%s: Null streamList configured", __func__);
+    CheckAndLogError(!streamList, false, "%s: Null streamList configured", __func__);
 
     vector<ConfigMode> configModes;
     int ret = PlatformData::getConfigModesByOperationMode(mCameraId, streamList->operation_mode,
                                                           configModes);
-    CheckError(ret != OK, ret, "%s, get ConfigMode failed %d", __func__, ret);
+    CheckAndLogError(ret != OK, ret, "%s, get ConfigMode failed %d", __func__, ret);
     std::vector<HalStream*> halStreamVec;
     ret = createHalStreamVector(configModes[0], streamList, &halStreamVec);
-    CheckError(ret != OK, ret, "%s, create hal stream failed %d", __func__, ret);
+    CheckAndLogError(ret != OK, ret, "%s, create hal stream failed %d", __func__, ret);
 
     for (auto mode : configModes) {
         LOG1("%s, Mapping the operationMode %d to ConfigMode %d", __func__,
              streamList->operation_mode, mode);
 
         std::shared_ptr<GraphConfig> graphConfig = std::make_shared<GraphConfig>(mCameraId, mode);
-        CheckError(!graphConfig, UNKNOWN_ERROR, "%s, Failed to create graphConfig", __func__);
+        CheckAndLogError(!graphConfig, UNKNOWN_ERROR, "%s, Create graphConfig failed", __func__);
         ret = graphConfig->queryGraphSettings(halStreamVec);
         if (ret != OK) {
             LOG2("%s, There is no graph settings for real ConfigMode %x", __func__, mode);
@@ -150,17 +150,17 @@ status_t GraphConfigManager::queryGraphSettings(const stream_config_t *streamLis
 status_t GraphConfigManager::configStreams(const stream_config_t *streamList)
 {
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL1);
-    CheckError(!streamList, BAD_VALUE, "%s: Null streamList configured", __func__);
+    CheckAndLogError(!streamList, BAD_VALUE, "%s: Null streamList configured", __func__);
 
     vector <ConfigMode> configModes;
     int ret = PlatformData::getConfigModesByOperationMode(mCameraId, streamList->operation_mode, configModes);
-    CheckError(ret != OK, ret, "%s, get ConfigMode failed %d", __func__, ret);
+    CheckAndLogError(ret != OK, ret, "%s, get ConfigMode failed %d", __func__, ret);
 
     // Convert the stream_t to HalStream
     // Use the stream list with descending order to find graph settings.
     releaseHalStream(&mHalStreamVec);
     ret = createHalStreamVector(configModes[0], streamList, &mHalStreamVec);
-    CheckError(ret != OK, ret, "%s, create hal stream failed %d", __func__, ret);
+    CheckAndLogError(ret != OK, ret, "%s, create hal stream failed %d", __func__, ret);
 
     //debug
     dumpStreamConfig();
@@ -171,9 +171,10 @@ status_t GraphConfigManager::configStreams(const stream_config_t *streamList)
         LOG1("Mapping the operationMode %d to ConfigMode %d", streamList->operation_mode, mode);
 
         std::shared_ptr<GraphConfig> graphConfig = std::make_shared<GraphConfig>(mCameraId, mode);
-        CheckError(!graphConfig, UNKNOWN_ERROR, "%s, Failed to create graphConfig", __func__);
+        CheckAndLogError(!graphConfig, UNKNOWN_ERROR, "%s, Failed to create graphConfig", __func__);
         ret = graphConfig->configStreams(mHalStreamVec);
-        CheckWarning(ret != OK, ret, "%s, Failed to configure graph: real ConfigMode %x", __func__, mode);
+        CheckAndLogError(ret != OK, ret,
+                         "%s, Failed to configure graph: real ConfigMode %x", __func__, mode);
 
         int id = graphConfig->getSelectedMcId();
         CheckAndLogError(
