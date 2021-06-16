@@ -188,7 +188,6 @@ icamera::status_t Camera3Buffer::init(const camera3_stream_t* stream, buffer_han
     mType = BUF_TYPE_HANDLE;
     mGbmBufferManager = cros::CameraBufferManager::GetInstance();
     mHandle = handle;
-    mHandlePtr = &handle;
     mHalBuffer.s.width = stream->width;
     mHalBuffer.s.height = stream->height;
     mFormat = stream->format;
@@ -201,8 +200,10 @@ icamera::status_t Camera3Buffer::init(const camera3_stream_t* stream, buffer_han
     mLocked = false;
     mInit = true;
     mHalBuffer.addr = nullptr;
-    mHalBuffer.dmafd = mHandle->data[0];
     mCameraId = cameraId;
+
+    CheckError(!mHandle, UNKNOWN_ERROR, "%s, Camera3Buffer init fails", __func__);
+    mHalBuffer.dmafd = mHandle->data[0];
     LOG2("@%s, mHandle:%p, mFormat:%d, width:%d, height:%d, stride:%d", __func__, mHandle, mFormat,
          mHalBuffer.s.width, mHalBuffer.s.height, mHalBuffer.s.stride);
 

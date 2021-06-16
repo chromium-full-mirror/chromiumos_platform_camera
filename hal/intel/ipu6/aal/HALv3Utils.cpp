@@ -228,7 +228,7 @@ void updateOrientation(const std::vector<CrosCameraInfo>& infos) {
             icamera::get_camera_info(j, info);
 
             if (info.facing == infos[i].facing) {
-                LOG1("%s@, cameraID %d's orient = %d ", __func__, j, infos[i].orientation);
+                LOG1("%s@, cameraID %zu's orient = %d ", __func__, j, infos[i].orientation);
                 icamera::PlatformData::setSensorOrientation(j, infos[i].orientation);
             }
         }

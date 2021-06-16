@@ -45,10 +45,6 @@ Camera3Stream::Camera3Stream(int cameraId, CallbackEventInterface* callback,
           mStream(stream),
           mStreamStatus(PROCESS_REQUESTS),
           mFaceDetection(nullptr),
-          mFDRunDefaultInterval(icamera::PlatformData::faceEngineRunningInterval(cameraId)),
-          mFDRunIntervalNoFace(icamera::PlatformData::faceEngineRunningIntervalNoFace(cameraId)),
-          mFDRunInterval(icamera::PlatformData::faceEngineRunningInterval(cameraId)),
-          mFrameCnt(0),
           mInputPostProcessType(icamera::POST_PROCESS_NONE),
           mIsHALStream(isHALStream) {
     LOG1("[%p]@%s, buf num:%d, inputStream:%p, stream:%dx%d, format:%d, type:%d", this,
@@ -70,9 +66,6 @@ Camera3Stream::Camera3Stream(int cameraId, CallbackEventInterface* callback,
         mInputStream = std::unique_ptr<camera3_stream_t>(new camera3_stream_t);
         *mInputStream = *inputStream;
     }
-
-    LOG2("@%s, mFaceDetection:%p, Interval:%d, IntervalNoFace:%d", __func__,
-         mFaceDetection, mFDRunDefaultInterval, mFDRunIntervalNoFace);
 }
 
 Camera3Stream::~Camera3Stream() {
@@ -189,7 +182,7 @@ bool Camera3Stream::threadLoop() {
         }
         CheckAndLogError(ret != icamera::OK || !buffer, true,
                          "[%p]failed to dequeue buffer, ret %d", this, ret);
-        LOG2("[%p]@ %s, buffer->timestamp:%lld addr %p", this, __func__, buffer->timestamp,
+        LOG2("[%p]@ %s, buffer->timestamp:%lu addr %p", this, __func__, buffer->timestamp,
              buffer->addr);
 
         sequence = buffer->sequence;
@@ -357,7 +350,9 @@ bool Camera3Stream::threadLoop() {
         }
     }
 
-    faceRunningByCondition(ccBuf->getHalBuffer());
+    if (mFaceDetection) {
+        mFaceDetection->runFaceDetection(ccBuf->getHalBuffer());
+    }
 
     if (mHALStream.usage != icamera::CAMERA_STREAM_OPAQUE_RAW) {
         ccBuf->dumpImage(frameNumber, icamera::DUMP_AAL_OUTPUT, dumpOutputFmt);
@@ -380,52 +375,6 @@ bool Camera3Stream::threadLoop() {
     }
 
     return true;
-}
-
-void Camera3Stream::faceRunningByCondition(const icamera::camera_buffer_t& buffer) {
-    if (!mFaceDetection) return;
-
-    LOG2("[%p]@%s", this, __func__);
-
-    /*
-       FD runs 1 frame every mFDRunInterval frames.
-       And the default value of mFDRunInterval is mFDRunDefaultInterval
-    */
-    if (mFrameCnt % mFDRunInterval == 0) {
-        mFaceDetection->runFaceDetection(buffer);
-    }
-
-    /*
-       When face doesn't be detected during mFDRunIntervalNoFace's frame,
-       we may change FD running's interval frames.
-    */
-    if (mFDRunIntervalNoFace > mFDRunDefaultInterval) {
-        static unsigned int noFaceCnt = 0;
-        int faceNum = mFaceDetection->getFaceNum();
-
-        /*
-           The purpose of changing the value of the variable is to run FD
-           immediately when face is detected.
-        */
-        if (faceNum == 0) {
-            if (mFDRunInterval != mFDRunIntervalNoFace) {
-                noFaceCnt = ++noFaceCnt % mFDRunIntervalNoFace;
-                if (noFaceCnt == 0) {
-                    mFDRunInterval = mFDRunIntervalNoFace;
-                }
-            }
-        } else {
-            if (mFDRunInterval != mFDRunDefaultInterval) {
-                mFDRunInterval = mFDRunDefaultInterval;
-                mFrameCnt = mFDRunInterval - 1;
-                noFaceCnt = 0;
-            }
-        }
-        LOG2("%s, Currently running one time face detection every %d frames", __func__,
-             mFDRunInterval);
-    }
-
-    mFrameCnt = ++mFrameCnt % mFDRunInterval;
 }
 
 void Camera3Stream::requestExit() {

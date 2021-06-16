@@ -84,8 +84,8 @@ void DeviceBase::closeDevice()
     {
         AutoMutex l(mBufferLock);
 
-        std::vector<V4L2Buffer> bufs;
-        mDevice->SetupBuffers(0, true, mDevice->GetMemoryType(), &bufs);
+        // Release V4L2 buffers
+        mDevice->Stop(true);
 
         mPendingBuffers.clear();
         mBuffersInDevice.clear();

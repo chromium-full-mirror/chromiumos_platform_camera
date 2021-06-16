@@ -584,7 +584,7 @@ void PSysDAG::addTask(PSysTaskData taskParam)
                 task.mNumOfValidBuffers++;
             }
         }
-        LOG2("%s:Id:%d push task with %d output buffers, sequence: %ld",
+        LOG2("%s:Id:%d push task with %d output buffers, sequence: %u",
                 __func__, mCameraId, task.mNumOfValidBuffers,
                 taskParam.mInputBuffers.at(mDefaultMainInputPort)->getSequence());
         AutoMutex taskLock(mTaskLock);

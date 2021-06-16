@@ -473,12 +473,25 @@ void CameraParser::handleSensor(CameraParser *profiles, const char *name, const 
         }
     } else if (strcmp(name, "pslOutputMapForRotation") == 0) {
         parseOutputMap(atts[1], pCurrentCam->mOutputMap);
-    } else if (strcmp(name, "maxNvmDataSize") == 0) {
-        pCurrentCam->mMaxNvmDataSize = atoi(atts[1]);
-    } else if (strcmp(name, "nvmDirectory") == 0) {
-        pCurrentCam->mNvmDirectory = atts[1];
-    } else if (strcmp(name, "nvmNodeName") == 0) {
-        mNvmNodeName = atts[1];
+    } else if (strcmp(name, "nvmDeviceInfo") == 0) {
+        int size = strlen(atts[1]);
+        char src[size + 1];
+        MEMCPY_S(src, size, atts[1], size);
+        src[size] = '\0';
+        char* savePtr = nullptr;
+        char* tablePtr = strtok_r(src, ",", &savePtr);
+        struct NvmDeviceInfo info;
+        while (tablePtr) {
+            info.nodeName = tablePtr;
+
+            tablePtr = strtok_r(nullptr, ",", &savePtr);
+            CheckError(tablePtr == nullptr, VOID_VALUE, "failed to parse nvmDeviceInfo");
+            info.dataSize = atoi(tablePtr);
+
+            mNvmDeviceInfo.push_back(info);
+
+            tablePtr = strtok_r(nullptr, ",", &savePtr);
+        }
     } else if (strcmp(name, "isISYSCompression") == 0) {
         pCurrentCam->mISYSCompression = strcmp(atts[1], "true") == 0;
     } else if (strcmp(name, "isPSACompression") == 0) {
@@ -503,6 +516,8 @@ void CameraParser::handleSensor(CameraParser *profiles, const char *name, const 
             val > 0 ? val : FACE_ENGINE_DEFAULT_RUNNING_INTERVAL;
     } else if (strcmp(name, "faceEngineRunningSync") == 0) {
         pCurrentCam->mFaceEngineRunningSync = strcmp(atts[1], "true") == 0;
+    } else if (strcmp(name, "faceEngineByIPU") == 0) {
+        pCurrentCam->mFaceEngineByIPU = strcmp(atts[1], "true") == 0;
     } else if (strcmp(name, "maxFaceDetectionNumber") == 0) {
         int val = atoi(atts[1]);
         pCurrentCam->mMaxFaceDetectionNumber =
@@ -1858,11 +1873,11 @@ void CameraParser::endParseElement(void *userData, const char *name)
             }
 
             // I2CBus is adaptor-bus, like 18-0010, and use adaptor id to select NVM path.
-            if ((profiles->mI2CBus.size() >= 2) && !profiles->mNvmNodeName.empty()) {
+            if ((profiles->mI2CBus.size() >= 2) && !profiles->mNvmDeviceInfo.empty()) {
                 getNVMDirectory(profiles);
             }
 
-            profiles->mNvmNodeName.clear();
+            profiles->mNvmDeviceInfo.clear();
 
             // Merge the content of mMetadata into mCapability.
             ParameterHelper::merge(profiles->mMetadata, &profiles->pCurrentCam->mCapability);
@@ -1932,15 +1947,28 @@ void CameraParser::getNVMDirectory(CameraParser* profiles)
                 size_t readSize = fread(ptr.get(), sizeof(char), size, fp);
                 fclose(fp);
 
-                if (readSize > 0 && strstr(ptr.get(), profiles->mNvmNodeName.c_str()) != nullptr) {
-                    profiles->pCurrentCam->mNvmDirectory = "i2c-";
-                    profiles->pCurrentCam->mNvmDirectory += direntPtr->d_name;
-                    LOGXML("NVM dir %s", profiles->pCurrentCam->mNvmDirectory.c_str());
-                    break;
+                if (readSize > 0) {
+                    for (auto &nvm : profiles->mNvmDeviceInfo) {
+                        if (strstr(ptr.get(), nvm.nodeName.c_str()) != nullptr) {
+                            nvm.directory = "i2c-";
+                            nvm.directory += direntPtr->d_name;
+                            break;
+                        }
+                    }
                 }
             }
         }
         closedir(dir);
+    }
+
+    for (auto nvm : profiles->mNvmDeviceInfo) {
+        if (!nvm.directory.empty()) {
+            // The first one in list is prioritized and should be selected.
+            profiles->pCurrentCam->mNvmDirectory = nvm.directory;
+            profiles->pCurrentCam->mMaxNvmDataSize = nvm.dataSize;
+            LOGXML("NVM dir %s", profiles->pCurrentCam->mNvmDirectory.c_str());
+            break;
+        }
     }
 }
 

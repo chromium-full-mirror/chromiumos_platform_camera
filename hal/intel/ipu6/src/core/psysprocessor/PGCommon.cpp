@@ -372,9 +372,9 @@ int PGCommon::createCommands()
     CheckAndLogError(ret, NO_MEMORY, "create cmd fail!");
     if (mPPG) {
         ret = createCommand(mPPGBuffer, &mPPGCmd[PPG_CMD_TYPE_START], &mPPGCmdExtBuffer[PPG_CMD_TYPE_START], bufCount);
-        CheckAndLogError(ret, NO_MEMORY, "create ppg start buffer %d fail");
+        CheckAndLogError(ret, NO_MEMORY, "create ppg start buffer fail");
         ret = createCommand(mPPGBuffer, &mPPGCmd[PPG_CMD_TYPE_STOP], &mPPGCmdExtBuffer[PPG_CMD_TYPE_STOP], 0);
-        CheckAndLogError(ret, NO_MEMORY, "create ppg stop %d fail");
+        CheckAndLogError(ret, NO_MEMORY, "create ppg stop fail");
     }
 
     CIPR::PSysEventConfig eventCfg = {};
@@ -594,7 +594,9 @@ int PGCommon::handlePGParams(const ia_css_frame_format_type* frameFormatTypes)
 int PGCommon::setKernelBitMap()
 {
     ia_css_program_group_param_t* pgParamsBuf = (ia_css_program_group_param_t*)getCiprBufferPtr(mPGParamsBuffer);
-    LOG1("%s: mKernelBitmap: %#018lx", __func__, mKernelBitmap);
+#ifdef IA_CSS_KERNEL_BITMAP_DO_NOT_USE_ELEMS
+    LOG1("%s: mKernelBitmap:(Not use elems) %#018lx", __func__, mKernelBitmap);
+#endif
     int ret = ia_css_program_group_param_set_kernel_enable_bitmap(pgParamsBuf, mKernelBitmap);
     CheckAndLogError(
         (ret != OK), ret,
@@ -1111,7 +1113,7 @@ int PGCommon::prepareTerminalBuffers(const ia_binary_data *ipuParameters,
         if (buffer) {
             bool flush = buffer->getUsage() == BUFFER_USAGE_GENERAL ? true : false;
             ciprBuf = (buffer->getMemory() == V4L2_MEMORY_DMABUF) \
-                     ? registerUserBuffer(buffer->getBufferSize(), buffer->getFd()) \
+                     ? registerUserBuffer(buffer->getBufferSize(), buffer->getFd(), flush) \
                      : registerUserBuffer(buffer->getBufferSize(), buffer->getBufferAddr(), flush);
             CheckAndLogError(!ciprBuf, NO_MEMORY,
                              "%s, register buffer size %d for terminal %d fail",

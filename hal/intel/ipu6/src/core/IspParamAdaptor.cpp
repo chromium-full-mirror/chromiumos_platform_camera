@@ -721,9 +721,8 @@ int IspParamAdaptor::runIspAdaptL(ia_isp_bxt_program_group *pgPtr, ia_isp_bxt_gd
                                   const IspSettings* ispSettings, long requestId, long settingSequence,
                                   ia_binary_data *binaryData, int streamId) {
     PERF_CAMERA_ATRACE_IMAGING();
-    CheckAndLogError(!mIntelCca, UNKNOWN_ERROR, "%s, mIntelCca is nullptr",
-                     __func__);
-    LOG2("%s: device type: %d, requestId:%d", __func__, mPgParamType, requestId);
+    CheckAndLogError(!mIntelCca, UNKNOWN_ERROR, "%s, mIntelCca is nullptr", __func__);
+    LOG2("%s: device type: %d, requestId:%ld", __func__, mPgParamType, requestId);
 
     AiqResult* aiqResults = const_cast<AiqResult*>(AiqResultStorage::getInstance(mCameraId)->getAiqResult(settingSequence));
     if (aiqResults == nullptr) {

@@ -468,7 +468,7 @@ int PipeLiteExecutor::getStatKernels(int pgId, vector<ia_uid>& kernels)
         }
     }
 
-    LOG1("pg %d has %d stat kernels", pgId, kernels.size());
+    LOG1("pg %d has %lu stat kernels", pgId, kernels.size());
     return kernels.size();
 }
 
@@ -483,7 +483,7 @@ int PipeLiteExecutor::getSisKernels(int pgId, vector<ia_uid>& kernels)
         }
     }
 
-    LOG1("pg %d has %d sis kernels", pgId, kernels.size());
+    LOG1("pg %d has %lu sis kernels", pgId, kernels.size());
     return kernels.size();
 }
 
@@ -618,7 +618,7 @@ int PipeLiteExecutor::processNewFrame()
 
         // Run pipe with buffers
         ret = runPipe(inBuffers, outBuffers, outStatsBuffers, eventType);
-        LOGVCSYNC("[done runPipe], CPU-timestamp:%lu, sequence:%ld, vc:%d, kernel-timestamp:%.3lfms, endl",
+        LOGVCSYNC("[done runPipe], CPU-timestamp:%lu, sequence:%u, vc:%d, kernel-timestamp:%.3lfms, endl",
                   CameraUtils::systemTime(),
                   cInBuffer->getSequence(),
                   cInBuffer->getVirtualChannel(),

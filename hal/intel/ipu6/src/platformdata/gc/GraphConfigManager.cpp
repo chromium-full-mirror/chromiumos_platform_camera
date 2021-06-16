@@ -120,6 +120,7 @@ status_t GraphConfigManager::configStreams(const stream_config_t *streamList)
         LOG1("Mapping the operationMode %d to ConfigMode %d", streamList->operation_mode, mode);
 
         std::shared_ptr<GraphConfig> graphConfig = std::make_shared<GraphConfig>(mCameraId, mode);
+        CheckError(!graphConfig, UNKNOWN_ERROR, "%s, Failed to create graphConfig", __func__);
         ret = graphConfig->configStreams(mHalStreamVec);
         CheckWarning(ret != OK, ret, "%s, Failed to configure graph: real ConfigMode %x", __func__, mode);
 

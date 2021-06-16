@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2020 Intel Corporation
+ * Copyright (C) 2017-2021 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -178,7 +178,7 @@ int ResultProcessor::shutterDone(const ShutterEvent& event) {
 
         mCallbackOps->notify(mCallbackOps, &notifyMsg);
         mRequestStateVector.at(i).isShutterDone = true;
-        LOG2("@%s, frame_number:%u, shutter timestamp:%lld", __func__,
+        LOG2("@%s, frame_number:%u, shutter timestamp:%lu", __func__,
              notifyMsg.message.shutter.frame_number, notifyMsg.message.shutter.timestamp);
         if (checkRequestDone(mRequestStateVector.at(i))) {
             returnRequestDone(notifyMsg.message.shutter.frame_number);

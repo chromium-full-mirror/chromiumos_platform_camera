@@ -300,7 +300,7 @@ int AiqCore::updateParameter(const aiq_parameter_t &param) {
 }
 
 int AiqCore::setStatsParams(const cca::cca_stats_params &statsParams) {
-    LOG3A("@%s, frame_id:%lld, frame_timestamp:%lld, mTuningMode:%d", __func__,
+    LOG3A("@%s, frame_id:%lu, frame_timestamp:%lu, mTuningMode:%d", __func__,
           statsParams.frame_id, statsParams.frame_timestamp, mTuningMode);
     int ret = OK;
 
@@ -329,7 +329,7 @@ int AiqCore::runAe(long requestId, AiqResult* aiqResult) {
 }
 
 int AiqCore::runAiq(long requestId, AiqResult *aiqResult) {
-    LOG3A("@%s, aiqResult:%p, requestId:%d, mTonemapMode:%d", __func__,
+    LOG3A("@%s, aiqResult:%p, requestId:%ld, mTonemapMode:%d", __func__,
           aiqResult, requestId, mTonemapMode);
     CheckAndLogError(!aiqResult, BAD_VALUE, "@%s, aiqResult is nullptr",
                      __func__);
@@ -392,7 +392,7 @@ int AiqCore::runAiq(long requestId, AiqResult *aiqResult) {
         mSaParams.lsc_on = mLensShadingMapMode == LENS_SHADING_MAP_MODE_ON ? true : false;
         mAiqParams->sa_input = mSaParams;
     }
-    LOG3A("@%s, params->bitmap:%d, mAiqRunTime:%lld", __func__, mAiqParams->bitmap, mAiqRunTime);
+    LOG3A("@%s, params->bitmap:%d, mAiqRunTime:%lu", __func__, mAiqParams->bitmap, mAiqRunTime);
 
     // runAIQ for awb/af/gbce/pa/sa
     int ret = OK;
@@ -695,7 +695,7 @@ int AiqCore::processSAResults(cca::cca_sa_results *saResults, float *lensShading
             }
         }
         if (errCount) {
-            LOGW("Error - SA produced too small values (%d/%d)!", errCount, mLscGridRGGBLen);
+            LOGW("Error - SA produced too small values (%zu/%zu)!", errCount, mLscGridRGGBLen);
         }
     }
 

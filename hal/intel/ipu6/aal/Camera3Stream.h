@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2020 Intel Corporation
+ * Copyright (C) 2017-2021 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -161,10 +161,6 @@ class Camera3Stream : public icamera::Thread {
     std::map<buffer_handle_t, std::shared_ptr<Camera3Buffer>> mBuffers;
 
     icamera::FaceDetection* mFaceDetection;
-    unsigned int mFDRunDefaultInterval;  // FD running's interval frames.
-    unsigned int mFDRunIntervalNoFace;   // FD running's interval frames without face.
-    unsigned int mFDRunInterval;         // run 1 frame every mFDRunInterval frames.
-    unsigned int mFrameCnt;              // from 0 to (mFDRunInterval - 1).
 
     int mInputPostProcessType;
     std::unique_ptr<PostProcessor> mInputPostProcessor;
@@ -182,8 +178,6 @@ class Camera3Stream : public icamera::Thread {
 
     // save buffer obj when HAL choose buffer from pool to do qbuf/dqbuf
     std::unordered_map<uint32_t, std::shared_ptr<Camera3Buffer>> mQueuedBuffer;
-
-    void faceRunningByCondition(const icamera::camera_buffer_t& buffer);
 };
 
 }  // namespace camera3

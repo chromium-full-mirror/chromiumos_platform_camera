@@ -389,7 +389,7 @@ void RequestThread::handleEvent(EventData eventData)
                         frameQueue.mFrameAvailableSignal.signal();
                     }
                 } else {
-                    LOG2("%s: fake request return %ld", __func__, eventData.buffer->getSequence());
+                    LOG2("%s: fake request return %u", __func__, eventData.buffer->getSequence());
                 }
 
                 AutoMutex l(mPendingReqLock);
@@ -397,7 +397,7 @@ void RequestThread::handleEvent(EventData eventData)
                 if (mGet3AStatWithFakeRequest &&
                     eventData.buffer->getSequence() >= mLastEffectSeq &&
                     mPendingRequests.empty()) {
-                    LOGW("No request, insert fake req after req %d to keep 3A stats update",
+                    LOGW("No request, insert fake req after req %ld to keep 3A stats update",
                          mLastRequestId);
                     CameraRequest fakeRequest;
                     fakeRequest.mBufferNum = 1;
@@ -513,7 +513,7 @@ bool RequestThread::threadLoop()
                 LOG2("%s, skip processing request for AE delay issue", __func__);
                 return true;
             }
-            LOG2("%s, trigger event %x, SOF %ld, predict %ld, processed %d request id %d",
+            LOG2("%s, trigger event %x, SOF %ld, predict %ld, processed %d request id %ld",
                  __func__, mRequestTriggerEvent, mLastSofSeq, mLastAppliedSeq,
                  mRequestsInProcessing, mLastRequestId);
         }

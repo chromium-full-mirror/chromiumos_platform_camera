@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Intel Corporation
+ * Copyright (C) 2019-2021 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,7 +65,7 @@ status_t PostProcessorCore::createProcessor()
         case POST_PROCESS_NONE:
             break;
         default:
-            LOGE("%s, Doesn't support this kind of post-processor");
+            LOGE("%s, Doesn't support this kind of post-processor", __func__);
             return UNKNOWN_ERROR;
         }
 

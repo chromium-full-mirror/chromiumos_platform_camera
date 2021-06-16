@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Intel Corporation
+ * Copyright (C) 2019-2021 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,6 +60,7 @@ class FaceDetection : public Thread {
     static int getResult(int cameraId, CVFaceDetectionAbstractResult *result);
 
  private:
+    bool faceRunningByCondition();
     int getFaceDetectionResult(FaceDetectionResult *mResult);
     FaceDetectionRunParams *acquireRunBuf();
     void returnRunBuf(FaceDetectionRunParams *memRunBuf);
@@ -94,6 +95,11 @@ class FaceDetection : public Thread {
     int32_t mHalStreamId;
     int mWidth;
     int mHeight;
+
+    unsigned int mFDRunDefaultInterval;  // FD running's interval frames.
+    unsigned int mFDRunIntervalNoFace;   // FD running's interval frames without face.
+    unsigned int mFDRunInterval;         // run 1 frame every mFDRunInterval frames.
+    unsigned int mFrameCnt;              // from 0 to (mFDRunInterval - 1).
 
     DISALLOW_COPY_AND_ASSIGN(FaceDetection);
 };

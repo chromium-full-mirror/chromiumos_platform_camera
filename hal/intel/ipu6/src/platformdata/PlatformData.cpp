@@ -228,6 +228,11 @@ bool PlatformData::isFaceEngineSyncRunning(int cameraId)
     return getInstance()->mStaticCfg.mCameras[cameraId].mFaceEngineRunningSync;
 }
 
+bool PlatformData::isIPUSupportFD(int cameraId)
+{
+    return getInstance()->mStaticCfg.mCameras[cameraId].mFaceEngineByIPU;
+}
+
 unsigned int PlatformData::getMaxFaceDetectionNumber(int cameraId)
 {
     return getInstance()->mStaticCfg.mCameras[cameraId].mMaxFaceDetectionNumber;

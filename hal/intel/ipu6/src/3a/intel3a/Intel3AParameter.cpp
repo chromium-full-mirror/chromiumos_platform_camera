@@ -659,7 +659,7 @@ void Intel3AParameter::updateAfParameter(const aiq_parameter_t& param)
     }
 
     LOG3A("%s, afForceLock %d, duringAfTriggerScan %d", __func__, mAfForceLock, mDuringAfTriggerScan);
-    LOG3A("%s, frame_use: %d, lens position %d, timestamp %llu, focus_mode %d, afMode: %d",
+    LOG3A("%s, frame_use: %d, lens position %d, timestamp %lu, focus_mode %d, afMode: %d",
           __func__, mAfParams.frame_use, mAfParams.lens_position,
           mAfParams.lens_movement_start_timestamp, mAfParams.focus_mode, mAfMode);
 }

@@ -142,6 +142,7 @@ public:
                 mFaceEngineRunningInterval(FACE_ENGINE_DEFAULT_RUNNING_INTERVAL),
                 mFaceEngineRunningIntervalNoFace(FACE_ENGINE_DEFAULT_RUNNING_INTERVAL),
                 mFaceEngineRunningSync(false),
+                mFaceEngineByIPU(false),
                 mMaxFaceDetectionNumber(MAX_FACES_DETECTABLE),
                 mPsysAlignWithSof(false),
                 mPsysBundleWithAic(false),
@@ -222,6 +223,7 @@ public:
             int mFaceEngineRunningInterval;
             int mFaceEngineRunningIntervalNoFace;
             int mFaceEngineRunningSync;
+            bool mFaceEngineByIPU;
             unsigned int mMaxFaceDetectionNumber;
             bool mPsysAlignWithSof;
             bool mPsysBundleWithAic;
@@ -580,12 +582,20 @@ public:
     static int faceEngineRunningIntervalNoFace(int cameraId);
 
     /**
-     * Check face detection runs  synchronously or not
+     * Check face detection runs synchronously or not
      *
      * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
      * \return if face detection runs synchronously or not.
      */
     static bool isFaceEngineSyncRunning(int cameraId);
+
+    /**
+     * Whether IPU has a single output to support face detection
+     *
+     * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
+     * \return true or false.
+     */
+    static bool isIPUSupportFD(int cameraId);
 
     /**
      * get the max number of face detection
