@@ -87,7 +87,7 @@ PlatformData::~PlatformData() {
 int PlatformData::init() {
     LOG2("@%s", __func__);
 
-    getInstance()->parseGraphFromXmlFile();
+    parseGraphFromXmlFile();
 
     StaticCfg *staticCfg = &(getInstance()->mStaticCfg);
     for (size_t i = 0; i < staticCfg->mCameras.size(); i++) {

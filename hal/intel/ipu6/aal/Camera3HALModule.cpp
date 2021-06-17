@@ -149,6 +149,7 @@ static int hal_dev_open(const hw_module_t* module, const char* name, hw_device_t
     if (!icamera::IntelAlgoClient::getInstance()->isIPCFine()) {
         CheckError(icamera::IntelAlgoClient::getInstance()->initialize() != icamera::OK, -EINVAL,
                    "%s, Connect to algo service fails", __func__);
+        icamera::PlatformData::parseGraphFromXmlFile();
     }
 #endif
 

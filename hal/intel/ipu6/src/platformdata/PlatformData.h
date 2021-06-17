@@ -258,11 +258,6 @@ private:
     static PlatformData* getInstance();
 
     /**
-     * Parse graph descriptor and settings from configuration files.
-     */
-    void parseGraphFromXmlFile();
-
-    /**
      * Release GraphConfigNodes in StaticCfg::CameraInfo
      */
     void releaseGraphConfigNodes();
@@ -302,6 +297,11 @@ public:
      * \return OK if init PlatformData successfully, otherwise return ERROR.
      */
     static int init();
+
+    /**
+     * Parse graph descriptor and settings from configuration files.
+     */
+    static void parseGraphFromXmlFile();
 
     /**
      * get the camera numbers
