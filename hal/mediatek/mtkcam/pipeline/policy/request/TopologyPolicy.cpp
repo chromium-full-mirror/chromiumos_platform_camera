@@ -67,7 +67,7 @@ FunctionType_TopologyPolicy makePolicy_Topology_Default() {
       needConnectMain2ToCapture = MTRUE;
     }
 
-    if (in.isDummyFrame) {
+    if (in.isFakeFrame) {
       return OK;
     }
 

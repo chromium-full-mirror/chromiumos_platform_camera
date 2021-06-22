@@ -43,7 +43,7 @@ enum P2Type {
   P2_HS_VIDEO,
   P2_CAPTURE,
   P2_TIMESHARE_CAPTURE,
-  P2_DUMMY
+  P2_FAKE
 };
 
 enum P2DumpType {
@@ -78,7 +78,7 @@ class P2ConfigInfo {
   explicit P2ConfigInfo(const ILog& log);
 
  public:
-  static const P2ConfigInfo Dummy;
+  static const P2ConfigInfo Fake;
 
  public:
   ILog mLog;
@@ -98,7 +98,7 @@ class VISIBILITY_PUBLIC P2SensorInfo {
   P2SensorInfo(const ILog& log, const MUINT32& id);
 
  public:
-  static const P2SensorInfo Dummy;
+  static const P2SensorInfo Fake;
 
  public:
   ILog mLog;
@@ -113,7 +113,7 @@ class P2FrameData {
   explicit P2FrameData(const ILog& log);
 
  public:
-  static const P2FrameData Dummy;
+  static const P2FrameData Fake;
 
  public:
   ILog mLog;
@@ -122,7 +122,7 @@ class P2FrameData {
   MINT32 mMWFrameRequestNo = 0;
   MUINT32 mAppMode = 0;
   MBOOL mIsRecording = MFALSE;
-  MUINT32 mMasterSensorID = INVALID_SENSOR_ID;
+  MUINT32 mPrimarySensorID = INVALID_SENSOR_ID;
 };
 
 class VISIBILITY_PUBLIC P2SensorData {
@@ -131,7 +131,7 @@ class VISIBILITY_PUBLIC P2SensorData {
   explicit P2SensorData(const ILog& log);
 
  public:
-  static const P2SensorData Dummy;
+  static const P2SensorData Fake;
 
  public:
   ILog mLog;

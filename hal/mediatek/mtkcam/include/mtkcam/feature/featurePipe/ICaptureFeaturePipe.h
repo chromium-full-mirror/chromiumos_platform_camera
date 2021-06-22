@@ -161,7 +161,7 @@ class VISIBILITY_PUBLIC MetadataHandle {
    */
   virtual MERROR acquire() = 0;
 
-  virtual NSCam::IMetadata* native() = 0;
+  virtual NSCam::IMetadata* builtinMeta() = 0;
   /*
    * Release the metadata to the caller
    */
@@ -181,7 +181,7 @@ class VISIBILITY_PUBLIC BufferHandle {
   virtual MERROR acquire(MINT usage = eBUFFER_USAGE_HW_CAMERA_READWRITE |
                                       eBUFFER_USAGE_SW_READ_OFTEN) = 0;
 
-  virtual NSCam::IImageBuffer* native() = 0;
+  virtual NSCam::IImageBuffer* builtinBuffer() = 0;
   /*
    * Release the metadata to the caller
    */

@@ -62,7 +62,7 @@ auto generateControlAppMetaBuffer(
       pMetaStreamBuffer->unlock(LOG_TAG, appMeta);
     }
   } else {
-    // sub/dummy frame app control : use original app control + additional
+    // sub/fake frame app control : use original app control + additional
     IMetadata subMeta(*pOriginalAppControl);
     if (pAdditionalApp != nullptr) {
       subMeta += *pAdditionalApp;

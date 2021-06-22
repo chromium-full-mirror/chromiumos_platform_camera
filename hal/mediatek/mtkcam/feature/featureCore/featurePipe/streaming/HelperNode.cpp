@@ -43,7 +43,7 @@ MBOOL HelperNode::onData(DataID id, const HelperData& data) {
       id == ID_BOKEH_TO_HELPER || id == ID_WARP_TO_HELPER ||
       id == ID_VMDP_TO_HELPER || id == ID_RSC_TO_HELPER ||
       id == ID_FOV_WARP_TO_HELPER || id == ID_N3D_TO_HELPER ||
-      id == ID_DUMMY_TO_NEXT_FULLIMG) {
+      id == ID_FAKE_TO_NEXT_FULLIMG) {
     mCBRequests.enque(data);
     ret = MTRUE;
   }

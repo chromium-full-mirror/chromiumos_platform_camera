@@ -20,12 +20,12 @@
 #include <mtkcam/feature/3dnr/lmv_state.h>
 #include <mtkcam/utils/std/Log.h>
 
-LmvStateMachineDummy::LmvStateMachineDummy(LmvState initState)
+LmvStateMachineFake::LmvStateMachineFake(LmvState initState)
     : LmvStateMachine(initState) {
-  // A dummy state machine, do nothing
+  // A fake state machine, do nothing
 }
 
-void LmvStateMachineDummy::switchTo(SensorId sensor,
+void LmvStateMachineFake::switchTo(SensorId sensor,
                                     Action* action,
                                     Transition* transition) {
   std::lock_guard<std::mutex> _l(mStateMutex);
@@ -59,11 +59,11 @@ void LmvStateMachineDummy::switchTo(SensorId sensor,
   mCurrentState = newState;
 }
 
-bool LmvStateMachineDummy::needEnque(SensorId sensor, bool willFollow) {
+bool LmvStateMachineFake::needEnque(SensorId sensor, bool willFollow) {
   return false;
 }
 
-void LmvStateMachineDummy::notifySwitchResult(SensorId sourcePath,
+void LmvStateMachineFake::notifySwitchResult(SensorId sourcePath,
                                               SwitchResult result,
                                               Transition* transition) {
   // There should be no switch result!
@@ -77,7 +77,7 @@ void LmvStateMachineDummy::notifySwitchResult(SensorId sourcePath,
   }
 }
 
-void LmvStateMachineDummy::notifyLmvValidity(SensorId sourcePath,
+void LmvStateMachineFake::notifyLmvValidity(SensorId sourcePath,
                                              bool isValid,
                                              Transition* transition) {
   if (!isValid) {

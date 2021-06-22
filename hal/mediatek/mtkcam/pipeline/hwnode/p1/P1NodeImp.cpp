@@ -1410,19 +1410,19 @@ P1NodeImp::fetchJob(P1QueJob* rOutJob) {
   cnt = mpTaskCollector->requireJob(rOutJob);
   mTagList.set(cnt);
   if (rOutJob->empty()) {
-    MY_LOGI("using-dummy-request");
+    MY_LOGI("using-fake-request");
     if (2 <= mLogLevelI) {
       mpTaskCollector->dumpRoll();
     }
     //
-    P1TaskCollector dummyCollector(mpTaskCtrl);
+    P1TaskCollector FakeCollector(mpTaskCtrl);
     for (int i = 0; i < mBurstNum; i++) {
       P1QueAct newAct;
-      dummyCollector.enrollAct(&newAct);
-      createAction(&newAct, nullptr, REQ_TYPE_DUMMY);
-      dummyCollector.verifyAct(&newAct);
+      FakeCollector.enrollAct(&newAct);
+      createAction(&newAct, nullptr, REQ_TYPE_FAKE);
+      FakeCollector.verifyAct(&newAct);
     }
-    dummyCollector.requireJob(rOutJob);
+    FakeCollector.requireJob(rOutJob);
   }
   mpTaskCtrl->sessionUnLock();
   if (!rOutJob->ready()) {
@@ -1817,8 +1817,8 @@ P1NodeImp::queue(std::shared_ptr<IPipelineFrame> pFrame) {
       if (preSet.PreSetKey <= P1_PRESET_KEY_NULL) {
         MY_LOGW("Pre-Set-Meta NOT ready (%d)", preSet.PreSetKey);
       } else {
-        if (preSet.Dummy > 0) {
-          MY_LOGI("Pre-Set-Meta is dummy (%d)", preSet.Dummy);
+        if (preSet.Fake > 0) {
+          MY_LOGI("Pre-Set-Meta is fake (%d)", preSet.Fake);
         }
         MINT32 f_Num = pSetAct->frmNum;
         MINT32 r_Num = pSetAct->reqNum;
@@ -1829,7 +1829,7 @@ P1NodeImp::queue(std::shared_ptr<IPipelineFrame> pFrame) {
           P1_LOG_META(*pSetAct, &(ctrlQueue[0]->halMeta), "3A.PreSet-HAL");
         }
         mLogInfo.setMemo(LogInfo::CP_PRE_SET_BGN, preSet.PreSetKey,
-                         preSet.Dummy, f_Num, r_Num);
+                         preSet.Fake, f_Num, r_Num);
         P1_TRACE_F_BEGIN(SLG_I, "P1:3A-preset|Pkey:%d Fnum:%d Rnum:%d",
                          preSet.PreSetKey, f_Num, r_Num);
         MY_LOGD("mp3A->preset[%d] +++", preSet.PreSetKey);
@@ -1837,12 +1837,12 @@ P1NodeImp::queue(std::shared_ptr<IPipelineFrame> pFrame) {
         MY_LOGD("mp3A->preset[%d] ---", preSet.PreSetKey);
         P1_TRACE_C_END(SLG_I);  // "P1:3A-preset"
         mLogInfo.setMemo(LogInfo::CP_PRE_SET_END, preSet.PreSetKey,
-                         preSet.Dummy, f_Num, r_Num);
+                         preSet.Fake, f_Num, r_Num);
         if (1 <= mLogLevelI) {  // P1_LOGI(1)
           pAct->msg += base::StringPrintf(
               " | [PreSet][Key:%d] Num(%d) "
-              "Dummy(%d) MetaCnt[APP:%d,HAL:%d]",
-              preSet.PreSetKey, preSet.MagicNum, preSet.Dummy,
+              "fake(%d) MetaCnt[APP:%d,HAL:%d]",
+              preSet.PreSetKey, preSet.MagicNum, preSet.Fake,
               preSet.appMeta.count(), preSet.halMeta.count());
         }
       }
@@ -3077,7 +3077,7 @@ P1NodeImp::onProcessDequeFrame() {
         case REQ_TYPE_NORMAL:
           MY_LOGI("check ExpRec " P1INFO_ACT_STR, P1INFO_ACT_VAR(*act));
           break;
-        default:  // REQ_TYPE_INITIAL/REQ_TYPE_DUMMY/REQ_TYPE_PADDING
+        default:  // REQ_TYPE_INITIAL/REQ_TYPE_FAKE/REQ_TYPE_PADDING
           MY_LOGI("ExpRec " P1INFO_ACT_STR, P1INFO_ACT_VAR(*act));
           break;
       }
@@ -3164,8 +3164,8 @@ P1NodeImp::onProcessDequeFrame() {
             type = FLUSH_INITIAL;
           } else if (act->reqType == REQ_TYPE_PADDING) {
             type = FLUSH_PADDING;
-          } else if (act->reqType == REQ_TYPE_DUMMY) {
-            type = FLUSH_DUMMY;
+          } else if (act->reqType == REQ_TYPE_FAKE) {
+            type = FLUSH_FAKE;
           } else {
             type = FLUSH_MIS_UNCERTAIN;
           }
@@ -3359,7 +3359,7 @@ P1NodeImp::onHandleFlush(MBOOL wait, MBOOL isInitReqOff) {
     }
   }
 
-  // (3) TODO:clear dummy queue
+  // (3) TODO:clear fake queue
 
   // (4) clear drop frame queue
   onProcessDropFrame();
@@ -6063,11 +6063,11 @@ P1NodeImp::generateCtrlList(List<NS3Av3::MetaSet_T>* pList, P1QueJob* rJob) {
   size_t total = (P1_3A_LIST_INDEX * mBurstNum);
 #if USING_CTRL_3A_LIST_PREVIOUS  // force to save and set previous metadata
   // #warning "using previously padding 3A Control List"
-  // add dummy before first request
+  // add fake before first request
   while (mPreviousCtrlList.size() < total) {
     NS3Av3::MetaSet_T set;
     set.MagicNum = 0;
-    set.Dummy = 1;
+    set.fake = 1;
     mPreviousCtrlList.push_back(set);
   }
   // add this request
@@ -6782,7 +6782,7 @@ P1NodeImp::createAction(P1QueAct* rAct,
     switch (eType) {
       case REQ_TYPE_INITIAL:
       case REQ_TYPE_PADDING:
-      case REQ_TYPE_DUMMY:
+      case REQ_TYPE_FAKE:
         act->reqType = eType;
         break;
       default:  // REQ_TYPE_UNKNOWN/REQ_TYPE_NORMAL/REQ_TYPE_REDO/REQ_TYPE_YUV
@@ -6828,7 +6828,7 @@ P1NodeImp::createAction(P1QueAct* rAct,
   }
   //
   if (act->reqType == REQ_TYPE_NORMAL || act->reqType == REQ_TYPE_INITIAL ||
-      act->reqType == REQ_TYPE_PADDING || act->reqType == REQ_TYPE_DUMMY) {
+      act->reqType == REQ_TYPE_PADDING || act->reqType == REQ_TYPE_FAKE) {
     if (IS_PORT(CONFIG_PORT_IMGO, mConfigPort) &&
         (0 == (IS_OUT(REQ_OUT_FULL_PROC, act->reqOutSet) ||
                IS_OUT(REQ_OUT_FULL_PURE, act->reqOutSet) ||
@@ -6866,7 +6866,7 @@ P1NodeImp::createAction(P1QueAct* rAct,
         " [META ze:%d ci:%d rt:%d tn:%d qc:%d fi:%d fr:%d] [%s][%d] ",
         P1INFO_ACT_VAR(*act), meta_ZslEn, meta_CapIntent, meta_RawType,
         meta_TgNum, meta_QualityCtrl, meta_FmtImgo, meta_FmtRrzo,
-        (appFrame != nullptr) ? "New-Request" : "New-Dummy", eType);
+        (appFrame != nullptr) ? "New-Request" : "New-fake", eType);
     act->msg += info;
     if ((eType != REQ_TYPE_UNKNOWN) ||  // if the eType is assigned, it should
                                         // be an internal act,

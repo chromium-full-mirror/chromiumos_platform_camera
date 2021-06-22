@@ -30,8 +30,8 @@ class ISync3A {
    * Explicitly init 3A N3D Sync manager by MW.
    */
   virtual MBOOL init(MINT32 i4Policy,
-                     MINT32 i4Master,
-                     MINT32 i4Slave,
+                     MINT32 i4Primary,
+                     MINT32 i4Secondary,
                      const char* strName) = 0;
 
   /**
@@ -91,7 +91,7 @@ class ISync3A {
 
   virtual MBOOL isAESyncStable() = 0;
 
-  virtual MVOID syncAEInit(MINT32 i4Master, MINT32 i4Slave) = 0;
+  virtual MVOID syncAEInit(MINT32 i4Primary, MINT32 i4Secondary) = 0;
 
   virtual MBOOL isPerframeAE() = 0;
 
@@ -141,15 +141,15 @@ class ISync3AMgr {
     MINT32 i4Sync2AMode;
     MINT32 i4SyncAFMode;
     MINT32 i4HwSyncMode;
-    MINT32 i4MasterIdx;
-    MINT32 i4SlaveIdx;
+    MINT32 i4PrimaryIdx;
+    MINT32 i4SecondaryIdx;
 
     Stereo_Param_T()
         : i4Sync2AMode(0),
           i4SyncAFMode(0),
           i4HwSyncMode(0),
-          i4MasterIdx(0),
-          i4SlaveIdx(0) {}
+          i4PrimaryIdx(0),
+          i4SecondaryIdx(0) {}
   };
   /**
    * get singleton.
@@ -162,8 +162,8 @@ class ISync3AMgr {
    * Explicitly init 3A N3D Sync manager by MW.
    */
   virtual MBOOL init(MINT32 i4Policy,
-                     MINT32 i4MasterIdx,
-                     MINT32 i4SlaveIdx) = 0;
+                     MINT32 i4PrimaryIdx,
+                     MINT32 i4SecondaryIdx) = 0;
 
   /**
    * Explicitly uninit 3A N3D Sync manager by MW.
@@ -176,9 +176,9 @@ class ISync3AMgr {
 
   virtual MBOOL isActive() const = 0;
 
-  virtual MINT32 getMasterDev() const = 0;
+  virtual MINT32 getPrimaryDev() const = 0;
 
-  virtual MINT32 getSlaveDev() const = 0;
+  virtual MINT32 getSecondaryDev() const = 0;
 
   virtual MVOID setAFState(MINT32 i4AfState) = 0;
 
@@ -190,9 +190,9 @@ class ISync3AMgr {
 
   virtual MINT32 getFrmSyncOpt() const = 0;
 
-  virtual MINT32 getAWBMasterDev() const = 0;
+  virtual MINT32 getAWBPrimaryDev() const = 0;
 
-  virtual MINT32 getAWBSlaveDev() const = 0;
+  virtual MINT32 getAWBSecondaryDev() const = 0;
 
   // only for 97
   virtual MVOID setAFSyncMode(MINT32 i4AfSyncMode) = 0;

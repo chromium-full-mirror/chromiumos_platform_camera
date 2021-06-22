@@ -549,10 +549,6 @@ class MtkCameraParameters : public CameraParameters {
   // for sensor mode
   static const char KEY_ENG_SENOSR_MODE_SUPPORTED[];
 
-  // Native PIP
-  static const char KEY_NATIVE_PIP[];
-  static const char KEY_NATIVE_PIP_SUPPORTED[];
-
   // PDAF
   static const char KEY_PDAF[];
   static const char KEY_PDAF_SUPPORTED[];

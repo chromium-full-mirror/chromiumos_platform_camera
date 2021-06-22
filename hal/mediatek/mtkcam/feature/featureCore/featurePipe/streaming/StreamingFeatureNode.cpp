@@ -89,8 +89,8 @@ const char* StreamingFeatureDataHandler::ID2Name(DataID id) {
       return "rsc_to_helper";
     case ID_RSC_TO_EIS:
       return "rsc_to_eis";
-    case ID_PREV_TO_DUMMY_FULLIMG:
-      return "prev_to_dummy";
+    case ID_PREV_TO_FAKE_FULLIMG:
+      return "prev_to_fake";
     case ID_DEPTH_TO_BOKEH:
       return "depth_to_bokeh";
     case ID_DEPTH_TO_VENDOR:

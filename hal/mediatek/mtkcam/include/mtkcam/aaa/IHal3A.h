@@ -31,19 +31,19 @@ namespace NS3Av3 {
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 struct MetaSet_T {
   MINT32 MagicNum;
-  MUINT8 Dummy;
+  MUINT8 Fake;
   MINT32 PreSetKey;
   NSCam::IMetadata appMeta;
   NSCam::IMetadata halMeta;
 
-  MetaSet_T() : MagicNum(-1), Dummy(0), PreSetKey(-1) {}
+  MetaSet_T() : MagicNum(-1), Fake(0), PreSetKey(-1) {}
   MetaSet_T(MINT32 _MagicNum,
-            MUINT8 _Dummy,
+            MUINT8 _Fake,
             MINT32 _PreSetKey,
             NSCam::IMetadata _appMeta,
             NSCam::IMetadata _halMeta)
       : MagicNum(_MagicNum),
-        Dummy(_Dummy),
+        Fake(_Fake),
         PreSetKey(_PreSetKey),
         appMeta(_appMeta),
         halMeta(_halMeta) {}

@@ -198,7 +198,7 @@ struct RequestResultParams {
  * Request-stage policy
  *  $ Need to re-configure or not?
  *  $ New sensor mode settings if changed (e.g. 4cell)
- *  $ The frame sequence: pre-dummy frames, main frame, sub frames, post-dummy
+ *  $ The frame sequence: pre-fake frames, main frame, sub frames, post-fake
  * frames $ IMGO / RRZO / RSSO settings . Process RAW (e.g. type3 PD sensor) .
  * format: UFO/Unpack RAW/Pack RAW (e.g. HDR) . size (e.g. streaming) $ Frame
  * rate change (via metadata) (e.g. 60fps capture for special sensors) $ ZSL
@@ -215,21 +215,21 @@ struct RequestOutputParams {
 
   /**
    * The frame sequence is as below:
-   *       pre dummy frame 0
-   *       pre dummy frame ...
-   *       pre dummy frame X-1
+   *       pre fake frame 0
+   *       pre fake frame ...
+   *       pre fake frame X-1
    *            main frame        (should be aligned to the request sent from
-   * users) sub frame 0 sub frame ... sub frame Y-1 post dummy frame 0 post
-   * dummy frame ... post dummy frame Z-1
+   * users) sub frame 0 sub frame ... sub frame Y-1 post fake frame 0 post
+   * fake frame ... post fake frame Z-1
    *
    * The policy module is in charge of allocating the memory when needed.
    */
   std::shared_ptr<RequestResultParams> mainFrame;
   std::vector<std::shared_ptr<RequestResultParams>> subFrames;
   std::vector<std::shared_ptr<RequestResultParams>>
-      preDummyFrames;  //  need dummy frames
+      preFakeFrames;  //  need fake frames
   std::vector<std::shared_ptr<RequestResultParams>>
-      postDummyFrames;  //  need dummy frames
+      postFakeFrames;  //  need fake frames
 
   /**
    * ZSL still capture flow is needed if true; otherwise not needed.

@@ -102,7 +102,7 @@ class PipeBufferHandle : public BufferHandle {
   virtual MERROR acquire(MINT usage = eBUFFER_USAGE_HW_CAMERA_READWRITE |
                                       eBUFFER_USAGE_SW_READ_OFTEN);
 
-  virtual IImageBuffer* native();
+  virtual IImageBuffer* builtinBuffer();
   virtual MUINT32 getTransform();
   virtual MVOID release();
   virtual MVOID dump(std::ostream& os) const;

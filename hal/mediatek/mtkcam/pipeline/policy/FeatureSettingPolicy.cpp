@@ -69,7 +69,7 @@
 #define DEBUG_TSQ (0)
 #define DEBUG_VHDR (0)
 #define DEBUG_APP_HDR (-1)
-#define DEBUG_DUMMY_HDR (1)
+#define DEBUG_FAKE_HDR (1)
 
 /******************************************************************************
  *
@@ -398,12 +398,12 @@ auto NSCam::v3::pipeline::policy::featuresetting::FeatureSettingPolicy::
       }
     }
 
-    // after doing capture, vhdr need to add dummy frame
+    // after doing capture, vhdr need to add fake frame
     if (ret && mVhdrInfo.curAppHdrMode == HDRMode::VIDEO_ON) {
       mVhdrInfo.bIsDoCapture = true;
       MY_LOGD(
-          "[vhdrDummyFrames] (vhdr_on): after doing capture, vhdr need to add "
-          "dummy frame");
+          "[vhdrFakeFrames] (vhdr_on): after doing capture, vhdr need to add "
+          "fake frame");
     }
     MY_LOGD(
         "strategy info for capture feature(isZsl(mode:%d, flow:%d), "
@@ -743,84 +743,84 @@ auto NSCam::v3::pipeline::policy::featuresetting::FeatureSettingPolicy::
       MY_LOGE("subFrames[%zu] is invalid", i);
     }
   }
-  // update preDummyFrames
-  MY_LOGI("update preDummyFrames size(%zu)", out->preDummyFrames.size());
-  for (size_t i = 0; i < out->preDummyFrames.size(); i++) {
-    auto preDummyFrame = out->preDummyFrames[i];
-    if (preDummyFrame.get()) {
-      MY_LOGE("preDummyFrames[%zu] has existed(addr:%p)", i,
-              preDummyFrame.get());
+  // update preFakeFrames
+  MY_LOGI("update preFakeFrames size(%zu)", out->preFakeFrames.size());
+  for (size_t i = 0; i < out->preFakeFrames.size(); i++) {
+    auto preFakeFrame = out->preFakeFrames[i];
+    if (preFakeFrame.get()) {
+      MY_LOGE("preFakeFrames[%zu] has existed(addr:%p)", i,
+              preFakeFrame.get());
       // main1 subFrame
-      updateRequestResultParams(&preDummyFrame, pOutMetaApp_Additional,
+      updateRequestResultParams(&preFakeFrame, pOutMetaApp_Additional,
                                 pOutMetaHal_Additional, mainCamP1Dma,
                                 SENSOR_INDEX_MAIN, featureCombination);
       // main2 subFrame
       updateRequestResultParams(
-          &preDummyFrame,
+          &preFakeFrame,
           nullptr,  // sub sensor no need to set app metadata
           pOutMetaHal_Additional, sub1CamP1Dma, SENSOR_INDEX_SUB1,
           featureCombination);
     } else {
-      MY_LOGE("preDummyFrames[%zu] is invalid", i);
+      MY_LOGE("preFakeFrames[%zu] is invalid", i);
     }
   }
-  // update postDummyFrames
-  MY_LOGI("update postDummyFrames size(%zu)", out->postDummyFrames.size());
-  for (size_t i = 0; i < out->postDummyFrames.size(); i++) {
-    auto postDummyFrame = out->postDummyFrames[i];
-    if (postDummyFrame.get()) {
-      MY_LOGI("postDummyFrames[%zu] has existed(addr:%p)", i,
-              postDummyFrame.get());
+  // update postFakeFrames
+  MY_LOGI("update postFakeFrames size(%zu)", out->postFakeFrames.size());
+  for (size_t i = 0; i < out->postFakeFrames.size(); i++) {
+    auto postFakeFrame = out->postFakeFrames[i];
+    if (postFakeFrame.get()) {
+      MY_LOGI("postFakeFrames[%zu] has existed(addr:%p)", i,
+              postFakeFrame.get());
       // main1 subFrame
-      updateRequestResultParams(&postDummyFrame, pOutMetaApp_Additional,
+      updateRequestResultParams(&postFakeFrame, pOutMetaApp_Additional,
                                 pOutMetaHal_Additional, mainCamP1Dma,
                                 SENSOR_INDEX_MAIN, featureCombination);
       // main2 subFrame
       updateRequestResultParams(
-          &postDummyFrame,
+          &postFakeFrame,
           nullptr,  // sub sensor no need to set app metadata
           pOutMetaHal_Additional, sub1CamP1Dma, SENSOR_INDEX_SUB1,
           featureCombination);
     } else {
-      MY_LOGE("postDummyFrames[%zu] is invalid", i);
+      MY_LOGE("postFakeFrames[%zu] is invalid", i);
     }
   }
   return true;
 };
 
 auto NSCam::v3::pipeline::policy::featuresetting::FeatureSettingPolicy::
-    updateVhdrDummyFrames(RequestOutputParams* out,
+    updateVhdrFakeFrames(RequestOutputParams* out,
                           RequestInputParams const* in) -> bool {
-  if (mVhdrInfo.bIsDoCapture == MTRUE && (mVhdrInfo.DummyCount >= 1)) {
-    for (MINT32 i = 0; i < mVhdrInfo.DummyCount; i++) {
+  if (mVhdrInfo.bIsDoCapture == MTRUE && (mVhdrInfo.FakeCount >= 1)) {
+    for (MINT32 i = 0; i < mVhdrInfo.FakeCount; i++) {
       uint32_t camP1Dma = 0;
       uint32_t sensorIndex = SENSOR_INDEX_MAIN;
       if (!getCaptureP1DmaConfig(&camP1Dma, in, SENSOR_INDEX_MAIN)) {
-        MY_LOGE("[vhdrDummyFrames] main P1Dma output is invalid: 0x%X",
+        MY_LOGE("[vhdrFakeFrames] main P1Dma output is invalid: 0x%X",
                 camP1Dma);
         return MFALSE;
       }
 
-      NSCam::NSPipelinePlugin::MetadataPtr pAppDummy_Additional =
+      NSCam::NSPipelinePlugin::MetadataPtr pAppFake_Additional =
           std::make_shared<IMetadata>();
-      NSCam::NSPipelinePlugin::MetadataPtr pHalDummy_Additional =
+      NSCam::NSPipelinePlugin::MetadataPtr pHalFake_Additional =
           std::make_shared<IMetadata>();
 
       //
-      std::shared_ptr<RequestResultParams> preDummyFrame = nullptr;
-      updateRequestResultParams(&preDummyFrame, pAppDummy_Additional,
-                                pHalDummy_Additional, camP1Dma, sensorIndex);
+      std::shared_ptr<RequestResultParams> preFakeFrame = nullptr;
+      updateRequestResultParams(&preFakeFrame, pAppFake_Additional,
+                                pHalFake_Additional, camP1Dma, sensorIndex);
       //
-      out->preDummyFrames.push_back(preDummyFrame);
+      out->preFakeFrames.push_back(preFakeFrame);
     }
     mVhdrInfo.bIsDoCapture = MFALSE;
 
     MY_LOGD(
-        "[vhdrDummyFrames] stream request frames count(dummycount(%d) "
-        "mainFrame:%d, subFrames:%zu, preDummyFrames:%zu, postDummyFrames:%zu)",
-        mVhdrInfo.DummyCount, (out->mainFrame.get() != nullptr),
-        out->subFrames.size(), out->preDummyFrames.size(),
-        out->postDummyFrames.size());
+        "[vhdrFakeFrames] stream request frames count(Fakecount(%d) "
+        "mainFrame:%d, subFrames:%zu, preFakeFrames:%zu, postFakeFrames:%zu)",
+        mVhdrInfo.FakeCount, (out->mainFrame.get() != nullptr),
+        out->subFrames.size(), out->preFakeFrames.size(),
+        out->postFakeFrames.size());
   }
   return true;
 }
@@ -1040,9 +1040,9 @@ auto NSCam::v3::pipeline::policy::featuresetting::FeatureSettingPolicy::
     // dump frames count
     MY_LOGD(
         "capture request frames count(mainFrame:%d, subFrames:%zu, "
-        "preDummyFrames:%zu, postDummyFrames:%zu)",
+        "preFakeFrames:%zu, postFakeFrames:%zu)",
         (out->mainFrame.get() != nullptr), out->subFrames.size(),
-        out->preDummyFrames.size(), out->postDummyFrames.size());
+        out->preFakeFrames.size(), out->postFakeFrames.size());
 
     // dump MTK_FEATURE_CAPTURE info
     MINT64 featureCombination = 0;
@@ -1137,8 +1137,8 @@ auto NSCam::v3::pipeline::policy::featuresetting::FeatureSettingPolicy::
     MY_LOGI("clear previous invalid frames setting");
     out->mainFrame = nullptr;
     out->subFrames.clear();
-    out->preDummyFrames.clear();
-    out->postDummyFrames.clear();
+    out->preFakeFrames.clear();
+    out->postFakeFrames.clear();
   }
   temp_out = *out;
   //
@@ -1178,11 +1178,11 @@ auto NSCam::v3::pipeline::policy::featuresetting::FeatureSettingPolicy::
   }
   //
   if (parsedInfo.isCShot) {
-    MY_LOGD("no need dummy frames for better capture performance, isCShot(%d)",
+    MY_LOGD("no need fake frames for better capture performance, isCShot(%d)",
             parsedInfo.isCShot);
-  } else {  // check and update dummy frames requirement for perfect 3A
+  } else {  // check and update fake frames requirement for perfect 3A
             // stable...
-    updateCaptureDummyFrames(combinedKeyFeature, &temp_out, parsedInfo, in);
+    updateCaptureFakeFrames(combinedKeyFeature, &temp_out, parsedInfo, in);
   }
   // update result
   *out = temp_out;
@@ -1191,27 +1191,27 @@ auto NSCam::v3::pipeline::policy::featuresetting::FeatureSettingPolicy::
 }
 
 auto NSCam::v3::pipeline::policy::featuresetting::FeatureSettingPolicy::
-    updateCaptureDummyFrames(
+    updateCaptureFakeFrames(
         MINT64
             combinedKeyFeature, /*eFeatureIndexMtk and eFeatureIndexCustomer*/
         RequestOutputParams* out,
         const ParsedStrategyInfo& parsedInfo,
         RequestInputParams const* in) -> void {
-  int8_t preDummyCount = 0;
-  int8_t postDummyCount = 0;
+  int8_t preFakeCount = 0;
+  int8_t postFakeCount = 0;
 
-  if (out->preDummyFrames.size() || out->postDummyFrames.size()) {
-    MY_LOGI("feature(%#" PRIx64 ") has choose dummy frames(pre:%zu, post:%zu)",
-            combinedKeyFeature, out->preDummyFrames.size(),
-            out->postDummyFrames.size());
+  if (out->preFakeFrames.size() || out->postFakeFrames.size()) {
+    MY_LOGI("feature(%#" PRIx64 ") has choose fake frames(pre:%zu, post:%zu)",
+            combinedKeyFeature, out->preFakeFrames.size(),
+            out->postFakeFrames.size());
     return;
   }
 
   // lambda for choose maximum count
-  auto updateDummyCount = [&preDummyCount, &postDummyCount](
+  auto updateFakeCount = [&preFakeCount, &postFakeCount](
                               int8_t preCount, int8_t postCount) -> void {
-    preDummyCount = std::max(preDummyCount, preCount);
-    postDummyCount = std::max(postDummyCount, postCount);
+    preFakeCount = std::max(preFakeCount, preCount);
+    postFakeCount = std::max(postFakeCount, postCount);
   };
 
   // lambda to check manual 3A
@@ -1271,11 +1271,11 @@ auto NSCam::v3::pipeline::policy::featuresetting::FeatureSettingPolicy::
                       reinterpret_cast<MINTPTR>(&delayedFrames), 0);
     MY_LOGD("delayedFrames count:%d due to manual 3A", delayedFrames);
     //
-    updateDummyCount(0, delayedFrames);
+    updateFakeCount(0, delayedFrames);
   }
 
-  MY_LOGD("dummy frames result(pre:%d, post:%d)", preDummyCount,
-          postDummyCount);
+  MY_LOGD("fake frames result(pre:%d, post:%d)", preFakeCount,
+          postFakeCount);
 
   uint32_t camP1Dma = 0;
   uint32_t sensorIndex = SENSOR_INDEX_MAIN;
@@ -1284,51 +1284,51 @@ auto NSCam::v3::pipeline::policy::featuresetting::FeatureSettingPolicy::
     return;
   }
 
-  // update preDummyFrames
-  for (MINT32 i = 0; i < preDummyCount; i++) {
-    NSCam::NSPipelinePlugin::MetadataPtr pAppDummy_Additional =
+  // update preFakeFrames
+  for (MINT32 i = 0; i < preFakeCount; i++) {
+    NSCam::NSPipelinePlugin::MetadataPtr pAppFake_Additional =
         std::make_shared<IMetadata>();
-    NSCam::NSPipelinePlugin::MetadataPtr pHalDummy_Additional =
+    NSCam::NSPipelinePlugin::MetadataPtr pHalFake_Additional =
         std::make_shared<IMetadata>();
-    // update info for pre-dummy frames for flash stable
-    IMetadata::setEntry<MUINT8>(pAppDummy_Additional.get(), MTK_CONTROL_AE_MODE,
+    // update info for pre-fake frames for flash stable
+    IMetadata::setEntry<MUINT8>(pAppFake_Additional.get(), MTK_CONTROL_AE_MODE,
                                 MTK_CONTROL_AE_MODE_OFF);
-    IMetadata::setEntry<MINT64>(pAppDummy_Additional.get(),
+    IMetadata::setEntry<MINT64>(pAppFake_Additional.get(),
                                 MTK_SENSOR_EXPOSURE_TIME, 33333333);
-    IMetadata::setEntry<MINT32>(pAppDummy_Additional.get(),
+    IMetadata::setEntry<MINT32>(pAppFake_Additional.get(),
                                 MTK_SENSOR_SENSITIVITY, 1000);
     //
-    std::shared_ptr<RequestResultParams> preDummyFrame = nullptr;
-    updateRequestResultParams(&preDummyFrame, pAppDummy_Additional,
-                              pHalDummy_Additional, camP1Dma, sensorIndex);
+    std::shared_ptr<RequestResultParams> preFakeFrame = nullptr;
+    updateRequestResultParams(&preFakeFrame, pAppFake_Additional,
+                              pHalFake_Additional, camP1Dma, sensorIndex);
     //
-    out->preDummyFrames.push_back(preDummyFrame);
+    out->preFakeFrames.push_back(preFakeFrame);
   }
 
-  // update postDummyFrames
-  for (MINT32 i = 0; i < postDummyCount; i++) {
-    NSCam::NSPipelinePlugin::MetadataPtr pAppDummy_Additional =
+  // update postFakeFrames
+  for (MINT32 i = 0; i < postFakeCount; i++) {
+    NSCam::NSPipelinePlugin::MetadataPtr pAppFake_Additional =
         std::make_shared<IMetadata>();
-    NSCam::NSPipelinePlugin::MetadataPtr pHalDummy_Additional =
+    NSCam::NSPipelinePlugin::MetadataPtr pHalFake_Additional =
         std::make_shared<IMetadata>();
-    // update info for post-dummy(delay) frames to restore 3A for preview stable
-    IMetadata::setEntry<MBOOL>(pHalDummy_Additional.get(),
+    // update info for post-fake(delay) frames to restore 3A for preview stable
+    IMetadata::setEntry<MBOOL>(pHalFake_Additional.get(),
                                MTK_3A_AE_RESTORE_CAPPARA, 1);
     //
-    std::shared_ptr<RequestResultParams> postDummyFrame = nullptr;
-    updateRequestResultParams(&postDummyFrame, pAppDummy_Additional,
-                              pHalDummy_Additional, camP1Dma, sensorIndex);
+    std::shared_ptr<RequestResultParams> postFakeFrame = nullptr;
+    updateRequestResultParams(&postFakeFrame, pAppFake_Additional,
+                              pHalFake_Additional, camP1Dma, sensorIndex);
     //
-    out->postDummyFrames.push_back(postDummyFrame);
+    out->postFakeFrames.push_back(postFakeFrame);
   }
 
   // check result
-  if (out->preDummyFrames.size() || out->postDummyFrames.size()) {
+  if (out->preFakeFrames.size() || out->postFakeFrames.size()) {
     MY_LOGI("feature(%#" PRIx64
-            ") append dummy frames(pre:%zu, post:%zu) due to isFlashOn(%d), "
+            ") append fake frames(pre:%zu, post:%zu) due to isFlashOn(%d), "
             "isManual3A(%d)",
-            combinedKeyFeature, out->preDummyFrames.size(),
-            out->postDummyFrames.size(), parsedInfo.isFlashOn, bIsManual3A);
+            combinedKeyFeature, out->preFakeFrames.size(),
+            out->postFakeFrames.size(), parsedInfo.isFlashOn, bIsManual3A);
 
     if (out->needZslFlow) {
       MY_LOGW("not support Zsl buffer due to isFlashOn(%d) or isManual3A(%d)",
@@ -1407,9 +1407,9 @@ auto NSCam::v3::pipeline::policy::featuresetting::FeatureSettingPolicy::
 
   MY_LOGD(
       "capture request frames count(mainFrame:%d, subFrames:%zu, "
-      "preDummyFrames:%zu, postDummyFrames:%zu)",
+      "preFakeFrames:%zu, postFakeFrames:%zu)",
       (out->mainFrame.get() != nullptr), out->subFrames.size(),
-      out->preDummyFrames.size(), out->postDummyFrames.size());
+      out->preFakeFrames.size(), out->postFakeFrames.size());
   return true;
 }
 
@@ -1580,7 +1580,7 @@ auto NSCam::v3::pipeline::policy::featuresetting::FeatureSettingPolicy::
     } else {
       MINT32 i4MinFps = entry.itemAt(0, Type2Type<MINT32>());
       MINT32 i4MaxFps = entry.itemAt(1, Type2Type<MINT32>());
-      MINT32 postDummyReqs = i4MinFps == 30 ? (i4MaxFps / i4MinFps - 1) : 0;
+      MINT32 postFakeReqs = i4MinFps == 30 ? (i4MaxFps / i4MinFps - 1) : 0;
       MUINT8 fps = i4MinFps == 30
                        ? MTK_SMVR_FPS_30
                        : i4MinFps == 120
@@ -1592,17 +1592,17 @@ auto NSCam::v3::pipeline::policy::featuresetting::FeatureSettingPolicy::
                                          : i4MinFps == 960 ? MTK_SMVR_FPS_960
                                                            : MTK_SMVR_FPS_30;
 
-      MY_LOGD("SMVR: i4MinFps=%d, i4MaxFps=%d, postDummyReqs=%d", i4MinFps,
-              i4MaxFps, postDummyReqs);
+      MY_LOGD("SMVR: i4MinFps=%d, i4MaxFps=%d, postFakeReqs=%d", i4MinFps,
+              i4MaxFps, postFakeReqs);
 
       IMetadata::setEntry<MUINT8>(pOutMetaHal.get(), MTK_HAL_REQUEST_SMVR_FPS,
                                   fps);
-      if (postDummyReqs) {
-        std::shared_ptr<RequestResultParams> postDummyFrame = nullptr;
-        updateRequestResultParams(&postDummyFrame, nullptr, nullptr, needP1Dma,
+      if (postFakeReqs) {
+        std::shared_ptr<RequestResultParams> postFakeFrame = nullptr;
+        updateRequestResultParams(&postFakeFrame, nullptr, nullptr, needP1Dma,
                                   SENSOR_INDEX_MAIN);
-        for (MINT32 i = 0; i < postDummyReqs; i++) {
-          out->postDummyFrames.push_back(postDummyFrame);
+        for (MINT32 i = 0; i < postFakeReqs; i++) {
+          out->postFakeFrames.push_back(postFakeFrame);
         }
       }
     }
@@ -1645,8 +1645,8 @@ auto NSCam::v3::pipeline::policy::featuresetting::FeatureSettingPolicy::
 
     vhdrMode = mVhdrInfo.cfgVhdrMode;
 
-    // after doing capture, vhdr need to add dummy frame
-    updateVhdrDummyFrames(out, in);
+    // after doing capture, vhdr need to add fake frame
+    updateVhdrFakeFrames(out, in);
   }
 
   mVhdrInfo.lastAppHdrMode = mVhdrInfo.curAppHdrMode;
@@ -1707,9 +1707,9 @@ auto NSCam::v3::pipeline::policy::featuresetting::FeatureSettingPolicy::
   }
   MY_LOGD_IF(2 <= mbDebug,
              "stream request frames count(mainFrame:%d, subFrames:%zu, "
-             "preDummyFrames:%zu, postDummyFrames:%zu)",
+             "preFakeFrames:%zu, postFakeFrames:%zu)",
              (out->mainFrame.get() != nullptr), out->subFrames.size(),
-             out->preDummyFrames.size(), out->postDummyFrames.size());
+             out->preFakeFrames.size(), out->postFakeFrames.size());
   return true;
 }
 
@@ -1840,8 +1840,8 @@ auto NSCam::v3::pipeline::policy::featuresetting::FeatureSettingPolicy::
   MINT32 force3DNR = ::property_get_int32("vendor.debug.camera.hal3.3dnr",
                                           FORCE_3DNR);  // default on
   mVhdrInfo.bVhdrDebugMode = DEBUG_VHDR;
-  mVhdrInfo.DummyCount = ::property_get_int32(
-      "vendor.debug.camera.hal3.dummycount", DEBUG_DUMMY_HDR);
+  mVhdrInfo.FakeCount = ::property_get_int32(
+      "vendor.debug.camera.hal3.Fakecount", DEBUG_FAKE_HDR);
   MINT32 forceAppHdrMode = ::property_get_int32(
       "vendor.debug.camera.hal3.appHdrMode", DEBUG_APP_HDR);
   // query features by scenario during config

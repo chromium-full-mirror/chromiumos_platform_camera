@@ -377,7 +377,7 @@ MERROR CaptureFeatureInference::evaluate(
       return NULL;
     }
 
-    IMetadata* pMetatada = pHandle->native();
+    IMetadata* pMetatada = pHandle->builtinMeta();
     if (pMetatada == NULL) {
       return NULL;
     }
@@ -401,7 +401,7 @@ MERROR CaptureFeatureInference::evaluate(
   auto addSource = [&](BufferID_T bufId, TypeID_T typeId) {
     if (rRequest.mBufferMap.find(bufId) != rRequest.mBufferMap.end()) {
       auto pBufHandle = rRequest.getBuffer(bufId);
-      auto pImgBuf = pBufHandle->native();
+      auto pImgBuf = pBufHandle->builtinBuffer();
       data.addSource(typeId, bufId, pImgBuf->getImgFormat(),
                      pImgBuf->getImgSize());
     }

@@ -7,7 +7,7 @@ shared_library("libmtkcam_imgbuf") {
   sources = [
     "BaseImageBuffer.cpp",
     "BaseImageBufferHeap.cpp",
-    "DummyImageBufferHeap.cpp",
+    "FakeImageBufferHeap.cpp",
     "GbmImageBufferHeap.cpp",
     "GraphicImageBufferHeap.cpp",
     "ImageBufferAllocator.cpp",

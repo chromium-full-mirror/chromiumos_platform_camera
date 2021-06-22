@@ -306,10 +306,10 @@ auto PipelineModelSessionDefault::submitOneRequest(
         .pPipelineContext = pPipelineContext};
 
     MY_LOGD(
-        "process request (%u): frametype(%d), sub(%u), preDummy(%u), "
-        "postDummy(%u), enableZSL(%d)",
+        "process request (%u): frametype(%d), sub(%u), preFake(%u), "
+        "postFake(%u), enableZSL(%d)",
         request->requestNo, frameType, out.subFrames.size(),
-        out.preDummyFrames.size(), out.postDummyFrames.size(), out.needZslFlow);
+        out.preFakeFrames.size(), out.postFakeFrames.size(), out.needZslFlow);
 
     RETURN_ERROR_IF_NOT_OK(buildPipelineFrame(&pPipelineFrame, params),
                            "buildPipelineFrame fail - requestNo:%u",
@@ -322,10 +322,10 @@ auto PipelineModelSessionDefault::submitOneRequest(
     return OK;
   };
 
-  // pre-dummy frames
-  for (auto const& frame : out.preDummyFrames) {
-    RETURN_ERROR_IF_NOT_OK(processFrame(*frame, eFRAMETYPE_PREDUMMY),
-                           "processFrame preDummyFrame fail");
+  // pre-fake frames
+  for (auto const& frame : out.preFakeFrames) {
+    RETURN_ERROR_IF_NOT_OK(processFrame(*frame, eFRAMETYPE_PREFAKE),
+                           "processFrame preFakeFrame fail");
   }
   // main frame
   {
@@ -337,10 +337,10 @@ auto PipelineModelSessionDefault::submitOneRequest(
     RETURN_ERROR_IF_NOT_OK(processFrame(*frame, eFRAMETYPE_SUB),
                            "processFrame subFrame fail");
   }
-  // post-dummy frames
-  for (auto const& frame : out.postDummyFrames) {
-    RETURN_ERROR_IF_NOT_OK(processFrame(*frame, eFRAMETYPE_POSTDUMMY),
-                           "processFrame postDummyFrame fail");
+  // post-fake frames
+  for (auto const& frame : out.postFakeFrames) {
+    RETURN_ERROR_IF_NOT_OK(processFrame(*frame, eFRAMETYPE_POSTFAKE),
+                           "processFrame postFakeFrame fail");
   }
 
   if (out.mainFrame->nodesNeed.needJpegNode) {

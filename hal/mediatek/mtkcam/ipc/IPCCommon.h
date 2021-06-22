@@ -22,7 +22,7 @@
 
 #include <mtkcam/utils/std/Log.h>
 #include "mtkcam/def/common.h"
-#include "mtkcam/utils/imgbuf/IDummyImageBufferHeap.h"
+#include "mtkcam/utils/imgbuf/IFakeImageBufferHeap.h"
 
 #define LOG1(fmt, arg...)                            \
   do {                                               \

@@ -248,7 +248,7 @@ P2ANode::enqueISP(const RequestPtr& pRequest,
   MINT32& frameNo = enqueData.mFrameNo;
   MINT32& requestNo = enqueData.mRequestNo;
 
-  MBOOL master = enqueData.mSensorId == mSensorIndex;
+  MBOOL primary = enqueData.mSensorId == mSensorIndex;
 
   std::shared_ptr<CaptureFeatureNodeRequest> pNodeReq =
       pRequest->getNodeRequest(NID_P2A);
@@ -429,7 +429,7 @@ P2ANode::enqueISP(const RequestPtr& pRequest,
       inMetaSet.halMeta = *pIMetaHal;
 
       MetaSet_T outMetaSet;
-      if (master) {
+      if (primary) {
         ret = mp3AHal->setIsp(0, inMetaSet, &tuningParam, &outMetaSet);
       } else {
         ret = mp3AHal2->setIsp(0, inMetaSet, &tuningParam, &outMetaSet);
@@ -708,9 +708,9 @@ P2ANode::enqueISP(const RequestPtr& pRequest,
   qParam.mpCookie = reinterpret_cast<MVOID*>(pPackage);
 
   // p2 enque
-  if (master && !enqueData.mYuvRep) {
+  if (primary && !enqueData.mYuvRep) {
     ret = mpP2Opt->enque(&qParam, LOG_TAG);
-  } else if (master && enqueData.mYuvRep) {
+  } else if (primary && enqueData.mYuvRep) {
     ret = mpP2ReqOpt->enque(&qParam, LOG_TAG);
   } else {
     ret = mpP2Opt2->enque(&qParam, LOG_TAG);

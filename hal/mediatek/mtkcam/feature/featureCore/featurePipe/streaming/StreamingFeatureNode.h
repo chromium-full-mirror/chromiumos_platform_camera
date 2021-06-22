@@ -55,8 +55,8 @@ enum StreamingFeatureDataID {
   ID_VMDP_TO_HELPER,
   ID_RSC_TO_HELPER,
   ID_RSC_TO_EIS,
-  ID_PREV_TO_DUMMY_FULLIMG,
-  ID_DUMMY_TO_NEXT_FULLIMG,
+  ID_PREV_TO_FAKE_FULLIMG,
+  ID_FAKE_TO_NEXT_FULLIMG,
   ID_DEPTH_TO_BOKEH,
   ID_DEPTH_TO_VENDOR,
 
@@ -79,17 +79,17 @@ class StreamingReqInfo {
  public:
   const MUINT32 mFrameNo;
   const MUINT32 mFeatureMask;
-  const MUINT32 mMasterID;
+  const MUINT32 mPrimaryID;
   const MUINT32 mSensorID;
   MVOID makeDebugStr() {
-    mStr = base::StringPrintf("No(%d), fmask(0x%08x), sID(%d), masterID(%d)",
-                              mFrameNo, mFeatureMask, mSensorID, mMasterID);
+    mStr = base::StringPrintf("No(%d), fmask(0x%08x), sID(%d), primaryID(%d)",
+                              mFrameNo, mFeatureMask, mSensorID, mPrimaryID);
   }
   const char* dump() const { return mStr.c_str(); }
-  MBOOL isMaster() const { return mMasterID == mSensorID; }
+  MBOOL isPrimary() const { return mPrimaryID == mSensorID; }
 
   StreamingReqInfo(MUINT32 fno, MUINT32 mask, MUINT32 mID, MUINT32 sID)
-      : mFrameNo(fno), mFeatureMask(mask), mMasterID(mID), mSensorID(sID) {
+      : mFrameNo(fno), mFeatureMask(mask), mPrimaryID(mID), mSensorID(sID) {
     makeDebugStr();
   }
 

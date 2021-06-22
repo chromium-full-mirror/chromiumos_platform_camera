@@ -83,11 +83,11 @@ class StreamingFeatureRequest {
   VarMap& mVarMap;
   const Feature::P2Util::P2Pack& mP2Pack;
   SFPIOManager& mSFPIOManager;
-  MUINT32 mSlaveID = INVALID_SENSOR;
-  MUINT32 mMasterID = INVALID_SENSOR;
+  MUINT32 mSecondaryID = INVALID_SENSOR;
+  MUINT32 mPrimaryID = INVALID_SENSOR;
   std::unordered_map<MUINT32, IORequest<StreamingFeatureNode, StreamingReqInfo>>
       mIORequestMap;
-  IORequest<StreamingFeatureNode, StreamingReqInfo>& mMasterIOReq;
+  IORequest<StreamingFeatureNode, StreamingReqInfo>& mPrimaryIOReq;
 
   MUINT32 mFeatureMask;
   const MUINT32 mRequestNo;
@@ -100,7 +100,7 @@ class StreamingFeatureRequest {
   HelperRWData mHelperNodeData;  // NOTE can only access by helper node thread
 
  private:
-  std::unordered_map<MUINT32, FeaturePipeParam>& mSlaveParamMap;
+  std::unordered_map<MUINT32, FeaturePipeParam>& mSecondaryParamMap;
   std::unordered_map<MUINT32, SrcCropInfo> mNonLargeSrcCrops;
   MSize mFullImgSize;
   MBOOL mHasGeneralOutput = MFALSE;
@@ -119,8 +119,8 @@ class StreamingFeatureRequest {
   MBOOL updateResult(MBOOL result);
   MBOOL doExtCallback(FeaturePipeParam::MSG_TYPE msg);
 
-  MSize getMasterInputSize();
-  IImageBuffer* getMasterInputBuffer();
+  MSize getPrimaryInputSize();
+  IImageBuffer* getPrimaryInputBuffer();
   IImageBuffer* getRecordOutputBuffer();
 
   MBOOL getDisplayOutput(SFPOutput* output);
@@ -161,17 +161,17 @@ class StreamingFeatureRequest {
   MVOID setForceGpuRGBA(MBOOL forceGpuRGBA);
   MVOID setForcePrintIO(MBOOL forcePrintIO);
   MBOOL isForceIMG3O() const;
-  MBOOL hasSlave(MUINT32 sensorID) const;
-  MBOOL isSlaveParamValid() const;
-  FeaturePipeParam& getSlave(MUINT32 sensorID);
+  MBOOL hasSecondary(MUINT32 sensorID) const;
+  MBOOL isSecondaryParamValid() const;
+  FeaturePipeParam& getSecondary(MUINT32 sensorID);
   const SFPSensorInput& getSensorInput(MUINT32 sensorID) const;
   VarMap& getSensorVarMap(MUINT32 sensorID);
 
-  MBOOL getMasterFrameBasic(NSCam::NSIoPipe::FrameParams* output);
+  MBOOL getPrimaryFrameBasic(NSCam::NSIoPipe::FrameParams* output);
 
   // Legacy code for Hal1, w/o dynamic tuning & P2Pack
-  MBOOL getMasterFrameTuning(NSCam::NSIoPipe::FrameParams* output);
-  MBOOL getMasterFrameInput(NSCam::NSIoPipe::FrameParams* output);
+  MBOOL getPrimaryFrameTuning(NSCam::NSIoPipe::FrameParams* output);
+  MBOOL getPrimaryFrameInput(NSCam::NSIoPipe::FrameParams* output);
   // -----
 
   const char* getFeatureMaskName() const;
@@ -185,7 +185,7 @@ class StreamingFeatureRequest {
   MBOOL useWarpPassThrough() const;
   MBOOL useDirectGpuOut() const;
   MBOOL needPrintIO() const;
-  MUINT32 getMasterID() const;
+  MUINT32 getPrimaryID() const;
 
   MUINT32 needTPILog() const;
   MUINT32 needTPIDump() const;
@@ -352,14 +352,14 @@ class RSCResult {
 
 class FovP2AResult {
  public:
-  ImgBuffer mFEO_Master;
-  ImgBuffer mFEO_Slave;
+  ImgBuffer mFEO_Primary;
+  ImgBuffer mFEO_Secondary;
   ImgBuffer mFMO_MtoS;
   ImgBuffer mFMO_StoM;
   SmartTuningBuffer mFMTuningBuf0;
   SmartTuningBuffer mFMTuningBuf1;
-  MSize mFEInSize_Master;
-  MSize mFEInSize_Slave;
+  MSize mFEInSize_Primary;
+  MSize mFEInSize_Secondary;
 };
 
 class FOVResult {
@@ -394,22 +394,22 @@ class BasicImg {
 
 class N3DResult {
  public:
-  ImgBuffer mFEBInputImg_Master;
-  ImgBuffer mFEBInputImg_Slave;
-  ImgBuffer mFECInputImg_Master;
-  ImgBuffer mFECInputImg_Slave;
-  ImgBuffer mFEBO_Master;
-  ImgBuffer mFEBO_Slave;
-  ImgBuffer mFECO_Master;
-  ImgBuffer mFECO_Slave;
+  ImgBuffer mFEBInputImg_Primary;
+  ImgBuffer mFEBInputImg_Secondary;
+  ImgBuffer mFECInputImg_Primary;
+  ImgBuffer mFECInputImg_Secondary;
+  ImgBuffer mFEBO_Primary;
+  ImgBuffer mFEBO_Secondary;
+  ImgBuffer mFECO_Primary;
+  ImgBuffer mFECO_Secondary;
   ImgBuffer mFMBO_MtoS;
   ImgBuffer mFMBO_StoM;
   ImgBuffer mFMCO_MtoS;
   ImgBuffer mFMCO_StoM;
-  ImgBuffer mCCin_Master;
-  ImgBuffer mCCin_Slave;
-  ImgBuffer mRectin_Master;
-  ImgBuffer mRectin_Slave;
+  ImgBuffer mCCin_Primary;
+  ImgBuffer mCCin_Secondary;
+  ImgBuffer mRectin_Primary;
+  ImgBuffer mRectin_Secondary;
   SmartTuningBuffer tuningBuf1;
   SmartTuningBuffer tuningBuf2;
   SmartTuningBuffer tuningBuf3;
@@ -422,11 +422,11 @@ class N3DResult {
 
 class DualBasicImg {
  public:
-  BasicImg mMaster;
-  BasicImg mSlave;
+  BasicImg mPrimary;
+  BasicImg mSecondary;
   DualBasicImg();
-  explicit DualBasicImg(const BasicImg& master);
-  DualBasicImg(const BasicImg& master, const BasicImg& slave);
+  explicit DualBasicImg(const BasicImg& primary);
+  DualBasicImg(const BasicImg& primary, const BasicImg& secondary);
 };
 
 class P2AMDPReq {

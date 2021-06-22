@@ -49,7 +49,7 @@ struct RequestOutputParams {
  */
 struct RequestInputParams {
   int isMainFrame = true;
-  int isDummyFrame = false;
+  int isFakeFrame = false;
   /**************************************************************************
    * Request parameters
    *

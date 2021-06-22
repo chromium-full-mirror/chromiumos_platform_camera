@@ -106,7 +106,7 @@ P2Request::P2Request(const std::shared_ptr<P2Request>& request,
     mImg[img] = request->mImg[mInIDMap->getImgID(sensorID, img)];
   }
 
-  if (sensorID == mP2Pack.getFrameData().mMasterSensorID) {
+  if (sensorID == mP2Pack.getFrameData().mPrimarySensorID) {
     mMeta[OUT_APP] = std::move(request->mMeta[OUT_APP]);
     mMeta[OUT_HAL] = std::move(request->mMeta[OUT_HAL]);
     mImg[OUT_FD] = std::move(request->mImg[OUT_FD]);

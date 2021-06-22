@@ -49,14 +49,14 @@ MBOOL P2ANode::do3dnrFlow(NSCam::NSIoPipe::QParams* enqueParams,
   TRACE_FUNC_ENTER();
   CAM_LOGD("do3dnrFlow+");
 
-  // TODO(MTK) currently only support Master output
-  MINT32 masterIndex = tuningIndex.isGenMasterValid() ? tuningIndex.mGenMaster
-                                                      : tuningIndex.mPhyMaster;
-  if (masterIndex < 0) {
-    CAM_LOGE("No Master Gen or Phy tuning index exist! Can not do3dnrFlow.");
+  // TODO(MTK) currently only support Primary output
+  MINT32 primaryIndex = tuningIndex.isGenPrimaryValid() ? tuningIndex.mGenPrimary
+                                                      : tuningIndex.mPhyPrimary;
+  if (primaryIndex < 0) {
+    CAM_LOGE("No Primary Gen or Phy tuning index exist! Can not do3dnrFlow.");
     return MFALSE;
   }
-  const MUINT32 sensorID = request->mMasterID;
+  const MUINT32 sensorID = request->mPrimaryID;
 
   MBOOL ret = MFALSE;
   MBOOL isSupportV2Flow = MTRUE;  // default: support V2 flow
@@ -86,10 +86,10 @@ MBOOL P2ANode::do3dnrFlow(NSCam::NSIoPipe::QParams* enqueParams,
     // 3a related
 #if (MTKCAM_ENABLE_IPC == 1)
     nr3dHalParam.pTuningData = reinterpret_cast<void*>(
-        enqueParams->mvFrameParams[(MUINT32)masterIndex].mTuningData_fd);
+        enqueParams->mvFrameParams[(MUINT32)primaryIndex].mTuningData_fd);
 #else
     nr3dHalParam.pTuningData =
-        enqueParams->mvFrameParams[(MUINT32)masterIndex].mTuningData;
+        enqueParams->mvFrameParams[(MUINT32)primaryIndex].mTuningData;
 #endif
     nr3dHalParam.p3A = mp3A;
 
@@ -125,10 +125,10 @@ MBOOL P2ANode::do3dnrFlow(NSCam::NSIoPipe::QParams* enqueParams,
   } else {
 #if (MTKCAM_ENABLE_IPC == 1)
     void* pIspPhyReg = reinterpret_cast<void*>(
-        enqueParams->mvFrameParams[(MUINT32)masterIndex].mTuningData_fd);
+        enqueParams->mvFrameParams[(MUINT32)primaryIndex].mTuningData_fd);
 #else
     void* pIspPhyReg = reinterpret_cast<void*>(
-        enqueParams->mvFrameParams[(MUINT32)masterIndex].mTuningData);
+        enqueParams->mvFrameParams[(MUINT32)primaryIndex].mTuningData);
 #endif
 
     MBOOL useCMV = request->isP2ACRZMode();

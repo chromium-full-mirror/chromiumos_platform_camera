@@ -67,7 +67,7 @@ class P2BufferHandle : public virtual NSCam::NSCamFeature::NSFeaturePipe::
     return OK;
   }
 
-  virtual IImageBuffer* native() { return mpImageBuffer; }
+  virtual IImageBuffer* builtinBuffer() { return mpImageBuffer; }
 
   virtual void release() {
     if (mpRequest != nullptr) {
@@ -125,7 +125,7 @@ class P2MetadataHandle : public virtual NSCam::NSCamFeature::NSFeaturePipe::
     return OK;
   }
 
-  virtual IMetadata* native() { return mpMetadata; }
+  virtual IMetadata* builtinMeta() { return mpMetadata; }
 
   virtual void release() {
     mpMetadata = nullptr;
@@ -256,10 +256,10 @@ MBOOL CaptureProcessor::onEnque(
   }
 
   const P2FrameData& rFrameData = pRequest->mP2Pack.getFrameData();
-  MUINT32 uMasterID = rFrameData.mMasterSensorID;
+  MUINT32 uPrimaryID = rFrameData.mPrimarySensorID;
 
-  if (uMasterID == INVALID_SENSOR_ID) {
-    MY_S_LOGW(log, "Request masterId(%u). Skip frame.", uMasterID);
+  if (uPrimaryID == INVALID_SENSOR_ID) {
+    MY_S_LOGW(log, "Request primaryId(%u). Skip frame.", uPrimaryID);
     return MFALSE;
   }
 

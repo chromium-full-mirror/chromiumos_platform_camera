@@ -70,7 +70,7 @@ enum FEATURE_MASK_OFFSET {
   OFFSET_N3D,
   OFFSET_3DNR_RSC,
   OFFSET_FSC,
-  OFFSET_DUMMY,
+  OFFSET_FAKE,
 };
 
 MAKE_FEATURE_MASK_FUNC(VHDR, "");
@@ -78,7 +78,7 @@ MAKE_FEATURE_MASK_FUNC(3DNR, "3DNR");
 MAKE_FEATURE_MASK_FUNC(FOV, "FOV");
 MAKE_FEATURE_MASK_FUNC(N3D, "N3D");
 MAKE_FEATURE_MASK_FUNC(3DNR_RSC, "3DNR_RSC");
-MAKE_FEATURE_MASK_FUNC(DUMMY, "DUMMY");
+MAKE_FEATURE_MASK_FUNC(FAKE, "FAKE");
 
 class FeaturePipeParam;
 
@@ -98,7 +98,7 @@ class VISIBILITY_PUBLIC IStreamingFeaturePipe {
     USAGE_P2A_FEATURE,
     USAGE_STEREO_EIS,
     USAGE_FULL,
-    USAGE_DUMMY,
+    USAGE_FAKE,
   };
 
   enum eUsageMask {
@@ -189,9 +189,9 @@ class FeaturePipeParam {
   NSCam::NSIoPipe::QParams mQParams;
 
   std::unordered_map<MUINT32, FeaturePipeParam>
-      mSlaveParamMap;  // Only Valid in Master FeaturePipeParam
+      mSecondaryParamMap;  // Only Valid in Primary FeaturePipeParam
 
-  SFPIOManager mSFPIOManager;  // Only Valid in Master FeaturePipeParam
+  SFPIOManager mSFPIOManager;  // Only Valid in Primary FeaturePipeParam
   Feature::P2Util::P2Pack
       mP2Pack;  // All Sensor has its own pack, including all sensors' data
   Feature::P2Util::P2DumpType mDumpType = Feature::P2Util::P2_DUMP_NONE;
@@ -218,22 +218,22 @@ class FeaturePipeParam {
 
   NSCam::NSIoPipe::QParams getQParams() const { return mQParams; }
 
-  MVOID addSlaveParam(MUINT32 sensorID, const FeaturePipeParam& param) {
-    mSlaveParamMap[sensorID] = param;
-    if (mFirstSlaveID == INVALID_SENSOR) {
-      mFirstSlaveID = sensorID;
+  MVOID addSecondaryParam(MUINT32 sensorID, const FeaturePipeParam& param) {
+    mSecondaryParamMap[sensorID] = param;
+    if (mFirstSecondaryID == INVALID_SENSOR) {
+      mFirstSecondaryID = sensorID;
     }
   }
 
-  MBOOL getFirstSlaveParam(FeaturePipeParam* out) const {
-    if (existSlaveParam()) {
-      *out = mSlaveParamMap.at(mFirstSlaveID);
+  MBOOL getFirstSecondaryParam(FeaturePipeParam* out) const {
+    if (existSecondaryParam()) {
+      *out = mSecondaryParamMap.at(mFirstSecondaryID);
       return MTRUE;
     }
     return MFALSE;
   }
 
-  MBOOL existSlaveParam() const { return (mFirstSlaveID != INVALID_SENSOR); }
+  MBOOL existSecondaryParam() const { return (mFirstSecondaryID != INVALID_SENSOR); }
 
   MBOOL addSFPIOMap(SFPIOMap* ioMap) {
     if (ioMap->mPathType == PATH_GENERAL) {
@@ -250,7 +250,7 @@ class FeaturePipeParam {
   DECLARE_VAR_MAP_INTERFACE(mVarMap, setVar, getVar, tryGetVar, clearVar);
 
  private:
-  MUINT32 mFirstSlaveID = INVALID_SENSOR;
+  MUINT32 mFirstSecondaryID = INVALID_SENSOR;
 };
 
 };  // namespace NSFeaturePipe

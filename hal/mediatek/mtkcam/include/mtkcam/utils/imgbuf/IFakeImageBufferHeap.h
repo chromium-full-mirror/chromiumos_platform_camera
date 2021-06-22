@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef CAMERA_HAL_MEDIATEK_MTKCAM_INCLUDE_MTKCAM_UTILS_IMGBUF_IDUMMYIMAGEBUFFERHEAP_H_
-#define CAMERA_HAL_MEDIATEK_MTKCAM_INCLUDE_MTKCAM_UTILS_IMGBUF_IDUMMYIMAGEBUFFERHEAP_H_
+#ifndef CAMERA_HAL_MEDIATEK_MTKCAM_INCLUDE_MTKCAM_UTILS_IMGBUF_IFAKEIMAGEBUFFERHEAP_H_
+#define CAMERA_HAL_MEDIATEK_MTKCAM_INCLUDE_MTKCAM_UTILS_IMGBUF_IFAKEIMAGEBUFFERHEAP_H_
 //
 #include "IImageBuffer.h"
 
@@ -23,7 +23,7 @@
 
 namespace NSCam {
 
-struct PortBufInfo_dummy {
+struct PortBufInfo_fake {
   MINT32 memID;
   MUINTPTR virtAddr[3];
   MUINTPTR phyAddr[3];
@@ -31,7 +31,7 @@ struct PortBufInfo_dummy {
   MINT32 security;
   MINT32 coherence;
 
-  PortBufInfo_dummy(MINT32 const _memID,
+  PortBufInfo_fake(MINT32 const _memID,
                     MUINTPTR const _virtAddr[],
                     MUINTPTR const _phyAddr[],
                     MUINT32 const _planeCount,
@@ -50,9 +50,9 @@ struct PortBufInfo_dummy {
 };
 
 /******************************************************************************
- *  Image Buffer Heap (Dummy).
+ *  Image Buffer Heap (Fake).
  ******************************************************************************/
-class VISIBILITY_PUBLIC IDummyImageBufferHeap
+class VISIBILITY_PUBLIC IFakeImageBufferHeap
     : public virtual IImageBufferHeap {
   //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   //  Interface.
@@ -61,20 +61,20 @@ class VISIBILITY_PUBLIC IDummyImageBufferHeap
   typedef IImageBufferAllocator::ImgParam ImgParam_t;
 
  public:  ////                    Creation.
-  static std::shared_ptr<IDummyImageBufferHeap> create(
+  static std::shared_ptr<IFakeImageBufferHeap> create(
       char const* szCallerName,
       ImgParam_t const& rImgParam,
-      PortBufInfo_dummy const& rPortBufInfo,
+      PortBufInfo_fake const& rPortBufInfo,
       MBOOL const enableLog = MTRUE);
 
-  virtual ~IDummyImageBufferHeap() {}
+  virtual ~IFakeImageBufferHeap() {}
 
  public:  ////                    Attributes.
-  static char const* magicName() { return "DummyHeap"; }
+  static char const* magicName() { return "FakeHeap"; }
 };
 
 /******************************************************************************
  *
  ******************************************************************************/
 };      // namespace NSCam
-#endif  // CAMERA_HAL_MEDIATEK_MTKCAM_INCLUDE_MTKCAM_UTILS_IMGBUF_IDUMMYIMAGEBUFFERHEAP_H_
+#endif  // CAMERA_HAL_MEDIATEK_MTKCAM_INCLUDE_MTKCAM_UTILS_IMGBUF_IFAKEIMAGEBUFFERHEAP_H_

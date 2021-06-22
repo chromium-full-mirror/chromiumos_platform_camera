@@ -463,8 +463,8 @@ class IImageBufferHeap {
   virtual size_t getBufStridesInBytes(size_t index) const = 0;
 
   /**
-   * Buffer customized size, which means caller specified the buffer size he
-   * wants of the given plane. Caller usually gives this value because he wants
+   * Buffer customized size, which means caller specified the buffer size
+   * of the given plane. Caller usually gives this value because caller wants
    * vertical padding of image. This method returns 0 if caller didn't specify
    * the customized buffer size of the given plane.
    */

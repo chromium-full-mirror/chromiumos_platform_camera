@@ -52,8 +52,8 @@ class PipelineModelSessionDefault
   enum FrameType_T {
     eFRAMETYPE_MAIN,
     eFRAMETYPE_SUB,
-    eFRAMETYPE_PREDUMMY,
-    eFRAMETYPE_POSTDUMMY,
+    eFRAMETYPE_PREFAKE,
+    eFRAMETYPE_POSTFAKE,
     NUM_FRAMETYPE,
   };
 

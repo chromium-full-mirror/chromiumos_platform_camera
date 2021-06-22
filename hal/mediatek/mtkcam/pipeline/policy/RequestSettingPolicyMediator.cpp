@@ -187,13 +187,13 @@ auto RequestSettingPolicyMediator_Default::evaluateRequest(
   }
 
   // (3) build every frames out param
-#define NOT_DUMMY (0)
-#define POST_DUMMY (1)
-#define PRE_DUMMY (2)
+#define NOT_FAKE (0)
+#define POST_FAKE (1)
+#define PRE_FAKE (2)
   auto buildOutParam =
       [&](std::shared_ptr<NSCam::v3::pipeline::policy::featuresetting ::
                               RequestResultParams> const setting,
-          int dummy, bool isMain) -> int {
+          int fake, bool isMain) -> int {
     MY_LOGD("build out frame param +");
     std::shared_ptr<
         NSCam::v3::pipeline::policy::pipelinesetting::RequestResultParams>
@@ -203,7 +203,7 @@ auto RequestSettingPolicyMediator_Default::evaluateRequest(
     NSCam::v3::pipeline::policy::topology::RequestOutputParams topologyOut;
     NSCam::v3::pipeline::policy::topology::RequestInputParams topologyIn;
     if (CC_LIKELY(mPolicyTable->fTopology != nullptr)) {
-      topologyIn.isDummyFrame = dummy != 0;
+      topologyIn.isFakeFrame = fake != 0;
       topologyIn.isFdEnabled = (isMain) ? fdOut.isFdEnabled : false;
       topologyIn.needP2CaptureNode = p2DecisionOut.needP2CaptureNode;
       topologyIn.needP2StreamNode =
@@ -265,11 +265,11 @@ auto RequestSettingPolicyMediator_Default::evaluateRequest(
       iomapIn.pvMetaStreamId_from_StreamNode =
           &(p2DecisionOut.vMetaStreamId_from_StreamNode);
       iomapIn.isMainFrame = isMain;
-      iomapIn.isDummyFrame = dummy != 0;
+      iomapIn.isFakeFrame = fake != 0;
       // prepare output buffer
       iomapOut.pNodeIOMapImage = &(result->nodeIOMapImage);
       iomapOut.pNodeIOMapMeta = &(result->nodeIOMapMeta);
-      if (dummy == NOT_DUMMY) {
+      if (fake == NOT_FAKE) {
         mPolicyTable->fIOMap_P2Node(iomapOut, iomapIn);
       }
       mPolicyTable->fIOMap_NonP2Node(iomapOut, iomapIn);
@@ -323,15 +323,15 @@ auto RequestSettingPolicyMediator_Default::evaluateRequest(
       (*out).mainFrame = result;
       MY_LOGD("build mainFrame -");
     } else {
-      switch (dummy) {
-        case NOT_DUMMY:
+      switch (fake) {
+        case NOT_FAKE:
           (*out).subFrames.push_back(result);
           break;
-        case POST_DUMMY:
-          (*out).postDummyFrames.push_back(result);
+        case POST_FAKE:
+          (*out).postFakeFrames.push_back(result);
           break;
-        case PRE_DUMMY:
-          (*out).preDummyFrames.push_back(result);
+        case PRE_FAKE:
+          (*out).preFakeFrames.push_back(result);
           break;
         default:
           MY_LOGW("Cannot be here");
@@ -343,20 +343,20 @@ auto RequestSettingPolicyMediator_Default::evaluateRequest(
     return NSCam::OK;
   };
   if (noP2Node) {
-    buildOutParam(nullptr, NOT_DUMMY, true);
+    buildOutParam(nullptr, NOT_FAKE, true);
     MY_LOGD("no p2 node process done");
     return NSCam::OK;
   }
 
-  buildOutParam(featureOut.mainFrame, NOT_DUMMY, true);
+  buildOutParam(featureOut.mainFrame, NOT_FAKE, true);
   for (auto const& it : featureOut.subFrames) {
-    buildOutParam(it, NOT_DUMMY, false);
+    buildOutParam(it, NOT_FAKE, false);
   }
-  for (auto const& it : featureOut.postDummyFrames) {
-    buildOutParam(it, POST_DUMMY, false);
+  for (auto const& it : featureOut.postFakeFrames) {
+    buildOutParam(it, POST_FAKE, false);
   }
-  for (auto const& it : featureOut.preDummyFrames) {
-    buildOutParam(it, PRE_DUMMY, false);
+  for (auto const& it : featureOut.preFakeFrames) {
+    buildOutParam(it, PRE_FAKE, false);
   }
 
   return NSCam::OK;

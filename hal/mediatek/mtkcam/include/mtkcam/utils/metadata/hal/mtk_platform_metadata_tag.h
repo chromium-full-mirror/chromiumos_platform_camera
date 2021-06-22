@@ -71,7 +71,7 @@ typedef enum mtk_platform_metadata_tag {
   MTK_HAL_REQUEST_REQUIRE_EXIF = MTK_HAL_REQUEST_START,  // MUINT8
   MTK_HAL_REQUEST_DUMP_EXIF,                             // MUINT8
   MTK_HAL_REQUEST_REPEAT,                                // MUINT8
-  MTK_HAL_REQUEST_DUMMY,                                 // MUINT8
+  MTK_HAL_REQUEST_FAKE,                                 // MUINT8
   MTK_HAL_REQUEST_SENSOR_SIZE,                           // MSize
   MTK_HAL_REQUEST_HIGH_QUALITY_CAP,                      // MUINT8
   MTK_HAL_REQUEST_ISO_SPEED,                             // MINT32
@@ -176,7 +176,7 @@ typedef enum mtk_platform_metadata_tag {
   MTK_STEREO_SYNC2A_MODE,                         // MINT32
   MTK_STEREO_SYNCAF_MODE,                         // MINT32
   MTK_STEREO_HW_FRM_SYNC_MODE,                    // MINT32
-  MTK_STEREO_SYNC2A_MASTER_SLAVE,                 // MINT32[2]
+  MTK_STEREO_SYNC2A_PRIMARY_SECONDARY,                 // MINT32[2]
   MTK_JPG_ENCODE_TYPE,                            // MINT8
   MTK_CONVERGENCE_DEPTH_OFFSET,                   // MFLOAT
   MTK_N3D_WARPING_MATRIX_SIZE,                    // MUINT32

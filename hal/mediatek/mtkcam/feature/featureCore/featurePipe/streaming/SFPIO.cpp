@@ -187,7 +187,7 @@ const SFPSensorTuning& SFPIOMap::getTuning(MUINT32 sensorID) const {
   if (mInputMap.count(sensorID) > 0) {
     return mInputMap.at(sensorID);
   } else {
-    return mDummy;
+    return mFake;
   }
 }
 
@@ -287,7 +287,7 @@ const SFPSensorInput& SFPIOManager::getInput(MUINT32 sensorID) {
   if (mSensorInputs.count(sensorID) > 0) {
     return mSensorInputs.at(sensorID);
   } else {
-    return mDummyInput;
+    return mFakeInput;
   }
 }
 
@@ -315,7 +315,7 @@ const SFPIOMap& SFPIOManager::getFirstGeneralIO() {
   if (mGenerals.size() > 0) {
     return mGenerals.front();
   } else {
-    return mDummy;
+    return mFake;
   }
 }
 

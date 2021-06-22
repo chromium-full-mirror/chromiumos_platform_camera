@@ -1623,11 +1623,11 @@ class LogInfo {
 
       {CP_PRE_SET_BGN,
        "3A.PreSet+++",
-       {"PreSetKey", "Dummy", "FrameNum", "RequestNum"}},
+       {"PreSetKey", "Fake", "FrameNum", "RequestNum"}},
 
       {CP_PRE_SET_END,
        "3A.PreSet---",
-       {"PreSetKey", "Dummy", "FrameNum", "RequestNum"}},
+       {"PreSetKey", "Fake", "FrameNum", "RequestNum"}},
 
       {CP_SET_BGN,
        "3A.Set+++",

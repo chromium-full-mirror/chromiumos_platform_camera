@@ -2355,7 +2355,7 @@ void LogInfo::analyze(MBOOL bForceToPrint) {
   if (START_STOP_OK && bStreaming &&
       (mData.mSetFn <=
        mData.mRevFn) &&  // include non-set and set-first-request-Fn-0 cases //
-                         // include dummy request (SetFn < 0) // since all of
+                         // include fake request (SetFn < 0) // since all of
                          // the accept request set to 3A
       (mData.mTime[CP_REQ_RET] > mData.mTime[CP_REQ_REV]) &&
       (DIFF_NOW(CP_REQ_RET, P1_GENERAL_API_CHECK_US)) &&

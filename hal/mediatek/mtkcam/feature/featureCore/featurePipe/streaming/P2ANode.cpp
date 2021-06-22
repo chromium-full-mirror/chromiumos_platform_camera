@@ -200,7 +200,7 @@ MBOOL P2ANode::onData(DataID id, const RequestPtr& data) {
 IOPolicyType P2ANode::getIOPolicy(StreamType /*stream*/,
                                   const StreamingReqInfo& reqInfo) const {
   IOPolicyType policy = IOPOLICY_INOUT;
-  if (HAS_3DNR(reqInfo.mFeatureMask) && reqInfo.isMaster()) {
+  if (HAS_3DNR(reqInfo.mFeatureMask) && reqInfo.isPrimary()) {
     policy = IOPOLICY_LOOPBACK;
   }
 
@@ -266,25 +266,25 @@ MBOOL P2ANode::processP2A(const RequestPtr& request) {
   MY_LOGD("prepare3DNR +.");
   if (request->need3DNR()) {
     if (!prepare3DNR(&param, request, tuningIndex)) {
-      getP2CamContext(request->getMasterID())->setPrevFullImg(NULL);
+      getP2CamContext(request->getPrimaryID())->setPrevFullImg(NULL);
     }
   }
   MY_LOGD("prepare3DNR-.");
   P2_CAM_TRACE_BEGIN(TRACE_ADVANCED, "PrepareOutput");
   if (ioMgr.countNonLarge() != 0) {
     prepareNonMdpIO(&param, request, &data, tuningIndex);
-    prepareMasterMdpOuts(&param, request, &data, tuningIndex);
-    prepareSlaveOuts(&param, request, &data, tuningIndex);
+    preparePrimaryMdpOuts(&param, request, &data, tuningIndex);
+    prepareSecondaryOuts(&param, request, &data, tuningIndex);
   }
 
   if (ioMgr.countLarge() != 0) {
-    if (tuningIndex.isLargeMasterValid()) {
-      prepareLargeMdpOuts(&param, request, tuningIndex.mLargeMaster,
-                          request->mMasterID);
+    if (tuningIndex.isLargePrimaryValid()) {
+      prepareLargeMdpOuts(&param, request, tuningIndex.mLargePrimary,
+                          request->mPrimaryID);
     }
-    if (tuningIndex.isLargeSlaveValid()) {
-      prepareLargeMdpOuts(&param, request, tuningIndex.mLargeSlave,
-                          request->mSlaveID);
+    if (tuningIndex.isLargeSecondaryValid()) {
+      prepareLargeMdpOuts(&param, request, tuningIndex.mLargeSecondary,
+                          request->mSecondaryID);
     }
   }
   P2_CAM_TRACE_END(TRACE_ADVANCED);
@@ -387,7 +387,7 @@ MVOID P2ANode::handleResultData(const RequestPtr& request,
   if (request->needNddDump()) {
     if (data.mFullImg.mBuffer != NULL) {
       TuningUtils::FILE_DUMP_NAMING_HINT hint =
-          request->mP2Pack.getSensorData(request->mMasterID).mNDDHint;
+          request->mP2Pack.getSensorData(request->mPrimaryID).mNDDHint;
       data.mFullImg.mBuffer->getImageBuffer()->syncCache(eCACHECTRL_INVALID);
       dumpNddData(&hint, data.mFullImg.mBuffer->getImageBufferPtr(),
                   EPortIndex_IMG3O);
@@ -406,42 +406,42 @@ MVOID P2ANode::handleResultData(const RequestPtr& request,
       dumpData(data.mRequest, data.mNextFullImg.mBuffer->getImageBufferPtr(),
                "nextfull");
     }
-    if (data.mSlaveFullImg.mBuffer != NULL) {
-      data.mSlaveFullImg.mBuffer->getImageBuffer()->syncCache(
+    if (data.mSecondaryFullImg.mBuffer != NULL) {
+      data.mSecondaryFullImg.mBuffer->getImageBuffer()->syncCache(
           eCACHECTRL_INVALID);
-      dumpData(data.mRequest, data.mSlaveFullImg.mBuffer->getImageBufferPtr(),
-               "slaveFull");
+      dumpData(data.mRequest, data.mSecondaryFullImg.mBuffer->getImageBufferPtr(),
+               "secondaryFull");
     }
-    if (data.mSlaveNextFullImg.mBuffer != NULL) {
-      data.mSlaveNextFullImg.mBuffer->getImageBuffer()->syncCache(
+    if (data.mSecondaryNextFullImg.mBuffer != NULL) {
+      data.mSecondaryNextFullImg.mBuffer->getImageBuffer()->syncCache(
           eCACHECTRL_INVALID);
       dumpData(data.mRequest,
-               data.mSlaveNextFullImg.mBuffer->getImageBufferPtr(),
-               "slaveNextfull");
+               data.mSecondaryNextFullImg.mBuffer->getImageBufferPtr(),
+               "secondaryNextfull");
     }
     if (data.mPureImg != NULL) {
       data.mPureImg->getImageBuffer()->syncCache(eCACHECTRL_INVALID);
       dumpData(data.mRequest, data.mPureImg->getImageBufferPtr(), "pure");
     }
-    if (data.mSlavePureImg != NULL) {
-      data.mSlavePureImg->getImageBuffer()->syncCache(eCACHECTRL_INVALID);
-      dumpData(data.mRequest, data.mSlavePureImg->getImageBufferPtr(),
-               "slavePure");
+    if (data.mSecondaryPureImg != NULL) {
+      data.mSecondaryPureImg->getImageBuffer()->syncCache(eCACHECTRL_INVALID);
+      dumpData(data.mRequest, data.mSecondaryPureImg->getImageBufferPtr(),
+               "secondaryPure");
     }
     if (data.mFMResult.FM_B.Register_Medium != NULL) {
       dumpData(data.mRequest,
                data.mFMResult.FM_B.Register_Medium->getImageBufferPtr(),
                "fm_reg_m");
     }
-    if (data.mFovP2AResult.mFEO_Master != NULL) {
+    if (data.mFovP2AResult.mFEO_Primary != NULL) {
       dumpData(data.mRequest,
-               data.mFovP2AResult.mFEO_Master->getImageBufferPtr(),
-               "mFEO_Master");
+               data.mFovP2AResult.mFEO_Primary->getImageBufferPtr(),
+               "mFEO_Primary");
     }
-    if (data.mFovP2AResult.mFEO_Slave != NULL) {
+    if (data.mFovP2AResult.mFEO_Secondary != NULL) {
       dumpData(data.mRequest,
-               data.mFovP2AResult.mFEO_Slave->getImageBufferPtr(),
-               "mFEO_Slave");
+               data.mFovP2AResult.mFEO_Secondary->getImageBufferPtr(),
+               "mFEO_Secondary");
     }
     if (data.mFovP2AResult.mFMO_MtoS != NULL) {
       dumpData(data.mRequest, data.mFovP2AResult.mFMO_MtoS->getImageBufferPtr(),
@@ -482,35 +482,35 @@ MBOOL P2ANode::prepareQParams(QParams* params,
 
   params->mvFrameParams.clear();
   params->mvFrameParams.push_back(FrameParams());
-  FrameParams& master = params->mvFrameParams.at(0);
-  request->getMasterFrameBasic(&master);
-  request->getMasterFrameInput(&master);
-  request->getMasterFrameTuning(&master);
+  FrameParams& primary = params->mvFrameParams.at(0);
+  request->getPrimaryFrameBasic(&primary);
+  request->getPrimaryFrameInput(&primary);
+  request->getPrimaryFrameTuning(&primary);
   prepareStreamTag(params, request);
-  tuningIndex->mGenMaster = 0;
+  tuningIndex->mGenPrimary = 0;
 
-  MUINT32 slaveID = request->mSlaveID;
+  MUINT32 secondaryID = request->mSecondaryID;
   if (request->needFullImg(
-          std::dynamic_pointer_cast<P2ANode>(shared_from_this()), slaveID) ||
+          std::dynamic_pointer_cast<P2ANode>(shared_from_this()), secondaryID) ||
       request->needNextFullImg(
           std::dynamic_pointer_cast<P2ANode>(shared_from_this()),
-          slaveID) /*|| request->needFOVFEFM()*/) {
-    if (!request->hasSlave(slaveID)) {
+          secondaryID) /*|| request->needFOVFEFM()*/) {
+    if (!request->hasSecondary(secondaryID)) {
       MY_LOGE(
-          "Failed to get slave feature params. Cannot copy slave FrameParams!");
+          "Failed to get secondary feature params. Cannot copy secondary FrameParams!");
       return MFALSE;
     }
-    FeaturePipeParam& fparam_slave = request->getSlave(slaveID);
-    if (!fparam_slave.mQParams.mvFrameParams.size()) {
+    FeaturePipeParam& fparam_secondary = request->getSecondary(secondaryID);
+    if (!fparam_secondary.mQParams.mvFrameParams.size()) {
       MY_LOGE(
-          "Slave QParam's FrameParam Size = 0. Cannot copy slave FrameParams!");
+          "Secondary QParam's FrameParam Size = 0. Cannot copy secondary FrameParams!");
       return MFALSE;
     }
-    params->mvFrameParams.push_back(fparam_slave.mQParams.mvFrameParams.at(0));
-    tuningIndex->mGenSlave = params->mvFrameParams.size() - 1;
+    params->mvFrameParams.push_back(fparam_secondary.mQParams.mvFrameParams.at(0));
+    tuningIndex->mGenSecondary = params->mvFrameParams.size() - 1;
     //
-    FrameParams& f = params->mvFrameParams.at(tuningIndex->mGenSlave);
-    f.mSensorIdx = slaveID;
+    FrameParams& f = params->mvFrameParams.at(tuningIndex->mGenSecondary);
+    f.mSensorIdx = secondaryID;
     f.mStreamTag = ENormalStreamTag_Normal;
     f.mvOut.clear();
     f.mvCropRsInfo.clear();
@@ -540,7 +540,7 @@ MBOOL P2ANode::prepareFullImgFromInput(const RequestPtr& request,
   TRACE_FUNC_ENTER();
   MBOOL ret = MTRUE;
   IImageBuffer* input = nullptr;
-  if ((input = request->getMasterInputBuffer()) == nullptr) {
+  if ((input = request->getPrimaryInputBuffer()) == nullptr) {
     MY_LOGE("Cannot get input image buffer");
     ret = MFALSE;
   } else {
@@ -561,71 +561,71 @@ MBOOL P2ANode::prepareNonMdpIO(QParams* params,
   TRACE_FUNC_ENTER();
   MBOOL ret = MTRUE;
 
-  if (!tuningIndex.isMasterMainValid()) {
+  if (!tuningIndex.isPrimaryMainValid()) {
     MY_LOGE(
-        "Both master General Normal/Pure & Physical tuning not exist! Can not "
+        "Both primary General Normal/Pure & Physical tuning not exist! Can not "
         "prepare non mdp out img.");
     return MFALSE;
   }
-  MUINT32 masterIndex = tuningIndex.getMasterMainIndex();
-  MBOOL isGenNormalRun = (masterIndex == (MUINT32)tuningIndex.mGenMaster);
-  FrameParams& frame = params->mvFrameParams.at(masterIndex);
+  MUINT32 primaryIndex = tuningIndex.getPrimaryMainIndex();
+  MBOOL isGenNormalRun = (primaryIndex == (MUINT32)tuningIndex.mGenPrimary);
+  FrameParams& frame = params->mvFrameParams.at(primaryIndex);
 
   FrameInInfo inInfo;
   getFrameInInfo(&inInfo, frame);
-  const MUINT32 masterID = request->mMasterID;
+  const MUINT32 primaryID = request->mPrimaryID;
 
   prepareFDImg(&frame, request, data);
   prepareFDCrop(&frame, request, data);
 
   if (request->isForceIMG3O() ||
       (request->needFullImg(
-           std::dynamic_pointer_cast<P2ANode>(shared_from_this()), masterID) &&
+           std::dynamic_pointer_cast<P2ANode>(shared_from_this()), primaryID) &&
        isGenNormalRun)) {
-    prepareFullImg(&frame, request, &(data->mFullImg), inInfo, masterID);
+    prepareFullImg(&frame, request, &(data->mFullImg), inInfo, primaryID);
     // Full Img no need crop
   }
 
   if (request->need3DNR() && isGenNormalRun &&
-      getP2CamContext(request->getMasterID())->getPrevFullImg() != NULL) {
+      getP2CamContext(request->getPrimaryID())->getPrevFullImg() != NULL) {
     prepareVIPI(&frame, request, data);
   }
-  getP2CamContext(request->getMasterID())
+  getP2CamContext(request->getPrimaryID())
       ->setPrevFullImg((request->need3DNR() ? data->mFullImg.mBuffer : NULL));
 
   TRACE_FUNC_EXIT();
   return ret;
 }
 
-MBOOL P2ANode::prepareMasterMdpOuts(QParams* params,
+MBOOL P2ANode::preparePrimaryMdpOuts(QParams* params,
                                     const RequestPtr& request,
                                     P2AEnqueData* data,
                                     const P2ATuningIndex& tuningIndex) {
   TRACE_FUNC_ENTER();
   MBOOL ret = MTRUE;
 
-  if (!tuningIndex.isMasterMainValid()) {
+  if (!tuningIndex.isPrimaryMainValid()) {
     MY_LOGE(
-        "Both master General & Physical tuning not exist! Can not prepare "
+        "Both primary General & Physical tuning not exist! Can not prepare "
         "output img.");
     return MFALSE;
   }
 
-  MUINT32 sID = request->mMasterID;
+  MUINT32 sID = request->mPrimaryID;
   // Handle Pure First
-  if (tuningIndex.isPureMasterValid()) {
+  if (tuningIndex.isPurePrimaryValid()) {
     FrameParams& frame =
-        params->mvFrameParams.at((MUINT32)tuningIndex.mPureMaster);
+        params->mvFrameParams.at((MUINT32)tuningIndex.mPurePrimary);
     preparePureImg(&frame, request, &(data->mPureImg), sID);
   }
 
   // Handle Main Frame, it maybe normal or pure or physical frame
-  MUINT32 masterIndex = tuningIndex.getMasterMainIndex();
-  FrameParams& frame = params->mvFrameParams.at(masterIndex);
+  MUINT32 primaryIndex = tuningIndex.getPrimaryMainIndex();
+  FrameParams& frame = params->mvFrameParams.at(primaryIndex);
   FrameInInfo inInfo;
   getFrameInInfo(&inInfo, frame);
-  MBOOL needExtraPhyRun = (tuningIndex.isPhyMasterValid()) &&
-                          (tuningIndex.mPhyMaster != MINT32(masterIndex));
+  MBOOL needExtraPhyRun = (tuningIndex.isPhyPrimaryValid()) &&
+                          (tuningIndex.mPhyPrimary != MINT32(primaryIndex));
   SFPOutput output;
   std::vector<SFPOutput> outList;
   outList.reserve(5);
@@ -676,38 +676,38 @@ MBOOL P2ANode::prepareMasterMdpOuts(QParams* params,
       request->getPhysicalOutput(&output, sID)) {
     std::vector<SFPOutput> phyOutList;
     phyOutList.push_back(output);
-    prepareMdpFrameParam(params, (MUINT32)tuningIndex.mPhyMaster, phyOutList);
+    prepareMdpFrameParam(params, (MUINT32)tuningIndex.mPhyPrimary, phyOutList);
   }
   TRACE_FUNC_EXIT();
   return ret;
 }
 
-MBOOL P2ANode::prepareSlaveOuts(QParams* params,
+MBOOL P2ANode::prepareSecondaryOuts(QParams* params,
                                 const RequestPtr& request,
                                 P2AEnqueData* data,
                                 const P2ATuningIndex& tuningIndex) {
   TRACE_FUNC_ENTER();
   MBOOL ret = MTRUE;
-  if (!tuningIndex.isSlaveMainValid()) {
+  if (!tuningIndex.isSecondaryMainValid()) {
     TRACE_FUNC(
-        "Both slave General Normal/Pure & Physical tuning not exist! Can not "
+        "Both secondary General Normal/Pure & Physical tuning not exist! Can not "
         "prepare output img.");
     return MFALSE;
   }
-  const MUINT32 sID = request->mSlaveID;
+  const MUINT32 sID = request->mSecondaryID;
   // Handle Pure First
-  if (tuningIndex.isPureSlaveValid()) {
+  if (tuningIndex.isPureSecondaryValid()) {
     FrameParams& frame =
-        params->mvFrameParams.at((MUINT32)tuningIndex.mPureSlave);
-    preparePureImg(&frame, request, &(data->mSlavePureImg), sID);
+        params->mvFrameParams.at((MUINT32)tuningIndex.mPureSecondary);
+    preparePureImg(&frame, request, &(data->mSecondaryPureImg), sID);
   }
 
   // Handle Main Frame, it maybe normal or pure or physical frame
-  MUINT32 slaveIndex = tuningIndex.getSlaveMainIndex();
-  MBOOL needExtraPhyRun = (tuningIndex.isPhySlaveValid()) &&
-                          (tuningIndex.mPhySlave != MINT32(slaveIndex));
-  MBOOL isGenNormalRun = (slaveIndex == (MUINT32)tuningIndex.mGenSlave);
-  FrameParams& frame = params->mvFrameParams.at((MUINT32)slaveIndex);
+  MUINT32 secondaryIndex = tuningIndex.getSecondaryMainIndex();
+  MBOOL needExtraPhyRun = (tuningIndex.isPhySecondaryValid()) &&
+                          (tuningIndex.mPhySecondary != MINT32(secondaryIndex));
+  MBOOL isGenNormalRun = (secondaryIndex == (MUINT32)tuningIndex.mGenSecondary);
+  FrameParams& frame = params->mvFrameParams.at((MUINT32)secondaryIndex);
   FrameInInfo inInfo;
   getFrameInInfo(&inInfo, frame);
 
@@ -717,7 +717,7 @@ MBOOL P2ANode::prepareSlaveOuts(QParams* params,
   if (request->needFullImg(
           std::dynamic_pointer_cast<P2ANode>(shared_from_this()), sID) &&
       isGenNormalRun) {
-    prepareFullImg(&frame, request, &(data->mSlaveFullImg), inInfo, sID);
+    prepareFullImg(&frame, request, &(data->mSecondaryFullImg), inInfo, sID);
     // Full Img no need crop
   }
   SFPOutput output;
@@ -727,8 +727,8 @@ MBOOL P2ANode::prepareSlaveOuts(QParams* params,
       request->getPhysicalOutput(&output, sID)) {
     outList.push_back(output);
   }
-  prepareMdpFrameParam(params, slaveIndex,
-                       outList);  // no consider more MDP run for slave
+  prepareMdpFrameParam(params, secondaryIndex,
+                       outList);  // no consider more MDP run for secondary
   //--- Additional Run for physical output ---
   if (needExtraPhyRun &&
       request->needPhysicalOutput(
@@ -736,7 +736,7 @@ MBOOL P2ANode::prepareSlaveOuts(QParams* params,
       request->getPhysicalOutput(&output, sID)) {
     std::vector<SFPOutput> phyOutList;
     phyOutList.push_back(output);
-    prepareMdpFrameParam(params, (MUINT32)tuningIndex.mPhySlave, outList);
+    prepareMdpFrameParam(params, (MUINT32)tuningIndex.mPhySecondary, outList);
   }
   TRACE_FUNC_EXIT();
   return ret;
@@ -757,7 +757,7 @@ MBOOL P2ANode::prepareLargeMdpOuts(QParams* params,
 
 #if 1  // MTK_DP_ENABLE
   prepareMdpFrameParam(params, frameIndex,
-                       outList);  // no consider more MDP run for slave
+                       outList);  // no consider more MDP run for secondary
 #endif
   TRACE_FUNC_EXIT();
   return ret;
@@ -859,7 +859,7 @@ MVOID P2ANode::prepareVIPI(FrameParams* frame,
   TRACE_FUNC_ENTER();
   MY_LOGD("3dnr prepareVIPI+.");
   data->mPrevFullImg =
-      getP2CamContext(request->getMasterID())->getPrevFullImg();
+      getP2CamContext(request->getPrimaryID())->getPrevFullImg();
   Input input;
   input.mPortID = PortID(EPortType_Memory, EPortIndex_VIPI, PORTID_IN);
   input.mBuffer = data->mPrevFullImg->getImageBufferPtr();
@@ -1072,7 +1072,7 @@ MINT32 P2ANode::addTuningFrameParam(MUINT32 sensorID,
                                     P2AEnqueData* data,
                                     TuningHelper::Scene scene) {
   MBOOL needMetaOut =
-      ((ioMap.isGenPath() && sensorID != request->getMasterID()) ||
+      ((ioMap.isGenPath() && sensorID != request->getPrimaryID()) ||
        (scene != TuningHelper::Tuning_Normal))
           ? MFALSE
           : MTRUE;
@@ -1109,93 +1109,93 @@ MBOOL P2ANode::prepareRawTuning(QParams* params,
                                 P2ATuningIndex* tuningIndex) {
   TRACE_FUNC_ENTER();
   P2_CAM_TRACE_CALL(TRACE_ADVANCED);
-  MBOOL dualSlaveValid = request->isSlaveParamValid();
+  MBOOL dualSecondaryValid = request->isSecondaryParamValid();
   SFPIOManager& ioMgr = request->mSFPIOManager;
   const SFPIOMap& generalIO = ioMgr.getFirstGeneralIO();
-  const SFPIOMap& masterPhyIO = ioMgr.getPhysicalIO(request->mMasterID);
-  const SFPIOMap& slavePhyIO = ioMgr.getPhysicalIO(request->mSlaveID);
-  const SFPIOMap& masterLargeIO = ioMgr.getLargeIO(request->mMasterID);
-  const SFPIOMap& slaveLargeIO = ioMgr.getLargeIO(request->mSlaveID);
+  const SFPIOMap& primaryPhyIO = ioMgr.getPhysicalIO(request->mPrimaryID);
+  const SFPIOMap& secondaryPhyIO = ioMgr.getPhysicalIO(request->mSecondaryID);
+  const SFPIOMap& primaryLargeIO = ioMgr.getLargeIO(request->mPrimaryID);
+  const SFPIOMap& secondaryLargeIO = ioMgr.getLargeIO(request->mSecondaryID);
 
   if (generalIO.isValid()) {
-    // -- Master ---
-    if (needNormalYuv(request->mMasterID, request)) {
-      tuningIndex->mGenMaster = addTuningFrameParam(
-          request->mMasterID, generalIO, params, request, data);
+    // -- Primary ---
+    if (needNormalYuv(request->mPrimaryID, request)) {
+      tuningIndex->mGenPrimary = addTuningFrameParam(
+          request->mPrimaryID, generalIO, params, request, data);
     }
-    if (needPureYuv(request->mMasterID, request)) {
-      tuningIndex->mPureMaster =
-          addTuningFrameParam(request->mMasterID, generalIO, params, request,
+    if (needPureYuv(request->mPrimaryID, request)) {
+      tuningIndex->mPurePrimary =
+          addTuningFrameParam(request->mPrimaryID, generalIO, params, request,
                               data, TuningHelper::Tuning_Pure);
     }
 
-    // -- Slave ---
-    if (dualSlaveValid && needNormalYuv(request->mSlaveID, request)) {
-      tuningIndex->mGenSlave = addTuningFrameParam(request->mSlaveID, generalIO,
+    // -- Secondary ---
+    if (dualSecondaryValid && needNormalYuv(request->mSecondaryID, request)) {
+      tuningIndex->mGenSecondary = addTuningFrameParam(request->mSecondaryID, generalIO,
                                                    params, request, data);
     }
 
-    if (dualSlaveValid && needPureYuv(request->mSlaveID, request)) {
-      tuningIndex->mPureSlave =
-          addTuningFrameParam(request->mSlaveID, generalIO, params, request,
+    if (dualSecondaryValid && needPureYuv(request->mSecondaryID, request)) {
+      tuningIndex->mPureSecondary =
+          addTuningFrameParam(request->mSecondaryID, generalIO, params, request,
                               data, TuningHelper::Tuning_Pure);
     }
 
     MY_LOGE_IF(
-        !(tuningIndex->isGenMasterValid() || tuningIndex->isPureMasterValid()),
-        "GeneralIO valid but General tuning master inValid !!");
+        !(tuningIndex->isGenPrimaryValid() || tuningIndex->isPurePrimaryValid()),
+        "GeneralIO valid but General tuning primary inValid !!");
   }
 
-  if (masterPhyIO.isValid()) {
-    MBOOL masterFrameValid =
-        tuningIndex->isGenMasterValid() || tuningIndex->isPureMasterValid();
-    if (!SFPIOMap::isSameTuning(masterPhyIO, generalIO, request->mMasterID) ||
-        !masterFrameValid) {
-      tuningIndex->mPhyMaster = addTuningFrameParam(
-          request->mMasterID, masterPhyIO, params, request, data);
+  if (primaryPhyIO.isValid()) {
+    MBOOL primaryFrameValid =
+        tuningIndex->isGenPrimaryValid() || tuningIndex->isPurePrimaryValid();
+    if (!SFPIOMap::isSameTuning(primaryPhyIO, generalIO, request->mPrimaryID) ||
+        !primaryFrameValid) {
+      tuningIndex->mPhyPrimary = addTuningFrameParam(
+          request->mPrimaryID, primaryPhyIO, params, request, data);
     } else {
-      tuningIndex->mPhyMaster = tuningIndex->isPureMasterValid()
-                                    ? tuningIndex->mPureMaster
-                                    : tuningIndex->mGenMaster;
+      tuningIndex->mPhyPrimary = tuningIndex->isPurePrimaryValid()
+                                    ? tuningIndex->mPurePrimary
+                                    : tuningIndex->mGenPrimary;
     }
   }
 
-  if (slavePhyIO.isValid() && dualSlaveValid) {
-    MBOOL slaveFrameValid =
-        tuningIndex->isGenSlaveValid() || tuningIndex->isPureSlaveValid();
-    if (SFPIOMap::isSameTuning(slavePhyIO, generalIO, request->mSlaveID) ||
-        !slaveFrameValid) {
-      tuningIndex->mPhySlave = addTuningFrameParam(
-          request->mSlaveID, slavePhyIO, params, request, data);
+  if (secondaryPhyIO.isValid() && dualSecondaryValid) {
+    MBOOL secondaryFrameValid =
+        tuningIndex->isGenSecondaryValid() || tuningIndex->isPureSecondaryValid();
+    if (SFPIOMap::isSameTuning(secondaryPhyIO, generalIO, request->mSecondaryID) ||
+        !secondaryFrameValid) {
+      tuningIndex->mPhySecondary = addTuningFrameParam(
+          request->mSecondaryID, secondaryPhyIO, params, request, data);
     } else {
-      tuningIndex->mPhySlave = tuningIndex->isPureSlaveValid()
-                                   ? tuningIndex->mPureSlave
-                                   : tuningIndex->mGenSlave;
+      tuningIndex->mPhySecondary = tuningIndex->isPureSecondaryValid()
+                                   ? tuningIndex->mPureSecondary
+                                   : tuningIndex->mGenSecondary;
     }
   }
 
-  if (masterLargeIO.isValid()) {
-    tuningIndex->mLargeMaster = addTuningFrameParam(
-        request->mMasterID, masterLargeIO, params, request, data);
+  if (primaryLargeIO.isValid()) {
+    tuningIndex->mLargePrimary = addTuningFrameParam(
+        request->mPrimaryID, primaryLargeIO, params, request, data);
   }
 
-  if (slaveLargeIO.isValid()) {
-    tuningIndex->mLargeSlave = addTuningFrameParam(
-        request->mSlaveID, slaveLargeIO, params, request, data);
+  if (secondaryLargeIO.isValid()) {
+    tuningIndex->mLargeSecondary = addTuningFrameParam(
+        request->mSecondaryID, secondaryLargeIO, params, request, data);
   }
 
-  MY_LOGI_IF((mLastDualParamValid != dualSlaveValid),
-             "Dual Slave valid (%d)->(%d). slaveID(%d)", mLastDualParamValid,
-             dualSlaveValid, request->mSlaveID);
+  MY_LOGI_IF((mLastDualParamValid != dualSecondaryValid),
+             "Dual Secondary valid (%d)->(%d). secondaryID(%d)", mLastDualParamValid,
+             dualSecondaryValid, request->mSecondaryID);
   MY_LOGD(
-      "req(%d), TuningIndex, (GN/GP/Ph/L),master(%d/%d/%d/%d), "
-      "slave(%d/%d/%d/%d)",
-      request->mRequestNo, tuningIndex->mGenMaster, tuningIndex->mPureMaster,
-      tuningIndex->mPhyMaster, tuningIndex->mLargeMaster,
-      tuningIndex->mGenSlave, tuningIndex->mPureSlave, tuningIndex->mPhySlave,
-      tuningIndex->mLargeSlave);
+      "req(%d), TuningIndex, (GN/GP/Ph/L),primary(%d/%d/%d/%d), "
+      "secondary(%d/%d/%d/%d)",
+      request->mRequestNo, tuningIndex->mGenPrimary, tuningIndex->mPurePrimary,
+      tuningIndex->mPhyPrimary, tuningIndex->mLargePrimary,
+      tuningIndex->mGenSecondary, tuningIndex->mPureSecondary, tuningIndex->mPhySecondary,
+      tuningIndex->mLargeSecondary);
 
-  mLastDualParamValid = dualSlaveValid;
+  mLastDualParamValid = dualSecondaryValid;
 
   TRACE_FUNC_EXIT();
   return MTRUE;
@@ -1208,7 +1208,7 @@ MBOOL P2ANode::needPureYuv(MUINT32 /*sensorID*/,
 }
 
 MBOOL P2ANode::needNormalYuv(MUINT32 sensorID, const RequestPtr& request) {
-  if (sensorID == request->mMasterID) {
+  if (sensorID == request->mPrimaryID) {
     return request->needDisplayOutput(
                std::dynamic_pointer_cast<P2ANode>(shared_from_this())) ||
            request->needRecordOutput(
@@ -1224,7 +1224,7 @@ MBOOL P2ANode::needNormalYuv(MUINT32 sensorID, const RequestPtr& request) {
            ||
            !needPureYuv(
                sensorID,
-               request);  // in master general, normal or pure must exist one.
+               request);  // in primary general, normal or pure must exist one.
   } else {
     return request->needFullImg(
                std::dynamic_pointer_cast<P2ANode>(shared_from_this()),
@@ -1239,7 +1239,7 @@ MBOOL P2ANode::prepare3DNR(NSCam::NSIoPipe::QParams* params,
                            const P2ATuningIndex& tuningIndex) {
   TRACE_FUNC_ENTER();
 
-  MUINT32 sensorID = request->mMasterID;
+  MUINT32 sensorID = request->mPrimaryID;
   const SrcCropInfo srcCropInfo = request->getSrcCropInfo(sensorID);
   const MRect& postCropSize = srcCropInfo.mSrcCrop;
   MY_LOGD("aaaa_cropInfo_test: w=%d, h=%d", postCropSize.s.w, postCropSize.s.h);

@@ -236,12 +236,12 @@ std::shared_ptr<NSCam::IImageBuffer> IPCImageBufAllocator::createImageBuffer() {
       m_imgCfg.format, MSize(m_imgCfg.width, m_imgCfg.height), m_imgCfg.strides,
       bufBoudndaryInBytes, m_imgCfg.planecount);
 
-  /* dummy heap descriptor */
-  NSCam::PortBufInfo_dummy portBufInfo = NSCam::PortBufInfo_dummy(
+  /* fake heap descriptor */
+  NSCam::PortBufInfo_fake portBufInfo = NSCam::PortBufInfo_fake(
       m_imgCfg.fd[0], m_imgCfg.va, m_imgCfg.pa, m_imgCfg.planecount);
 
   std::shared_ptr<NSCam::IImageBufferHeap> pHeap =
-      NSCam::IDummyImageBufferHeap::create(m_caller.c_str(), extParam,
+      NSCam::IFakeImageBufferHeap::create(m_caller.c_str(), extParam,
                                            portBufInfo);
 
   if (pHeap == NULL)

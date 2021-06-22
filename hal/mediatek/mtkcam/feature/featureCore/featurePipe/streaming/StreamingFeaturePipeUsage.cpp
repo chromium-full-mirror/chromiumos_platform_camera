@@ -58,7 +58,7 @@ StreamingFeaturePipeUsage::StreamingFeaturePipeUsage(UsageHint hint,
       (getPropertyValue(KEY_ENABLE_VENDOR_V1_SIZE, SUPPORT_VENDOR_SIZE) == 1);
   mEnableVendorCusFormat = (getPropertyValue(KEY_ENABLE_VENDOR_V1_FORMAT,
                                              SUPPORT_VENDOR_FORMAT) == 1);
-  mEnableDummy = (getPropertyValue(KEY_ENABLE_DUMMY, SUPPORT_DUMMY_NODE) == 1);
+  mEnableFake = (getPropertyValue(KEY_ENABLE_FAKE, SUPPORT_FAKE_NODE) == 1);
   mSupportPure = (getPropertyValue(KEY_ENABLE_PURE_YUV, SUPPORT_PURE_YUV) == 1);
 
   switch (mUsageHint.mMode) {
@@ -173,8 +173,8 @@ EImageFormat StreamingFeaturePipeUsage::getFullImgFormat() const {
   return supportFull_YUY2() ? eImgFmt_YUY2 : eImgFmt_YV12;
 }
 
-MBOOL StreamingFeaturePipeUsage::supportDummy() const {
-  return mEnableDummy;
+MBOOL StreamingFeaturePipeUsage::supportFake() const {
+  return mEnableFake;
 }
 
 MBOOL StreamingFeaturePipeUsage::isDynamicTuning() const {

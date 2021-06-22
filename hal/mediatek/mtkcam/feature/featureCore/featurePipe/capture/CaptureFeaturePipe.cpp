@@ -297,7 +297,7 @@ MERROR PipeBufferHandle::acquire(MINT usage) {
   return OK;
 }
 
-IImageBuffer* PipeBufferHandle::native() {
+IImageBuffer* PipeBufferHandle::builtinBuffer() {
   if (mpSmartBuffer.get() == nullptr) {
     return nullptr;
   }

@@ -61,8 +61,8 @@ class VISIBILITY_PUBLIC P2Info {
 
  private:
   std::shared_ptr<P2InfoObj> mInfoObj;
-  const P2ConfigInfo* mConfigInfoPtr = &P2ConfigInfo::Dummy;
-  const P2SensorInfo* mSensorInfoPtr = &P2SensorInfo::Dummy;
+  const P2ConfigInfo* mConfigInfoPtr = &P2ConfigInfo::Fake;
+  const P2SensorInfo* mSensorInfoPtr = &P2SensorInfo::Fake;
   const P2PlatInfo* mPlatInfoPtr = NULL;
 };
 
@@ -95,8 +95,8 @@ class P2Data {
 
  private:
   std::shared_ptr<const P2DataObj> mDataObj;
-  const P2FrameData* mFrameDataPtr = &P2FrameData::Dummy;
-  const P2SensorData* mSensorDataPtr = &P2SensorData::Dummy;
+  const P2FrameData* mFrameDataPtr = &P2FrameData::Fake;
+  const P2SensorData* mSensorDataPtr = &P2SensorData::Fake;
 };
 
 class VISIBILITY_PUBLIC P2Pack {

@@ -177,7 +177,7 @@ class MetadataSelection::Implementor {
   MBOOL mRequired;
   MetadataPtr mControl;
   MetadataPtr mAddtional;
-  MetadataPtr mDummy;
+  MetadataPtr mFake;
 };
 
 MetadataSelection::MetadataSelection() : mImpl(new Implementor()) {}
@@ -205,8 +205,8 @@ MetadataSelection& MetadataSelection::setAddtional(MetadataPtr addtional) {
   return *this;
 }
 
-MetadataSelection& MetadataSelection::setDummy(MetadataPtr dummy) {
-  mImpl->mDummy = dummy;
+MetadataSelection& MetadataSelection::setFake(MetadataPtr fake) {
+  mImpl->mFake = fake;
   return *this;
 }
 
@@ -218,8 +218,8 @@ MetadataPtr MetadataSelection::getAddtional() const {
   return mImpl->mAddtional;
 }
 
-MetadataPtr MetadataSelection::getDummy() const {
-  return mImpl->mDummy;
+MetadataPtr MetadataSelection::getFake() const {
+  return mImpl->mFake;
 }
 
 MVOID MetadataSelection::dump(std::ostream& os) const {

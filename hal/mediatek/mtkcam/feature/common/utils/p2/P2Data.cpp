@@ -20,10 +20,10 @@ namespace NSCam {
 namespace Feature {
 namespace P2Util {
 
-const P2ConfigInfo P2ConfigInfo::Dummy;
-const P2SensorInfo P2SensorInfo::Dummy;
-const P2FrameData P2FrameData::Dummy;
-const P2SensorData P2SensorData::Dummy;
+const P2ConfigInfo P2ConfigInfo::Fake;
+const P2SensorInfo P2SensorInfo::Fake;
+const P2FrameData P2FrameData::Fake;
+const P2SensorData P2SensorData::Fake;
 
 P2ConfigInfo::P2ConfigInfo() {}
 

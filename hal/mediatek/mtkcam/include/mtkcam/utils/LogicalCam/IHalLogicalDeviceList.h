@@ -127,9 +127,9 @@ class VISIBILITY_PUBLIC IHalLogicalDeviceList {
   virtual MINT32 getSupportedFeature(MINT32 deviceId) const = 0;
 
   /**
-   * get master dev id
+   * get primary dev id
    */
-  virtual MINT32 getSensorSyncMasterDevId(MINT32 deviceId) const = 0;
+  virtual MINT32 getSensorSyncPrimaryDevId(MINT32 deviceId) const = 0;
 };
 
 /******************************************************************************

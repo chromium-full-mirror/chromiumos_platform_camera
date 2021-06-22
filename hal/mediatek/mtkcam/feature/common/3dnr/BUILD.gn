@@ -8,7 +8,7 @@ shared_library("libfeature_3dnr") {
     "3dnr_hal.cpp",
     "3dnr_hal_base.cpp",
     "lmv_state.cpp",
-    "lmv_state_dummy.cpp",
+    "lmv_state_fake.cpp",
     "lmv_state_uni.cpp",
     "util_3dnr.cpp",
   ]

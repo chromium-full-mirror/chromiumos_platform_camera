@@ -118,7 +118,7 @@ class HalLogicalDeviceList : public IHalLogicalDeviceList {
 
   SensorSyncType getSyncType(MINT32 deviceId) const override;
 
-  MINT32 getSensorSyncMasterDevId(MINT32 deviceId) const override;
+  MINT32 getSensorSyncPrimaryDevId(MINT32 deviceId) const override;
 
  private:
   struct TempSensorInfo {
@@ -133,10 +133,10 @@ class HalLogicalDeviceList : public IHalLogicalDeviceList {
   class SyncTypeInfo {
    public:
     SensorSyncType syncType = SensorSyncType::NOT_SUPPORT;
-    MUINT32 masterDevId = 0xFF;
+    MUINT32 primaryDevId = 0xFF;
     std::vector<MUINT32> syncMode;
     std::vector<MUINT32>
-        slaveDevId;  // only one master, but can have more than 1 slave.
+        secondaryDevId;  // only one primary, but can have more than 1 secondary.
   };
 
   //
@@ -223,8 +223,8 @@ HalLogicalDeviceList::querySyncMode(const std::vector<MINT32>& Sensors) {
   std::string checkString("");
   // SensorSyncType result;
   std::shared_ptr<SyncTypeInfo> info = std::make_shared<SyncTypeInfo>();
-  std::vector<bool> masterCheckList;
-  std::vector<bool> slaveCheckList;
+  std::vector<bool> primaryCheckList;
+  std::vector<bool> secondaryCheckList;
   std::vector<MUINT32> devIdList;
   for (auto& sensorId : Sensors) {
     NSCam::IHalSensor* pHalSensor =
@@ -235,58 +235,58 @@ HalLogicalDeviceList::querySyncMode(const std::vector<MINT32>& Sensors) {
                             SENSOR_CMD_GET_SENSOR_SYNC_MODE_CAPACITY,
                             (MUINTPTR)&syncMode, sizeof(syncMode), 0, 0, 0, 0);
     info->syncMode.push_back(syncMode);
-    if ((syncMode & SENSOR_MASTER_SYNC_MODE) &&
-        (syncMode & SENSOR_SLAVE_SYNC_MODE)) {
-      masterCheckList.push_back(true);
-      slaveCheckList.push_back(true);
-    } else if (syncMode & SENSOR_MASTER_SYNC_MODE) {
-      masterCheckList.push_back(true);
-      slaveCheckList.push_back(false);
-    } else if (syncMode & SENSOR_SLAVE_SYNC_MODE) {
-      masterCheckList.push_back(false);
-      slaveCheckList.push_back(true);
+    if ((syncMode & SENSOR_PRIMARY_SYNC_MODE) &&
+        (syncMode & SENSOR_SECONDARY_SYNC_MODE)) {
+      primaryCheckList.push_back(true);
+      secondaryCheckList.push_back(true);
+    } else if (syncMode & SENSOR_PRIMARY_SYNC_MODE) {
+      primaryCheckList.push_back(true);
+      secondaryCheckList.push_back(false);
+    } else if (syncMode & SENSOR_SECONDARY_SYNC_MODE) {
+      primaryCheckList.push_back(false);
+      secondaryCheckList.push_back(true);
     } else {
-      masterCheckList.push_back(false);
-      slaveCheckList.push_back(false);
+      primaryCheckList.push_back(false);
+      secondaryCheckList.push_back(false);
     }
     devIdList.push_back(sensorDevId);
     base::StringAppendF(&checkString, "S[%d:D%d:M%d:S%d] ", sensorId,
-                        sensorDevId, !!(syncMode & SENSOR_MASTER_SYNC_MODE),
-                        !!(syncMode & SENSOR_SLAVE_SYNC_MODE));
+                        sensorDevId, !!(syncMode & SENSOR_PRIMARY_SYNC_MODE),
+                        !!(syncMode & SENSOR_SECONDARY_SYNC_MODE));
   }
-  ssize_t masterIndex = -1;
-  ssize_t slaveIndex = -1;
-  for (ssize_t i = 0; i < masterCheckList.size(); ++i) {
-    if (masterCheckList[i]) {
-      masterIndex = i;
-      for (ssize_t j = 0; j < slaveCheckList.size(); ++j) {
+  ssize_t primaryIndex = -1;
+  ssize_t secondaryIndex = -1;
+  for (ssize_t i = 0; i < primaryCheckList.size(); ++i) {
+    if (primaryCheckList[i]) {
+      primaryIndex = i;
+      for (ssize_t j = 0; j < secondaryCheckList.size(); ++j) {
         if (i != j) {
-          if (slaveCheckList[j]) {
-            slaveIndex = j;
+          if (secondaryCheckList[j]) {
+            secondaryIndex = j;
             break;
           }
         }
       }
-      if (slaveIndex != -1) {
+      if (secondaryIndex != -1) {
         break;
       }
     }
   }
-  // set master id
-  if (masterIndex != -1) {
-    info->masterDevId = devIdList[masterIndex];
-    base::StringAppendF(&checkString, "M[D:%d] ", devIdList[masterIndex]);
+  // set primary id
+  if (primaryIndex != -1) {
+    info->primaryDevId = devIdList[primaryIndex];
+    base::StringAppendF(&checkString, "M[D:%d] ", devIdList[primaryIndex]);
   }
-  for (ssize_t i = 0; i < slaveCheckList.size(); ++i) {
-    if ((i != masterIndex) && slaveCheckList[i]) {
-      info->slaveDevId.push_back(devIdList[i]);
+  for (ssize_t i = 0; i < secondaryCheckList.size(); ++i) {
+    if ((i != primaryIndex) && secondaryCheckList[i]) {
+      info->secondaryDevId.push_back(devIdList[i]);
       base::StringAppendF(&checkString, "S[D:%d] ", devIdList[i]);
     }
   }
-  base::StringAppendF(&checkString, "Master[D:%d] SlaveList[%d]",
-                      info->masterDevId, info->slaveDevId.size());
-  if (info->masterDevId != 0xFF &&
-      info->slaveDevId.size() == (Sensors.size() - 1)) {
+  base::StringAppendF(&checkString, "Primary[D:%d] SecondaryList[%d]",
+                      info->primaryDevId, info->secondaryDevId.size());
+  if (info->primaryDevId != 0xFF &&
+      info->secondaryDevId.size() == (Sensors.size() - 1)) {
     info->syncType = SensorSyncType::CALIBRATED;
     base::StringAppendF(&checkString, "R[Calibrated]");
   } else {
@@ -491,8 +491,8 @@ SensorSyncType HalLogicalDeviceList::getSyncType(MINT32 deviceId) const {
 }
 
 MINT32
-HalLogicalDeviceList::getSensorSyncMasterDevId(MINT32 deviceId) const {
+HalLogicalDeviceList::getSensorSyncPrimaryDevId(MINT32 deviceId) const {
   std::lock_guard<std::mutex> _l(mLock);
   std::shared_ptr<CamDeviceInfo> info = mDeviceSensorMap.at(deviceId);
-  return info->syncTypeInfo->masterDevId;
+  return info->syncTypeInfo->primaryDevId;
 }

@@ -451,7 +451,7 @@ IImageBuffer* CaptureFeatureNodeRequest::acquireBuffer(BufferID_T bufId) {
     return NULL;
   }
 
-  return pBufferHandle->native();
+  return pBufferHandle->builtinBuffer();
 }
 
 MVOID CaptureFeatureNodeRequest::releaseBuffer(BufferID_T bufId) {
@@ -472,7 +472,7 @@ IMetadata* CaptureFeatureNodeRequest::acquireMetadata(MetadataID_T metaId) {
     return NULL;
   }
 
-  return pMetaHandle->native();
+  return pMetaHandle->builtinMeta();
 }
 
 MVOID CaptureFeatureNodeRequest::releaseMetadata(MetadataID_T metaId) {
@@ -505,7 +505,7 @@ MINT CaptureFeatureRequest::getImageFormat(BufferID_T bufId) {
     if (pBufferHandle == nullptr) {
       return 0;
     }
-    return pBufferHandle->native()->getImgFormat();
+    return pBufferHandle->builtinBuffer()->getImgFormat();
   }
 }
 
@@ -522,7 +522,7 @@ MSize CaptureFeatureRequest::getImageSize(BufferID_T bufId) {
     if (pBufferHandle == nullptr) {
       return MSize(0, 0);
     }
-    return pBufferHandle->native()->getImgSize();
+    return pBufferHandle->builtinBuffer()->getImgSize();
   }
 }
 

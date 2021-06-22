@@ -56,8 +56,8 @@ class VISIBILITY_PUBLIC SFPOutput : public Feature::P2Util::P2IO {
 
   OutTargetType mTargetType = OUT_TARGET_UNKNOWN;
 
-  MRectF mCropRect;    // Refer to Master's input
-  MSize mCropDstSize;  // Refer to Master's input
+  MRectF mCropRect;    // Refer to Primary's input
+  MSize mCropDstSize;  // Refer to Primary's input
   MVOID* mpPqParam = NULL;
   MVOID* mpDpPqParam = NULL;
 
@@ -120,7 +120,7 @@ class VISIBILITY_PUBLIC SFPIOMap {
  private:
   // Input <SensorID -> SFPSensorTuning>
   std::map<MUINT32, SFPSensorTuning> mInputMap;
-  SFPSensorTuning mDummy;
+  SFPSensorTuning mFake;
 
  public:
   static const char* pathToChar(const PathType& type);
@@ -174,7 +174,7 @@ class VISIBILITY_PUBLIC SFPIOManager {
         return itobj;                                     \
       }                                                   \
     }                                                     \
-    return mDummy;                                        \
+    return mFake;                                        \
   }                                                       \
   MBOOL has##name##IO(MUINT32 sensorID) const {           \
     const SFPIOMap& ioMap = get##name##IO(sensorID);      \
@@ -194,8 +194,8 @@ class VISIBILITY_PUBLIC SFPIOManager {
   std::unordered_map<MUINT32, SFPIOMap> mPhysicals;
   std::unordered_map<MUINT32, SFPIOMap> mLarges;
   std::unordered_map<MUINT32, SFPSensorInput> mSensorInputs;
-  SFPIOMap mDummy;
-  SFPSensorInput mDummyInput;
+  SFPIOMap mFake;
+  SFPSensorInput mFakeInput;
 };
 
 };  // namespace NSFeaturePipe

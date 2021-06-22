@@ -119,8 +119,8 @@ typedef enum {
 #define SENSOR_DOES_NOT_KNOW 0xFFFFFFFF
 
 /* Define for sensor sync mode (bitwise) */
-#define SENSOR_MASTER_SYNC_MODE 1
-#define SENSOR_SLAVE_SYNC_MODE 2
+#define SENSOR_PRIMARY_SYNC_MODE 1
+#define SENSOR_SECONDARY_SYNC_MODE 2
 
 #define SENSOR_FEATURE_START 3000
 typedef enum {
@@ -134,7 +134,7 @@ typedef enum {
   SENSOR_FEATURE_SET_DUAL_GAIN,
   SENSOR_FEATURE_SET_GAIN_AND_ESHUTTER,
   SENSOR_FEATURE_SET_FLASHLIGHT,
-  SENSOR_FEATURE_SET_ISP_MASTER_CLOCK_FREQ,
+  SENSOR_FEATURE_SET_ISP_PRIMARY_CLOCK_FREQ,
   SENSOR_FEATURE_SET_REGISTER,
   SENSOR_FEATURE_GET_REGISTER,
   SENSOR_FEATURE_SET_CCT_REGISTER,
@@ -179,7 +179,7 @@ typedef enum {
   SENSOR_FEATURE_SET_AE_WINDOW,
   SENSOR_FEATURE_GET_EXIF_INFO,
   SENSOR_FEATURE_GET_DELAY_INFO,
-  SENSOR_FEATURE_SET_SLAVE_I2C_ID,
+  SENSOR_FEATURE_SET_SECONDARY_I2C_ID,
   SENSOR_FEATURE_SUSPEND,
   SENSOR_FEATURE_RESUME,
   SENSOR_FEATURE_SET_MAX_FRAME_RATE_BY_SCENARIO,
@@ -492,7 +492,7 @@ typedef struct {
   MUINT16 SensorGrabStartX_CST5;
   MUINT16 SensorGrabStartY_CST5;
   MUINT16 SensorDrivingCurrent;
-  MUINT8 SensorMasterClockSwitch;
+  MUINT8 SensorPrimaryClockSwitch;
   MUINT8
   AEShutDelayFrame; /* The frame of setting shutter default 0 for TG int */
   MUINT8 AESensorGainDelayFrame; /* The frame of setting sensor gain */
@@ -638,10 +638,10 @@ typedef struct {
   MUINT16 ImageTargetWidth;     /* image captured width */
   MUINT16 ImageTargetHeight;    /* image captuerd height */
   MUINT16
-  ExposurePixel; /* exposure window width of image sensor + dummy pixel */
+  ExposurePixel; /* exposure window width of image sensor + fake pixel */
   MUINT16 CurrentExposurePixel;
-  /* exposure window width of image sensor + dummy pixel */
-  MUINT16 ExposureLine; /* exposure window width of image sensor + dummy line */
+  /* exposure window width of image sensor + fake pixel */
+  MUINT16 ExposureLine; /* exposure window width of image sensor + fake line */
   MUINT16 ZoomFactor;   /* digital zoom factor */
 } ACDK_SENSOR_EXPOSURE_WINDOW_STRUCT;
 
@@ -662,7 +662,7 @@ typedef struct {
   MUINT32 Pixels;      /* Sensor active pixel number */
   MUINT32 Lines;       /* Sensor active line number */
   MUINT32 Shutter;     /* Sensor current shutter */
-  MUINT32 FrameLines;  /* valid+dummy lines for minimum shutter */
+  MUINT32 FrameLines;  /* valid+fake lines for minimum shutter */
 } ACDK_SENSOR_CONFIG_STRUCT;
 
 typedef enum {
@@ -1091,7 +1091,7 @@ typedef struct {
   MUINT8 uSensorExpDelayFrame;
   MUINT8 uSensorGainDelayFrame;
   MUINT8 uISPGainDelayFrame;
-  MUINT8 uDummy;
+  MUINT8 uFake;
 } ACDK_KD_SENSOR_SYNC_STRUCT, *PACDK_KD_SENSOR_SYNC_STRUCT;
 
 typedef struct {

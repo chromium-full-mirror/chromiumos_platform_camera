@@ -192,8 +192,8 @@ static MERROR evaluateRequest_Pass1(
       } break;
     }
 
-    // dummy frame does not need image IOMap
-    if (!in.isDummyFrame) {
+    // fake frame does not need image IOMap
+    if (!in.isFakeFrame) {
       (*out.pNodeIOMapImage)[nodeId] =
           NSCam::v3::NSPipelineContext::IOMapSet().add(P1Map);
     }

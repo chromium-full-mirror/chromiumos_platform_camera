@@ -332,7 +332,7 @@ static struct imgsensor_info_struct gImgsensor_info[] = {
         .SensorInterruptDelayLines = 4,
         .SensorResetActiveHigh = false,
         .SensorResetDelayCount = 5,
-        .SensorMasterClockSwitch = 0,
+        .SensorPrimaryClockSwitch = 0,
         .PDAF_Support = PDAF_SUPPORT_CAMSV,
 /* 0: NO PDAF, 1: PDAF Raw Data mode, 2:PDAF VC mode */
 #if defined(OV5695_ZHDR)
@@ -589,7 +589,7 @@ static struct imgsensor_info_struct gImgsensor_info[] = {
         .SensorInterruptDelayLines = 4,
         .SensorResetActiveHigh = false,
         .SensorResetDelayCount = 5,
-        .SensorMasterClockSwitch = 0,
+        .SensorPrimaryClockSwitch = 0,
         .PDAF_Support = PDAF_SUPPORT_CAMSV,
 /* 0: NO PDAF, 1: PDAF Raw Data mode, 2:PDAF VC mode */
 #if defined(OV2685_ZHDR)
@@ -829,7 +829,7 @@ static struct imgsensor_info_struct gImgsensor_info[] = {
         .SensorInterruptDelayLines = 4,
         .SensorResetActiveHigh = false,
         .SensorResetDelayCount = 5,
-        .SensorMasterClockSwitch = 0,
+        .SensorPrimaryClockSwitch = 0,
         .PDAF_Support = PDAF_SUPPORT_CAMSV,
 /* 0: NO PDAF, 1: PDAF Raw Data mode, 2:PDAF VC mode */
 #if defined(OV8856_ZHDR)
@@ -1084,7 +1084,7 @@ static struct imgsensor_info_struct gImgsensor_info[] = {
         .SensorInterruptDelayLines = 4,
         .SensorResetActiveHigh = false,
         .SensorResetDelayCount = 5,
-        .SensorMasterClockSwitch = 0,
+        .SensorPrimaryClockSwitch = 0,
         .PDAF_Support = PDAF_SUPPORT_CAMSV,
 /* 0: NO PDAF, 1: PDAF Raw Data mode, 2:PDAF VC mode */
 #if defined(OV02A10_ZHDR)
@@ -1358,7 +1358,7 @@ static struct imgsensor_info_struct gImgsensor_info[] = {
         .SensorInterruptDelayLines = 4,
         .SensorResetActiveHigh = false,
         .SensorResetDelayCount = 5,
-        .SensorMasterClockSwitch = 0,
+        .SensorPrimaryClockSwitch = 0,
         .PDAF_Support = PDAF_SUPPORT_CAMSV,
 /* 0: NO PDAF, 1: PDAF Raw Data mode, 2:PDAF VC mode */
 #if defined(GC5035_ZHDR)

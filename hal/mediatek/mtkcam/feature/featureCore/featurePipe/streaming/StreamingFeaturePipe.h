@@ -140,7 +140,7 @@ class StreamingFeaturePipe : public CamPipe<StreamingFeatureNode>,
   std::shared_ptr<IBufferPool> mFullImgPool;
   std::shared_ptr<IBufferPool> mDepthYuvOutPool;
   std::shared_ptr<IBufferPool> mBokehOutPool;
-  std::shared_ptr<IBufferPool> mDummyImgPool;
+  std::shared_ptr<IBufferPool> mFakeImgPool;
   std::shared_ptr<IBufferPool> mVendorInPool;
   std::shared_ptr<IBufferPool> mVendorOutPool;
   std::shared_ptr<IBufferPool> mTPIInPool;

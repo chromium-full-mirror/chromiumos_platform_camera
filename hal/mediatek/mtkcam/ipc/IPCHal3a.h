@@ -34,7 +34,7 @@
 
 struct hal3a_metaset_params {
   MINT32 MagicNum;
-  MUINT8 Dummy;
+  MUINT8 Fake;
   MINT32 PreSetKey;
   char appMetaBuffer[MAX_APP_META_SIZE];
   char halMetaBuffer[MAX_SET_HAL_META_SIZE];

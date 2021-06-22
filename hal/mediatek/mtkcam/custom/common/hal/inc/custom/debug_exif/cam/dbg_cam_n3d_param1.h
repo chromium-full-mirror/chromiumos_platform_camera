@@ -62,7 +62,7 @@ typedef enum {
   N3D_TAG_VERSION = 0,
 } DEBUG_N3D_TAG_T;
 
-// Native3D debug info
+// N3D debug info
 enum { N3D_DEBUG_TAG_SIZE = (N3D_AE_DEBUG_TAG_SIZE + N3D_AWB_DEBUG_TAG_SIZE) };
 enum { N3D_DEBUG_TAG_VERSION = 1 };
 enum { DEBUG_N3D_AE_MODULE_ID = 0x0001 };

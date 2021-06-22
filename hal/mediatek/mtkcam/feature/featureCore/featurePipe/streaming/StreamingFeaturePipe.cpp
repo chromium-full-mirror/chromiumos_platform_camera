@@ -285,7 +285,7 @@ MBOOL StreamingFeaturePipe::prepareDebugSetting() {
       DISABLE_##name(mForceOffMask);                                    \
   }
   CHECK_DEBUG_MASK(3DNR);
-  CHECK_DEBUG_MASK(DUMMY);
+  CHECK_DEBUG_MASK(FAKE);
 #undef CHECK_DEBUG_SETTING
 
   mDebugDump = getPropertyValue(KEY_DEBUG_DUMP, VAL_DEBUG_DUMP);
@@ -514,9 +514,9 @@ MVOID StreamingFeaturePipe::prepareIORequest(const RequestPtr& request) {
     request->mSFPIOManager.appendDumpInfo(&dumpStr);
 
     MY_LOGD(
-        "master/slave(%d/%d) MWFrame:#%d, ReqNo(%d), feature=0x%04x(%s), "
+        "primary/secondary(%d/%d) MWFrame:#%d, ReqNo(%d), feature=0x%04x(%s), "
         "SFPIOMgr:%s",
-        request->getMasterID(), request->mSlaveID, request->mMWFrameNo,
+        request->getPrimaryID(), request->mSecondaryID, request->mMWFrameNo,
         request->mRequestNo, request->mFeatureMask,
         request->getFeatureMaskName(), dumpStr.c_str());
   }
@@ -533,11 +533,11 @@ MVOID StreamingFeaturePipe::prepareIORequest(const RequestPtr& request) {
   }
 
   {
-    // Master
-    prepareIORequest(request, generalStreams, request->mMasterID);
+    // Primary
+    prepareIORequest(request, generalStreams, request->mPrimaryID);
   }
-  if (request->hasSlave(request->mSlaveID)) {
-    prepareIORequest(request, generalStreams, request->mSlaveID);
+  if (request->hasSecondary(request->mSecondaryID)) {
+    prepareIORequest(request, generalStreams, request->mSecondaryID);
   }
 
   TRACE_FUNC_EXIT();
@@ -552,7 +552,7 @@ MVOID StreamingFeaturePipe::prepareIORequest(
     streams.insert(STREAMTYPE_PHYSICAL);
   }
   StreamingReqInfo reqInfo(request->mRequestNo, request->mFeatureMask,
-                           request->mMasterID, sensorID);
+                           request->mPrimaryID, sensorID);
   IORequest<StreamingFeatureNode, StreamingReqInfo>& ioReq =
       request->mIORequestMap[sensorID];
   mIOControl.prepareMap(streams, reqInfo, &(ioReq.mOutMap), &(ioReq.mBufMap));

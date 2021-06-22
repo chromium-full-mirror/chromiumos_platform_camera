@@ -274,7 +274,7 @@ enum {
                                      //   mode, start streaming. arg1:[input]exp
                                      //   time, arg2:N/A, arg3:N/A*/
   SENSOR_CMD_SET_N3D_CONFIG =
-      0x1100,  //!< Command to set native 3D mode configuration. arg1:
+      0x1100,  //!< Command to set N3D mode configuration. arg1:
                //   [input]halSensorN3dConfig_t, arg2:N/A, arg3:N/A*/
   SENSOR_CMD_SET_N3D_I2C_POS,  //!< Command to set count in SMI clock rate for
                                //   I2C1&2 delay arg1:[input]position count,
@@ -335,7 +335,7 @@ enum {
                                          //   arg1:[output]sensorDevId,
                                          //   arg2:N/A, arg3:N/A*/
   SENSOR_CMD_GET_SENSOR_N3D_DIFFERENCE_COUNT =
-      0x2100,  //!< Command to get native 3D module difference count value
+      0x2100,  //!< Command to get N3D module difference count value
                //   arg1:[output] halSensorN3dDiffCnt_t, arg2:N/A, arg3:N/A  */
   SENSOR_CMD_GET_SENSOR_N3D_STREAM_TO_VSYNC_TIME,  //!< Command to get time
                                                    //   between stream out
@@ -457,11 +457,11 @@ enum {
   SENSOR_CMD_GET_VERTICAL_BLANKING,
   SENSOR_CMD_SET_VERTICAL_BLANKING,
   SENSOR_CMD_GET_SENSOR_SYNC_MODE_CAPACITY,  //!< Command to get the sensor's
-                                             //   master/slave mode capacity.*/
+                                             //   primary/secondary mode capacity.*/
   SENSOR_CMD_GET_SENSOR_SYNC_MODE,  //!< Command to get the current sensor to
-                                    //   master/slave mode.*/
+                                    //   primary/secondary mode.*/
   SENSOR_CMD_SET_SENSOR_SYNC_MODE,  //!< Command to set the sensor to
-                                    //!< master/slave
+                                    //!< primary/secondary
                                     // mode. arg1:[input] sync mode*/
   SENSOR_CMD_SET_DUAL_CAM_MODE,     //!< Command to set dual cam mode or not.
                                     //   arg1:[input] dual cam or not*/
@@ -696,7 +696,7 @@ struct SensorDynamicInfo {
 /**
  *@struct<SENSOR_N3D_CONFIG_STRUCT>
  *@brief:structure used in sensor hal provided sendCommand() api with ID
- *SENSOR_CMD_SET_N3D_CONFIG to set native 3D control configuration
+ *SENSOR_CMD_SET_N3D_CONFIG to set N3D control configuration
  */
 struct SensorN3dConfig {
   MUINT32 u4N3dEn;      /*!<N3D module enable control*/
@@ -711,7 +711,7 @@ struct SensorN3dConfig {
 /**
  *@struct<SENSOR_N3D_DIFFERENCE_COUNT_STRUCT>
  *@brief:structure used in sensor hal provided sendCommand() api with ID
- *SENSOR_CMD_GET_SENSOR_N3D_DIFFERENCE_COUNT to get native 3D vsync difference
+ *SENSOR_CMD_GET_SENSOR_N3D_DIFFERENCE_COUNT to get N3D vsync difference
  *information
  */
 struct SensorN3dDiffCnt {

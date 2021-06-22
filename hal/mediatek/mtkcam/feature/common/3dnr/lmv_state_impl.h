@@ -41,7 +41,7 @@ class LmvStateMachineUni : public LmvStateMachine {
   static const int N_EXTRA_ENQUES;
 };
 
-class LmvStateMachineDummy : public LmvStateMachine {
+class LmvStateMachineFake : public LmvStateMachine {
  public:
   virtual void switchTo(SensorId sensor,
                         Action* action,
@@ -54,7 +54,7 @@ class LmvStateMachineDummy : public LmvStateMachine {
                                  Transition* transition = NULL);
   virtual bool needEnque(SensorId sensor, bool willFollow);
 
-  explicit LmvStateMachineDummy(LmvState initState);
+  explicit LmvStateMachineFake(LmvState initState);
 };
 
 #endif  // CAMERA_HAL_MEDIATEK_MTKCAM_FEATURE_COMMON_3DNR_LMV_STATE_IMPL_H_

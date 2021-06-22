@@ -153,7 +153,7 @@ using NSCam::Feature::P2Util::DMACONSTRAIN_NOSUBPIXEL;
 using NSCam::Feature::P2Util::getCropRect;
 using NSCam::Feature::P2Util::LMVInfo;
 using NSCam::Feature::P2Util::P2_CAPTURE;
-using NSCam::Feature::P2Util::P2_DUMMY;
+using NSCam::Feature::P2Util::P2_FAKE;
 using NSCam::Feature::P2Util::P2_DUMP_DEBUG;
 using NSCam::Feature::P2Util::P2_DUMP_NDD;
 using NSCam::Feature::P2Util::P2_DUMP_NONE;

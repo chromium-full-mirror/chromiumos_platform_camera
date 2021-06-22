@@ -358,13 +358,13 @@ class VISIBILITY_PUBLIC MetadataSelection {
   MetadataSelection& setAddtional(MetadataPtr additional);
 
   /*
-   * [Provider] add the dummy metadata. It's used in creating extra pipeline
-   * frames before capture starting. ex: HDR could use rear dummy frame to
+   * [Provider] add the fake metadata. It's used in creating extra pipeline
+   * frames before capture starting. ex: HDR could use rear fake frame to
    * stablize AE.
    *
    * @param[in] addtional: the shared pointer of metadata
    */
-  MetadataSelection& setDummy(MetadataPtr additional);
+  MetadataSelection& setFake(MetadataPtr additional);
   /*
    * Get the control metadata
    *
@@ -380,11 +380,11 @@ class VISIBILITY_PUBLIC MetadataSelection {
   MetadataPtr getAddtional() const;
 
   /*
-   * Get the dummy metadata.
+   * Get the fake metadata.
    *
    * @return the shared pointer of metadata
    */
-  MetadataPtr getDummy() const;
+  MetadataPtr getFake() const;
 
   /*
    * Dump the selection info

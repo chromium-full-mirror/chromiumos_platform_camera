@@ -67,8 +67,8 @@ struct imgsensor_struct {
   MUINT32 line_length;  /* current linelength */
 
   MUINT32 min_frame_length; /* current min  framelength to max framerate */
-  MUINT16 dummy_pixel;      /* current dummypixel */
-  MUINT16 dummy_line;       /* current dummline */
+  MUINT16 fake_pixel;      /* current fakepixel */
+  MUINT16 fake_line;       /* current fakeline */
 
   MUINT16 current_fps; /* current max fps */
   bool autoflicker_en; /* record autoflicker enable or disable */
@@ -155,7 +155,7 @@ struct imgsensor_info_struct {
   MUINT8 SensorInterruptDelayLines;
   MUINT8 SensorResetActiveHigh;
   MUINT8 SensorResetDelayCount;
-  MUINT8 SensorMasterClockSwitch;
+  MUINT8 SensorPrimaryClockSwitch;
   MUINT8 PDAF_Support;
   MUINT8 HDR_Support;
   MUINT8 ZHDR_Mode;

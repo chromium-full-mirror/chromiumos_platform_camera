@@ -30,11 +30,11 @@
 #define KEY_FORCE_BUF "vendor.debug.fpipe.force.buf"
 #define KEY_FORCE_VENDOR_V1 "vendor.debug.fpipe.force.vendor.v1"
 #define KEY_FORCE_VENDOR_V2 "vendor.debug.fpipe.force.vendor.v2"
-#define KEY_FORCE_DUMMY "vendor.debug.fpipe.force.dummy"
+#define KEY_FORCE_FAKE "vendor.debug.fpipe.force.fake"
 #define KEY_ENABLE_VENDOR_V1 "vendor.debug.fpipe.enable.vendor.v1"
 #define KEY_ENABLE_VENDOR_V1_SIZE "vendor.debug.fpipe.vendor.v1.size"
 #define KEY_ENABLE_VENDOR_V1_FORMAT "vendor.debug.fpipe.vendor.v1.format"
-#define KEY_ENABLE_DUMMY "vendor.debug.fpipe.enable.dummy"
+#define KEY_ENABLE_FAKE "vendor.debug.fpipe.enable.fake"
 #define KEY_ENABLE_PURE_YUV "vendor.debug.fpipe.enable.pureyuv"
 #define KEY_USE_PER_FRAME_SETTING "vendor.debug.fpipe.frame.setting"
 #define KEY_DEBUG_DUMP "vendor.debug.fpipe.force.dump"
@@ -60,7 +60,7 @@
 #define SUPPORT_GPU_YV12 1
 #define SUPPORT_GPU_CROP 1
 #define SUPPORT_VENDOR_NODE 0
-#define SUPPORT_DUMMY_NODE 0
+#define SUPPORT_FAKE_NODE 0
 #define SUPPORT_PURE_YUV 0
 #define SUPPORT_FAKE_EIS_30 0
 #define SUPPORT_FAKE_WPE 0
@@ -100,7 +100,7 @@
 #define VAL_FORCE_BUF 0
 #define VAL_FORCE_VENDOR_V1 0
 #define VAL_FORCE_VENDOR_V2 0
-#define VAL_FORCE_DUMMY 0
+#define VAL_FORCE_FAKE 0
 #define VAL_DEBUG_DUMP 0
 #define VAL_DEBUG_DUMP_COUNT 1
 #define VAL_DEBUG_DUMP_BY_RECORDNO 0
@@ -125,7 +125,7 @@
 #define TRACE_GPU_NODE 0
 #define TRACE_VENDOR_NODE 0
 #define TRACE_VMDP_NODE 0
-#define TRACE_DUMMY_NODE 0
+#define TRACE_FAKE_NODE 0
 #define TRACE_NULL_NODE 0
 #define TRACE_RSC_NODE 0
 #define TRACE_WARP_NODE 0

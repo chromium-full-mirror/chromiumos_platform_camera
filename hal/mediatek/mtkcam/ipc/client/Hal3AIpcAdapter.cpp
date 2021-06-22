@@ -32,7 +32,7 @@
 #include <v4l2/mtk_p1_metabuf.h>
 #include <mtkcam/utils/hw/HwTransform.h>
 #include <mtkcam/utils/imgbuf/IImageBuffer.h>
-#include <mtkcam/utils/imgbuf/IDummyImageBufferHeap.h>
+#include <mtkcam/utils/imgbuf/IFakeImageBufferHeap.h>
 
 using NSCam::IImageBuffer;
 using NSCam::SensorCropWinInfo;
@@ -294,7 +294,7 @@ MINT32 Hal3AIpcAdapter::MetaSetFlatten(const std::vector<MetaSet_T*>& requestQ,
   int appRet = 0, halRet = 0;
 
   params->MagicNum = requestQ[0]->MagicNum;
-  params->Dummy = requestQ[0]->Dummy;
+  params->Fake = requestQ[0]->Fake;
   params->PreSetKey = requestQ[0]->PreSetKey;
   appRet = requestQ[0]->appMeta.flatten(&params->appMetaBuffer,
                                         sizeof(params->appMetaBuffer));
@@ -450,7 +450,7 @@ MINT32 Hal3AIpcAdapter::setIsp(MINT32 flowType,
   params->flowType = flowType;
   /* flatten inMeta to share memory*/
   params->control.MagicNum = control.MagicNum;
-  params->control.Dummy = control.Dummy;
+  params->control.Fake = control.Fake;
   params->control.PreSetKey = control.PreSetKey;
   ssize_t inAppSize = control.appMeta.flatten(&params->inAppMetaBuffer,
                                               sizeof(params->inAppMetaBuffer));
@@ -560,7 +560,7 @@ MINT32 Hal3AIpcAdapter::setIsp(MINT32 flowType,
     return DEAD_OBJECT;
   }
   pResult->MagicNum = params->metaSetResult.MagicNum;
-  pResult->Dummy = params->metaSetResult.Dummy;
+  pResult->Fake = params->metaSetResult.Fake;
   pResult->PreSetKey = params->metaSetResult.PreSetKey;
   ssize_t outAppSize = pResult->appMeta.unflatten(
       &params->outAppMetaBuffer, sizeof(params->outAppMetaBuffer));
@@ -1415,7 +1415,7 @@ MINT32 Hal3AIpcAdapter::get(MUINT32 frmId, MetaSet_T* result) {
 
   /* unflatten result3A to P1node*/
   result->MagicNum = params->result.MagicNum;
-  result->Dummy = params->result.Dummy;
+  result->Fake = params->result.Fake;
   result->PreSetKey = params->result.PreSetKey;
   ssize_t appSize = result->appMeta.unflatten(&params->appMetaBuffer,
                                               sizeof(params->appMetaBuffer));
@@ -1448,7 +1448,7 @@ MINT32 Hal3AIpcAdapter::getCur(MUINT32 frmId, MetaSet_T* result) {
 
   /* unflatten result3a here. */
   result->MagicNum = params->result.MagicNum;
-  result->Dummy = params->result.Dummy;
+  result->Fake = params->result.Fake;
   result->PreSetKey = params->result.PreSetKey;
   ssize_t appSize = result->appMeta.unflatten(&params->appMetaBuffer,
                                               sizeof(params->appMetaBuffer));

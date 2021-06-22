@@ -24,7 +24,7 @@
 
 #include "BufferPool.h"
 #include "IIBuffer.h"
-#include "NativeBufferWrapper.h"
+#include "BuiltinBufferWrapper.h"
 
 namespace NSCam {
 namespace NSCamFeature {
@@ -41,7 +41,7 @@ class GraphicBufferHandle : public BufferHandle<GraphicBufferHandle> {
 
  public:
   std::shared_ptr<IImageBuffer> mImageBuffer;
-  std::shared_ptr<NativeBufferWrapper> mGraphicBuffer;
+  std::shared_ptr<BuiltinBufferWrapper> mGraphicBuffer;
 
  private:
   enum Type { ALLOCATE, REGISTER };
@@ -58,13 +58,13 @@ class GraphicBufferPool : public BufferPool<GraphicBufferHandle> {
  public:
   class BufferInfo {
    public:
-    std::shared_ptr<NativeBufferWrapper> mGraphic;
+    std::shared_ptr<BuiltinBufferWrapper> mGraphic;
     std::shared_ptr<IImageBuffer> mImage;
     MUINT32 mSize;
 
     BufferInfo() {}
 
-    BufferInfo(std::shared_ptr<NativeBufferWrapper> graphic,
+    BufferInfo(std::shared_ptr<BuiltinBufferWrapper> graphic,
                std::shared_ptr<IImageBuffer> image,
                MUINT32 size)
         : mGraphic(graphic), mImage(image), mSize(size) {}
@@ -77,7 +77,7 @@ class GraphicBufferPool : public BufferPool<GraphicBufferHandle> {
       MUINT32 height,
       android_pixel_format_t format,
       MUINT32 usage,
-      NativeBufferWrapper::ColorSpace color = NativeBufferWrapper::NOT_SET);
+      BuiltinBufferWrapper::ColorSpace color = BuiltinBufferWrapper::NOT_SET);
   static MVOID destroy(std::shared_ptr<GraphicBufferPool>* pool);
   virtual ~GraphicBufferPool();
 
@@ -92,7 +92,7 @@ class GraphicBufferPool : public BufferPool<GraphicBufferHandle> {
              MUINT32 height,
              android_pixel_format_t format,
              MUINT32 usage,
-             NativeBufferWrapper::ColorSpace color);
+             BuiltinBufferWrapper::ColorSpace color);
   MVOID uninit();
   virtual std::shared_ptr<GraphicBufferHandle> doAllocate();
   virtual MBOOL doRelease(GraphicBufferHandle* handle);
@@ -102,7 +102,7 @@ class GraphicBufferPool : public BufferPool<GraphicBufferHandle> {
                    MUINT32 height,
                    android_pixel_format_t format,
                    MUINT32 usage,
-                   NativeBufferWrapper::ColorSpace color);
+                   BuiltinBufferWrapper::ColorSpace color);
   EImageFormat toImageFormat(android_pixel_format_t graphFormat);
 
  private:
@@ -119,7 +119,7 @@ class GraphicBufferPool : public BufferPool<GraphicBufferHandle> {
   MUINT32 mPlane;
   size_t mStride[3];
   size_t mBoundary[3];
-  NativeBufferWrapper::ColorSpace mColorSpace;
+  BuiltinBufferWrapper::ColorSpace mColorSpace;
   IImageBufferAllocator::ImgParam mAllocatorParam;
 };
 

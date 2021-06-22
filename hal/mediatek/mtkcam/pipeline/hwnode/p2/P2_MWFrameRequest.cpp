@@ -376,8 +376,8 @@ MVOID MWFrameRequest::updateP2FrameData() {
   data.mIsRecording = (appMode == MTK_FEATUREPIPE_VIDEO_RECORD) ||
                       (appMode == MTK_FEATUREPIPE_VIDEO_STOP);
 
-  // TODO(mtk): get Master ID from hal metadata
-  data.mMasterSensorID = mP2Pack.getConfigInfo().mMainSensorID;
+  // TODO(mtk): get Primary ID from hal metadata
+  data.mPrimarySensorID = mP2Pack.getConfigInfo().mMainSensorID;
 
   TRACE_S_FUNC_EXIT(mLog);
 }

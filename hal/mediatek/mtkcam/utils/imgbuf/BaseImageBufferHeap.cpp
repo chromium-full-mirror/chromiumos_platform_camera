@@ -133,7 +133,7 @@ BaseImageBufferHeap::onCreate(std::shared_ptr<BaseImageBufferHeap> heap,
                               size_t const bitstreamSize,
                               MBOOL const enableLog) {
   MBOOL ret = onCreate(imgSize, imgFormat, bitstreamSize, enableLog);
-  dummy(heap);
+  fake(heap);
   //
   return ret;
 }
@@ -845,6 +845,6 @@ BaseImageBufferHeap::updateImgInfo(MSize const& imgSize,
   return MTRUE;
 }
 
-void BaseImageBufferHeap::dummy(std::shared_ptr<BaseImageBufferHeap> p) {
+void BaseImageBufferHeap::fake(std::shared_ptr<BaseImageBufferHeap> p) {
   static std::shared_ptr<BaseImageBufferHeap> ptr = p;
 }

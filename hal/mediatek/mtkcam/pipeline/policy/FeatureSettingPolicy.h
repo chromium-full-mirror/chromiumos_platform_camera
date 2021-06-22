@@ -104,8 +104,8 @@ struct VhdrInfo {
   // is do capture
   MBOOL bIsDoCapture;
 
-  // dummy frame count
-  MINT32 DummyCount;
+  // fake frame count
+  MINT32 FakeCount;
 
   // Last frame vhdr mode
   MINT32 cfgVhdrMode;
@@ -126,7 +126,7 @@ struct VhdrInfo {
       : bVhdrDebugMode(MFALSE),
         bFirstConfig(MTRUE),
         bIsDoCapture(MFALSE),
-        DummyCount(0),
+        FakeCount(0),
         cfgVhdrMode(SENSOR_VHDR_MODE_NONE),
         lastAppHdrMode(HDRMode::OFF),
         curAppHdrMode(HDRMode::OFF),
@@ -238,7 +238,7 @@ class FeatureSettingPolicy : public IFeatureSettingPolicy {
       uint32_t sub1CamP1Dma,
       MINT64 featureCombination) -> bool;
 
-  virtual auto updateVhdrDummyFrames(RequestOutputParams* out,
+  virtual auto updateVhdrFakeFrames(RequestOutputParams* out,
                                      RequestInputParams const* in) -> bool;
 
   virtual auto isNeedIsoReconfig(HDRMode* apphdrMode, uint32_t recodingMode)
@@ -277,7 +277,7 @@ class FeatureSettingPolicy : public IFeatureSettingPolicy {
 
   virtual auto updatePluginSelection(bool isFeatureTrigger) -> bool;
 
-  virtual auto updateCaptureDummyFrames(
+  virtual auto updateCaptureFakeFrames(
       MINT64 combinedKeyFeature, /*eFeatureIndexMtk and eFeatureIndexCustomer*/
       RequestOutputParams* out,
       const ParsedStrategyInfo& parsedInfo,

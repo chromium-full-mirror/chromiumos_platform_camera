@@ -528,11 +528,11 @@ std::shared_ptr<StreamingProcessor::Payload> StreamingProcessor::makePayLoad(
     return nullptr;
   }
 
-  MUINT32 masterID = requests.front()->mP2Pack.getFrameData().mMasterSensorID;
+  MUINT32 primaryID = requests.front()->mP2Pack.getFrameData().mPrimarySensorID;
 
   auto s = std::dynamic_pointer_cast<StreamingProcessor>(shared_from_this());
   auto payload =
-      std::make_shared<StreamingProcessor::Payload>(s, log, masterID);
+      std::make_shared<StreamingProcessor::Payload>(s, log, primaryID);
 
   payload->addRequests(requests);
   payload->addRequestPacks(reqPacks);
@@ -639,9 +639,9 @@ IStreamingFeaturePipe::UsageHint StreamingProcessor::getFeatureUsageHint(
     case P2_VIDEO:
       pipeUsage.mMode = IStreamingFeaturePipe::USAGE_FULL;
       break;
-    case P2_DUMMY:
-      pipeUsage.mMode = IStreamingFeaturePipe::USAGE_DUMMY;
-      MY_S_LOGD(mLog, "Using Dummy streaming feature pipe");
+    case P2_FAKE:
+      pipeUsage.mMode = IStreamingFeaturePipe::USAGE_FAKE;
+      MY_S_LOGD(mLog, "Using Fake streaming feature pipe");
       break;
     case P2_UNKNOWN:
     default:
@@ -1152,8 +1152,8 @@ MVOID StreamingProcessor::PartialPayload::print() const {
 
 StreamingProcessor::Payload::Payload(std::shared_ptr<StreamingProcessor> parent,
                                      const ILog& mainLog,
-                                     MUINT32 masterSensorId)
-    : mParent(parent), mLog(mainLog), mMasterID(masterSensorId) {}
+                                     MUINT32 primarySensorId)
+    : mParent(parent), mLog(mainLog), mPrimaryID(primarySensorId) {}
 
 StreamingProcessor::Payload::~Payload() {
   if (mpFdData != nullptr) {
@@ -1214,12 +1214,12 @@ MBOOL StreamingProcessor::Payload::prepareFdData(const P2Info& p2Info,
 std::shared_ptr<P2Request> StreamingProcessor::Payload::getMainRequest() {
   // main request order: General Request-> Physic_1"
   std::shared_ptr<P2Request> request =
-      getPathRequest(ERequestPath::eGeneral, mMasterID);
+      getPathRequest(ERequestPath::eGeneral, mPrimaryID);
   if (request == nullptr) {
-    request = getPathRequest(ERequestPath::ePhysic, mMasterID);
+    request = getPathRequest(ERequestPath::ePhysic, mPrimaryID);
   }
   if (request == nullptr) {
-    request = getPathRequest(ERequestPath::eLarge, mMasterID);
+    request = getPathRequest(ERequestPath::eLarge, mPrimaryID);
   }
   MY_S_LOGE_IF(request == nullptr, mLog, "can not find main request !!");
   return request;
@@ -1253,7 +1253,7 @@ FeaturePipeParam* StreamingProcessor::Payload::getMainFeaturePipeParam() {
   if (mainRequest != nullptr) {
     std::shared_ptr<P2RequestPack> reqPack = getRequestPack(mainRequest);
     P2Util::SimpleIn* in =
-        (reqPack != nullptr) ? reqPack->getInput(mMasterID) : nullptr;
+        (reqPack != nullptr) ? reqPack->getInput(mPrimaryID) : nullptr;
     if (in != nullptr) {
       return &(in->mFeatureParam);
     }
@@ -1264,7 +1264,7 @@ FeaturePipeParam* StreamingProcessor::Payload::getMainFeaturePipeParam() {
 
 MVOID StreamingProcessor::Payload::print() const {
   TRACE_S_FUNC_ENTER(mLog);
-  MY_S_LOGD(mLog, "MasterID = %d", mMasterID);
+  MY_S_LOGD(mLog, "PrimaryID = %d", mPrimaryID);
   for (const auto& partialPayload : mPartialPayloads) {
     partialPayload->print();
   }

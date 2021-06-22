@@ -29,7 +29,7 @@
 
 #include <mtkcam/utils/hw/HwTransform.h>
 #include <mtkcam/utils/imgbuf/IImageBuffer.h>
-#include <mtkcam/utils/imgbuf/IDummyImageBufferHeap.h>
+#include <mtkcam/utils/imgbuf/IFakeImageBufferHeap.h>
 #include <mtkcam/v4l2/IPCIHalSensor.h>
 #include <mtkcam/v4l2/mtk_p1_metabuf.h>
 
@@ -59,7 +59,7 @@ int Hal3aIpcServerAdapter::hal3a_server_metaset_unflatten(
     MetaSet_T* metaSet,
     std::vector<MetaSet_T*>* requestQ) {
   metaSet->MagicNum = params->MagicNum;
-  metaSet->Dummy = params->Dummy;
+  metaSet->Fake = params->Fake;
   metaSet->PreSetKey = params->PreSetKey;
 
   ssize_t appSize = metaSet->appMeta.unflatten(&params->appMetaBuffer,
@@ -313,7 +313,7 @@ int Hal3aIpcServerAdapter::setIsp(void* addr, int dataSize) {
 
   /* unflatten inMeta here*/
   inMeta.MagicNum = params->control.MagicNum;
-  inMeta.Dummy = params->control.Dummy;
+  inMeta.Fake = params->control.Fake;
   inMeta.PreSetKey = params->control.PreSetKey;
   ssize_t inAppSize = inMeta.appMeta.unflatten(&params->inAppMetaBuffer,
                                                sizeof(params->inAppMetaBuffer));
@@ -431,7 +431,7 @@ int Hal3aIpcServerAdapter::setIsp(void* addr, int dataSize) {
 
   /* flatten outMeta here*/
   params->metaSetResult.MagicNum = outMeta.MagicNum;
-  params->metaSetResult.Dummy = outMeta.Dummy;
+  params->metaSetResult.Fake = outMeta.Fake;
   params->metaSetResult.PreSetKey = outMeta.PreSetKey;
   ssize_t outAppSize = outMeta.appMeta.flatten(
       &params->outAppMetaBuffer, sizeof(params->outAppMetaBuffer));
@@ -1467,7 +1467,7 @@ int Hal3aIpcServerAdapter::get(void* addr, int dataSize) {
 
   /* flatten result3A to share memory*/
   params->result.MagicNum = result3A.MagicNum;
-  params->result.Dummy = result3A.Dummy;
+  params->result.Fake = result3A.Fake;
   params->result.PreSetKey = result3A.PreSetKey;
   params->get_ret = ret;
   ssize_t appSize = result3A.appMeta.flatten(&params->appMetaBuffer,
@@ -1510,7 +1510,7 @@ int Hal3aIpcServerAdapter::getCur(void* addr, int dataSize) {
 
   /* flatten result3a here. */
   params->result.MagicNum = result3A.MagicNum;
-  params->result.Dummy = result3A.Dummy;
+  params->result.Fake = result3A.Fake;
   params->result.PreSetKey = result3A.PreSetKey;
   params->get_cur_ret = ret;
   ssize_t appSize = result3A.appMeta.flatten(&params->appMetaBuffer,

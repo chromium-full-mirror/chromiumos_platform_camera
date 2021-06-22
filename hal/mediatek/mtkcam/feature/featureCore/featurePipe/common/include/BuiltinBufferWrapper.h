@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef CAMERA_HAL_MEDIATEK_MTKCAM_FEATURE_FEATURECORE_FEATUREPIPE_COMMON_INCLUDE_NATIVEBUFFERWRAPPER_H_
-#define CAMERA_HAL_MEDIATEK_MTKCAM_FEATURE_FEATURECORE_FEATUREPIPE_COMMON_INCLUDE_NATIVEBUFFERWRAPPER_H_
+#ifndef CAMERA_HAL_MEDIATEK_MTKCAM_FEATURE_FEATURECORE_FEATUREPIPE_COMMON_INCLUDE_BUILTINBUFFERWRAPPER_H_
+#define CAMERA_HAL_MEDIATEK_MTKCAM_FEATURE_FEATURECORE_FEATUREPIPE_COMMON_INCLUDE_BUILTINBUFFERWRAPPER_H_
 
 #define SUPPORT_AHARDWAREBUFFER 1
 #include <memory>
@@ -36,14 +36,12 @@ namespace NSFeaturePipe {
 #if SUPPORT_AHARDWAREBUFFER
 typedef AHardwareBuffer* NB_PTR;
 typedef NB_PTR NB_SPTR;
-typedef AHardwareBuffer NativeBuffer;
 #else
 typedef std::shared_ptr<android::GraphicBuffer> NB_PTR;
 typedef NB_PTR* NB_SPTR;
-typedef android::GraphicBuffer NativeBuffer;
 #endif  // SUPPORT_AHARDWAREBUFFER
 
-class NativeBufferWrapper {
+class BuiltinBufferWrapper {
  public:
   enum ColorSpace {
     NOT_SET,
@@ -59,14 +57,14 @@ class NativeBufferWrapper {
   static const MUINT64 USAGE_HW_RENDER;
   static const MUINT64 USAGE_SW;
 
-  explicit NativeBufferWrapper(NB_PTR buffer,
+  explicit BuiltinBufferWrapper(NB_PTR buffer,
                                const std::string& name = "Unknown");
-  NativeBufferWrapper(MUINT32 width,
+  BuiltinBufferWrapper(MUINT32 width,
                       MUINT32 height,
                       android_pixel_format_t format,
                       MUINT64 usage,
                       const std::string& name = "Unknown");
-  virtual ~NativeBufferWrapper();
+  virtual ~BuiltinBufferWrapper();
 
  public:
   buffer_handle_t getHandle();
@@ -76,7 +74,7 @@ class NativeBufferWrapper {
   MBOOL unlock();
   MBOOL setGrallocExtraParam(ColorSpace color);
 #if SUPPORT_AHARDWAREBUFFER
-  MUINT32 toNativeFormat(android_pixel_format_t format);
+  MUINT32 toBuiltinFormat(android_pixel_format_t format);
 #endif
   MUINT32 toGrallocExtraColor(ColorSpace color);
 
@@ -91,12 +89,7 @@ class NativeBufferWrapper {
   NB_PTR mBuffer;
 };
 
-NB_PTR getNativeBuffer(NB_SPTR buffer);
-NativeBuffer* getNativeBufferPtr(NB_SPTR buffer);
-MBOOL lockNativeBuffer(NB_SPTR buffer, MUINT64 usage, void** vaddr);
-MBOOL unlockNativeBuffer(NB_SPTR buffer);
-
 };      // namespace NSFeaturePipe
 };      // namespace NSCamFeature
 };      // namespace NSCam
-#endif  // CAMERA_HAL_MEDIATEK_MTKCAM_FEATURE_FEATURECORE_FEATUREPIPE_COMMON_INCLUDE_NATIVEBUFFERWRAPPER_H_
+#endif  // CAMERA_HAL_MEDIATEK_MTKCAM_FEATURE_FEATURECORE_FEATUREPIPE_COMMON_INCLUDE_BUILTINBUFFERWRAPPER_H_

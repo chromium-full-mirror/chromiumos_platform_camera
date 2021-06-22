@@ -178,7 +178,7 @@ class StreamingProcessor
    public:
     Payload(std::shared_ptr<StreamingProcessor> parent,
             const ILog& mainLog,
-            MUINT32 masterSensorId);
+            MUINT32 primarySensorId);
     MVOID addRequests(const vector<std::shared_ptr<P2Request>>& requests);
     MVOID addRequestPacks(
         const vector<std::shared_ptr<P2RequestPack>>& reqPacks);
@@ -201,7 +201,7 @@ class StreamingProcessor
    public:
     std::shared_ptr<StreamingProcessor> mParent;
     const ILog mLog;
-    const MUINT32 mMasterID = 0;
+    const MUINT32 mPrimaryID = 0;
 
     // 1 PartialPayload for 1 P2RequestPack
     vector<std::shared_ptr<PartialPayload>> mPartialPayloads;

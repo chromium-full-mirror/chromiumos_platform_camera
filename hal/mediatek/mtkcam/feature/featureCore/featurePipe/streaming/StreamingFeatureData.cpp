@@ -51,10 +51,10 @@ StreamingFeatureRequest::StreamingFeatureRequest(
       mVarMap(mExtParam.mVarMap),
       mP2Pack(mExtParam.mP2Pack),
       mSFPIOManager(mExtParam.mSFPIOManager),
-      mMasterID(pipeUsage.getSensorIndex()),
+      mPrimaryID(pipeUsage.getSensorIndex()),
       mIORequestMap(
-          {{mMasterID, IORequest<StreamingFeatureNode, StreamingReqInfo>()}}),
-      mMasterIOReq(mIORequestMap[mMasterID]),
+          {{mPrimaryID, IORequest<StreamingFeatureNode, StreamingReqInfo>()}}),
+      mPrimaryIOReq(mIORequestMap[mPrimaryID]),
       mFeatureMask(extParam.mFeatureMask),
       mRequestNo(requestNo),
       mRecordNo(recordNo),
@@ -62,7 +62,7 @@ StreamingFeatureRequest::StreamingFeatureRequest(
       mAppMode(IStreamingFeaturePipe::APP_PHOTO_PREVIEW),
       mDebugDump(0),
       mP2DumpType(mExtParam.mDumpType),
-      mSlaveParamMap(mExtParam.mSlaveParamMap),
+      mSecondaryParamMap(mExtParam.mSecondaryParamMap),
       mDisplayFPSCounter(nullptr),
       mFrameFPSCounter(nullptr),
       mResult(MTRUE),
@@ -130,15 +130,15 @@ MBOOL StreamingFeatureRequest::updateSFPIO() {
 
 MVOID StreamingFeatureRequest::calSizeInfo() {
   SrcCropInfo cInfo;
-  calNonLargeSrcCrop(&cInfo, mMasterID);
-  mNonLargeSrcCrops[mMasterID] = cInfo;
+  calNonLargeSrcCrop(&cInfo, mPrimaryID);
+  mNonLargeSrcCrops[mPrimaryID] = cInfo;
 
   mFullImgSize = cInfo.mSrcCrop.s;
   mIs4K2K = NSFeaturePipe::is4K2K(mFullImgSize);
 
-  if (mSlaveID != INVALID_SENSOR) {
-    calNonLargeSrcCrop(&cInfo, mSlaveID);
-    mNonLargeSrcCrops[mSlaveID] = cInfo;
+  if (mSecondaryID != INVALID_SENSOR) {
+    calNonLargeSrcCrop(&cInfo, mSecondaryID);
+    mNonLargeSrcCrops[mSecondaryID] = cInfo;
   }
 }
 
@@ -155,14 +155,14 @@ MVOID StreamingFeatureRequest::createIOMapByQParams() {
   ioMap.mPathType = PATH_GENERAL;
 
   if (mvFrameParams.size() > 0) {
-    parseIO(mMasterID, mvFrameParams[0], mVarMap, &ioMap, &mSFPIOManager);
+    parseIO(mPrimaryID, mvFrameParams[0], mVarMap, &ioMap, &mSFPIOManager);
   }
-  // Add slave input
-  if ((mSlaveID != INVALID_SENSOR && hasSlave(mSlaveID))) {
-    FeaturePipeParam& fparam_slave = getSlave(mSlaveID);
-    if (fparam_slave.mQParams.mvFrameParams.size() > 0) {
-      parseIO(mSlaveID, fparam_slave.mQParams.mvFrameParams[0],
-              fparam_slave.mVarMap, &ioMap, &mSFPIOManager);
+  // Add secondary input
+  if ((mSecondaryID != INVALID_SENSOR && hasSecondary(mSecondaryID))) {
+    FeaturePipeParam& fparam_secondary = getSecondary(mSecondaryID);
+    if (fparam_secondary.mQParams.mvFrameParams.size() > 0) {
+      parseIO(mSecondaryID, fparam_secondary.mQParams.mvFrameParams[0],
+              fparam_secondary.mVarMap, &ioMap, &mSFPIOManager);
     }
   }
   ioMap.mHalOut =
@@ -192,9 +192,9 @@ MBOOL StreamingFeatureRequest::doExtCallback(FeaturePipeParam::MSG_TYPE msg) {
   return ret;
 }
 
-MSize StreamingFeatureRequest::getMasterInputSize() {
+MSize StreamingFeatureRequest::getPrimaryInputSize() {
   MSize inputSize = MSize(0, 0);
-  const IImageBuffer* buffer = getMasterInputBuffer();
+  const IImageBuffer* buffer = getPrimaryInputBuffer();
   if (buffer) {
     inputSize = buffer->getImgSize();
   }
@@ -246,19 +246,19 @@ MVOID StreamingFeatureRequest::calNonLargeSrcCrop(SrcCropInfo* info,
       info->mRRZOSize.w, info->mRRZOSize.h);
 }
 
-IImageBuffer* StreamingFeatureRequest::getMasterInputBuffer() {
+IImageBuffer* StreamingFeatureRequest::getPrimaryInputBuffer() {
   IImageBuffer* buffer = nullptr;
   const SFPIOMap& generalIO = mSFPIOManager.getFirstGeneralIO();
-  const SFPSensorInput& masterIn = mSFPIOManager.getInput(mMasterID);
+  const SFPSensorInput& primaryIn = mSFPIOManager.getInput(mPrimaryID);
   SFPSensorTuning tuning;
 
-  if (generalIO.isValid() && generalIO.hasTuning(mMasterID)) {
-    tuning = generalIO.getTuning(mMasterID);
-  } else if (mSFPIOManager.hasPhysicalIO(mMasterID)) {
-    tuning = mSFPIOManager.getPhysicalIO(mMasterID).getTuning(mMasterID);
+  if (generalIO.isValid() && generalIO.hasTuning(mPrimaryID)) {
+    tuning = generalIO.getTuning(mPrimaryID);
+  } else if (mSFPIOManager.hasPhysicalIO(mPrimaryID)) {
+    tuning = mSFPIOManager.getPhysicalIO(mPrimaryID).getTuning(mPrimaryID);
   }
-  buffer = tuning.isRRZOin() ? masterIn.mRRZO
-                             : tuning.isIMGOin() ? masterIn.mIMGO : NULL;
+  buffer = tuning.isRRZOin() ? primaryIn.mRRZO
+                             : tuning.isIMGOin() ? primaryIn.mIMGO : NULL;
   return buffer;
 }
 
@@ -369,17 +369,17 @@ std::shared_ptr<IIBuffer> StreamingFeatureRequest::requestNextFullImg(
 
 MBOOL StreamingFeatureRequest::needDisplayOutput(
     std::shared_ptr<StreamingFeatureNode> node) {
-  return mMasterIOReq.needPreview(node);
+  return mPrimaryIOReq.needPreview(node);
 }
 
 MBOOL StreamingFeatureRequest::needRecordOutput(
     std::shared_ptr<StreamingFeatureNode> node) {
-  return mMasterIOReq.needRecord(node);
+  return mPrimaryIOReq.needRecord(node);
 }
 
 MBOOL StreamingFeatureRequest::needExtraOutput(
     std::shared_ptr<StreamingFeatureNode> node) {
-  return mMasterIOReq.needPreviewCallback(node);
+  return mPrimaryIOReq.needPreviewCallback(node);
 }
 
 MBOOL StreamingFeatureRequest::needFullImg(
@@ -425,7 +425,7 @@ MBOOL StreamingFeatureRequest::hasLargeOutput(MUINT32 sensorID) const {
 }
 SrcCropInfo StreamingFeatureRequest::getSrcCropInfo(MUINT32 sensorID) {
   if (mNonLargeSrcCrops.count(sensorID) == 0) {
-    MY_LOGW("sID(%d) srcCropInfo not exist!, create dummy.", sensorID);
+    MY_LOGW("sID(%d) srcCropInfo not exist!, create fake.", sensorID);
     mNonLargeSrcCrops[sensorID] = SrcCropInfo();
   }
   return mNonLargeSrcCrops.at(sensorID);
@@ -463,18 +463,18 @@ MBOOL StreamingFeatureRequest::isForceIMG3O() const {
   return mForceIMG3O;
 }
 
-MBOOL StreamingFeatureRequest::hasSlave(MUINT32 sensorID) const {
-  return (mSlaveParamMap.count(sensorID) != 0);
+MBOOL StreamingFeatureRequest::hasSecondary(MUINT32 sensorID) const {
+  return (mSecondaryParamMap.count(sensorID) != 0);
 }
 
-FeaturePipeParam& StreamingFeatureRequest::getSlave(MUINT32 sensorID) {
-  if (hasSlave(sensorID)) {
-    return mSlaveParamMap.at(sensorID);
+FeaturePipeParam& StreamingFeatureRequest::getSecondary(MUINT32 sensorID) {
+  if (hasSecondary(sensorID)) {
+    return mSecondaryParamMap.at(sensorID);
   } else {
-    MY_LOGE("sensor(%d) has no slave FeaturePipeParam !! create Dummy",
+    MY_LOGE("sensor(%d) has no secondary FeaturePipeParam !! create Fake",
             sensorID);
-    mSlaveParamMap[sensorID] = FeaturePipeParam();
-    return mSlaveParamMap.at(sensorID);
+    mSecondaryParamMap[sensorID] = FeaturePipeParam();
+    return mSecondaryParamMap.at(sensorID);
   }
 }
 
@@ -484,17 +484,17 @@ const SFPSensorInput& StreamingFeatureRequest::getSensorInput(
 }
 
 VarMap& StreamingFeatureRequest::getSensorVarMap(MUINT32 sensorID) {
-  if (sensorID == mMasterID) {
+  if (sensorID == mPrimaryID) {
     return mVarMap;
   } else {
-    return mSlaveParamMap[sensorID].mVarMap;
+    return mSecondaryParamMap[sensorID].mVarMap;
   }
 }
 
-MBOOL StreamingFeatureRequest::getMasterFrameBasic(
+MBOOL StreamingFeatureRequest::getPrimaryFrameBasic(
     NSCam::NSIoPipe::FrameParams* output) {
   output->UniqueKey = mRequestNo;
-  output->mSensorIdx = getMasterID();
+  output->mSensorIdx = getPrimaryID();
   output->mStreamTag = NSCam::v4l2::ENormalStreamTag_Normal;
   if (mPipeUsage.isQParamIOValid()) {
     if (mQParams.mvFrameParams.size()) {
@@ -518,7 +518,7 @@ MBOOL StreamingFeatureRequest::getMasterFrameBasic(
 }
 
 // Legacy code for Hal1, w/o dynamic tuning & P2Pack
-MBOOL StreamingFeatureRequest::getMasterFrameTuning(
+MBOOL StreamingFeatureRequest::getPrimaryFrameTuning(
     NSCam::NSIoPipe::FrameParams* output) {
   if (mQParams.mvFrameParams.size()) {
     output->mTuningData = mQParams.mvFrameParams.at(0).mTuningData;
@@ -528,7 +528,7 @@ MBOOL StreamingFeatureRequest::getMasterFrameTuning(
   return MFALSE;
 }
 
-MBOOL StreamingFeatureRequest::getMasterFrameInput(
+MBOOL StreamingFeatureRequest::getPrimaryFrameInput(
     NSCam::NSIoPipe::FrameParams* output) {
   if (mQParams.mvFrameParams.size()) {
     output->mvIn = mQParams.mvFrameParams.at(0).mvIn;
@@ -573,8 +573,8 @@ MBOOL StreamingFeatureRequest::is4K2K() const {
   return mIs4K2K;
 }
 
-MUINT32 StreamingFeatureRequest::getMasterID() const {
-  return mMasterID;
+MUINT32 StreamingFeatureRequest::getPrimaryID() const {
+  return mPrimaryID;
 }
 
 MUINT32 StreamingFeatureRequest::needTPILog() const {
@@ -593,8 +593,8 @@ MUINT32 StreamingFeatureRequest::needTPIBypass() const {
   return mTPIBypass;
 }
 
-MBOOL StreamingFeatureRequest::isSlaveParamValid() const {
-  return mSlaveID != INVALID_SENSOR && hasSlave(mSlaveID);
+MBOOL StreamingFeatureRequest::isSecondaryParamValid() const {
+  return mSecondaryID != INVALID_SENSOR && hasSecondary(mSecondaryID);
 }
 MBOOL StreamingFeatureRequest::isP2ACRZMode() const {
   return mIsP2ACRZMode;
@@ -749,10 +749,10 @@ MBOOL BasicImg::syncCache(NSCam::eCacheCtrl ctrl) {
 
 DualBasicImg::DualBasicImg() {}
 
-DualBasicImg::DualBasicImg(const BasicImg& master) : mMaster(master) {}
+DualBasicImg::DualBasicImg(const BasicImg& primary) : mPrimary(primary) {}
 
-DualBasicImg::DualBasicImg(const BasicImg& master, const BasicImg& slave)
-    : mMaster(master), mSlave(slave) {}
+DualBasicImg::DualBasicImg(const BasicImg& primary, const BasicImg& secondary)
+    : mPrimary(primary), mSecondary(secondary) {}
 
 HelpReq::HelpReq() {}
 

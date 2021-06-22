@@ -14,24 +14,24 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "MtkCam/DummyHeap"
+#define LOG_TAG "MtkCam/FakeHeap"
 
 #include "BaseImageBufferHeap.h"
 #include <atomic>
 #include <memory>
-#include <mtkcam/utils/imgbuf/IDummyImageBufferHeap.h>
+#include <mtkcam/utils/imgbuf/IFakeImageBufferHeap.h>
 
-using NSCam::IDummyImageBufferHeap;
-using NSCam::PortBufInfo_dummy;
+using NSCam::IFakeImageBufferHeap;
+using NSCam::PortBufInfo_fake;
 using NSCam::NSImageBufferHeap::BaseImageBufferHeap;
 /******************************************************************************
- *  Image Buffer Heap (Dummy).
+ *  Image Buffer Heap (Fake).
  ******************************************************************************/
 namespace {
-class DummyImageBufferHeap
-    : public IDummyImageBufferHeap,
+class FakeImageBufferHeap
+    : public IFakeImageBufferHeap,
       public NSCam::NSImageBufferHeap::BaseImageBufferHeap {
-  friend class IDummyImageBufferHeap;
+  friend class IFakeImageBufferHeap;
 
   //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   //  IImageBufferHeap Interface.
@@ -64,10 +64,10 @@ class DummyImageBufferHeap
   //  Instantiation.
   //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  public:
-  virtual ~DummyImageBufferHeap() {}
-  DummyImageBufferHeap(char const* szCallerName,
+  virtual ~FakeImageBufferHeap() {}
+  FakeImageBufferHeap(char const* szCallerName,
                        ImgParam_t const& rImgParam,
-                       PortBufInfo_dummy const& rPortBufInfo);
+                       PortBufInfo_fake const& rPortBufInfo);
 
   //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   //  Data Members.
@@ -76,7 +76,7 @@ class DummyImageBufferHeap
   size_t mBufStridesInBytesToAlloc[3];  // buffer strides in bytes.
 
  protected:  ////                    Info of Allocated Result.
-  PortBufInfo_dummy mPortBufInfo;  //
+  PortBufInfo_fake mPortBufInfo;  //
   HeapInfoVect_t mvHeapInfo;       //
   BufInfoVect_t mvBufInfo;         //
 };
@@ -91,13 +91,13 @@ class DummyImageBufferHeap
 /******************************************************************************
  *
  ******************************************************************************/
-std::shared_ptr<IDummyImageBufferHeap> IDummyImageBufferHeap::create(
+std::shared_ptr<IFakeImageBufferHeap> IFakeImageBufferHeap::create(
     char const* szCallerName,
     ImgParam_t const& rImgParam,
-    PortBufInfo_dummy const& rPortBufInfo,
+    PortBufInfo_fake const& rPortBufInfo,
     MBOOL const enableLog) {
-  std::shared_ptr<DummyImageBufferHeap> pHeap(
-      new DummyImageBufferHeap(szCallerName, rImgParam, rPortBufInfo));
+  std::shared_ptr<FakeImageBufferHeap> pHeap(
+      new FakeImageBufferHeap(szCallerName, rImgParam, rPortBufInfo));
 
   if (!pHeap) {
     CAM_LOGE("Fail to new");
@@ -116,17 +116,17 @@ std::shared_ptr<IDummyImageBufferHeap> IDummyImageBufferHeap::create(
 /******************************************************************************
  *
  ******************************************************************************/
-DummyImageBufferHeap::DummyImageBufferHeap(
+FakeImageBufferHeap::FakeImageBufferHeap(
     char const* szCallerName,
     ImgParam_t const& rImgParam,
-    PortBufInfo_dummy const& rPortBufInfo)
+    PortBufInfo_fake const& rPortBufInfo)
     : BaseImageBufferHeap(szCallerName), mPortBufInfo(rPortBufInfo) {
   ::memcpy(mBufStridesInBytesToAlloc, rImgParam.bufStridesInBytes,
            sizeof(mBufStridesInBytesToAlloc));
 }
 
 MBOOL
-DummyImageBufferHeap::syncCache(NSCam::eCacheCtrl const /* ctrl */) {
+FakeImageBufferHeap::syncCache(NSCam::eCacheCtrl const /* ctrl */) {
   std::atomic_thread_fence(std::memory_order_seq_cst);
   return MTRUE;
 }
@@ -135,7 +135,7 @@ DummyImageBufferHeap::syncCache(NSCam::eCacheCtrl const /* ctrl */) {
  *
  ******************************************************************************/
 MBOOL
-DummyImageBufferHeap::impInit(BufInfoVect_t const& rvBufInfo) {
+FakeImageBufferHeap::impInit(BufInfoVect_t const& rvBufInfo) {
   MBOOL ret = MFALSE;
   MUINT32 planesSizeInBytes = 0;  // for calculating n-plane va
   //
@@ -185,7 +185,7 @@ lbExit:
  *
  ******************************************************************************/
 MBOOL
-DummyImageBufferHeap::impUninit() {
+FakeImageBufferHeap::impUninit() {
   return MTRUE;
 }
 
@@ -193,7 +193,7 @@ DummyImageBufferHeap::impUninit() {
  *
  ******************************************************************************/
 MBOOL
-DummyImageBufferHeap::impLockBuf(char const* /*szCallerName*/,
+FakeImageBufferHeap::impLockBuf(char const* /*szCallerName*/,
                                  MINT usage,
                                  BufInfoVect_t const& rvBufInfo) {
   //
@@ -217,7 +217,7 @@ DummyImageBufferHeap::impLockBuf(char const* /*szCallerName*/,
  *
  ******************************************************************************/
 MBOOL
-DummyImageBufferHeap::impUnlockBuf(char const* szCallerName,
+FakeImageBufferHeap::impUnlockBuf(char const* szCallerName,
                                    MINT usage,
                                    BufInfoVect_t const& rvBufInfo) {
   //

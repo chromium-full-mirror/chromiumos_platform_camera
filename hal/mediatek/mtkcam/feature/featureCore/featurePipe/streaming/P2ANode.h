@@ -52,18 +52,18 @@ class P2AEnqueData {
   BasicImg mFullImg;
   ImgBuffer mPrevFullImg;  // VIPI use
   BasicImg mNextFullImg;
-  BasicImg mSlaveFullImg;
-  BasicImg mSlaveNextFullImg;
+  BasicImg mSecondaryFullImg;
+  BasicImg mSecondaryNextFullImg;
   FMResult mFMResult;
   ImgBuffer mFE1Img;
   ImgBuffer mFE2Img;
   ImgBuffer mFE3Img;
   ImgBuffer mPureImg;
-  ImgBuffer mSlavePureImg;
+  ImgBuffer mSecondaryPureImg;
 
   FovP2AResult mFovP2AResult;
   std::vector<SFPOutput>
-      mRemainingOutputs;  // Master may Need additional MDP to generate output
+      mRemainingOutputs;  // Primary may Need additional MDP to generate output
   /* If feature pipe run dynamic tuning, P2ANode need prepare tuning data by
    * itself */
   std::vector<std::shared_ptr<IImageBuffer>> tuningBufs;
@@ -72,37 +72,37 @@ class P2AEnqueData {
 
 class P2ATuningIndex {
  public:
-  MINT32 mGenMaster = -1;
-  MINT32 mGenSlave = -1;
-  MINT32 mPhyMaster = -1;
-  MINT32 mPhySlave = -1;
-  MINT32 mLargeMaster = -1;
-  MINT32 mLargeSlave = -1;
-  MINT32 mPureMaster = -1;
-  MINT32 mPureSlave = -1;
+  MINT32 mGenPrimary = -1;
+  MINT32 mGenSecondary = -1;
+  MINT32 mPhyPrimary = -1;
+  MINT32 mPhySecondary = -1;
+  MINT32 mLargePrimary = -1;
+  MINT32 mLargeSecondary = -1;
+  MINT32 mPurePrimary = -1;
+  MINT32 mPureSecondary = -1;
 
-  MBOOL isGenMasterValid() const { return mGenMaster >= 0; }
-  MBOOL isGenSlaveValid() const { return mGenSlave >= 0; }
-  MBOOL isPhyMasterValid() const { return mPhyMaster >= 0; }
-  MBOOL isPhySlaveValid() const { return mPhySlave >= 0; }
-  MBOOL isLargeMasterValid() const { return mLargeMaster >= 0; }
-  MBOOL isLargeSlaveValid() const { return mLargeSlave >= 0; }
-  MBOOL isPureMasterValid() const { return mPureMaster >= 0; }
-  MBOOL isPureSlaveValid() const { return mPureSlave >= 0; }
+  MBOOL isGenPrimaryValid() const { return mGenPrimary >= 0; }
+  MBOOL isGenSecondaryValid() const { return mGenSecondary >= 0; }
+  MBOOL isPhyPrimaryValid() const { return mPhyPrimary >= 0; }
+  MBOOL isPhySecondaryValid() const { return mPhySecondary >= 0; }
+  MBOOL isLargePrimaryValid() const { return mLargePrimary >= 0; }
+  MBOOL isLargeSecondaryValid() const { return mLargeSecondary >= 0; }
+  MBOOL isPurePrimaryValid() const { return mPurePrimary >= 0; }
+  MBOOL isPureSecondaryValid() const { return mPureSecondary >= 0; }
 
-  MBOOL isMasterMainValid() const {
-    return isGenMasterValid() || isPureMasterValid() || isPhyMasterValid();
+  MBOOL isPrimaryMainValid() const {
+    return isGenPrimaryValid() || isPurePrimaryValid() || isPhyPrimaryValid();
   }
-  MUINT32 getMasterMainIndex() const {
-    return isGenMasterValid() ? mGenMaster
-                              : isPureMasterValid() ? mPureMaster : mPhyMaster;
+  MUINT32 getPrimaryMainIndex() const {
+    return isGenPrimaryValid() ? mGenPrimary
+                              : isPurePrimaryValid() ? mPurePrimary : mPhyPrimary;
   }
-  MBOOL isSlaveMainValid() const {
-    return isGenSlaveValid() || isPureSlaveValid() || isPhySlaveValid();
+  MBOOL isSecondaryMainValid() const {
+    return isGenSecondaryValid() || isPureSecondaryValid() || isPhySecondaryValid();
   }
-  MUINT32 getSlaveMainIndex() const {
-    return isGenSlaveValid() ? mGenSlave
-                             : isPureSlaveValid() ? mPureSlave : mPhySlave;
+  MUINT32 getSecondaryMainIndex() const {
+    return isGenSecondaryValid() ? mGenSecondary
+                             : isPureSecondaryValid() ? mPureSecondary : mPhySecondary;
   }
 };
 
@@ -150,11 +150,11 @@ class P2ANode : public StreamingFeatureNode,
                         const RequestPtr& request,
                         P2AEnqueData* data,
                         const P2ATuningIndex& tuningIndex);
-  MBOOL prepareMasterMdpOuts(QParams* params,
+  MBOOL preparePrimaryMdpOuts(QParams* params,
                              const RequestPtr& request,
                              P2AEnqueData* data,
                              const P2ATuningIndex& tuningIndex);
-  MBOOL prepareSlaveOuts(QParams* params,
+  MBOOL prepareSecondaryOuts(QParams* params,
                          const RequestPtr& request,
                          P2AEnqueData* data,
                          const P2ATuningIndex& tuningIndex);

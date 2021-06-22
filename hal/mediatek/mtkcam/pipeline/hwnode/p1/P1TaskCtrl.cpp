@@ -87,7 +87,7 @@ P1NodeAct::P1NodeAct(P1NodeImp* pP1NodeImp, MINT32 id)
     mLogLevelI = mpP1NodeImp->mLogLevelI;
   }
   metaSet.MagicNum = magicNum;
-  metaSet.Dummy = MFALSE;
+  metaSet.Fake = MFALSE;
   MY_LOGD("[ActTrace] NEW-ACT:  %d", queId);
 }
 
@@ -140,7 +140,7 @@ P1NodeAct::getType() const {
       break;
     case REQ_TYPE_INITIAL:
     case REQ_TYPE_PADDING:
-    case REQ_TYPE_DUMMY:
+    case REQ_TYPE_FAKE:
       type = ACT_TYPE_INTERNAL;
       break;
     case REQ_TYPE_REDO:
@@ -1157,17 +1157,17 @@ P1NodeAct::updateMetaSet() {
     return;
   }
   MINT32 num = magicNum;
-  MUINT8 dummy = (type == ACT_TYPE_NORMAL) ? (0) : (1);
+  MUINT8 fake = (type == ACT_TYPE_NORMAL) ? (0) : (1);
   //
   metaSet.MagicNum = num;
   IMetadata::IEntry entry_num(MTK_P1NODE_PROCESSOR_MAGICNUM);
   entry_num.push_back(num, Type2Type<MINT32>());
   metaSet.halMeta.update(MTK_P1NODE_PROCESSOR_MAGICNUM, entry_num);
   //
-  metaSet.Dummy = dummy;
-  IMetadata::IEntry entry_dummy(MTK_HAL_REQUEST_DUMMY);
-  entry_dummy.push_back(dummy, Type2Type<MUINT8>());
-  metaSet.halMeta.update(MTK_HAL_REQUEST_DUMMY, entry_dummy);
+  metaSet.Fake = fake;
+  IMetadata::IEntry entry_fake(MTK_HAL_REQUEST_FAKE);
+  entry_fake.push_back(fake, Type2Type<MUINT8>());
+  metaSet.halMeta.update(MTK_HAL_REQUEST_FAKE, entry_fake);
   //
   return;
 }

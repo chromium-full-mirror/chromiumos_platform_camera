@@ -67,10 +67,10 @@ struct RequestInputParams {
    **************************************************************************/
 
   /**
-   * true indicates it intents to create "dummy frame", which means this reqeust
+   * true indicates it intents to create "fake frame", which means this reqeust
    * will enque to pass1 driver without any target result images.
    */
-  bool isDummyFrame = false;
+  bool isFakeFrame = false;
 
   /**
    * The following info usually results from the P2Node decision policy.

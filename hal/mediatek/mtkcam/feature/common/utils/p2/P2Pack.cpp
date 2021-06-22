@@ -44,7 +44,7 @@ void P2InfoObj::addSensorInfo(const ILog& log, unsigned sensorID) {
 
 const P2SensorInfo& P2InfoObj::getSensorInfo(unsigned sensorID) const {
   auto it = mSensorInfoMap.find(sensorID);
-  return (it != mSensorInfoMap.end()) ? it->second : P2SensorInfo::Dummy;
+  return (it != mSensorInfoMap.end()) ? it->second : P2SensorInfo::Fake;
 }
 
 P2Info::P2Info() {}
@@ -94,7 +94,7 @@ const P2FrameData& P2DataObj::getFrameData() const {
 
 const P2SensorData& P2DataObj::getSensorData(unsigned sensorID) const {
   auto it = mSensorDataMap.find(sensorID);
-  return (it != mSensorDataMap.end()) ? it->second : P2SensorData::Dummy;
+  return (it != mSensorDataMap.end()) ? it->second : P2SensorData::Fake;
 }
 
 P2Data::P2Data() {}

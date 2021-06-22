@@ -57,7 +57,7 @@ class StreamingFeaturePipeUsage {
   MBOOL isDynamicTuning() const;
   MBOOL isQParamIOValid() const;
 
-  MBOOL supportDummy() const;
+  MBOOL supportFake() const;
 
   std::vector<MUINT32> getAllSensorIDs() const;
   MUINT32 getMode() const;
@@ -116,7 +116,7 @@ class StreamingFeaturePipeUsage {
   MSize mVendorCusSize;
   MBOOL mEnableVendorCusSize = MFALSE;
   MBOOL mEnableVendorCusFormat = MFALSE;
-  MBOOL mEnableDummy = MFALSE;
+  MBOOL mEnableFake = MFALSE;
   MUINT32 m3DNRMode = 0;
   MUINT32 mSensorIndex = INVALID_SENSOR;
   IStreamingFeaturePipe::OutConfig mOutCfg;
