@@ -328,11 +328,16 @@ HalSensorList::searchSensors() {
     querySensorInfo((IMGSENSOR_SENSOR_IDX)i);
     // fill in metadata
     buildSensorMetadata((IMGSENSOR_SENSOR_IDX)i);
-    addAndInitSensorEnumInfo_Locked(
-        (IMGSENSOR_SENSOR_IDX)i,
-        mapToSensorType(
-            (IMAGE_SENSOR_TYPE)getSensorType((IMGSENSOR_SENSOR_IDX)i)),
-        reinterpret_cast<const char*>(getSensorName((IMGSENSOR_SENSOR_IDX)i)));
+   if (getSensorName((IMGSENSOR_SENSOR_IDX)i)) {
+      addAndInitSensorEnumInfo_Locked(
+         (IMGSENSOR_SENSOR_IDX)i,
+         mapToSensorType(
+         (IMAGE_SENSOR_TYPE)getSensorType((IMGSENSOR_SENSOR_IDX)i)),
+         reinterpret_cast<const char*>(getSensorName((IMGSENSOR_SENSOR_IDX)i)));
+    } else {
+        CAM_LOGE("Can't get sensor name, something wrong.");
+        return 0;
+    }
   }
 
   // If support SANDBOX, we have to saves SensorStaticInfo to IIPCHalSensorList
