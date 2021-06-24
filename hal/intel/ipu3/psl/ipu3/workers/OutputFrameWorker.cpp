@@ -98,15 +98,15 @@ status_t OutputFrameWorker::configure(std::shared_ptr<GraphConfig> &/*config*/)
 
     ret = mProcessor.configure(mStream, mFormat.Width(),
                                mFormat.Height());
-    CheckError((ret != OK), ret, "@%s mProcessor.configure failed %d",
-               __FUNCTION__, ret);
+    CheckAndLogError((ret != OK), ret, "@%s mProcessor.configure failed %d",
+                     __FUNCTION__, ret);
     mNeedPostProcess = mProcessor.needPostProcess();
 
     mIndex = 0;
     // If using internal buffer, only one buffer is required.
     ret = setWorkerDeviceBuffers(getDefaultMemoryType(mNodeName));
-    CheckError((ret != OK), ret, "@%s set worker device buffers failed.",
-               __FUNCTION__);
+    CheckAndLogError((ret != OK), ret, "@%s set worker device buffers failed.",
+                     __FUNCTION__);
 
     // Allocate internal buffer.
     if (mNeedPostProcess || mListeners.size() > 0) {
@@ -119,8 +119,9 @@ status_t OutputFrameWorker::configure(std::shared_ptr<GraphConfig> &/*config*/)
         }
         ret = allocateWorkerBuffers(GRALLOC_USAGE_SW_READ_OFTEN |
                                     GRALLOC_USAGE_HW_CAMERA_WRITE, gfxFormat);
-        CheckError(ret != OK, ret, "@%s failed to allocate internal buffer.",
-                   __FUNCTION__);
+        CheckAndLogError(ret != OK, ret,
+                         "@%s failed to allocate internal buffer.",
+                         __FUNCTION__);
         mInternalBuffers.clear();
         std::shared_ptr<CameraBuffer> buffer = nullptr;
         for (size_t i = 0; i < mPipelineDepth; i++) {
@@ -185,15 +186,15 @@ status_t OutputFrameWorker::prepareRun(std::shared_ptr<DeviceMessage> msg)
         std::shared_ptr<CameraBuffer> listenerBuf = buffer;
         if (listenerBuf.get() == nullptr) {
             listenerBuf = mInternalBuffers[mIndex];
-            CheckError((listenerBuf.get() == nullptr), UNKNOWN_ERROR,
-                       "failed to allocate listener buffer");
+            CheckAndLogError((listenerBuf.get() == nullptr), UNKNOWN_ERROR,
+                             "failed to allocate listener buffer");
         }
         mBuffers[mIndex].SetFd(listenerBuf->dmaBufFd(), 0);
     }
     LOG2("%s mBuffers[%d].fd: %d, %s", __FUNCTION__, mIndex, mBuffers[mIndex].Fd(0),
           mNode->Name().c_str());
     status |= mNode->PutFrame(&mBuffers[mIndex]);
-    CheckError(status < 0, status, "failed to put frame");
+    CheckAndLogError(status < 0, status, "failed to put frame");
 
     {
     std::lock_guard<std::mutex> l(mProcessingDataLock);
@@ -245,7 +246,8 @@ status_t OutputFrameWorker::postRun()
 
     mIndex = (mIndex + 1) % mPipelineDepth;
 
-    CheckError(mMsg == nullptr, UNKNOWN_ERROR, "Message null - Fix the bug");
+    CheckAndLogError(mMsg == nullptr, UNKNOWN_ERROR,
+                     "Message null - Fix the bug");
 
     Camera3Request* request = mMsg->cbMetadataMsg.request;
     if (request == nullptr) {
@@ -325,7 +327,8 @@ status_t OutputFrameWorker::processData(ProcessingData processingData)
         listenerBuf->setRequestId(request->seqenceId());
 
         status = prepareBuffer(listenerBuf);
-        CheckError(status != NO_ERROR, status, "prepare listener buffer error!");
+        CheckAndLogError(status != NO_ERROR, status,
+                         "prepare listener buffer error!");
 
         stream = listenerBuf->getOwner();
         if (mListenerProcessors[i]->needPostProcess()) {
@@ -334,12 +337,14 @@ status_t OutputFrameWorker::processData(ProcessingData processingData)
                                                  listenerBuf,
                                                  processingData.mMsg->pMsg.processingSettings,
                                                  request, needReprocess);
-            CheckError(status != OK, status, "@%s, process for listener %p failed! [%d]!", __FUNCTION__,
-                     listener, status);
+            CheckAndLogError(status != OK, status,
+                             "@%s, process for listener %p failed! [%d]!",
+                             __FUNCTION__, listener, status);
         } else {
             if (!processingData.mWorkingBuffer->isLocked()) {
                 status_t ret = processingData.mWorkingBuffer->lock();
-                CheckError(ret != NO_ERROR, NO_MEMORY, "@%s, lock fails", __FUNCTION__);
+                CheckAndLogError(ret != NO_ERROR, NO_MEMORY, "@%s, lock fails",
+                                 __FUNCTION__);
             }
 
             MEMCPY_S(listenerBuf->data(), listenerBuf->size(),
@@ -355,17 +360,22 @@ status_t OutputFrameWorker::processData(ProcessingData processingData)
     if (processingData.mOutputBuffer == nullptr) {
         if (needReprocess) {
             const camera3_stream_buffer* inputBuf = request->getInputBuffer();
-            CheckError(!inputBuf, UNKNOWN_ERROR, "@%s, getInputBuffer fails", __FUNCTION__);
+            CheckAndLogError(!inputBuf, UNKNOWN_ERROR,
+                             "@%s, getInputBuffer fails", __FUNCTION__);
 
             int fmt = inputBuf->stream->format;
-            CheckError((fmt != HAL_PIXEL_FORMAT_YCbCr_420_888), UNKNOWN_ERROR,
-            "@%s, input stream is not YCbCr_420_888, format:%x", __FUNCTION__, fmt);
+            CheckAndLogError(
+                (fmt != HAL_PIXEL_FORMAT_YCbCr_420_888), UNKNOWN_ERROR,
+                "@%s, input stream is not YCbCr_420_888, format:%x",
+                __FUNCTION__, fmt);
 
             const CameraStream* s = request->getInputStream();
-            CheckError(!s, UNKNOWN_ERROR, "@%s, getInputStream fails", __FUNCTION__);
+            CheckAndLogError(!s, UNKNOWN_ERROR, "@%s, getInputStream fails",
+                             __FUNCTION__);
 
             std::shared_ptr<CameraBuffer> buf = request->findBuffer(s);
-            CheckError((buf == nullptr), UNKNOWN_ERROR, "@%s, findBuffer fails", __FUNCTION__);
+            CheckAndLogError((buf == nullptr), UNKNOWN_ERROR,
+                             "@%s, findBuffer fails", __FUNCTION__);
 
             buf->getOwner()->captureDone(buf, request);
         }
@@ -380,7 +390,8 @@ status_t OutputFrameWorker::processData(ProcessingData processingData)
                                          processingData.mMsg->pMsg.processingSettings,
                                          request,
                                          needReprocess);
-        CheckError(status != OK, status, "@%s, postprocess failed! [%d]!", __FUNCTION__, status);
+        CheckAndLogError(status != OK, status, "@%s, postprocess failed! [%d]!",
+                         __FUNCTION__, status);
     }
 
     dump(processingData.mOutputBuffer, stream);
@@ -390,7 +401,8 @@ status_t OutputFrameWorker::processData(ProcessingData processingData)
         (mFrameCnt % mFaceEngineRunInterval == 0)) {
         if (!processingData.mOutputBuffer->isLocked()) {
             status_t ret = processingData.mOutputBuffer->lock();
-            CheckError(ret != NO_ERROR, NO_MEMORY, "@%s, lock fails", __FUNCTION__);
+            CheckAndLogError(ret != NO_ERROR, NO_MEMORY, "@%s, lock fails",
+                             __FUNCTION__);
         }
 
         pvl_image image;
@@ -422,7 +434,7 @@ bool OutputFrameWorker::isHalUsingRequestBuffer()
 status_t
 OutputFrameWorker::prepareBuffer(std::shared_ptr<CameraBuffer>& buffer)
 {
-    CheckError((buffer.get() == nullptr), UNKNOWN_ERROR, "null buffer!");
+    CheckAndLogError((buffer.get() == nullptr), UNKNOWN_ERROR, "null buffer!");
 
     status_t status = NO_ERROR;
     if (!buffer->isLocked() && isHalUsingRequestBuffer()) {
@@ -443,13 +455,14 @@ std::shared_ptr<CameraBuffer>
 OutputFrameWorker::findBuffer(Camera3Request* request,
                               camera3_stream_t* stream)
 {
-    CheckError((request == nullptr || stream == nullptr), nullptr,
-                "null request/stream!");
+    CheckAndLogError((request == nullptr || stream == nullptr), nullptr,
+                     "null request/stream!");
 
     CameraStream *s = nullptr;
     std::shared_ptr<CameraBuffer> buffer = nullptr;
     const std::vector<camera3_stream_buffer>* outBufs = request->getOutputBuffers();
-    CheckError(outBufs == nullptr, nullptr, "@%s: outBufs is nullptr", __FUNCTION__);
+    CheckAndLogError(outBufs == nullptr, nullptr, "@%s: outBufs is nullptr",
+                     __FUNCTION__);
 
     for (camera3_stream_buffer outputBuffer : *outBufs) {
         s = reinterpret_cast<CameraStream *>(outputBuffer.stream->priv);
@@ -485,7 +498,8 @@ bool OutputFrameWorker::checkListenerBuffer(Camera3Request* request)
 
 void OutputFrameWorker::dump(std::shared_ptr<CameraBuffer> buf, const CameraStream* stream)
 {
-    CheckError(stream == nullptr, VOID_VALUE, "@%s, stream is nullptr", __FUNCTION__);
+    CheckAndLogError(stream == nullptr, VOID_VALUE, "@%s, stream is nullptr",
+                     __FUNCTION__);
     LOG2("@%s", __FUNCTION__);
 
     if (buf->format() == HAL_PIXEL_FORMAT_BLOB) {

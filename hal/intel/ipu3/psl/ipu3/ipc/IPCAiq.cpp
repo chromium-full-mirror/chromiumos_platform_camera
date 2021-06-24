@@ -47,7 +47,8 @@ bool IPCAiq::clientFlattenInit(const ia_binary_data* aiqb_data, unsigned int aiq
             uint8_t* pData, unsigned int size)
 {
     LOG1("@%s, aiqb_data:%p, nvm_data:%p, aiqd_data:%p", __FUNCTION__, aiqb_data, nvm_data, aiqd_data);
-    CheckError(pData == nullptr, false, "@%s, pData is nullptr", __FUNCTION__);
+    CheckAndLogError(pData == nullptr, false, "@%s, pData is nullptr",
+                     __FUNCTION__);
 
     if (aiqb_data)
         LOG2("aiqb_data->size:%d", aiqb_data->size);
@@ -91,11 +92,16 @@ bool IPCAiq::serverUnflattenInit(void* pData, int dataSize, ia_binary_data* aiqb
 {
     LOG1("@%s, pData:%p, dataSize:%d, aiqbData:%p, nvmData:%p, aiqdData:%p",
         __FUNCTION__, pData, dataSize, aiqbData, nvmData, aiqdData);
-    CheckError((dataSize < sizeof(aiq_init_params)), false, "@%s, buffer is small", __FUNCTION__);
-    CheckError((pData == nullptr), false, "@%s, pData is nullptr", __FUNCTION__);
-    CheckError((aiqbData == nullptr), false, "@%s, aiqbData is nullptr", __FUNCTION__);
-    CheckError((nvmData == nullptr), false, "@%s, nvmData is nullptr", __FUNCTION__);
-    CheckError((aiqdData == nullptr), false, "@%s, aiqdData is nullptr", __FUNCTION__);
+    CheckAndLogError((dataSize < sizeof(aiq_init_params)), false,
+                     "@%s, buffer is small", __FUNCTION__);
+    CheckAndLogError((pData == nullptr), false, "@%s, pData is nullptr",
+                     __FUNCTION__);
+    CheckAndLogError((aiqbData == nullptr), false, "@%s, aiqbData is nullptr",
+                     __FUNCTION__);
+    CheckAndLogError((nvmData == nullptr), false, "@%s, nvmData is nullptr",
+                     __FUNCTION__);
+    CheckAndLogError((aiqdData == nullptr), false, "@%s, aiqdData is nullptr",
+                     __FUNCTION__);
 
     aiq_init_params* params = static_cast<aiq_init_params*>(pData);
 
@@ -126,8 +132,10 @@ bool IPCAiq::serverUnflattenInit(void* pData, int dataSize, ia_binary_data* aiqb
 bool IPCAiq::clientFlattenAf(uintptr_t aiq, const ia_aiq_af_input_params& inParams, af_run_params* params)
 {
     LOG1("@%s, aiq:0x%" PRIxPTR ", params:%p", __FUNCTION__, aiq, params);
-    CheckError(reinterpret_cast<ia_aiq*>(aiq) == nullptr, false, "@%s, aiq is nullptr", __FUNCTION__);
-    CheckError(params == nullptr, false, "@%s, params is nullptr", __FUNCTION__);
+    CheckAndLogError(reinterpret_cast<ia_aiq*>(aiq) == nullptr, false,
+                     "@%s, aiq is nullptr", __FUNCTION__);
+    CheckAndLogError(params == nullptr, false, "@%s, params is nullptr",
+                     __FUNCTION__);
 
     params->aiq_handle = aiq;
 
@@ -147,7 +155,8 @@ bool IPCAiq::clientUnflattenAf(const af_run_params& params, ia_aiq_af_results** 
 {
     LOG1("@%s, results:%p", __FUNCTION__, results);
 
-    CheckError((results == nullptr), false, "@%s, results is nullptr", __FUNCTION__);
+    CheckAndLogError((results == nullptr), false, "@%s, results is nullptr",
+                     __FUNCTION__);
 
     *results = const_cast<ia_aiq_af_results*>(&params.results);
 
@@ -157,7 +166,8 @@ bool IPCAiq::clientUnflattenAf(const af_run_params& params, ia_aiq_af_results** 
 bool IPCAiq::serverUnflattenAf(const af_run_params& inParams, ia_aiq_af_input_params** params)
 {
     LOG1("@%s, params:%p", __FUNCTION__, params);
-    CheckError((params == nullptr), false, "@%s, params is nullptr", __FUNCTION__);
+    CheckAndLogError((params == nullptr), false, "@%s, params is nullptr",
+                     __FUNCTION__);
 
     ia_aiq_af_input_params* base = const_cast<ia_aiq_af_input_params*>(&inParams.base);
     if (base->focus_rect) {
@@ -176,7 +186,8 @@ bool IPCAiq::serverUnflattenAf(const af_run_params& inParams, ia_aiq_af_input_pa
 bool IPCAiq::serverFlattenAf(const ia_aiq_af_results& afResults, af_run_params* params)
 {
     LOG1("@%s, results:%p", __FUNCTION__, params);
-    CheckError((params == nullptr), false, "@%s, params is nullptr", __FUNCTION__);
+    CheckAndLogError((params == nullptr), false, "@%s, params is nullptr",
+                     __FUNCTION__);
 
     ia_aiq_af_results* results = &params->results;
     *results = afResults;
@@ -195,8 +206,10 @@ bool IPCAiq::serverFlattenAf(const ia_aiq_af_results& afResults, af_run_params* 
 bool IPCAiq::clientFlattenGbce(uintptr_t aiq, const ia_aiq_gbce_input_params& inParams, gbce_run_params* params)
 {
     LOG1("@%s, params:%p", __FUNCTION__,  params);
-    CheckError(reinterpret_cast<ia_aiq*>(aiq) == nullptr, false, "@%s, aiq is nullptr", __FUNCTION__);
-    CheckError(params == nullptr, false, "@%s, params is nullptr", __FUNCTION__);
+    CheckAndLogError(reinterpret_cast<ia_aiq*>(aiq) == nullptr, false,
+                     "@%s, aiq is nullptr", __FUNCTION__);
+    CheckAndLogError(params == nullptr, false, "@%s, params is nullptr",
+                     __FUNCTION__);
 
     params->aiq_handle = aiq;
     params->base = inParams;
@@ -207,7 +220,8 @@ bool IPCAiq::clientFlattenGbce(uintptr_t aiq, const ia_aiq_gbce_input_params& in
 bool IPCAiq::clientUnflattenGbce(const gbce_run_params& params, ia_aiq_gbce_results** results)
 {
     LOG1("@%s, results:%p", __FUNCTION__, results);
-    CheckError((results == nullptr), false, "@%s, results is nullptr", __FUNCTION__);
+    CheckAndLogError((results == nullptr), false, "@%s, results is nullptr",
+                     __FUNCTION__);
 
     ia_aiq_gbce_results* resBase = const_cast<ia_aiq_gbce_results*>(&params.resBase);
 
@@ -227,10 +241,12 @@ bool IPCAiq::clientUnflattenGbce(const gbce_run_params& params, ia_aiq_gbce_resu
         resBase->tone_map_lut = const_cast<float*>(params.tone_map_lut);
     }
 
-    CheckError((resBase->gamma_lut_size > MAX_NUM_GAMMA_LUTS), false,
-        "@%s, resBase->gamma_lut_size:%d is too big", __FUNCTION__, resBase->gamma_lut_size);
-    CheckError((resBase->tone_map_lut_size > MAX_NUM_TOME_MAP_LUTS), false,
-        "@%s, resBase->tone_map_lut_size:%d is too big", __FUNCTION__, resBase->tone_map_lut_size);
+    CheckAndLogError((resBase->gamma_lut_size > MAX_NUM_GAMMA_LUTS), false,
+                     "@%s, resBase->gamma_lut_size:%d is too big", __FUNCTION__,
+                     resBase->gamma_lut_size);
+    CheckAndLogError((resBase->tone_map_lut_size > MAX_NUM_TOME_MAP_LUTS),
+                     false, "@%s, resBase->tone_map_lut_size:%d is too big",
+                     __FUNCTION__, resBase->tone_map_lut_size);
     LOG2("@%s, MAX_NUM_GAMMA_LUTS:%d, resBase->gamma_lut_size:%d",
         __FUNCTION__, MAX_NUM_GAMMA_LUTS, resBase->gamma_lut_size);
     LOG2("@%s, MAX_NUM_TOME_MAP_LUTS:%d, resBase->tone_map_lut_size:%d",
@@ -244,7 +260,8 @@ bool IPCAiq::clientUnflattenGbce(const gbce_run_params& params, ia_aiq_gbce_resu
 bool IPCAiq::serverFlattenGbce(const ia_aiq_gbce_results& gbceResults, gbce_run_params* params)
 {
     LOG1("@%s, params:%p", __FUNCTION__, params);
-    CheckError((params == nullptr), false, "@%s, results is nullptr", __FUNCTION__);
+    CheckAndLogError((params == nullptr), false, "@%s, results is nullptr",
+                     __FUNCTION__);
 
     size_t size = gbceResults.gamma_lut_size * sizeof(*gbceResults.g_gamma_lut);
     LOG2("@%s, gamma_lut_size:%d, size:%zu, tone_map_lut_size:%d",
@@ -277,8 +294,10 @@ bool IPCAiq::serverFlattenGbce(const ia_aiq_gbce_results& gbceResults, gbce_run_
 bool IPCAiq::clientFlattenStat(uintptr_t aiq, const ia_aiq_statistics_input_params& inParams, set_statistics_params* params)
 {
     LOG1("@%s, aiq:0x%" PRIxPTR ", params:%p", __FUNCTION__, aiq, params);
-    CheckError(reinterpret_cast<ia_aiq*>(aiq) == nullptr, false, "@%s, aiq is nullptr", __FUNCTION__);
-    CheckError(params == nullptr, false, "@%s, params is nullptr", __FUNCTION__);
+    CheckAndLogError(reinterpret_cast<ia_aiq*>(aiq) == nullptr, false,
+                     "@%s, aiq is nullptr", __FUNCTION__);
+    CheckAndLogError(params == nullptr, false, "@%s, params is nullptr",
+                     __FUNCTION__);
 
     params->ia_aiq = aiq;
 
@@ -295,17 +314,21 @@ bool IPCAiq::clientFlattenStat(uintptr_t aiq, const ia_aiq_statistics_input_para
     }
 
     if (base->rgbs_grids) {
-        CheckError((base->num_rgbs_grids > MAX_NUMBER_OF_GRIDS), false,
-            "@%s, num_rgbs_grids:%d > MAX_NUMBER_OF_GRIDS:%d",
-            __FUNCTION__, base->num_rgbs_grids, MAX_NUMBER_OF_GRIDS);
+        CheckAndLogError((base->num_rgbs_grids > MAX_NUMBER_OF_GRIDS), false,
+                         "@%s, num_rgbs_grids:%d > MAX_NUMBER_OF_GRIDS:%d",
+                         __FUNCTION__, base->num_rgbs_grids,
+                         MAX_NUMBER_OF_GRIDS);
 
         for (int i = 0; i < MAX_NUMBER_OF_GRIDS; i++) {
             ia_aiq_rgbs_grid_data* rgbs_grids = &input->rgbs_grids[i];
             rgbs_grids->base = *base->rgbs_grids[i];
 
-            CheckError((rgbs_grids->base.grid_width * rgbs_grids->base.grid_height > MAX_NUM_BLOCKS), false,
-                "@%s, grid_width:%d * grid_height:%d is too big",
-                __FUNCTION__, rgbs_grids->base.grid_width, rgbs_grids->base.grid_height);
+            CheckAndLogError(
+                (rgbs_grids->base.grid_width * rgbs_grids->base.grid_height >
+                 MAX_NUM_BLOCKS),
+                false, "@%s, grid_width:%d * grid_height:%d is too big",
+                __FUNCTION__, rgbs_grids->base.grid_width,
+                rgbs_grids->base.grid_height);
 
             MEMCPY_S(rgbs_grids->blocks_ptr,
                 sizeof(rgbs_grids->blocks_ptr),
@@ -324,9 +347,10 @@ bool IPCAiq::clientFlattenStat(uintptr_t aiq, const ia_aiq_statistics_input_para
     }
 
     if (base->af_grids) {
-        CheckError((base->num_af_grids > MAX_NUMBER_OF_AF_GRIDS), false,
-            "@%s, num_af_grids:%d > MAX_NUMBER_OF_AF_GRIDS:%d",
-            __FUNCTION__, base->num_af_grids, MAX_NUMBER_OF_AF_GRIDS);
+        CheckAndLogError((base->num_af_grids > MAX_NUMBER_OF_AF_GRIDS), false,
+                         "@%s, num_af_grids:%d > MAX_NUMBER_OF_AF_GRIDS:%d",
+                         __FUNCTION__, base->num_af_grids,
+                         MAX_NUMBER_OF_AF_GRIDS);
 
         for (int i = 0; i < MAX_NUMBER_OF_AF_GRIDS; i++) {
             ia_aiq_af_grid_data* af_grids = &input->af_grids[i];
@@ -362,7 +386,8 @@ bool IPCAiq::clientFlattenStat(uintptr_t aiq, const ia_aiq_statistics_input_para
     }
 
     if (base->depth_grids) {
-        CheckError((base->num_depth_grids > MAX_NUMBER_OF_DEPTH_GRIDS), false,
+        CheckAndLogError(
+            (base->num_depth_grids > MAX_NUMBER_OF_DEPTH_GRIDS), false,
             "@%s, num_depth_grids:%d > MAX_NUMBER_OF_DEPTH_GRIDS:%d",
             __FUNCTION__, base->num_depth_grids, MAX_NUMBER_OF_DEPTH_GRIDS);
 
@@ -390,7 +415,8 @@ bool IPCAiq::clientFlattenStat(uintptr_t aiq, const ia_aiq_statistics_input_para
 bool IPCAiq::serverUnflattenStat(const set_statistics_params& inParams, ia_aiq_statistics_input_params** params)
 {
     LOG1("@%s, params:%p", __FUNCTION__, params);
-    CheckError((params == nullptr), false, "@%s, params is nullptr", __FUNCTION__);
+    CheckAndLogError((params == nullptr), false, "@%s, params is nullptr",
+                     __FUNCTION__);
 
     set_statistics_params_data* input = const_cast<set_statistics_params_data*>(&inParams.input);
     ia_aiq_statistics_input_params* base = &input->base;
@@ -405,9 +431,10 @@ bool IPCAiq::serverUnflattenStat(const set_statistics_params& inParams, ia_aiq_s
     }
 
     if (base->rgbs_grids) {
-        CheckError((base->num_rgbs_grids > MAX_NUMBER_OF_GRIDS), false,
-            "@%s, num_rgbs_grids:%d > MAX_NUMBER_OF_GRIDS:%d",
-            __FUNCTION__, base->num_rgbs_grids, MAX_NUMBER_OF_GRIDS);
+        CheckAndLogError((base->num_rgbs_grids > MAX_NUMBER_OF_GRIDS), false,
+                         "@%s, num_rgbs_grids:%d > MAX_NUMBER_OF_GRIDS:%d",
+                         __FUNCTION__, base->num_rgbs_grids,
+                         MAX_NUMBER_OF_GRIDS);
 
         for (int i = 0; i < base->num_rgbs_grids; i++) {
             ia_aiq_rgbs_grid_data* rgbs_grids = &input->rgbs_grids[i];
@@ -424,9 +451,10 @@ bool IPCAiq::serverUnflattenStat(const set_statistics_params& inParams, ia_aiq_s
     }
 
     if (base->af_grids) {
-        CheckError((base->num_af_grids > MAX_NUMBER_OF_AF_GRIDS), false,
-            "@%s, num_af_grids:%d > MAX_NUMBER_OF_AF_GRIDS:%d",
-            __FUNCTION__, base->num_af_grids, MAX_NUMBER_OF_AF_GRIDS);
+        CheckAndLogError((base->num_af_grids > MAX_NUMBER_OF_AF_GRIDS), false,
+                         "@%s, num_af_grids:%d > MAX_NUMBER_OF_AF_GRIDS:%d",
+                         __FUNCTION__, base->num_af_grids,
+                         MAX_NUMBER_OF_AF_GRIDS);
 
         for (int i = 0; i < base->num_af_grids; i++) {
             ia_aiq_af_grid_data* af_grids = &input->af_grids[i];
@@ -458,7 +486,8 @@ bool IPCAiq::serverUnflattenStat(const set_statistics_params& inParams, ia_aiq_s
     }
 
     if (base->depth_grids) {
-        CheckError((base->num_depth_grids > MAX_NUMBER_OF_DEPTH_GRIDS), false,
+        CheckAndLogError(
+            (base->num_depth_grids > MAX_NUMBER_OF_DEPTH_GRIDS), false,
             "@%s, num_depth_grids:%d > MAX_NUMBER_OF_DEPTH_GRIDS:%d",
             __FUNCTION__, base->num_depth_grids, MAX_NUMBER_OF_DEPTH_GRIDS);
 
@@ -482,8 +511,10 @@ bool IPCAiq::serverUnflattenStat(const set_statistics_params& inParams, ia_aiq_s
 bool IPCAiq::clientFlattenAe(uintptr_t aiq, const ia_aiq_ae_input_params& inParams, ae_run_params* params)
 {
     LOG1("@%s, params:%p", __FUNCTION__, params);
-    CheckError((reinterpret_cast<ia_aiq*>(aiq) == nullptr), false, "@%s, aiq is nullptr", __FUNCTION__);
-    CheckError((params == nullptr), false, "@%s, params is nullptr", __FUNCTION__);
+    CheckAndLogError((reinterpret_cast<ia_aiq*>(aiq) == nullptr), false,
+                     "@%s, aiq is nullptr", __FUNCTION__);
+    CheckAndLogError((params == nullptr), false, "@%s, params is nullptr",
+                     __FUNCTION__);
 
     params->aiq_handle = aiq;
 
@@ -532,11 +563,13 @@ bool IPCAiq::clientFlattenAe(uintptr_t aiq, const ia_aiq_ae_input_params& inPara
 bool IPCAiq::clientUnflattenAe(const ae_run_params& params, ia_aiq_ae_results** results)
 {
     LOG1("@%s, results:%p", __FUNCTION__, results);
-    CheckError((results == nullptr), false, "@%s, results is nullptr", __FUNCTION__);
+    CheckAndLogError((results == nullptr), false, "@%s, results is nullptr",
+                     __FUNCTION__);
 
     ae_run_params_results* res = const_cast<ae_run_params_results*>(&params.res);
     bool ret = unflattenAeResults(res);
-    CheckError((ret == false), false, "@%s, unflattenAeResults fails", __FUNCTION__);
+    CheckAndLogError((ret == false), false, "@%s, unflattenAeResults fails",
+                     __FUNCTION__);
 
     *results = &res->base;
 
@@ -546,7 +579,8 @@ bool IPCAiq::clientUnflattenAe(const ae_run_params& params, ia_aiq_ae_results** 
 bool IPCAiq::serverUnflattenAe(const ae_run_params& inParams, ia_aiq_ae_input_params** params)
 {
     LOG1("@%s, params:%p", __FUNCTION__, params);
-    CheckError((params == nullptr), false, "@%s, params is nullptr", __FUNCTION__);
+    CheckAndLogError((params == nullptr), false, "@%s, params is nullptr",
+                     __FUNCTION__);
 
     ia_aiq_ae_input_params* base = const_cast<ia_aiq_ae_input_params*>(&inParams.base);
     if (base->aec_features) {
@@ -589,10 +623,12 @@ bool IPCAiq::serverUnflattenAe(const ae_run_params& inParams, ia_aiq_ae_input_pa
 bool IPCAiq::serverFlattenAe(const ia_aiq_ae_results& aeResults, ae_run_params* params)
 {
     LOG1("@%s, results:%p", __FUNCTION__, params);
-    CheckError((params == nullptr), false, "@%s, params is nullptr", __FUNCTION__);
+    CheckAndLogError((params == nullptr), false, "@%s, params is nullptr",
+                     __FUNCTION__);
 
     bool ret = flattenAeResults(aeResults, &params->res);
-    CheckError((ret == false), false, "@%s, flattenAeResults fails", __FUNCTION__);
+    CheckAndLogError((ret == false), false, "@%s, flattenAeResults fails",
+                     __FUNCTION__);
 
     return true;
 }
@@ -600,7 +636,8 @@ bool IPCAiq::serverFlattenAe(const ia_aiq_ae_results& aeResults, ae_run_params* 
 bool IPCAiq::flattenAeResults(const ia_aiq_ae_results& aeResults, ae_run_params_results* res)
 {
     LOG2("@%s, res:%p", __FUNCTION__, res);
-    CheckError((res == nullptr), false, "@%s, res is nullptr", __FUNCTION__);
+    CheckAndLogError((res == nullptr), false, "@%s, res is nullptr",
+                     __FUNCTION__);
 
     res->base = aeResults;
     const ia_aiq_ae_results* base = &res->base;
@@ -649,7 +686,8 @@ bool IPCAiq::flattenAeResults(const ia_aiq_ae_results& aeResults, ae_run_params_
 bool IPCAiq::unflattenAeResults(ae_run_params_results* res)
 {
     LOG2("@%s, res:%p", __FUNCTION__, res);
-    CheckError((res == nullptr), false, "@%s, res is nullptr", __FUNCTION__);
+    CheckAndLogError((res == nullptr), false, "@%s, res is nullptr",
+                     __FUNCTION__);
 
     ia_aiq_ae_results* base = &res->base;
 
@@ -688,8 +726,10 @@ bool IPCAiq::unflattenAeResults(ae_run_params_results* res)
 bool IPCAiq::clientFlattenAwb(uintptr_t aiq, const ia_aiq_awb_input_params& inParams, awb_run_params* params)
 {
     LOG1("@%s, aiq:0x%" PRIxPTR ", params:%p", __FUNCTION__, aiq, params);
-    CheckError(reinterpret_cast<ia_aiq*>(aiq) == nullptr, false, "@%s, aiq is nullptr", __FUNCTION__);
-    CheckError(params == nullptr, false, "@%s, params is nullptr", __FUNCTION__);
+    CheckAndLogError(reinterpret_cast<ia_aiq*>(aiq) == nullptr, false,
+                     "@%s, aiq is nullptr", __FUNCTION__);
+    CheckAndLogError(params == nullptr, false, "@%s, params is nullptr",
+                     __FUNCTION__);
 
     params->aiq_handle = aiq;
 
@@ -710,7 +750,8 @@ bool IPCAiq::clientFlattenAwb(uintptr_t aiq, const ia_aiq_awb_input_params& inPa
 bool IPCAiq::clientUnflattenAwb(const awb_run_params& inParams, ia_aiq_awb_results** results)
 {
     LOG1("@%s, results:%p", __FUNCTION__, results);
-    CheckError((results == nullptr), false, "@%s, results is nullptr", __FUNCTION__);
+    CheckAndLogError((results == nullptr), false, "@%s, results is nullptr",
+                     __FUNCTION__);
 
     *results = const_cast<ia_aiq_awb_results*>(&inParams.results);
 
@@ -720,7 +761,8 @@ bool IPCAiq::clientUnflattenAwb(const awb_run_params& inParams, ia_aiq_awb_resul
 bool IPCAiq::serverUnflattenAwb(const awb_run_params& inParams, ia_aiq_awb_input_params** params)
 {
     LOG1("@%s, params:%p", __FUNCTION__, params);
-    CheckError((params == nullptr), false, "@%s, params is nullptr", __FUNCTION__);
+    CheckAndLogError((params == nullptr), false, "@%s, params is nullptr",
+                     __FUNCTION__);
 
     ia_aiq_awb_input_params* base = const_cast<ia_aiq_awb_input_params*>(&inParams.base);
 
@@ -743,7 +785,8 @@ bool IPCAiq::serverUnflattenAwb(const awb_run_params& inParams, ia_aiq_awb_input
 bool IPCAiq::serverFlattenAwb(const ia_aiq_awb_results& awbResults, awb_run_params* params)
 {
     LOG1("@%s, params:%p", __FUNCTION__, params);
-    CheckError((params == nullptr), false, "@%s, results is nullptr", __FUNCTION__);
+    CheckAndLogError((params == nullptr), false, "@%s, results is nullptr",
+                     __FUNCTION__);
 
     ia_aiq_awb_results* results = &params->results;
     *results = awbResults;
@@ -762,8 +805,10 @@ bool IPCAiq::serverFlattenAwb(const ia_aiq_awb_results& awbResults, awb_run_para
 bool IPCAiq::clientFlattenPa(uintptr_t aiq, const ia_aiq_pa_input_params& inParams, pa_run_params* params)
 {
     LOG1("@%s, params:%p", __FUNCTION__, params);
-    CheckError(reinterpret_cast<ia_aiq*>(aiq) == nullptr, false, "@%s, aiq is nullptr", __FUNCTION__);
-    CheckError(params == nullptr, false, "@%s, params is nullptr", __FUNCTION__);
+    CheckAndLogError(reinterpret_cast<ia_aiq*>(aiq) == nullptr, false,
+                     "@%s, aiq is nullptr", __FUNCTION__);
+    CheckAndLogError(params == nullptr, false, "@%s, params is nullptr",
+                     __FUNCTION__);
 
     params->aiq_handle = aiq;
 
@@ -788,11 +833,13 @@ bool IPCAiq::clientFlattenPa(uintptr_t aiq, const ia_aiq_pa_input_params& inPara
 bool IPCAiq::clientUnflattenPa(const pa_run_params& params, ia_aiq_pa_results** results)
 {
     LOG1("@%s, results:%p", __FUNCTION__, results);
-    CheckError((results == nullptr), false, "@%s, results is nullptr", __FUNCTION__);
+    CheckAndLogError((results == nullptr), false, "@%s, results is nullptr",
+                     __FUNCTION__);
 
     pa_run_params_results* res = const_cast<pa_run_params_results*>(&params.res);
     bool ret = unflattenPaResults(res);
-    CheckError((ret == false), false, "@%s, unflattenPaResults fails", __FUNCTION__);
+    CheckAndLogError((ret == false), false, "@%s, unflattenPaResults fails",
+                     __FUNCTION__);
 
     *results = &res->base;
 
@@ -802,7 +849,8 @@ bool IPCAiq::clientUnflattenPa(const pa_run_params& params, ia_aiq_pa_results** 
 bool IPCAiq::serverUnflattenPa(const pa_run_params& inParams, ia_aiq_pa_input_params** params)
 {
     LOG1("@%s, params:%p", __FUNCTION__, params);
-    CheckError((params == nullptr), false, "@%s, params is nullptr", __FUNCTION__);
+    CheckAndLogError((params == nullptr), false, "@%s, params is nullptr",
+                     __FUNCTION__);
 
     ia_aiq_pa_input_params* base = const_cast<ia_aiq_pa_input_params*>(&inParams.base);
 
@@ -826,10 +874,12 @@ bool IPCAiq::serverUnflattenPa(const pa_run_params& inParams, ia_aiq_pa_input_pa
 bool IPCAiq::serverFlattenPa(const ia_aiq_pa_results& paResults, pa_run_params* params)
 {
     LOG1("@%s, params:%p", __FUNCTION__, params);
-    CheckError((params == nullptr), false, "@%s, results is nullptr", __FUNCTION__);
+    CheckAndLogError((params == nullptr), false, "@%s, results is nullptr",
+                     __FUNCTION__);
 
     bool ret = flattenPaResults(paResults, &params->res);
-    CheckError((ret == false), false, "@%s, flattenPaResults fails", __FUNCTION__);
+    CheckAndLogError((ret == false), false, "@%s, flattenPaResults fails",
+                     __FUNCTION__);
 
     return true;
 }
@@ -837,14 +887,16 @@ bool IPCAiq::serverFlattenPa(const ia_aiq_pa_results& paResults, pa_run_params* 
 bool IPCAiq::flattenPaResults(const ia_aiq_pa_results& paResults, pa_run_params_results* res)
 {
     LOG2("@%s, res:%p", __FUNCTION__, res);
-    CheckError((res == nullptr), false, "@%s, res is nullptr", __FUNCTION__);
+    CheckAndLogError((res == nullptr), false, "@%s, res is nullptr",
+                     __FUNCTION__);
 
     res->base = paResults;
     ia_aiq_pa_results* base = &res->base;
 
     ia_aiq_color_channels_lut* linearization = &base->linearization;
-    CheckError((MAX_NUM_LUTS < linearization->size), false,
-        "@%s, linearization:%d is too big", __FUNCTION__, linearization->size);
+    CheckAndLogError((MAX_NUM_LUTS < linearization->size), false,
+                     "@%s, linearization:%d is too big", __FUNCTION__,
+                     linearization->size);
     if (linearization->gr) {
         MEMCPY_S(res->gr, sizeof(res->gr),
             linearization->gr, sizeof(*linearization->gr) * linearization->size);
@@ -864,8 +916,9 @@ bool IPCAiq::flattenPaResults(const ia_aiq_pa_results& paResults, pa_run_params_
 
     ia_aiq_advanced_ccm_t* preferred_acm = base->preferred_acm;
     if (preferred_acm) {
-        CheckError((MAX_SECTOR_COUNT < preferred_acm->sector_count), false,
-            "@%s, sector_count:%d is too big", __FUNCTION__, preferred_acm->sector_count);
+        CheckAndLogError((MAX_SECTOR_COUNT < preferred_acm->sector_count),
+                         false, "@%s, sector_count:%d is too big", __FUNCTION__,
+                         preferred_acm->sector_count);
 
         res->preferred_acm = *preferred_acm;
 
@@ -911,7 +964,8 @@ bool IPCAiq::flattenPaResults(const ia_aiq_pa_results& paResults, pa_run_params_
 bool IPCAiq::unflattenPaResults(pa_run_params_results* res)
 {
     LOG2("@%s, res:%p", __FUNCTION__, res);
-    CheckError((res == nullptr), false, "@%s, res is nullptr", __FUNCTION__);
+    CheckAndLogError((res == nullptr), false, "@%s, res is nullptr",
+                     __FUNCTION__);
 
     ia_aiq_pa_results* base = const_cast<ia_aiq_pa_results*>(&res->base);
 
@@ -967,8 +1021,10 @@ bool IPCAiq::unflattenPaResults(pa_run_params_results* res)
 bool IPCAiq::clientFlattenSa(uintptr_t aiq, const ia_aiq_sa_input_params& inParams, sa_run_params* params)
 {
     LOG1("@%s, params:%p", __FUNCTION__, params);
-    CheckError(reinterpret_cast<ia_aiq*>(aiq) == nullptr, false, "@%s, aiq is nullptr", __FUNCTION__);
-    CheckError(params == nullptr, false, "@%s, params is nullptr", __FUNCTION__);
+    CheckAndLogError(reinterpret_cast<ia_aiq*>(aiq) == nullptr, false,
+                     "@%s, aiq is nullptr", __FUNCTION__);
+    CheckAndLogError(params == nullptr, false, "@%s, params is nullptr",
+                     __FUNCTION__);
 
     params->aiq_handle = aiq;
 
@@ -989,11 +1045,13 @@ bool IPCAiq::clientFlattenSa(uintptr_t aiq, const ia_aiq_sa_input_params& inPara
 bool IPCAiq::clientUnflattenSa(const sa_run_params& params, ia_aiq_sa_results** results)
 {
     LOG1("@%s, results:%p", __FUNCTION__, results);
-    CheckError((results == nullptr), false, "@%s, results is nullptr", __FUNCTION__);
+    CheckAndLogError((results == nullptr), false, "@%s, results is nullptr",
+                     __FUNCTION__);
 
     sa_run_params_results* res = const_cast<sa_run_params_results*>(&params.res);
     bool ret = unflattenSaResults(res);
-    CheckError((ret == false), false, "@%s, unflattenSaResults fails", __FUNCTION__);
+    CheckAndLogError((ret == false), false, "@%s, unflattenSaResults fails",
+                     __FUNCTION__);
 
     *results = &res->base;
 
@@ -1003,7 +1061,8 @@ bool IPCAiq::clientUnflattenSa(const sa_run_params& params, ia_aiq_sa_results** 
 bool IPCAiq::serverUnflattenSa(const sa_run_params& inParams, ia_aiq_sa_input_params** params)
 {
     LOG1("@%s, params:%p", __FUNCTION__, params);
-    CheckError((params == nullptr), false, "@%s, params is nullptr", __FUNCTION__);
+    CheckAndLogError((params == nullptr), false, "@%s, params is nullptr",
+                     __FUNCTION__);
 
     ia_aiq_sa_input_params* base = const_cast<ia_aiq_sa_input_params*>(&inParams.base);
 
@@ -1023,10 +1082,12 @@ bool IPCAiq::serverUnflattenSa(const sa_run_params& inParams, ia_aiq_sa_input_pa
 bool IPCAiq::serverFlattenSa(const ia_aiq_sa_results& saResults, sa_run_params* params)
 {
     LOG1("@%s, params:%p", __FUNCTION__, params);
-    CheckError((params == nullptr), false, "@%s, results is nullptr", __FUNCTION__);
+    CheckAndLogError((params == nullptr), false, "@%s, results is nullptr",
+                     __FUNCTION__);
 
     bool ret = flattenSaResults(saResults, &params->res);
-    CheckError((ret == false), false, "@%s, flattenSaResults fails", __FUNCTION__);
+    CheckAndLogError((ret == false), false, "@%s, flattenSaResults fails",
+                     __FUNCTION__);
 
     return true;
 }
@@ -1034,7 +1095,8 @@ bool IPCAiq::serverFlattenSa(const ia_aiq_sa_results& saResults, sa_run_params* 
 bool IPCAiq::flattenSaResults(const ia_aiq_sa_results& saResults, sa_run_params_results* res)
 {
     LOG2("@%s, res:%p", __FUNCTION__, res);
-    CheckError((res == nullptr), false, "@%s, res is nullptr", __FUNCTION__);
+    CheckAndLogError((res == nullptr), false, "@%s, res is nullptr",
+                     __FUNCTION__);
 
     res->base = saResults;
     ia_aiq_sa_results* base = &res->base;
@@ -1076,7 +1138,8 @@ bool IPCAiq::flattenSaResults(const ia_aiq_sa_results& saResults, sa_run_params_
 bool IPCAiq::unflattenSaResults(sa_run_params_results* res)
 {
     LOG2("@%s, res:%p", __FUNCTION__, res);
-    CheckError((res == nullptr), false, "@%s, res is nullptr", __FUNCTION__);
+    CheckAndLogError((res == nullptr), false, "@%s, res is nullptr",
+                     __FUNCTION__);
 
     ia_aiq_sa_results* base = &res->base;
 

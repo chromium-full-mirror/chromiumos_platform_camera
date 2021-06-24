@@ -39,8 +39,10 @@ FaceEngineLibrary::~FaceEngineLibrary()
 status_t FaceEngineLibrary::init(void* pData, int dataSize)
 {
     LOG1("@%s, pData:%p, dataSize:%d", __FUNCTION__, pData, dataSize);
-    CheckError((pData == nullptr), UNKNOWN_ERROR, "@%s, pData is nullptr", __FUNCTION__);
-    CheckError((dataSize < sizeof(face_engine_init_params)), UNKNOWN_ERROR, "@%s, buffer is small", __FUNCTION__);
+    CheckAndLogError((pData == nullptr), UNKNOWN_ERROR, "@%s, pData is nullptr",
+                     __FUNCTION__);
+    CheckAndLogError((dataSize < sizeof(face_engine_init_params)),
+                     UNKNOWN_ERROR, "@%s, buffer is small", __FUNCTION__);
 
     mFDHandle = nullptr;
     mEDHandle = nullptr;
@@ -90,7 +92,8 @@ void FaceEngineLibrary::convertCoordinate(int faceId, int width, int height, pvl
 {
     LOG1("@%s, face:%d rect, src left:%d, top:%d, right:%d, bottom:%d", __FUNCTION__,
     faceId, src.left, src.top, src.right, src.bottom);
-    CheckError((dst == nullptr), VOID_VALUE, "@%s, dst is nullptr", __FUNCTION__);
+    CheckAndLogError((dst == nullptr), VOID_VALUE, "@%s, dst is nullptr",
+                     __FUNCTION__);
 
     const ia_coordinate_system iaCoordinate = {IA_COORDINATE_TOP, IA_COORDINATE_LEFT,
                                                IA_COORDINATE_BOTTOM, IA_COORDINATE_RIGHT};
@@ -108,9 +111,12 @@ void FaceEngineLibrary::convertCoordinate(int faceId, int width, int height, pvl
 status_t FaceEngineLibrary::run(void* pData, int dataSize)
 {
     LOG1("@%s, pData:%p, dataSize:%d", __FUNCTION__, pData, dataSize);
-    CheckError((pData == nullptr), UNKNOWN_ERROR, "@%s, pData is nullptr", __FUNCTION__);
-    CheckError((dataSize < sizeof(face_engine_run_params)), UNKNOWN_ERROR, "@%s, buffer is small", __FUNCTION__);
-    CheckError(!mFDHandle, UNKNOWN_ERROR, "@%s, mFDHandle is nullptr", __FUNCTION__);
+    CheckAndLogError((pData == nullptr), UNKNOWN_ERROR, "@%s, pData is nullptr",
+                     __FUNCTION__);
+    CheckAndLogError((dataSize < sizeof(face_engine_run_params)), UNKNOWN_ERROR,
+                     "@%s, buffer is small", __FUNCTION__);
+    CheckAndLogError(!mFDHandle, UNKNOWN_ERROR, "@%s, mFDHandle is nullptr",
+                     __FUNCTION__);
 
     if (mMode == FD_MODE_OFF) {
         LOG2("@%s, face_detect_mode is FD_MODE_OFF", __FUNCTION__);
@@ -120,7 +126,8 @@ status_t FaceEngineLibrary::run(void* pData, int dataSize)
     face_engine_run_params* params = static_cast<face_engine_run_params*>(pData);
     pvl_image image;
     bool ret = mIpc.serverUnflattenRun(*params, &image);
-    CheckError(!ret, UNKNOWN_ERROR, "@%s, serverUnflattenRun fails", __FUNCTION__);
+    CheckAndLogError(!ret, UNKNOWN_ERROR, "@%s, serverUnflattenRun fails",
+                     __FUNCTION__);
 
     FaceEngineResult* results = &params->results;
     int32_t fdRet = pvl_face_detection_run_in_preview(mFDHandle, &image, results->faceResults, mMaxFacesNum);

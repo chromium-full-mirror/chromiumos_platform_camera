@@ -75,9 +75,11 @@ status_t FrameWorker::setWorkerDeviceFormat(FrameInfo &frame)
     v4l2_fmt.SetSizeImage(0, 0);
     v4l2_fmt.SetField(frame.field);
     status_t ret = mNode->SetFormat(v4l2_fmt);
-    CheckError(ret != NO_ERROR, ret, "@%s set worker format failed", __FUNCTION__);
+    CheckAndLogError(ret != NO_ERROR, ret, "@%s set worker format failed",
+                     __FUNCTION__);
     ret = mNode->GetFormat(&mFormat);
-    CheckError(ret != NO_ERROR, ret, "@%s get worker format failed", __FUNCTION__);
+    CheckAndLogError(ret != NO_ERROR, ret, "@%s get worker format failed",
+                     __FUNCTION__);
 
     return OK;
 }
@@ -97,10 +99,11 @@ status_t FrameWorker::setWorkerDeviceBuffers(enum v4l2_memory memType)
 status_t FrameWorker::allocateWorkerBuffers(uint32_t usage, int pixelFormat)
 {
     int memType = mNode->GetMemoryType();
-    CheckError((memType != V4L2_MEMORY_DMABUF), BAD_VALUE,
-               "@%s, Unsupported memory type %d!", __FUNCTION__, memType);
-    CheckError(!mBufferManager, UNKNOWN_ERROR,
-               "@%s, Failed to get buffer manager instance!", __FUNCTION__);
+    CheckAndLogError((memType != V4L2_MEMORY_DMABUF), BAD_VALUE,
+                     "@%s, Unsupported memory type %d!", __FUNCTION__, memType);
+    CheckAndLogError(!mBufferManager, UNKNOWN_ERROR,
+                     "@%s, Failed to get buffer manager instance!",
+                     __FUNCTION__);
     std::shared_ptr<CameraBuffer> buf = nullptr;
     for (unsigned int i = 0; i < mPipelineDepth; i++) {
         LOG2("@%s allocate format: %s size: %d %dx%d bytesperline: %d", __func__, v4l2Fmt2Str(mFormat.PixelFormat()),

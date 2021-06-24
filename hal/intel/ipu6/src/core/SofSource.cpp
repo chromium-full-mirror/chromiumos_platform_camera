@@ -81,7 +81,8 @@ int SofSource::initDev()
     mIsysReceiverSubDev = V4l2DeviceFactory::getSubDev(mCameraId, subDeviceNodeName);
 
     int status = mIsysReceiverSubDev->SubscribeEvent(V4L2_EVENT_FRAME_SYNC);
-    CheckError(status != OK, status, "%s: Failed to subscribe sync event 0", __func__);
+    CheckAndLogError(status != OK, status,
+                     "%s: Failed to subscribe sync event 0", __func__);
     LOG1("%s: Using SOF event id 0 for sync", __func__);
 
     return OK;

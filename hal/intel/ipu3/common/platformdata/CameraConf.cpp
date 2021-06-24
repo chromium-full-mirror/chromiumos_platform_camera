@@ -94,7 +94,8 @@ status_t AiqConf::initCMC()
     cpfData.size = size();
 
     bool ret = mCmc.init((ia_binary_data*)&(cpfData));
-    CheckError(ret == false, NO_INIT, "@%s, mCmc->init fails", __FUNCTION__);
+    CheckAndLogError(ret == false, NO_INIT, "@%s, mCmc->init fails",
+                     __FUNCTION__);
 
     ia_cmc_t* cmc = mCmc.getCmc();
     cmc_lens_shading_t* cmc_lens_shading = cmc->cmc_parsed_lens_shading.cmc_lens_shading;
@@ -179,7 +180,8 @@ status_t AiqConf::fillLensStaticMetadata(camera_metadata_t * metadata)
     status_t res = OK;
 
     ia_cmc_t* cmc = mCmc.getCmc();
-    CheckError(cmc == nullptr, UNKNOWN_ERROR, "@%s, mCmc.getCmc fails", __FUNCTION__);
+    CheckAndLogError(cmc == nullptr, UNKNOWN_ERROR, "@%s, mCmc.getCmc fails",
+                     __FUNCTION__);
 
     if (cmc->cmc_parsed_optics.cmc_optomechanics != nullptr) {
         uint16_t camera_features = cmc->cmc_parsed_optics.cmc_optomechanics->camera_actuator_features;
@@ -230,7 +232,8 @@ status_t AiqConf::fillLightSourceStaticMetadata(camera_metadata_t * metadata)
     initMapping(lightSourceMap);
 
     ia_cmc_t* cmc = mCmc.getCmc();
-    CheckError(cmc == nullptr, UNKNOWN_ERROR, "@%s, mCmc.getCmc fails", __FUNCTION__);
+    CheckAndLogError(cmc == nullptr, UNKNOWN_ERROR, "@%s, mCmc.getCmc fails",
+                     __FUNCTION__);
 
     // color matrices
     if (cmc->cmc_parsed_color_matrices.cmc_color_matrix != nullptr && cmc->cmc_parsed_color_matrices.cmc_color_matrices != nullptr) {
@@ -335,7 +338,8 @@ status_t AiqConf::fillSensorStaticMetadata(camera_metadata_t * metadata)
     status_t res = OK;
 
     ia_cmc_t* cmc = mCmc.getCmc();
-    CheckError(cmc == nullptr, UNKNOWN_ERROR, "@%s, mCmc.getCmc fails", __FUNCTION__);
+    CheckAndLogError(cmc == nullptr, UNKNOWN_ERROR, "@%s, mCmc.getCmc fails",
+                     __FUNCTION__);
 
     // colorFilterArrangement
     if (cmc->cmc_general_data != nullptr) {
@@ -430,7 +434,8 @@ status_t AiqConf::fillLscSizeStaticMetadata(camera_metadata_t * metadata)
     status_t res = OK;
 
     ia_cmc_t* cmc = mCmc.getCmc();
-    CheckError(cmc == nullptr, UNKNOWN_ERROR, "@%s, mCmc.getCmc fails", __FUNCTION__);
+    CheckAndLogError(cmc == nullptr, UNKNOWN_ERROR, "@%s, mCmc.getCmc fails",
+                     __FUNCTION__);
 
     if (cmc->cmc_parsed_lens_shading.cmc_lens_shading != nullptr) {
         int32_t lensShadingMapSize[2];

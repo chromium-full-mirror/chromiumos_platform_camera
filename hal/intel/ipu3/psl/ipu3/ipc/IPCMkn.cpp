@@ -40,7 +40,8 @@ bool IPCMkn::clientFlattenInit(ia_mkn_config_bits mkn_config_bits,
                                mkn_init_params* params)
 {
     LOG1("@%s, params:%p", __FUNCTION__, params);
-    CheckError(params == nullptr, false, "@%s, params is nullptr", __FUNCTION__);
+    CheckAndLogError(params == nullptr, false, "@%s, params is nullptr",
+                     __FUNCTION__);
 
     params->mkn_config_bits = mkn_config_bits;
     params->mkn_section_1_size = mkn_section_1_size;
@@ -52,7 +53,8 @@ bool IPCMkn::clientFlattenInit(ia_mkn_config_bits mkn_config_bits,
 bool IPCMkn::clientFlattenPrepare(uintptr_t mkn, ia_mkn_trg data_target, mkn_prepare_params* params)
 {
     LOG1("@%s, params:%p", __FUNCTION__, params);
-    CheckError(params == nullptr, false, "@%s, params is nullptr", __FUNCTION__);
+    CheckAndLogError(params == nullptr, false, "@%s, params is nullptr",
+                     __FUNCTION__);
 
     params->mkn_handle = mkn;
     params->data_target = data_target;
@@ -64,7 +66,8 @@ bool IPCMkn::clientUnflattenPrepare(const mkn_prepare_params& params,
                                ia_binary_data* mknData)
 {
     LOG1("@%s, mknData:%p", __FUNCTION__, mknData);
-    CheckError(mknData == nullptr, false, "@%s, mknData is nullptr", __FUNCTION__);
+    CheckAndLogError(mknData == nullptr, false, "@%s, mknData is nullptr",
+                     __FUNCTION__);
 
     ia_binary_data_mod* results = const_cast<ia_binary_data_mod*>(&params.results);
     mknData->data = results->data;
@@ -79,7 +82,8 @@ bool IPCMkn::serverFlattenPrepare(const ia_binary_data& inData,
                                mkn_prepare_params* params)
 {
     LOG1("@%s, params:%p", __FUNCTION__, params);
-    CheckError((params == nullptr), false, "@%s, params is nullptr", __FUNCTION__);
+    CheckAndLogError((params == nullptr), false, "@%s, params is nullptr",
+                     __FUNCTION__);
 
     ia_binary_data_mod* results = &params->results;
 

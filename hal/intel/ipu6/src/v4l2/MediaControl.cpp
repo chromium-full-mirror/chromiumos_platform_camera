@@ -80,8 +80,8 @@ MediaControl* MediaControl::getMediaControlInstance() {
 
         SysCall *sc = SysCall::getInstance();
         int fd = sc->open(fileName.c_str(), O_RDWR);
-        CheckError(fd < 0, nullptr, "%s: Error open media device %s:%s", __func__, fileName.c_str(),
-                   strerror(errno));
+        CheckAndLogError(fd < 0, nullptr, "%s: Error open media device %s:%s",
+                         __func__, fileName.c_str(), strerror(errno));
 
         media_device_info info;
         ret = sc->ioctl(fd, MEDIA_IOC_DEVICE_INFO, &info);
@@ -164,7 +164,7 @@ void MediaControl::clearEntities()
 
 MediaEntity *MediaControl::getEntityByName(const char *name)
 {
-    CheckError(!name, nullptr, "Invalid Entity name");
+    CheckAndLogError(!name, nullptr, "Invalid Entity name");
 
     for (auto &entity : mEntities) {
         if (strcmp(name, entity.info.name) == 0) {
@@ -746,9 +746,12 @@ int MediaControl::setMediaMcLink(vector <McLink> links)
               link.srcEntityName.c_str(), link.srcEntity, link.srcPad, link.sinkEntityName.c_str(),
               link.sinkEntity, link.sinkPad, link.enable);
         int ret = setupLink(link.srcEntity, link.srcPad, link.sinkEntity, link.sinkPad, link.enable);
-        CheckError(ret < 0, ret, "setup Link %s [%d:%d] ==> %s [%dx%d] enable %d failed.",
-                   link.srcEntityName.c_str(), link.srcEntity, link.srcPad,
-                   link.sinkEntityName.c_str(), link.sinkEntity, link.sinkPad, link.enable);
+        CheckAndLogError(
+            ret < 0, ret,
+            "setup Link %s [%d:%d] ==> %s [%dx%d] enable %d failed.",
+            link.srcEntityName.c_str(), link.srcEntity, link.srcPad,
+            link.sinkEntityName.c_str(), link.sinkEntity, link.sinkPad,
+            link.enable);
     }
     return OK;
 }
@@ -795,9 +798,10 @@ int MediaControl::setFormat(int cameraId, const McFormat *format, int targetWidt
     fmt.which = V4L2_SUBDEV_FORMAT_ACTIVE;
     fmt.format = mbusfmt;
     ret = subDev->SetFormat(fmt);
-    CheckError(ret < 0, BAD_VALUE, "set format %s [%d:%d] [%dx%d] %s failed.",
-            format->entityName.c_str(), format->entity, format->pad, format->width, format->height,
-            CameraUtils::pixelCode2String(format->pixelCode));
+    CheckAndLogError(
+        ret < 0, BAD_VALUE, "set format %s [%d:%d] [%dx%d] %s failed.",
+        format->entityName.c_str(), format->entity, format->pad, format->width,
+        format->height, CameraUtils::pixelCode2String(format->pixelCode));
 
     mbusfmt = fmt.format;
 
@@ -866,9 +870,11 @@ int MediaControl::setSelection(int cameraId,
         ret = BAD_VALUE;
     }
 
-    CheckError(ret < 0, BAD_VALUE, "set selection %s [%d:%d] selCmd: %d [%d, %d] [%dx%d] failed",
-            format->entityName.c_str(), format->entity, format->pad, format->selCmd,
-            format->top, format->left, format->width, format->height);
+    CheckAndLogError(
+        ret < 0, BAD_VALUE,
+        "set selection %s [%d:%d] selCmd: %d [%d, %d] [%dx%d] failed",
+        format->entityName.c_str(), format->entity, format->pad, format->selCmd,
+        format->top, format->left, format->width, format->height);
 
     return OK;
 }
@@ -892,7 +898,8 @@ int MediaControl::mediaCtlSetup(int cameraId, MediaCtlConf *mc, int width, int h
 
     /* Set link in format Configuration */
     ret = setMediaMcLink(mc->links);
-    CheckError(ret != OK, ret, "set MediaCtlConf McLink failed: ret = %d", ret);
+    CheckAndLogError(ret != OK, ret, "set MediaCtlConf McLink failed: ret = %d",
+                     ret);
 
     dumpEntityTopology();
 
@@ -900,8 +907,8 @@ int MediaControl::mediaCtlSetup(int cameraId, MediaCtlConf *mc, int width, int h
 }
 
 int MediaControl::getVCMI2CAddr(const char* vcmName, string* vcmI2CAddr) {
-    CheckError(!vcmI2CAddr, BAD_VALUE, "vcmI2CAddr is nullptr");
-    CheckError(!vcmName, BAD_VALUE, "vcmName is nullptr");
+    CheckAndLogError(!vcmI2CAddr, BAD_VALUE, "vcmI2CAddr is nullptr");
+    CheckAndLogError(!vcmName, BAD_VALUE, "vcmName is nullptr");
 
     for (auto &entity : mEntities) {
         if (strncmp(entity.info.name, vcmName, strlen(vcmName)) == 0) {
@@ -924,7 +931,7 @@ void MediaControl::mediaCtlClear(int cameraId, MediaCtlConf *mc)
 int MediaControl::getLensName(string *lensName)
 {
     LOG1("@%s", __func__);
-    CheckError(!lensName, UNKNOWN_ERROR, "lensName is nullptr");
+    CheckAndLogError(!lensName, UNKNOWN_ERROR, "lensName is nullptr");
 
     for (auto &entity : mEntities) {
         if (entity.info.type == MEDIA_ENT_T_V4L2_SUBDEV_LENS) {
@@ -966,7 +973,7 @@ bool MediaControl::checkAvailableSensor(const std::string &sensorEntityName,
 int MediaControl::getI2CBusAddress(const string &sensorEntityName, const string &sinkEntityName, string *i2cBus)
 {
     LOG1("@%s, sensorEntityName:%s, sinkEntityName:%s", __func__, sensorEntityName.c_str(), sinkEntityName.c_str());
-    CheckError(!i2cBus, UNKNOWN_ERROR, "i2cBus is nullptr");
+    CheckAndLogError(!i2cBus, UNKNOWN_ERROR, "i2cBus is nullptr");
 
     for (auto &entity : mEntities) {
         int linksCount = entity.info.links;

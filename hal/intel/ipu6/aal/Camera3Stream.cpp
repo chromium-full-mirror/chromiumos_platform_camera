@@ -133,14 +133,16 @@ void Camera3Stream::drainRequest() {
     std::shared_ptr<CaptureResult> result = captureResult->second;
     uint32_t frameNumber = captureResult->first;
 
-    CheckError(result == nullptr, VOID_VALUE, "%s, capture result is nullptr", __func__);
+    CheckAndLogError(result == nullptr, VOID_VALUE,
+                     "%s, capture result is nullptr", __func__);
     buffer_handle_t handle = result->handle;
     if (mBuffers.find(handle) != mBuffers.end() && mBuffers[handle] != nullptr) {
         std::shared_ptr<Camera3Buffer> ccBuf = mBuffers[handle];
         mBuffers.erase(handle);
         camera3_stream_buffer* buf = &result->outputBuffer;
 
-        CheckError(ccBuf == nullptr, VOID_VALUE, "%s, ccBuf is nullptr", __func__);
+        CheckAndLogError(ccBuf == nullptr, VOID_VALUE, "%s, ccBuf is nullptr",
+                         __func__);
         ccBuf->unlock();
         ccBuf->deinit();
         ccBuf->getFence(buf);
@@ -185,8 +187,8 @@ bool Camera3Stream::threadLoop() {
             mStreamStatus = PEND_PROCESS;
             return true;
         }
-        CheckError(ret != icamera::OK || !buffer, true, "[%p]failed to dequeue buffer, ret %d",
-                   this, ret);
+        CheckAndLogError(ret != icamera::OK || !buffer, true,
+                         "[%p]failed to dequeue buffer, ret %d", this, ret);
         LOG2("[%p]@ %s, buffer->timestamp:%lld addr %p", this, __func__, buffer->timestamp,
              buffer->addr);
 
@@ -248,7 +250,8 @@ bool Camera3Stream::threadLoop() {
                 }
             }
 
-            CheckError(!halOutput->cam3Buf, true, "can't identify the buffer source");
+            CheckAndLogError(!halOutput->cam3Buf, true,
+                             "can't identify the buffer source");
             halOutput->parameter = parameter;
             halOutput->cam3Buf->setTimeStamp(buffer->timestamp);
         }
@@ -296,11 +299,12 @@ bool Camera3Stream::threadLoop() {
     std::shared_ptr<Camera3Buffer> ccBuf = nullptr;
     {
         std::unique_lock<std::mutex> lock(mLock);
-        CheckError(mBuffers.find(handle) == mBuffers.end(), false, "can't find handle %p", handle);
+        CheckAndLogError(mBuffers.find(handle) == mBuffers.end(), false,
+                         "can't find handle %p", handle);
 
         ccBuf = mBuffers[handle];
         mBuffers.erase(handle);
-        CheckError(ccBuf == nullptr, false, "ccBuf is nullptr");
+        CheckAndLogError(ccBuf == nullptr, false, "ccBuf is nullptr");
     }
 
     if (inputCam3Buf || mHALStream.usage == icamera::CAMERA_STREAM_OPAQUE_RAW) {
@@ -325,9 +329,9 @@ bool Camera3Stream::threadLoop() {
             LOG2("%s, do software postProcessing for sequence: %ld", __func__, outCamBuf.sequence);
             icamera::status_t status =
                 mPostProcessor->doPostProcessing(outCam3Buf, parameter, ccBuf);
-            CheckError(status != icamera::OK, true,
-                       "@%s, doPostProcessing fails, mPostProcessType:%d", __func__,
-                       mPostProcessType);
+            CheckAndLogError(status != icamera::OK, true,
+                             "@%s, doPostProcessing fails, mPostProcessType:%d",
+                             __func__, mPostProcessType);
         } else if (outCam3Buf && outCam3Buf->data() != ccBuf->data()) {
             MEMCPY_S(ccBuf->data(), ccBuf->size(), outCam3Buf->data(), outCam3Buf->size());
         }
@@ -344,9 +348,10 @@ bool Camera3Stream::threadLoop() {
         if (mInputPostProcessType != icamera::POST_PROCESS_NONE) {
             icamera::status_t status =
                 mInputPostProcessor->doPostProcessing(inputCam3Buf, parameter, ccBuf);
-            CheckError(status != icamera::OK, true,
-                       "@%s, doPostProcessing fails, mInputPostProcessType:%d", __func__,
-                       mInputPostProcessType);
+            CheckAndLogError(
+                status != icamera::OK, true,
+                "@%s, doPostProcessing fails, mInputPostProcessType:%d",
+                __func__, mInputPostProcessType);
         } else {
             MEMCPY_S(ccBuf->data(), ccBuf->size(), inputCam3Buf->data(), inputCam3Buf->size());
         }
@@ -447,18 +452,22 @@ int Camera3Stream::processRequest(const std::shared_ptr<Camera3Buffer>& inputCam
 
     {
         std::unique_lock<std::mutex> lock(mLock);
-        CheckError(mBuffers.find(handle) != mBuffers.end(), icamera::BAD_VALUE,
-                   "handle %p is duplicated!", handle);
+        CheckAndLogError(mBuffers.find(handle) != mBuffers.end(),
+                         icamera::BAD_VALUE, "handle %p is duplicated!",
+                         handle);
 
         mBuffers[handle] = ccBuf;
     }
 
     icamera::status_t status = ccBuf->init(&outputBuffer, mCameraId);
-    CheckError(status != icamera::OK, icamera::BAD_VALUE, "Failed to init CameraBuffer");
+    CheckAndLogError(status != icamera::OK, icamera::BAD_VALUE,
+                     "Failed to init CameraBuffer");
     status = ccBuf->waitOnAcquireFence();
-    CheckError(status != icamera::OK, icamera::BAD_VALUE, "Failed to sync CameraBuffer");
+    CheckAndLogError(status != icamera::OK, icamera::BAD_VALUE,
+                     "Failed to sync CameraBuffer");
     status = ccBuf->lock();
-    CheckError(status != icamera::OK, icamera::BAD_VALUE, "Failed to lock buffer");
+    CheckAndLogError(status != icamera::OK, icamera::BAD_VALUE,
+                     "Failed to lock buffer");
 
     std::shared_ptr<StreamComInfo> streamInfo = std::make_shared<StreamComInfo>();
     streamInfo->cam3Buf = nullptr;
@@ -601,7 +610,8 @@ bool Camera3Stream::fetchRequestBuffers(icamera::camera_buffer_t* buffer, uint32
         LOG1("[%p]@%s get buffer from pool", this, __func__);
         if (mBufferPool) {
             buf = mBufferPool->acquireBuffer();
-            CheckError(buf == nullptr, false, "no available internal buffer");
+            CheckAndLogError(buf == nullptr, false,
+                             "no available internal buffer");
             // using buffer pool, store the buffer, then can return it when frame done
             mQueuedBuffer[frameNumber] = buf;
         } else {

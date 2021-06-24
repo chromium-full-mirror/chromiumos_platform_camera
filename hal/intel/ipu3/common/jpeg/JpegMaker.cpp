@@ -42,8 +42,8 @@ status_t JpegMaker::setupExifWithMetaData(int output_width, int output_height,
     LOG2("@%s", __FUNCTION__);
 
     auto* settings = request.getSettings();
-    CheckError(settings == nullptr, UNKNOWN_ERROR, "@%s, There is no settings in the request",
-               __FUNCTION__);
+    CheckAndLogError(settings == nullptr, UNKNOWN_ERROR,
+                     "@%s, There is no settings in the request", __FUNCTION__);
 
     processJpegSettings(settings, request.shouldSwapWidthHeight(), metaData);
     processExifSettings(settings, metaData);
@@ -75,7 +75,8 @@ status_t JpegMaker::getExif(ImgEncoder::EncodePackage& thumbnailPackage, uint8_t
                             uint32_t* exifSize)
 {
     LOG2("@%s:", __FUNCTION__);
-    CheckError(exifSize == nullptr, UNKNOWN_ERROR, "@%s, exifSize is a nullptr", __FUNCTION__);
+    CheckAndLogError(exifSize == nullptr, UNKNOWN_ERROR,
+                     "@%s, exifSize is a nullptr", __FUNCTION__);
 
     if (thumbnailPackage.encodedDataSize > 0) {
         mExifMaker->setThumbnail(static_cast<unsigned char*>(thumbnailPackage.output->data()),

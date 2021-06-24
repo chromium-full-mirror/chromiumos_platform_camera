@@ -73,8 +73,10 @@ ControlUnit::init()
     }
 
     const IPU3CameraCapInfo *cap = getIPU3CameraCapInfo(mCameraId);
-    CheckError(!cap, UNKNOWN_ERROR, "Not enough information for getting NVM data");
-    CheckError(cap->sensorType() != SENSOR_TYPE_RAW, UNKNOWN_ERROR, "SoC camera 3A control missing");
+    CheckAndLogError(!cap, UNKNOWN_ERROR,
+                     "Not enough information for getting NVM data");
+    CheckAndLogError(cap->sensorType() != SENSOR_TYPE_RAW, UNKNOWN_ERROR,
+                     "SoC camera 3A control missing");
 
     m3aWrapper = new Intel3aPlus(mCameraId);
     m3aWrapper->enableAiqdDataSave(true);
@@ -82,7 +84,8 @@ ControlUnit::init()
                                           MAX_STATISTICS_HEIGHT,
                                           cap->getNvmData(),
                                           cap->getSensorName());
-    CheckError(status != NO_ERROR, UNKNOWN_ERROR, "Error initializing 3A control");
+    CheckAndLogError(status != NO_ERROR, UNKNOWN_ERROR,
+                     "Error initializing 3A control");
 
     mSettingsProcessor = new SettingsProcessor(mCameraId, m3aWrapper, mStreamCfgProv);
     mSettingsProcessor->init();

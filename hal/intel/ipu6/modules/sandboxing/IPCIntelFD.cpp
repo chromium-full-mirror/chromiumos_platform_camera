@@ -34,7 +34,8 @@ IPCIntelFD::~IPCIntelFD() {
 bool IPCIntelFD::clientFlattenInit(unsigned int max_face_num, int cameraId,
                                    FaceDetectionInitParams* params) {
     LOG1("@%s, params:%p", __func__, params);
-    CheckError(params == nullptr, false, "@%s, params is nullptr", __func__);
+    CheckAndLogError(params == nullptr, false, "@%s, params is nullptr",
+                     __func__);
 
     params->max_face_num = max_face_num;
     params->cameraId = cameraId;
@@ -45,8 +46,8 @@ bool IPCIntelFD::clientFlattenInit(unsigned int max_face_num, int cameraId,
 bool IPCIntelFD::serverUnflattenRun(const FaceDetectionRunParams& inParams, void* imageData,
                                     pvl_image* image, int* cameraId) {
     LOG1("@%s, image:%p", __func__, image);
-    CheckError(image == nullptr || cameraId == nullptr, false, "@%s, image or cameraId is nullptr",
-               __func__);
+    CheckAndLogError(image == nullptr || cameraId == nullptr, false,
+                     "@%s, image or cameraId is nullptr", __func__);
 
     image->size = inParams.size;
     image->width = inParams.width;

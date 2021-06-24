@@ -109,15 +109,18 @@ void Metadata::writePAMetadata(RequestCtrlState &reqState)
 void Metadata::writeFDMetadata(RequestCtrlState &reqState, CVFaceEngineAbstractResult &fdResult)
 {
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL2, LOG_TAG);
-    CheckError(reqState.request == nullptr, VOID_VALUE, "@%s, request is nullptr", __FUNCTION__);
-    CheckError(reqState.ctrlUnitResult == nullptr, VOID_VALUE,
-               "@%s, ctrlUnitResult is nullptr", __FUNCTION__);
+    CheckAndLogError(reqState.request == nullptr, VOID_VALUE,
+                     "@%s, request is nullptr", __FUNCTION__);
+    CheckAndLogError(reqState.ctrlUnitResult == nullptr, VOID_VALUE,
+                     "@%s, ctrlUnitResult is nullptr", __FUNCTION__);
 
     const android::CameraMetadata* settings = reqState.request->getSettings();
-    CheckError(settings == nullptr, VOID_VALUE, "@%s, settings is nullptr", __FUNCTION__);
+    CheckAndLogError(settings == nullptr, VOID_VALUE,
+                     "@%s, settings is nullptr", __FUNCTION__);
 
     camera_metadata_ro_entry entry = settings->find(ANDROID_STATISTICS_FACE_DETECT_MODE);
-    CheckError(entry.count == 0, VOID_VALUE, "@%s: NO FD mode setting", __FUNCTION__);
+    CheckAndLogError(entry.count == 0, VOID_VALUE, "@%s: NO FD mode setting",
+                     __FUNCTION__);
 
     const uint8_t mode = entry.data.u8[0];
     reqState.ctrlUnitResult->update(ANDROID_STATISTICS_FACE_DETECT_MODE, &mode, entry.count);
@@ -233,10 +236,12 @@ void Metadata::writeMiscMetadata(RequestCtrlState &reqState) const
     reqState.ctrlUnitResult->update(ANDROID_CONTROL_SCENE_MODE, &sceneModeValue, 1);
 
     const android::CameraMetadata* settings = reqState.request->getSettings();
-    CheckError(settings == nullptr, VOID_VALUE, "@%s, settings is nullptr", __FUNCTION__);
+    CheckAndLogError(settings == nullptr, VOID_VALUE,
+                     "@%s, settings is nullptr", __FUNCTION__);
 
     camera_metadata_ro_entry entry = settings->find(ANDROID_STATISTICS_FACE_DETECT_MODE);
-    CheckError(entry.count == 0, VOID_VALUE, "@%s: NO FD mode setting", __FUNCTION__);
+    CheckAndLogError(entry.count == 0, VOID_VALUE, "@%s: NO FD mode setting",
+                     __FUNCTION__);
 
     const uint8_t mode = entry.data.u8[0];
     reqState.ctrlUnitResult->update(ANDROID_STATISTICS_FACE_DETECT_MODE, &mode, entry.count);

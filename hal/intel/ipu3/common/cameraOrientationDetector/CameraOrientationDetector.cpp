@@ -66,7 +66,9 @@ void CameraOrientationDetector::prepare()
         if ((dirp->d_type == DT_LNK) && (strncmp(dirp->d_name, filePrefix.c_str(), filePrefix.length()) == 0)) {
             std::string name = dirPath + dirp->d_name + "/name";
             int fd = open(name.c_str(), O_RDONLY);
-            CheckError((fd < 0), VOID_VALUE, "@%s, open %s failed. err:%s", __FUNCTION__, name.c_str(), strerror(errno));
+            CheckAndLogError((fd < 0), VOID_VALUE,
+                             "@%s, open %s failed. err:%s", __FUNCTION__,
+                             name.c_str(), strerror(errno));
 
             char buf[128] = {};
             int len = read(fd, buf, sizeof(buf));
@@ -88,13 +90,13 @@ void CameraOrientationDetector::prepare()
     // read out the scale value
     scaleName = gSensorDevPath + scaleName;
     int fd = open(scaleName.c_str(), O_RDONLY);
-    CheckError((fd < 0), VOID_VALUE, "@%s, open %s failed. err:%s",
-               __FUNCTION__, scaleName.c_str(), strerror(errno));
+    CheckAndLogError((fd < 0), VOID_VALUE, "@%s, open %s failed. err:%s",
+                     __FUNCTION__, scaleName.c_str(), strerror(errno));
     char buf[32] = {};
     int len = read(fd, buf, sizeof(buf));
     close(fd);
-    CheckError((len == -1), VOID_VALUE, "@%s, read %s failed. err:%s",
-               __FUNCTION__, scaleName.c_str(), strerror(errno));
+    CheckAndLogError((len == -1), VOID_VALUE, "@%s, read %s failed. err:%s",
+                     __FUNCTION__, scaleName.c_str(), strerror(errno));
     mScaleVal = atof(buf);
     LOG2("@%s, mScaleVal:%f", __FUNCTION__, mScaleVal);
 
@@ -108,8 +110,8 @@ void CameraOrientationDetector::prepare()
     for (auto& it : mVals) {
         const std::string& fileName = it.first;
         int fd = open(fileName.c_str(), O_RDONLY);
-        CheckError((fd < 0), VOID_VALUE, "@%s, open %s failed. err:%s",
-                   __FUNCTION__, fileName.c_str(), strerror(errno));
+        CheckAndLogError((fd < 0), VOID_VALUE, "@%s, open %s failed. err:%s",
+                         __FUNCTION__, fileName.c_str(), strerror(errno));
         mFds[fileName] = fd;
     }
 
@@ -129,13 +131,15 @@ CameraOrientationDetectorAngle CameraOrientationDetector::getOrientation()
         int fd = mFds[fileName];
 
         off_t pos = lseek(fd, 0, SEEK_SET);
-        CheckError((pos == -1), CAM_ORI_DETECTOR_ANGLE_0, "@%s, seek %s to beginning failed. err:%s",
-                   __FUNCTION__, fileName.c_str(), strerror(errno));
+        CheckAndLogError((pos == -1), CAM_ORI_DETECTOR_ANGLE_0,
+                         "@%s, seek %s to beginning failed. err:%s",
+                         __FUNCTION__, fileName.c_str(), strerror(errno));
 
         char buf[32] = {};
         int len = read(fd, buf, sizeof(buf));
-        CheckError((len == -1), CAM_ORI_DETECTOR_ANGLE_0, "@%s, read %s failed. err:%s",
-                   __FUNCTION__, fileName.c_str(), strerror(errno));
+        CheckAndLogError((len == -1), CAM_ORI_DETECTOR_ANGLE_0,
+                         "@%s, read %s failed. err:%s", __FUNCTION__,
+                         fileName.c_str(), strerror(errno));
 
         it.second = atoi(buf);
     }

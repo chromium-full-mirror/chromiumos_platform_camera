@@ -32,8 +32,9 @@ Intel3aCmc::Intel3aCmc(int cameraId):
     mCmc = nullptr;
     mCmcRemoteHandle = reinterpret_cast<uintptr_t>(nullptr);
 
-    CheckError((cameraId >= MAX_CAMERAS), VOID_VALUE,
-        "@%s, cameraId:%d >= MAX_CAMERAS:%d", __FUNCTION__, cameraId, MAX_CAMERAS);
+    CheckAndLogError((cameraId >= MAX_CAMERAS), VOID_VALUE,
+                     "@%s, cameraId:%d >= MAX_CAMERAS:%d", __FUNCTION__,
+                     cameraId, MAX_CAMERAS);
 
     std::string initName = "/cmcInit" + std::to_string(cameraId) + "Shm";
     std::string deinitName = "/cmcDeinit" + std::to_string(cameraId) + "Shm";
@@ -62,21 +63,28 @@ bool Intel3aCmc::init(const ia_binary_data* aiqb_binary)
 {
     LOG1("@%s, aiqb_binary:%p", __FUNCTION__, aiqb_binary);
 
-    CheckError(mInitialized == false, false, "@%s, mInitialized is false", __FUNCTION__);
-    CheckError((aiqb_binary == nullptr), false, "@%s, aiqb_binary is nullptr", __FUNCTION__);
-    CheckError((aiqb_binary->data == nullptr), false, "@%s, aiqb_binary->data is nullptr", __FUNCTION__);
-    CheckError((aiqb_binary->size == 0), false, "@%s, aiqb_binary->size is 0", __FUNCTION__);
+    CheckAndLogError(mInitialized == false, false, "@%s, mInitialized is false",
+                     __FUNCTION__);
+    CheckAndLogError((aiqb_binary == nullptr), false,
+                     "@%s, aiqb_binary is nullptr", __FUNCTION__);
+    CheckAndLogError((aiqb_binary->data == nullptr), false,
+                     "@%s, aiqb_binary->data is nullptr", __FUNCTION__);
+    CheckAndLogError((aiqb_binary->size == 0), false,
+                     "@%s, aiqb_binary->size is 0", __FUNCTION__);
 
     cmc_init_params* params = static_cast<cmc_init_params*>(mMemInit.mAddr);
 
     bool ret = mIpc.clientFlattenInit(*aiqb_binary, params);
-    CheckError(ret == false, false, "@%s, clientFlattenInit fails", __FUNCTION__);
+    CheckAndLogError(ret == false, false, "@%s, clientFlattenInit fails",
+                     __FUNCTION__);
 
     ret = mCommon.requestSync(IPC_3A_CMC_INIT, mMemInit.mHandle);
-    CheckError(ret == false, false, "@%s, requestSync fails", __FUNCTION__);
+    CheckAndLogError(ret == false, false, "@%s, requestSync fails",
+                     __FUNCTION__);
 
     ret = mIpc.clientUnflattenInit(*params, &mCmc, &mCmcRemoteHandle);
-    CheckError(ret == false, false, "@%s, clientUnflattenInit fails", __FUNCTION__);
+    CheckAndLogError(ret == false, false, "@%s, clientUnflattenInit fails",
+                     __FUNCTION__);
 
     return true;
 }
@@ -85,16 +93,20 @@ void Intel3aCmc::deinit()
 {
     LOG1("@%s, mCmc:%p", __FUNCTION__, mCmc);
 
-    CheckError(mInitialized == false, VOID_VALUE, "@%s, mInitialized is false", __FUNCTION__);
-    CheckError(mCmc == nullptr, VOID_VALUE, "@%s, mCmc is nullptr", __FUNCTION__);
-    CheckError(reinterpret_cast<ia_cmc_t*>(mCmcRemoteHandle) == nullptr,
-        VOID_VALUE, "@%s, mCmcRemoteHandle is nullptr", __FUNCTION__);
+    CheckAndLogError(mInitialized == false, VOID_VALUE,
+                     "@%s, mInitialized is false", __FUNCTION__);
+    CheckAndLogError(mCmc == nullptr, VOID_VALUE, "@%s, mCmc is nullptr",
+                     __FUNCTION__);
+    CheckAndLogError(reinterpret_cast<ia_cmc_t*>(mCmcRemoteHandle) == nullptr,
+                     VOID_VALUE, "@%s, mCmcRemoteHandle is nullptr",
+                     __FUNCTION__);
 
     cmc_deinit_params* params = static_cast<cmc_deinit_params*>(mMemDeinit.mAddr);
     params->cmc_handle = mCmcRemoteHandle;
 
     bool ret = mCommon.requestSync(IPC_3A_CMC_DEINIT, mMemDeinit.mHandle);
-    CheckError(ret == false, VOID_VALUE, "@%s, requestSync fails", __FUNCTION__);
+    CheckAndLogError(ret == false, VOID_VALUE, "@%s, requestSync fails",
+                     __FUNCTION__);
     mCmc = nullptr;
     mCmcRemoteHandle = reinterpret_cast<uintptr_t>(nullptr);
 }

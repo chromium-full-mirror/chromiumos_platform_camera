@@ -142,14 +142,15 @@ void SyncManager::updateCameraBufInfo(int cameraId, camera_buf_info* info)
 void SyncManager::updateSyncCamNum()
 {
     AutoMutex l(mLock);
-    CheckError(mTotalSyncCamNum >= MAX_CAMERA_NUMBER, VOID_VALUE,
-               "%s: sync cameras enough!", __func__);
+    CheckAndLogError(mTotalSyncCamNum >= MAX_CAMERA_NUMBER, VOID_VALUE,
+                     "%s: sync cameras enough!", __func__);
     mTotalSyncCamNum++;
 }
 
 bool SyncManager::vcSynced(int vc)
 {
-    CheckError(vc >= MAX_CAMERA_NUMBER, false, "%s: vc %d error!", __func__, vc);
+    CheckAndLogError(vc >= MAX_CAMERA_NUMBER, false, "%s: vc %d error!",
+                     __func__, vc);
 
     AutoMutex l(mVcSyncLock);
     int count = mVcSyncCount[vc];
@@ -183,7 +184,8 @@ bool SyncManager::vcSynced(int vc)
 
 void SyncManager::updateVcSyncCount(int vc)
 {
-    CheckError(vc >= MAX_CAMERA_NUMBER, VOID_VALUE, "%s: vc %d error!", __func__, vc);
+    CheckAndLogError(vc >= MAX_CAMERA_NUMBER, VOID_VALUE, "%s: vc %d error!",
+                     __func__, vc);
     AutoMutex l(mVcSyncLock);
     mVcSyncCount[vc] = (mVcSyncCount[vc] + 1) % (max_vc_sync_count + 1);
 };

@@ -234,7 +234,8 @@ status_t Intel3aCore::init(int maxGridW,
     bool ret = mMkn.init(ia_mkn_cfg_compression,
                        MAKERNOTE_SECTION1_SIZE,
                        MAKERNOTE_SECTION2_SIZE);
-    CheckError(ret == false, UNKNOWN_ERROR, "@%s, Error in initing makernote", __FUNCTION__);
+    CheckAndLogError(ret == false, UNKNOWN_ERROR,
+                     "@%s, Error in initing makernote", __FUNCTION__);
 
     iaErr = mMkn.enable(true);
     if (iaErr != ia_err_none) {
@@ -243,8 +244,8 @@ status_t Intel3aCore::init(int maxGridW,
     }
 
     mCmc = aiqConf->getCMC();
-    CheckError(mCmc == nullptr, NO_INIT,
-        "@%s, call getCMC() fails, not initialized", __FUNCTION__);
+    CheckAndLogError(mCmc == nullptr, NO_INIT,
+                     "@%s, call getCMC() fails, not initialized", __FUNCTION__);
 
     ia_binary_data aiqdData;
     CLEAR(aiqdData);
@@ -264,7 +265,8 @@ status_t Intel3aCore::init(int maxGridW,
                                 NUM_EXPOSURES,
                                 mCmc->getCmcHandle(),
                                 mMkn.getMknHandle());
-    CheckError(ret == false, UNKNOWN_ERROR, "@%s, Error in IA AIQ init", __FUNCTION__);
+    CheckAndLogError(ret == false, UNKNOWN_ERROR, "@%s, Error in IA AIQ init",
+                     __FUNCTION__);
 
     LOG1("@%s: AIQ version: %s.", __FUNCTION__, mAiq.getVersion());
 

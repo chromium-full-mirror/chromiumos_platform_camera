@@ -119,8 +119,8 @@ MINT32 FDIpcClientAdapter::FDVTInit(MTKFDFTInitInfo* init_data) {
     Params->FDImageWidthArray[i] = init_data->FDImageWidthArray[i];
     Params->FDImageHeightArray[i] = init_data->FDImageHeightArray[i];
   }
-  CheckError(sendRequest(IPC_FD_INIT, &mMemInitInfo) == false,
-             FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
+  CheckAndLogError(sendRequest(IPC_FD_INIT, &mMemInitInfo) == false,
+                   FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
   TRACE_FUNC_EXIT();
   return 0;
 }
@@ -134,8 +134,8 @@ MINT32 FDIpcClientAdapter::FDVTMain(FdOptions* options, int memFd) {
   }
   memcpy(&(Params->mainParam), options, sizeof(FDIPCMainParam));
   Params->fdBuffer = mFDBufferHandler;
-  CheckError(sendRequest(IPC_FD_MAIN, &mMemMainParam) == false,
-             FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
+  CheckAndLogError(sendRequest(IPC_FD_MAIN, &mMemMainParam) == false,
+                   FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
   options->doPhase2 = (Params->mainParam).doPhase2;
   TRACE_FUNC_EXIT();
   return 0;
@@ -143,8 +143,8 @@ MINT32 FDIpcClientAdapter::FDVTMain(FdOptions* options, int memFd) {
 MINT32 FDIpcClientAdapter::FDGetCalData(fd_cal_struct* fd_cal_data) {
   TRACE_FUNC_ENTER();
   FDCalData* Params = static_cast<FDCalData*>(mMemFdGetCalData.mAddr);
-  CheckError(sendRequest(IPC_FD_GET_CAL_DATA, &mMemFdGetCalData) == false,
-             FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
+  CheckAndLogError(sendRequest(IPC_FD_GET_CAL_DATA, &mMemFdGetCalData) == false,
+                   FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
   memcpy(fd_cal_data, &(Params->calData), sizeof(FDIPCCalData));
   TRACE_FUNC_EXIT();
   return 0;
@@ -154,23 +154,23 @@ MINT32 FDIpcClientAdapter::FDSetCalData(fd_cal_struct* fd_cal_data) {
   TRACE_FUNC_ENTER();
   FDCalData* Params = static_cast<FDCalData*>(mMemFdSetCalData.mAddr);
   memcpy(&(Params->calData), fd_cal_data, sizeof(FDIPCCalData));
-  CheckError(sendRequest(IPC_FD_SET_CAL_DATA, &mMemFdSetCalData) == false,
-             FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
+  CheckAndLogError(sendRequest(IPC_FD_SET_CAL_DATA, &mMemFdSetCalData) == false,
+                   FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
   return 0;
 }
 
 MINT32 FDIpcClientAdapter::FDVTMainPhase2() {
   TRACE_FUNC_ENTER();
-  CheckError(sendRequest(IPC_FD_MAIN_PHASE2, &mMemMainPhase2) == false,
-             FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
+  CheckAndLogError(sendRequest(IPC_FD_MAIN_PHASE2, &mMemMainPhase2) == false,
+                   FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
   TRACE_FUNC_EXIT();
   return 0;
 }
 
 MINT32 FDIpcClientAdapter::FDVTReset() {
   TRACE_FUNC_ENTER();
-  CheckError(sendRequest(IPC_FD_RESET, &mMemReset) == false, FAILED_TRANSACTION,
-             "@%s, requestSync fails", __FUNCTION__);
+  CheckAndLogError(sendRequest(IPC_FD_RESET, &mMemReset) == false,
+                   FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
   TRACE_FUNC_EXIT();
   return 0;
 }
@@ -187,8 +187,8 @@ MINT32 FDIpcClientAdapter::FDVTGetResult(MUINT8* a_FD_ICS_Result,
       static_cast<FDGetResultInfo*>(mMemFdResultInfo.mAddr);
   Params->width = Width;
   Params->height = Height;
-  CheckError(sendRequest(IPC_FD_GETRESULT, &mMemFdResultInfo) == false,
-             FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
+  CheckAndLogError(sendRequest(IPC_FD_GETRESULT, &mMemFdResultInfo) == false,
+                   FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
   memcpy(reinterpret_cast<MtkCameraFaceMetadata*>(a_FD_ICS_Result),
          &((Params->FaceResult).result), sizeof(FDIPCResult));
   memcpy((reinterpret_cast<MtkCameraFaceMetadata*>(a_FD_ICS_Result))->faces,

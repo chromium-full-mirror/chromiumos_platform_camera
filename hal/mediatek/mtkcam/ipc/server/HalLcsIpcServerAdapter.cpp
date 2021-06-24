@@ -42,8 +42,8 @@ int HalLcsIpcServerAdapter::extractSensor(void* addr) {
 
 int HalLcsIpcServerAdapter::create(void* addr, int dataSize) {
   TRACE_FUNC_ENTER();
-  CheckError((dataSize < sizeof(CreateParams)), UNKNOWN_ERROR,
-             "@%s, buffer is small", __FUNCTION__);
+  CheckAndLogError((dataSize < sizeof(CreateParams)), UNKNOWN_ERROR,
+                   "@%s, buffer is small", __FUNCTION__);
   int sensor_idx = 0;
   sensor_idx = extractSensor(addr);
   if (sensor_idx < 0)
@@ -60,8 +60,8 @@ int HalLcsIpcServerAdapter::create(void* addr, int dataSize) {
 
 int HalLcsIpcServerAdapter::init(void* addr, int dataSize) {
   TRACE_FUNC_ENTER();
-  CheckError((dataSize < sizeof(InitParams)), UNKNOWN_ERROR,
-             "@%s, buffer is small", __FUNCTION__);
+  CheckAndLogError((dataSize < sizeof(InitParams)), UNKNOWN_ERROR,
+                   "@%s, buffer is small", __FUNCTION__);
   int sensor_idx = 0;
   sensor_idx = extractSensor(addr);
   if (sensor_idx < 0)
@@ -80,8 +80,8 @@ int HalLcsIpcServerAdapter::init(void* addr, int dataSize) {
 
 int HalLcsIpcServerAdapter::config(void* addr, int dataSize) {
   TRACE_FUNC_ENTER();
-  CheckError((dataSize < sizeof(ConfigParams)), UNKNOWN_ERROR,
-             "@%s, buffer is small", __FUNCTION__);
+  CheckAndLogError((dataSize < sizeof(ConfigParams)), UNKNOWN_ERROR,
+                   "@%s, buffer is small", __FUNCTION__);
   int sensor_idx = 0;
   sensor_idx = extractSensor(addr);
   if (sensor_idx < 0)
@@ -106,8 +106,8 @@ int HalLcsIpcServerAdapter::config(void* addr, int dataSize) {
 
 int HalLcsIpcServerAdapter::uninit(void* addr, int dataSize) {
   TRACE_FUNC_ENTER();
-  CheckError((dataSize < sizeof(UninitParams)), UNKNOWN_ERROR,
-             "@%s, buffer is small", __FUNCTION__);
+  CheckAndLogError((dataSize < sizeof(UninitParams)), UNKNOWN_ERROR,
+                   "@%s, buffer is small", __FUNCTION__);
   int sensor_idx = 0;
   sensor_idx = extractSensor(addr);
   if (sensor_idx < 0)

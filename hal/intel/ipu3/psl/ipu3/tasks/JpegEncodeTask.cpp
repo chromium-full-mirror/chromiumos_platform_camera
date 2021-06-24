@@ -304,7 +304,8 @@ JpegEncodeTask::handleMessageNewJpegInput(ITaskEventListener::PUTaskEvent &msg)
     uint8_t* finalExifDataPtr = static_cast<uint8_t*>(mExifData.get());
     uint32_t finalExifDataSize;
     status = mJpegMaker->getExif(thumbnailEncodePackage, finalExifDataPtr, &finalExifDataSize);
-    CheckError(status != 0, status, "@%s, Failed to get Exif", __FUNCTION__);
+    CheckAndLogError(status != 0, status, "@%s, Failed to get Exif",
+                     __FUNCTION__);
 
     // Encode for final output.
     ImgEncoder::EncodePackage finalEncodePackage;
@@ -314,7 +315,8 @@ JpegEncodeTask::handleMessageNewJpegInput(ITaskEventListener::PUTaskEvent &msg)
     finalEncodePackage.exifData = finalExifDataPtr;
     finalEncodePackage.exifDataSize = finalExifDataSize;
     isEncoded = mImgEncoder->encodeSync(finalEncodePackage);
-    CheckError(!isEncoded, UNKNOWN_ERROR, "@%s, Failed to encode main image", __FUNCTION__);
+    CheckAndLogError(!isEncoded, UNKNOWN_ERROR,
+                     "@%s, Failed to encode main image", __FUNCTION__);
 
     // Write jpeg size to the end of the buffer.
     finalEncodePackage.output->lock();

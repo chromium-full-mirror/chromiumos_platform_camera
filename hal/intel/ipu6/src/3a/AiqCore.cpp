@@ -119,7 +119,8 @@ int AiqCore::init() {
     mAiqState = AIQ_INIT;
 
     int ret = mIntel3AParameter->init();
-    CheckError(ret != OK, ret, "@%s, Init 3a parameter failed ret: %d", __func__, ret);
+    CheckAndLogError(ret != OK, ret, "@%s, Init 3a parameter failed ret: %d",
+                     __func__, ret);
 
     CLEAR(mLastAeResult),
     CLEAR(mLastAwbResult),
@@ -192,11 +193,13 @@ int AiqCore::calculateHyperfocalDistance(TuningMode mode) {
     LOG3A("@%s, tuning mode: %d", __func__, mode);
 
     IntelCca* intelCca = getIntelCca(mode);
-    CheckError(!intelCca, BAD_VALUE, "%s, cca is nullptr, mode:%d", __func__, mode);
+    CheckAndLogError(!intelCca, BAD_VALUE, "%s, cca is nullptr, mode:%d",
+                     __func__, mode);
 
     cca::cca_cmc cmc;
     ia_err ret = intelCca->getCMC(&cmc);
-    CheckError(ret != ia_err_none, BAD_VALUE, "@%s get cmc data failed", __func__);
+    CheckAndLogError(ret != ia_err_none, BAD_VALUE, "@%s get cmc data failed",
+                     __func__);
 
     mHyperFocalDistance = AiqUtils::calculateHyperfocalDistance(cmc);
 
@@ -227,7 +230,7 @@ int AiqCore::calculateHyperfocalDistance(TuningMode mode) {
 int AiqCore::calculateDepthOfField(const cca::cca_af_results &afResults,
                                    camera_range_t *focusRange) {
     LOG3A("@%s, focusRange:%p", __func__, focusRange);
-    CheckError(!focusRange, BAD_VALUE, "@%s, Bad input values", __func__);
+    CheckAndLogError(!focusRange, BAD_VALUE, "@%s, Bad input values", __func__);
 
     const float DEFAULT_DOF = 5000.0f;
     focusRange->min = 1000.0f / DEFAULT_DOF;
@@ -240,11 +243,12 @@ int AiqCore::calculateDepthOfField(const cca::cca_af_results &afResults,
     }
 
     IntelCca* intelCca = getIntelCca(mTuningMode);
-    CheckError(!intelCca, BAD_VALUE, "%s, cca is nullptr, mTuningMode:%d", __func__, mTuningMode);
+    CheckAndLogError(!intelCca, BAD_VALUE, "%s, cca is nullptr, mTuningMode:%d",
+                     __func__, mTuningMode);
 
     cca::cca_cmc cmc;
     int ret = intelCca->getCMC(&cmc);
-    CheckError(ret != OK, BAD_VALUE, "@%s get cmc data failed", __func__);
+    CheckAndLogError(ret != OK, BAD_VALUE, "@%s get cmc data failed", __func__);
 
     // focal length is stored in CMC in hundreds of millimeters
     float focalLengthMillis = static_cast<float>(cmc.optics.effect_focal_length) / 100;
@@ -271,7 +275,8 @@ int AiqCore::updateParameter(const aiq_parameter_t &param) {
 
     if (mTuningMode != param.tuningMode) {
         int ret = calculateHyperfocalDistance(param.tuningMode);
-        CheckError(ret != OK, ret, "%s calculateHyperfocalDistance fails", __func__);
+        CheckAndLogError(ret != OK, ret, "%s calculateHyperfocalDistance fails",
+                         __func__);
         mTuningMode = param.tuningMode;
     }
     mShadingMode = param.shadingMode;
@@ -300,12 +305,13 @@ int AiqCore::setStatsParams(const cca::cca_stats_params &statsParams) {
     int ret = OK;
 
     IntelCca* intelCca = getIntelCca(mTuningMode);
-    CheckError(!intelCca, UNKNOWN_ERROR, "%s, intelCca is nullptr, mode:%d", __func__, mTuningMode);
+    CheckAndLogError(!intelCca, UNKNOWN_ERROR,
+                     "%s, intelCca is nullptr, mode:%d", __func__, mTuningMode);
     {
         PERF_CAMERA_ATRACE_PARAM1_IMAGING("intelCca->setStatsParams", 1);
         ia_err iaErr = intelCca->setStatsParams(statsParams);
         ret = AiqUtils::convertError(iaErr);
-        CheckError(ret != OK, ret, "setStatsParams fails, ret: %d", ret);
+        CheckAndLogError(ret != OK, ret, "setStatsParams fails, ret: %d", ret);
     }
 
     mTimestamp = statsParams.frame_timestamp;
@@ -315,7 +321,8 @@ int AiqCore::setStatsParams(const cca::cca_stats_params &statsParams) {
 
 int AiqCore::runAe(long requestId, AiqResult* aiqResult) {
     LOG3A("@%s, aiqResult:%p, requestId:%d", __func__, aiqResult, requestId);
-    CheckError(!aiqResult, BAD_VALUE, "@%s, aiqResult is nullptr", __func__);
+    CheckAndLogError(!aiqResult, BAD_VALUE, "@%s, aiqResult is nullptr",
+                     __func__);
 
     // run AE
     return runAEC(requestId, &aiqResult->mAeResults);
@@ -324,7 +331,8 @@ int AiqCore::runAe(long requestId, AiqResult* aiqResult) {
 int AiqCore::runAiq(long requestId, AiqResult *aiqResult) {
     LOG3A("@%s, aiqResult:%p, requestId:%d, mTonemapMode:%d", __func__,
           aiqResult, requestId, mTonemapMode);
-    CheckError(!aiqResult, BAD_VALUE, "@%s, aiqResult is nullptr", __func__);
+    CheckAndLogError(!aiqResult, BAD_VALUE, "@%s, aiqResult is nullptr",
+                     __func__);
 
     int aaaRunType = IMAGING_ALGO_AWB | IMAGING_ALGO_GBCE | IMAGING_ALGO_PA;
     if (PlatformData::getLensHwType(mCameraId) == LENS_VCM_HW) {
@@ -336,7 +344,8 @@ int AiqCore::runAiq(long requestId, AiqResult *aiqResult) {
 
     // get the IntelCca instance
     IntelCca* intelCca = getIntelCca(mTuningMode);
-    CheckError(!intelCca, UNKNOWN_ERROR, "%s, intelCca is null, mode:%d", __func__, mTuningMode);
+    CheckAndLogError(!intelCca, UNKNOWN_ERROR, "%s, intelCca is null, mode:%d",
+                     __func__, mTuningMode);
 
     mAiqParams->bitmap = 0;
 
@@ -393,7 +402,7 @@ int AiqCore::runAiq(long requestId, AiqResult *aiqResult) {
         ia_err iaErr = intelCca->runAIQ(requestId, *mAiqParams.get(), mAiqResults.get());
         mAiqRunTime++;
         ret = AiqUtils::convertError(iaErr);
-        CheckError(ret != OK, ret, "@%s, runAIQ, ret: %d", __func__, ret);
+        CheckAndLogError(ret != OK, ret, "@%s, runAIQ, ret: %d", __func__, ret);
     }
 
     // handle awb result
@@ -445,7 +454,7 @@ int AiqCore::runAiq(long requestId, AiqResult *aiqResult) {
         AiqUtils::dumpSaResults(mAiqResults->sa_output);
         ret |= processSAResults(&mAiqResults->sa_output, aiqResult->mLensShadingMap);
     }
-    CheckError(ret != OK, ret, "run3A failed, ret: %d", ret);
+    CheckAndLogError(ret != OK, ret, "run3A failed, ret: %d", ret);
 
     uint16_t pixelInLine = aiqResult->mAeResults.exposures[0].sensor_exposure->line_length_pixels;
     uint16_t lineInFrame = aiqResult->mAeResults.exposures[0].sensor_exposure->frame_length_lines;
@@ -461,7 +470,8 @@ int AiqCore::runAiq(long requestId, AiqResult *aiqResult) {
 
 int AiqCore::runAEC(long requestId, cca::cca_ae_results* aeResults) {
     LOG3A("@%s, aeResults:%p", __func__, aeResults);
-    CheckError(!aeResults, BAD_VALUE, "@%s, aeResults is nullptr", __func__);
+    CheckAndLogError(!aeResults, BAD_VALUE, "@%s, aeResults is nullptr",
+                     __func__);
     PERF_CAMERA_ATRACE();
 
     int ret = OK;
@@ -478,12 +488,13 @@ int AiqCore::runAEC(long requestId, cca::cca_ae_results* aeResults) {
     LOG3A("AEC frame_use: %d, bypass: %d", mIntel3AParameter->mAeParams.frame_use,
           mIntel3AParameter->mAeParams.is_bypass);
     IntelCca* intelCca = getIntelCca(mTuningMode);
-    CheckError(!intelCca, UNKNOWN_ERROR, "%s, intelCca is null, m:%d", __func__, mTuningMode);
+    CheckAndLogError(!intelCca, UNKNOWN_ERROR, "%s, intelCca is null, m:%d",
+                     __func__, mTuningMode);
     {
         PERF_CAMERA_ATRACE_PARAM1_IMAGING("intelCca->runAEC", 1);
         ia_err iaErr = intelCca->runAEC(requestId, mIntel3AParameter->mAeParams, newAeResults);
         ret = AiqUtils::convertError(iaErr);
-        CheckError(ret != OK, ret, "Error running AE, ret: %d", ret);
+        CheckAndLogError(ret != OK, ret, "Error running AE, ret: %d", ret);
     }
 
     mIntel3AParameter->updateAeResult(newAeResults);
@@ -499,8 +510,8 @@ void AiqCore::focusDistanceResult(const cca::cca_af_results *afResults,
                                   camera_range_t *focusRange) {
     LOG3A("@%s, afResults:%p, afDistanceDiopters:%p, focusRange:%p", __func__,
           afResults, afDistanceDiopters, focusRange);
-    CheckError(!afResults || !afDistanceDiopters || !focusRange, VOID_VALUE,
-               "@%s, Bad input values", __func__);
+    CheckAndLogError(!afResults || !afDistanceDiopters || !focusRange,
+                     VOID_VALUE, "@%s, Bad input values", __func__);
 
     *afDistanceDiopters = 1.2f;
     if (mIntel3AParameter->mAfParams.focus_mode == ia_aiq_af_operation_mode_infinity) {
@@ -523,7 +534,8 @@ void AiqCore::focusDistanceResult(const cca::cca_af_results *afResults,
 
 int AiqCore::checkColorOrder(cmc_bayer_order bayerOrder, ColorOrder *colorOrder) {
     LOG3A("@%s, bayerOrder = %d, colorOrder:%p", __func__, bayerOrder, colorOrder);
-    CheckError(!colorOrder, BAD_VALUE, "@%s, colorOrder is nullptr", __func__);
+    CheckAndLogError(!colorOrder, BAD_VALUE, "@%s, colorOrder is nullptr",
+                     __func__);
 
     int ret = OK;
     switch (bayerOrder) {
@@ -583,8 +595,9 @@ int AiqCore::checkColorOrder(cmc_bayer_order bayerOrder, ColorOrder *colorOrder)
 int AiqCore::reFormatLensShadingMap(const LSCGrid &inputLscGrid, float *dstLscGridRGGB) {
     LOG3A("@%s, width %d, height %d", __func__, inputLscGrid.width, inputLscGrid.height);
 
-    CheckError(inputLscGrid.isBad() || !dstLscGridRGGB, BAD_VALUE,
-               "@%s, Bad input values for lens shading map reformatting", __func__);
+    CheckAndLogError(inputLscGrid.isBad() || !dstLscGridRGGB, BAD_VALUE,
+                     "@%s, Bad input values for lens shading map reformatting",
+                     __func__);
 
     // Metadata spec request order [R, Geven, Godd, B]
     // the lensShading from ISP is 4 width * height block,
@@ -603,8 +616,10 @@ int AiqCore::reFormatLensShadingMap(const LSCGrid &inputLscGrid, float *dstLscGr
 int AiqCore::storeLensShadingMap(const LSCGrid &inputLscGrid,
                                  const LSCGrid &resizeLscGrid, float *dstLscGridRGGB) {
     LOG3A("@%s", __func__);
-    CheckError(inputLscGrid.isBad() || resizeLscGrid.isBad() || !dstLscGridRGGB, BAD_VALUE,
-               "@%s, Bad input values for lens shading map storing", __func__);
+    CheckAndLogError(
+        inputLscGrid.isBad() || resizeLscGrid.isBad() || !dstLscGridRGGB,
+        BAD_VALUE, "@%s, Bad input values for lens shading map storing",
+        __func__);
 
     int destWidth = resizeLscGrid.width;
     int destHeight = resizeLscGrid.height;
@@ -641,14 +656,16 @@ int AiqCore::storeLensShadingMap(const LSCGrid &inputLscGrid,
 
 int AiqCore::processSAResults(cca::cca_sa_results *saResults, float *lensShadingMap) {
     LOG3A("@%s, saResults:%p, lensShadingMap:%p", __func__, saResults, lensShadingMap);
-    CheckError(!saResults || !lensShadingMap, BAD_VALUE, "@%s, Bad input values", __func__);
+    CheckAndLogError(!saResults || !lensShadingMap, BAD_VALUE,
+                     "@%s, Bad input values", __func__);
 
     if (mLensShadingMapMode == LENS_SHADING_MAP_MODE_OFF) return OK;
 
     if (saResults->lsc_update) {
         ColorOrder co_ind = {};
         int ret = checkColorOrder(saResults->color_order, &co_ind);
-        CheckError(ret != OK, BAD_VALUE, "Failed to checkColorOrder, ret: %d", ret);
+        CheckAndLogError(ret != OK, BAD_VALUE,
+                         "Failed to checkColorOrder, ret: %d", ret);
 
         LSCGrid inputGrid;
         inputGrid.gridB = saResults->lsc_grid[co_ind.b[0]][co_ind.b[1]];
@@ -691,8 +708,8 @@ int AiqCore::processSAResults(cca::cca_sa_results *saResults, float *lensShading
 }
 
 IntelCca* AiqCore::getIntelCca(TuningMode tuningMode) {
-    CheckError(tuningMode >= TUNING_MODE_MAX, nullptr,
-               "@%s, wrong tuningMode:%d", __func__, tuningMode);
+    CheckAndLogError(tuningMode >= TUNING_MODE_MAX, nullptr,
+                     "@%s, wrong tuningMode:%d", __func__, tuningMode);
 
     return IntelCca::getInstance(mCameraId, tuningMode);
 }

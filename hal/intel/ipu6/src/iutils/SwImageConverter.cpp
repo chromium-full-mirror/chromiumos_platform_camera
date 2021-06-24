@@ -360,7 +360,8 @@ int SwImageConverter::convertFormat(unsigned int width, unsigned int height,
                         unsigned char *inBuf, unsigned int inLength, unsigned int srcFmt,
                         unsigned char *outBuf, unsigned int outLength, unsigned int dstFmt)
 {
-    CheckError((inBuf == nullptr || outBuf == nullptr), BAD_VALUE, "Invalid input(%p) or output buffer(%p)", inBuf, outBuf);
+    CheckAndLogError((inBuf == nullptr || outBuf == nullptr), BAD_VALUE,
+                     "Invalid input(%p) or output buffer(%p)", inBuf, outBuf);
 
     unsigned int x, y;
     unsigned short bayer_data[4];

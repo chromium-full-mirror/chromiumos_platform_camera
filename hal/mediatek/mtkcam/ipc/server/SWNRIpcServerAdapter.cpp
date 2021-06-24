@@ -43,8 +43,8 @@ int SWNRIpcServerAdapter::extractSensor(void* addr) {
 
 int SWNRIpcServerAdapter::create(void* addr, int dataSize) {
   TRACE_FUNC_ENTER();
-  CheckError((dataSize < sizeof(CreateParams)), UNKNOWN_ERROR,
-             "@%s, buffer is small", __FUNCTION__);
+  CheckAndLogError((dataSize < sizeof(CreateParams)), UNKNOWN_ERROR,
+                   "@%s, buffer is small", __FUNCTION__);
   int sensor_idx = 0;
   sensor_idx = extractSensor(addr);
   if (sensor_idx < 0)
@@ -61,8 +61,8 @@ int SWNRIpcServerAdapter::create(void* addr, int dataSize) {
 
 int SWNRIpcServerAdapter::destroy(void* addr, int dataSize) {
   TRACE_FUNC_ENTER();
-  CheckError((dataSize < sizeof(DestroyParams)), UNKNOWN_ERROR,
-             "@%s, buffer is small", __FUNCTION__);
+  CheckAndLogError((dataSize < sizeof(DestroyParams)), UNKNOWN_ERROR,
+                   "@%s, buffer is small", __FUNCTION__);
   int sensor_idx = 0;
   sensor_idx = extractSensor(addr);
   if (sensor_idx < 0)
@@ -80,8 +80,8 @@ int SWNRIpcServerAdapter::destroy(void* addr, int dataSize) {
 
 int SWNRIpcServerAdapter::doSwNR(void* addr, int dataSize) {
   TRACE_FUNC_ENTER();
-  CheckError((dataSize < sizeof(DoSwNrParams)), UNKNOWN_ERROR,
-             "@%s, buffer is small", __FUNCTION__);
+  CheckAndLogError((dataSize < sizeof(DoSwNrParams)), UNKNOWN_ERROR,
+                   "@%s, buffer is small", __FUNCTION__);
   int sensor_idx = 0;
   sensor_idx = extractSensor(addr);
   if (sensor_idx < 0)
@@ -135,8 +135,8 @@ int SWNRIpcServerAdapter::doSwNR(void* addr, int dataSize) {
 
 int SWNRIpcServerAdapter::getDebugInfo(void* addr, int dataSize) {
   TRACE_FUNC_ENTER();
-  CheckError((dataSize < sizeof(GetDebugInfoParams)), UNKNOWN_ERROR,
-             "@%s, buffer is small", __FUNCTION__);
+  CheckAndLogError((dataSize < sizeof(GetDebugInfoParams)), UNKNOWN_ERROR,
+                   "@%s, buffer is small", __FUNCTION__);
   int sensor_idx = 0;
   sensor_idx = extractSensor(addr);
   if (sensor_idx < 0)

@@ -58,7 +58,8 @@ status_t SkyCamMojoProxy::init(int cameraId, IPU3ISPPipe** pipe, unsigned int nu
 {
     LOG1("@%s, cameraId:%d, pipe:%p, numPipes:%d, cmcParsed:%p, aiqb:%p, runtimeParams:%p, dumpAicParameters:%d, testFrameworkDump:%d",
         __FUNCTION__, cameraId, pipe, numPipes, cmcParsed, aiqb, runtimeParams, dumpAicParameters, testFrameworkDump);
-    CheckError(mInitialized == false, UNKNOWN_ERROR, "@%s, mInitialized is false", __FUNCTION__);
+    CheckAndLogError(mInitialized == false, UNKNOWN_ERROR,
+                     "@%s, mInitialized is false", __FUNCTION__);
 
     Transport* transport = static_cast<Transport*>(mMemCommon.mAddr);
     transport->aicMode = mAicMode;
@@ -70,10 +71,12 @@ status_t SkyCamMojoProxy::init(int cameraId, IPU3ISPPipe** pipe, unsigned int nu
                                             dumpAicParameters,
                                             testFrameworkDump,
                                             transport);
-    CheckError(ret == false, UNKNOWN_ERROR, "@%s, clientFlattenRun fails", __FUNCTION__);
+    CheckAndLogError(ret == false, UNKNOWN_ERROR, "@%s, clientFlattenRun fails",
+                     __FUNCTION__);
 
     ret = mCommon.requestSync(IPC_3A_AIC_INIT, mMemCommon.mHandle);
-    CheckError(ret == false, UNKNOWN_ERROR, "@%s, requestSync fails", __FUNCTION__);
+    CheckAndLogError(ret == false, UNKNOWN_ERROR, "@%s, requestSync fails",
+                     __FUNCTION__);
 
     return OK;
 }
@@ -81,43 +84,50 @@ status_t SkyCamMojoProxy::init(int cameraId, IPU3ISPPipe** pipe, unsigned int nu
 void SkyCamMojoProxy::Run(IPU3AICRuntimeParams& runtimeParams)
 {
     LOG1("@%s", __FUNCTION__);
-    CheckError(mInitialized == false, VOID_VALUE, "@%s, mInitialized is false", __FUNCTION__);
+    CheckAndLogError(mInitialized == false, VOID_VALUE,
+                     "@%s, mInitialized is false", __FUNCTION__);
 
     Transport* transport = static_cast<Transport*>(mMemCommon.mAddr);
     transport->aicMode = mAicMode;
 
     bool ret = mIpc.clientFlattenRun(runtimeParams, transport);
-    CheckError(ret == false, VOID_VALUE, "@%s, clientFlattenRun fails", __FUNCTION__);
+    CheckAndLogError(ret == false, VOID_VALUE, "@%s, clientFlattenRun fails",
+                     __FUNCTION__);
 
     ret = mCommon.requestSync(IPC_3A_AIC_RUN, mMemCommon.mHandle);
-    CheckError(ret == false, VOID_VALUE, "@%s, requestSync fails", __FUNCTION__);
+    CheckAndLogError(ret == false, VOID_VALUE, "@%s, requestSync fails",
+                     __FUNCTION__);
 }
 
 void SkyCamMojoProxy::Reset(IPU3AICRuntimeParams& runtimeParams)
 {
     LOG1("@%s", __FUNCTION__);
-    CheckError(mInitialized == false, VOID_VALUE, "@%s, mInitialized is false", __FUNCTION__);
+    CheckAndLogError(mInitialized == false, VOID_VALUE,
+                     "@%s, mInitialized is false", __FUNCTION__);
 
     Transport* transport = static_cast<Transport*>(mMemCommon.mAddr);
     transport->aicMode = mAicMode;
 
     bool ret = mIpc.clientFlattenRun(runtimeParams, transport);
-    CheckError(ret == false, VOID_VALUE, "@%s, clientFlattenRun fails", __FUNCTION__);
+    CheckAndLogError(ret == false, VOID_VALUE, "@%s, clientFlattenRun fails",
+                     __FUNCTION__);
 
     ret = mCommon.requestSync(IPC_3A_AIC_RESET, mMemCommon.mHandle);
-    CheckError(ret == false, VOID_VALUE, "@%s, requestSync fails", __FUNCTION__);
+    CheckAndLogError(ret == false, VOID_VALUE, "@%s, requestSync fails",
+                     __FUNCTION__);
 }
 
 std::string SkyCamMojoProxy::GetAICVersion()
 {
     LOG1("@%s", __FUNCTION__);
-    CheckError(mInitialized == false, "", "@%s, mInitialized is false", __FUNCTION__);
+    CheckAndLogError(mInitialized == false, "", "@%s, mInitialized is false",
+                     __FUNCTION__);
 
     ia_aic_version_params* params = static_cast<ia_aic_version_params*>(mMemVersion.mAddr);
     params->aicMode = mAicMode;
 
     bool ret = mCommon.requestSync(IPC_3A_AIC_GETAICVERSION, mMemVersion.mHandle);
-    CheckError(ret == false, "", "@%s, requestSync fails", __FUNCTION__);
+    CheckAndLogError(ret == false, "", "@%s, requestSync fails", __FUNCTION__);
 
     std::string version(params->data);
     LOG2("@%s, version:%s", __FUNCTION__, version.c_str());
@@ -127,13 +137,15 @@ std::string SkyCamMojoProxy::GetAICVersion()
 aic_config* SkyCamMojoProxy::GetAicConfig()
 {
     LOG1("@%s", __FUNCTION__);
-    CheckError(mInitialized == false, nullptr, "@%s, mInitialized is false", __FUNCTION__);
+    CheckAndLogError(mInitialized == false, nullptr,
+                     "@%s, mInitialized is false", __FUNCTION__);
 
     IPU3AicConfig* config = static_cast<IPU3AicConfig*>(mMemCfg.mAddr);
     config->aicMode = mAicMode;
 
     bool ret = mCommon.requestSync(IPC_3A_AIC_GETAICCONFIG, mMemCfg.mHandle);
-    CheckError(ret == false, nullptr, "@%s, requestSync fails", __FUNCTION__);
+    CheckAndLogError(ret == false, nullptr, "@%s, requestSync fails",
+                     __FUNCTION__);
 
     return &config->aicConfig;
 }

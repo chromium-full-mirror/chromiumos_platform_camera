@@ -81,40 +81,38 @@ int Hal3aIpcServerAdapter::hal3a_server_metaset_unflatten(
 }
 
 int Hal3aIpcServerAdapter::init(void* addr, int dataSize) {
-  CheckError((dataSize < sizeof(hal3a_init_params)), UNKNOWN_ERROR,
-             "@%s, buffer is small", __FUNCTION__);
+    CheckAndLogError((dataSize < sizeof(hal3a_init_params)), UNKNOWN_ERROR,
+                     "@%s, buffer is small", __FUNCTION__);
 
-  int sensor_index = hal3a_server_parsing_sensor_idx(addr);
-  if (sensor_index < 0)
-    return -1;
+    int sensor_index = hal3a_server_parsing_sensor_idx(addr);
+    if (sensor_index < 0) return -1;
 
-  LOG1("%s sensor idx0x%x ++++", __func__, sensor_index);
+    LOG1("%s sensor idx0x%x ++++", __func__, sensor_index);
 
-  MAKE_Hal3A_IPC(
-      mpHal3A[sensor_index],
-      [](IHal3A* p) { p->destroyInstance("Hal3aIpcServerAdapter"); },
-      sensor_index, "Hal3aIpcServerAdapter");
+    MAKE_Hal3A_IPC(
+        mpHal3A[sensor_index],
+        [](IHal3A* p) { p->destroyInstance("Hal3aIpcServerAdapter"); },
+        sensor_index, "Hal3aIpcServerAdapter");
 
-  m_pLceImgBuf = NULL;
+    m_pLceImgBuf = NULL;
 
-  LOG1("%s sensor idx:%d ----", __func__, sensor_index);
-  return OK;
+    LOG1("%s sensor idx:%d ----", __func__, sensor_index);
+    return OK;
 }
 
 int Hal3aIpcServerAdapter::uninit(void* addr, int dataSize) {
-  CheckError((dataSize < sizeof(hal3a_init_params)), UNKNOWN_ERROR,
-             "@%s, buffer is small", __FUNCTION__);
+    CheckAndLogError((dataSize < sizeof(hal3a_init_params)), UNKNOWN_ERROR,
+                     "@%s, buffer is small", __FUNCTION__);
 
-  int sensor_index = hal3a_server_parsing_sensor_idx(addr);
-  if (sensor_index < 0)
-    return -1;
+    int sensor_index = hal3a_server_parsing_sensor_idx(addr);
+    if (sensor_index < 0) return -1;
 
-  LOG1("%s sensor idx:%d ++++", __func__, sensor_index);
-  mpHal3A[sensor_index] = nullptr;
+    LOG1("%s sensor idx:%d ++++", __func__, sensor_index);
+    mpHal3A[sensor_index] = nullptr;
 
-  if (m_pLceImgBuf) {
-    m_pLceImgBuf->unlockBuf("LCS_P2_CPU");
-    m_pLceImgBuf = nullptr;
+    if (m_pLceImgBuf) {
+        m_pLceImgBuf->unlockBuf("LCS_P2_CPU");
+        m_pLceImgBuf = nullptr;
   }
 
   LOG1("%s sensor idx:%d ----", __func__, sensor_index);
@@ -123,16 +121,16 @@ int Hal3aIpcServerAdapter::uninit(void* addr, int dataSize) {
 }
 
 int Hal3aIpcServerAdapter::config(void* addr, int dataSize) {
-  CheckError((dataSize < sizeof(hal3a_config_params)), UNKNOWN_ERROR,
-             "@%s, buffer is small", __FUNCTION__);
+    CheckAndLogError((dataSize < sizeof(hal3a_config_params)), UNKNOWN_ERROR,
+                     "@%s, buffer is small", __FUNCTION__);
 
-  int sensor_index = hal3a_server_parsing_sensor_idx(addr);
-  if (sensor_index < 0)
-    return -1;
-  hal3a_config_params* config_params = static_cast<hal3a_config_params*>(addr);
-  if (!config_params) {
-    IPC_LOGE("Config Shared Buffer is NULL");
-    return -1;
+    int sensor_index = hal3a_server_parsing_sensor_idx(addr);
+    if (sensor_index < 0) return -1;
+    hal3a_config_params* config_params =
+        static_cast<hal3a_config_params*>(addr);
+    if (!config_params) {
+        IPC_LOGE("Config Shared Buffer is NULL");
+        return -1;
   }
 
   LOG1("%s sensor idx:%d ++++", __func__, sensor_index);
@@ -177,18 +175,17 @@ int Hal3aIpcServerAdapter::config(void* addr, int dataSize) {
 }
 
 int Hal3aIpcServerAdapter::start(void* addr, int dataSize) {
-  CheckError((dataSize < sizeof(hal3a_start_params)), UNKNOWN_ERROR,
-             "@%s, buffer is small", __FUNCTION__);
+    CheckAndLogError((dataSize < sizeof(hal3a_start_params)), UNKNOWN_ERROR,
+                     "@%s, buffer is small", __FUNCTION__);
 
-  int sensor_index = hal3a_server_parsing_sensor_idx(addr);
-  if (sensor_index < 0)
-    return -1;
-  LOG1("%s sensor idx:%d start++++", __func__, sensor_index);
+    int sensor_index = hal3a_server_parsing_sensor_idx(addr);
+    if (sensor_index < 0) return -1;
+    LOG1("%s sensor idx:%d start++++", __func__, sensor_index);
 
-  hal3a_start_params* start_params = static_cast<hal3a_start_params*>(addr);
-  if (!start_params) {
-    IPC_LOGE("Start Shared Buffer is NULL");
-    return -1;
+    hal3a_start_params* start_params = static_cast<hal3a_start_params*>(addr);
+    if (!start_params) {
+        IPC_LOGE("Start Shared Buffer is NULL");
+        return -1;
   }
 
   MINT32 i4Ret;
@@ -210,17 +207,16 @@ int Hal3aIpcServerAdapter::start(void* addr, int dataSize) {
 }
 
 int Hal3aIpcServerAdapter::stop(void* addr, int dataSize) {
-  CheckError((dataSize < sizeof(hal3a_stop_params)), UNKNOWN_ERROR,
-             "@%s, buffer is small", __FUNCTION__);
-  int sensor_index = hal3a_server_parsing_sensor_idx(addr);
-  if (sensor_index < 0)
-    return -1;
-  LOG1("%s sensor idx:%d ++++", __func__, sensor_index);
+    CheckAndLogError((dataSize < sizeof(hal3a_stop_params)), UNKNOWN_ERROR,
+                     "@%s, buffer is small", __FUNCTION__);
+    int sensor_index = hal3a_server_parsing_sensor_idx(addr);
+    if (sensor_index < 0) return -1;
+    LOG1("%s sensor idx:%d ++++", __func__, sensor_index);
 
-  MINT32 i4Ret;
-  if (!mpHal3A[sensor_index]) {
-    IPC_LOGE("mpHal3A[%d] is NULL", sensor_index);
-    return -1;
+    MINT32 i4Ret;
+    if (!mpHal3A[sensor_index]) {
+        IPC_LOGE("mpHal3A[%d] is NULL", sensor_index);
+        return -1;
   } else {
     i4Ret = mpHal3A[sensor_index]->stop();
     if (i4Ret) {
@@ -235,16 +231,15 @@ int Hal3aIpcServerAdapter::stop(void* addr, int dataSize) {
 }
 
 int Hal3aIpcServerAdapter::stopStt(void* addr, int dataSize) {
-  CheckError((dataSize < sizeof(hal3a_stop_stt_params)), UNKNOWN_ERROR,
-             "@%s, buffer is small", __FUNCTION__);
-  int sensor_index = hal3a_server_parsing_sensor_idx(addr);
-  if (sensor_index < 0)
-    return -1;
-  LOG1("%s sensor idx:%d ++++", __func__, sensor_index);
+    CheckAndLogError((dataSize < sizeof(hal3a_stop_stt_params)), UNKNOWN_ERROR,
+                     "@%s, buffer is small", __FUNCTION__);
+    int sensor_index = hal3a_server_parsing_sensor_idx(addr);
+    if (sensor_index < 0) return -1;
+    LOG1("%s sensor idx:%d ++++", __func__, sensor_index);
 
-  if (!mpHal3A[sensor_index]) {
-    IPC_LOGE("mpHal3A[%d] is NULL", sensor_index);
-    return -1;
+    if (!mpHal3A[sensor_index]) {
+        IPC_LOGE("mpHal3A[%d] is NULL", sensor_index);
+        return -1;
   } else {
     mpHal3A[sensor_index]->stopStt();
   }
@@ -255,17 +250,16 @@ int Hal3aIpcServerAdapter::stopStt(void* addr, int dataSize) {
 }
 
 int Hal3aIpcServerAdapter::set(void* addr, int dataSize) {
-  CheckError((dataSize < sizeof(hal3a_set_params)), UNKNOWN_ERROR,
-             "@%s, buffer is small", __FUNCTION__);
-  int sensor_index = hal3a_server_parsing_sensor_idx(addr);
-  if (sensor_index < 0)
-    return -1;
-  LOG1("%s sensor idx:%d ++++", __func__, sensor_index);
+    CheckAndLogError((dataSize < sizeof(hal3a_set_params)), UNKNOWN_ERROR,
+                     "@%s, buffer is small", __FUNCTION__);
+    int sensor_index = hal3a_server_parsing_sensor_idx(addr);
+    if (sensor_index < 0) return -1;
+    LOG1("%s sensor idx:%d ++++", __func__, sensor_index);
 
-  hal3a_set_params* params = static_cast<hal3a_set_params*>(addr);
-  if (!params) {
-    IPC_LOGE("Set Shared Buffer is NULL");
-    return -1;
+    hal3a_set_params* params = static_cast<hal3a_set_params*>(addr);
+    if (!params) {
+        IPC_LOGE("Set Shared Buffer is NULL");
+        return -1;
   }
 
   int ret = 0;
@@ -303,19 +297,18 @@ int Hal3aIpcServerAdapter::set(void* addr, int dataSize) {
 /*                                                                    */
 /**********************************************************************/
 int Hal3aIpcServerAdapter::setIsp(void* addr, int dataSize) {
-  CheckError((dataSize < sizeof(hal3a_setisp_params)), UNKNOWN_ERROR,
-             "@%s, buffer is small", __FUNCTION__);
-  int sensor_index = hal3a_server_parsing_sensor_idx(addr);
-  if (sensor_index < 0)
-    return -1;
-  LOG1("%s sensor idx:%d ++++", __func__, sensor_index);
-  MetaSet_T inMeta;
-  TuningParam tuneBuf;
-  MetaSet_T outMeta;
-  hal3a_setisp_params* params = static_cast<hal3a_setisp_params*>(addr);
-  if (!params) {
-    IPC_LOGE("SetIsp Shared Buffer is NULL");
-    return -1;
+    CheckAndLogError((dataSize < sizeof(hal3a_setisp_params)), UNKNOWN_ERROR,
+                     "@%s, buffer is small", __FUNCTION__);
+    int sensor_index = hal3a_server_parsing_sensor_idx(addr);
+    if (sensor_index < 0) return -1;
+    LOG1("%s sensor idx:%d ++++", __func__, sensor_index);
+    MetaSet_T inMeta;
+    TuningParam tuneBuf;
+    MetaSet_T outMeta;
+    hal3a_setisp_params* params = static_cast<hal3a_setisp_params*>(addr);
+    if (!params) {
+        IPC_LOGE("SetIsp Shared Buffer is NULL");
+        return -1;
   }
 
   /* unflatten inMeta here*/
@@ -459,18 +452,17 @@ int Hal3aIpcServerAdapter::setIsp(void* addr, int dataSize) {
 }
 
 int Hal3aIpcServerAdapter::startRequestQ(void* addr, int dataSize) {
-  CheckError((dataSize < sizeof(hal3a_start_requestq_params)), UNKNOWN_ERROR,
-             "@%s, buffer is small", __FUNCTION__);
-  int sensor_index = hal3a_server_parsing_sensor_idx(addr);
-  if (sensor_index < 0)
-    return -1;
-  LOG1("%s sensor idx:%d ++++", __func__, sensor_index);
+    CheckAndLogError((dataSize < sizeof(hal3a_start_requestq_params)),
+                     UNKNOWN_ERROR, "@%s, buffer is small", __FUNCTION__);
+    int sensor_index = hal3a_server_parsing_sensor_idx(addr);
+    if (sensor_index < 0) return -1;
+    LOG1("%s sensor idx:%d ++++", __func__, sensor_index);
 
-  hal3a_start_requestq_params* params =
-      static_cast<hal3a_start_requestq_params*>(addr);
-  if (!params) {
-    IPC_LOGE("Start Request Q Shared Buffer is NULL");
-    return -1;
+    hal3a_start_requestq_params* params =
+        static_cast<hal3a_start_requestq_params*>(addr);
+    if (!params) {
+        IPC_LOGE("Start Request Q Shared Buffer is NULL");
+        return -1;
   }
 
   MetaSet_T metaSet;
@@ -498,18 +490,17 @@ int Hal3aIpcServerAdapter::startRequestQ(void* addr, int dataSize) {
 }
 
 int Hal3aIpcServerAdapter::startCapture(void* addr, int dataSize) {
-  CheckError((dataSize < sizeof(hal3a_start_capture_params)), UNKNOWN_ERROR,
-             "@%s, buffer is small", __FUNCTION__);
-  int sensor_index = hal3a_server_parsing_sensor_idx(addr);
-  if (sensor_index < 0)
-    return -1;
-  LOG1("%s sensor idx:%d ++++", __func__, sensor_index);
+    CheckAndLogError((dataSize < sizeof(hal3a_start_capture_params)),
+                     UNKNOWN_ERROR, "@%s, buffer is small", __FUNCTION__);
+    int sensor_index = hal3a_server_parsing_sensor_idx(addr);
+    if (sensor_index < 0) return -1;
+    LOG1("%s sensor idx:%d ++++", __func__, sensor_index);
 
-  hal3a_start_capture_params* params =
-      static_cast<hal3a_start_capture_params*>(addr);
-  if (!params) {
-    IPC_LOGE("Start Capture Shared Buffer is NULL");
-    return -1;
+    hal3a_start_capture_params* params =
+        static_cast<hal3a_start_capture_params*>(addr);
+    if (!params) {
+        IPC_LOGE("Start Capture Shared Buffer is NULL");
+        return -1;
   }
 
   MetaSet_T metaSet;
@@ -537,17 +528,16 @@ int Hal3aIpcServerAdapter::startCapture(void* addr, int dataSize) {
 }
 
 int Hal3aIpcServerAdapter::preset(void* addr, int dataSize) {
-  CheckError((dataSize < sizeof(hal3a_preset_params)), UNKNOWN_ERROR,
-             "@%s, buffer is small", __FUNCTION__);
-  int sensor_index = hal3a_server_parsing_sensor_idx(addr);
-  if (sensor_index < 0)
-    return -1;
-  LOG1("%s sensor idx:%d ++++", __func__, sensor_index);
+    CheckAndLogError((dataSize < sizeof(hal3a_preset_params)), UNKNOWN_ERROR,
+                     "@%s, buffer is small", __FUNCTION__);
+    int sensor_index = hal3a_server_parsing_sensor_idx(addr);
+    if (sensor_index < 0) return -1;
+    LOG1("%s sensor idx:%d ++++", __func__, sensor_index);
 
-  hal3a_preset_params* params = static_cast<hal3a_preset_params*>(addr);
-  if (!params) {
-    IPC_LOGE("Preset Buffer is NULL");
-    return -1;
+    hal3a_preset_params* params = static_cast<hal3a_preset_params*>(addr);
+    if (!params) {
+        IPC_LOGE("Preset Buffer is NULL");
+        return -1;
   }
 
   MetaSet_T metaSet;
@@ -575,13 +565,13 @@ int Hal3aIpcServerAdapter::preset(void* addr, int dataSize) {
 }
 
 MINT32 Hal3aIpcServerAdapter::getSensorParam(void* addr, int dataSize) {
-  CheckError((dataSize < sizeof(hal3a_getsensorparam_params)), UNKNOWN_ERROR,
-             "@%s, buffer is small", __FUNCTION__);
-  hal3a_getsensorparam_params* params =
-      static_cast<hal3a_getsensorparam_params*>(addr);
-  if (!params) {
-    IPC_LOGE("Get Sensor Parameter is NULL");
-    return -1;
+    CheckAndLogError((dataSize < sizeof(hal3a_getsensorparam_params)),
+                     UNKNOWN_ERROR, "@%s, buffer is small", __FUNCTION__);
+    hal3a_getsensorparam_params* params =
+        static_cast<hal3a_getsensorparam_params*>(addr);
+    if (!params) {
+        IPC_LOGE("Get Sensor Parameter is NULL");
+        return -1;
   }
 
   static int sensor_param_status = 0;
@@ -635,16 +625,16 @@ MINT32 Hal3aIpcServerAdapter::getSensorParam(void* addr, int dataSize) {
 }
 
 MINT32 Hal3aIpcServerAdapter::notifyCallBack(void* addr, int dataSize) {
-  CheckError((dataSize < sizeof(hal3a_notifycallback_params)), UNKNOWN_ERROR,
-             "@%s, buffer is small", __FUNCTION__);
-  MINT32* vectorData = nullptr;
-  ssize_t metaSize = 0;
-  IPC_P1NotifyCb_T serverP1NotifyCb;
-  hal3a_notifycallback_params* params =
-      static_cast<hal3a_notifycallback_params*>(addr);
-  if (!params) {
-    IPC_LOGE("Notify Callback Parameter is NULL");
-    return -1;
+    CheckAndLogError((dataSize < sizeof(hal3a_notifycallback_params)),
+                     UNKNOWN_ERROR, "@%s, buffer is small", __FUNCTION__);
+    MINT32* vectorData = nullptr;
+    ssize_t metaSize = 0;
+    IPC_P1NotifyCb_T serverP1NotifyCb;
+    hal3a_notifycallback_params* params =
+        static_cast<hal3a_notifycallback_params*>(addr);
+    if (!params) {
+        IPC_LOGE("Notify Callback Parameter is NULL");
+        return -1;
   }
 
   static int callback_status = 0;
@@ -726,14 +716,15 @@ MINT32 Hal3aIpcServerAdapter::notifyCallBack(void* addr, int dataSize) {
 }
 
 MINT32 Hal3aIpcServerAdapter::tuningPipe(void* addr, int dataSize) {
-  CheckError((dataSize < sizeof(hal3a_tuningpipe_params)), UNKNOWN_ERROR,
-             "@%s, buffer is small", __FUNCTION__);
-  IPC_IspTuningMgr_T tuning;
-  int flag;
-  hal3a_tuningpipe_params* params = static_cast<hal3a_tuningpipe_params*>(addr);
-  if (!params) {
-    IPC_LOGE("Tuning Pipe Shared Buffer is NULL");
-    return -1;
+    CheckAndLogError((dataSize < sizeof(hal3a_tuningpipe_params)),
+                     UNKNOWN_ERROR, "@%s, buffer is small", __FUNCTION__);
+    IPC_IspTuningMgr_T tuning;
+    int flag;
+    hal3a_tuningpipe_params* params =
+        static_cast<hal3a_tuningpipe_params*>(addr);
+    if (!params) {
+        IPC_LOGE("Tuning Pipe Shared Buffer is NULL");
+        return -1;
   }
 
   static int tuning_req_status = 0;
@@ -816,13 +807,13 @@ MINT32 Hal3aIpcServerAdapter::tuningPipe(void* addr, int dataSize) {
 }
 
 MINT32 Hal3aIpcServerAdapter::sttPipe(void* addr, int dataSize) {
-  CheckError((dataSize < sizeof(hal3a_sttpipe_params)), UNKNOWN_ERROR,
-             "@%s, buffer is small", __FUNCTION__);
-  IPC_Metabuf1_T meta1;
-  hal3a_sttpipe_params* params = static_cast<hal3a_sttpipe_params*>(addr);
-  if (!params) {
-    IPC_LOGE("Stt Pipe Shared Buffer is NULL");
-    return -1;
+    CheckAndLogError((dataSize < sizeof(hal3a_sttpipe_params)), UNKNOWN_ERROR,
+                     "@%s, buffer is small", __FUNCTION__);
+    IPC_Metabuf1_T meta1;
+    hal3a_sttpipe_params* params = static_cast<hal3a_sttpipe_params*>(addr);
+    if (!params) {
+        IPC_LOGE("Stt Pipe Shared Buffer is NULL");
+        return -1;
   }
 
   int sensor_index = hal3a_server_parsing_sensor_idx(addr);
@@ -880,13 +871,13 @@ MINT32 Hal3aIpcServerAdapter::sttPipe(void* addr, int dataSize) {
 }
 
 MINT32 Hal3aIpcServerAdapter::stt2Pipe(void* addr, int dataSize) {
-  CheckError((dataSize < sizeof(hal3a_stt2pipe_params)), UNKNOWN_ERROR,
-             "@%s, buffer is small", __FUNCTION__);
-  IPC_Metabuf2_T meta2;
-  hal3a_stt2pipe_params* params = static_cast<hal3a_stt2pipe_params*>(addr);
-  if (!params) {
-    IPC_LOGE("Stt2 Pipe Shared Buffer is NULL");
-    return -1;
+    CheckAndLogError((dataSize < sizeof(hal3a_stt2pipe_params)), UNKNOWN_ERROR,
+                     "@%s, buffer is small", __FUNCTION__);
+    IPC_Metabuf2_T meta2;
+    hal3a_stt2pipe_params* params = static_cast<hal3a_stt2pipe_params*>(addr);
+    if (!params) {
+        IPC_LOGE("Stt2 Pipe Shared Buffer is NULL");
+        return -1;
   }
 
   int sensor_index = hal3a_server_parsing_sensor_idx(addr);
@@ -948,12 +939,12 @@ MINT32 Hal3aIpcServerAdapter::stt2Pipe(void* addr, int dataSize) {
 }
 
 MINT32 Hal3aIpcServerAdapter::hwEvent(void* addr, int dataSize) {
-  CheckError((dataSize < sizeof(hal3a_hwevent_params)), UNKNOWN_ERROR,
-             "@%s, buffer is small", __FUNCTION__);
-  hal3a_hwevent_params* params = static_cast<hal3a_hwevent_params*>(addr);
-  if (!params) {
-    IPC_LOGE("HW Event Shared Buffer is NULL");
-    return -1;
+    CheckAndLogError((dataSize < sizeof(hal3a_hwevent_params)), UNKNOWN_ERROR,
+                     "@%s, buffer is small", __FUNCTION__);
+    hal3a_hwevent_params* params = static_cast<hal3a_hwevent_params*>(addr);
+    if (!params) {
+        IPC_LOGE("HW Event Shared Buffer is NULL");
+        return -1;
   }
 
   int sensor_index = hal3a_server_parsing_sensor_idx(addr);
@@ -982,13 +973,14 @@ MINT32 Hal3aIpcServerAdapter::hwEvent(void* addr, int dataSize) {
 }
 
 MINT32 Hal3aIpcServerAdapter::aePlineLimit(void* addr, int dataSize) {
-  CheckError((dataSize < sizeof(hal3a_plinelimit_params)), UNKNOWN_ERROR,
-             "@%s, buffer is small", __FUNCTION__);
-  AE_Pline_Limitation_T rLimitParams;
-  hal3a_plinelimit_params* params = static_cast<hal3a_plinelimit_params*>(addr);
-  if (!params) {
-    IPC_LOGE("AE Pline Limitation Shared Buffer is NULL");
-    return -1;
+    CheckAndLogError((dataSize < sizeof(hal3a_plinelimit_params)),
+                     UNKNOWN_ERROR, "@%s, buffer is small", __FUNCTION__);
+    AE_Pline_Limitation_T rLimitParams;
+    hal3a_plinelimit_params* params =
+        static_cast<hal3a_plinelimit_params*>(addr);
+    if (!params) {
+        IPC_LOGE("AE Pline Limitation Shared Buffer is NULL");
+        return -1;
   }
 
   int sensor_index = hal3a_server_parsing_sensor_idx(addr);
@@ -1028,13 +1020,14 @@ MINT32 Hal3aIpcServerAdapter::aePlineLimit(void* addr, int dataSize) {
 }
 
 MINT32 Hal3aIpcServerAdapter::afLensConfig(void* addr, int dataSize) {
-  CheckError((dataSize < sizeof(hal3a_lensconfig_params)), UNKNOWN_ERROR,
-             "@%s, buffer is small", __FUNCTION__);
-  IPC_LensConfig_T lensConfig;
-  hal3a_lensconfig_params* params = static_cast<hal3a_lensconfig_params*>(addr);
-  if (!params) {
-    IPC_LOGE("AF Lens Config Shared Buffer is NULL");
-    return -1;
+    CheckAndLogError((dataSize < sizeof(hal3a_lensconfig_params)),
+                     UNKNOWN_ERROR, "@%s, buffer is small", __FUNCTION__);
+    IPC_LensConfig_T lensConfig;
+    hal3a_lensconfig_params* params =
+        static_cast<hal3a_lensconfig_params*>(addr);
+    if (!params) {
+        IPC_LOGE("AF Lens Config Shared Buffer is NULL");
+        return -1;
   }
 
   int sensor_index = hal3a_server_parsing_sensor_idx(addr);
@@ -1073,14 +1066,15 @@ MINT32 Hal3aIpcServerAdapter::afLensConfig(void* addr, int dataSize) {
 }
 
 MINT32 Hal3aIpcServerAdapter::send3ACtrl(void* addr, int dataSize) {
-  CheckError((dataSize < sizeof(hal3a_send3actrl_params)), UNKNOWN_ERROR,
-             "@%s, buffer is small", __FUNCTION__);
-  IIPCHalSensorList* pHalSensorList;
-  IIPCHalSensor* pIPCSensor;
-  hal3a_send3actrl_params* params = static_cast<hal3a_send3actrl_params*>(addr);
-  if (!params) {
-    IPC_LOGE("Send3ACtrl Shared Buffer is NULL");
-    return -1;
+    CheckAndLogError((dataSize < sizeof(hal3a_send3actrl_params)),
+                     UNKNOWN_ERROR, "@%s, buffer is small", __FUNCTION__);
+    IIPCHalSensorList* pHalSensorList;
+    IIPCHalSensor* pIPCSensor;
+    hal3a_send3actrl_params* params =
+        static_cast<hal3a_send3actrl_params*>(addr);
+    if (!params) {
+        IPC_LOGE("Send3ACtrl Shared Buffer is NULL");
+        return -1;
   }
 
   int sensor_index = hal3a_server_parsing_sensor_idx(addr);
@@ -1291,17 +1285,16 @@ MINT32 Hal3aIpcServerAdapter::send3ACtrl(void* addr, int dataSize) {
 }
 
 int Hal3aIpcServerAdapter::notifyP1PwrOn(void* addr, int dataSize) {
-  CheckError((dataSize < sizeof(hal3a_notify_p1_pwr_on_params)), UNKNOWN_ERROR,
-             "@%s, buffer is small", __FUNCTION__);
-  int sensor_index = hal3a_server_parsing_sensor_idx(addr);
-  if (sensor_index < 0)
-    return -1;
-  LOG1("%s sensor idx:%d ++++", __func__, sensor_index);
+    CheckAndLogError((dataSize < sizeof(hal3a_notify_p1_pwr_on_params)),
+                     UNKNOWN_ERROR, "@%s, buffer is small", __FUNCTION__);
+    int sensor_index = hal3a_server_parsing_sensor_idx(addr);
+    if (sensor_index < 0) return -1;
+    LOG1("%s sensor idx:%d ++++", __func__, sensor_index);
 
-  MINT32 i4Ret;
-  if (!mpHal3A[sensor_index]) {
-    IPC_LOGE("mpHal3A[%d] is NULL", sensor_index);
-    return -1;
+    MINT32 i4Ret;
+    if (!mpHal3A[sensor_index]) {
+        IPC_LOGE("mpHal3A[%d] is NULL", sensor_index);
+        return -1;
   } else {
     i4Ret = mpHal3A[sensor_index]->notifyP1PwrOn();
     if (!i4Ret) {
@@ -1315,17 +1308,16 @@ int Hal3aIpcServerAdapter::notifyP1PwrOn(void* addr, int dataSize) {
 }
 
 int Hal3aIpcServerAdapter::notifyP1Done(void* addr, int dataSize) {
-  CheckError((dataSize < sizeof(hal3a_notify_p1_pwr_done_params)),
-             UNKNOWN_ERROR, "@%s, buffer is small", __FUNCTION__);
-  int sensor_index = hal3a_server_parsing_sensor_idx(addr);
-  if (sensor_index < 0)
-    return -1;
+    CheckAndLogError((dataSize < sizeof(hal3a_notify_p1_pwr_done_params)),
+                     UNKNOWN_ERROR, "@%s, buffer is small", __FUNCTION__);
+    int sensor_index = hal3a_server_parsing_sensor_idx(addr);
+    if (sensor_index < 0) return -1;
 
-  hal3a_notify_p1_pwr_done_params* params =
-      static_cast<hal3a_notify_p1_pwr_done_params*>(addr);
-  if (!params) {
-    IPC_LOGE("Notify P1 Done Buffer is NULL");
-    return -1;
+    hal3a_notify_p1_pwr_done_params* params =
+        static_cast<hal3a_notify_p1_pwr_done_params*>(addr);
+    if (!params) {
+        IPC_LOGE("Notify P1 Done Buffer is NULL");
+        return -1;
   }
 
   LOG1("%s sensor idx:%d ++++", __func__, sensor_index);
@@ -1342,17 +1334,16 @@ int Hal3aIpcServerAdapter::notifyP1Done(void* addr, int dataSize) {
 }
 
 int Hal3aIpcServerAdapter::notifyP1PwrOff(void* addr, int dataSize) {
-  CheckError((dataSize < sizeof(hal3a_notify_p1_pwr_off_params)), UNKNOWN_ERROR,
-             "@%s, buffer is small", __FUNCTION__);
-  int sensor_index = hal3a_server_parsing_sensor_idx(addr);
-  if (sensor_index < 0)
-    return -1;
+    CheckAndLogError((dataSize < sizeof(hal3a_notify_p1_pwr_off_params)),
+                     UNKNOWN_ERROR, "@%s, buffer is small", __FUNCTION__);
+    int sensor_index = hal3a_server_parsing_sensor_idx(addr);
+    if (sensor_index < 0) return -1;
 
-  LOG1("%s sensor idx:%d ++++", __func__, sensor_index);
-  MINT32 i4Ret;
-  if (!mpHal3A[sensor_index]) {
-    IPC_LOGE("mpHal3A[%d] is NULL", sensor_index);
-    return -1;
+    LOG1("%s sensor idx:%d ++++", __func__, sensor_index);
+    MINT32 i4Ret;
+    if (!mpHal3A[sensor_index]) {
+        IPC_LOGE("mpHal3A[%d] is NULL", sensor_index);
+        return -1;
   } else {
     i4Ret = mpHal3A[sensor_index]->notifyP1PwrOff();
     if (!i4Ret) {
@@ -1367,17 +1358,16 @@ int Hal3aIpcServerAdapter::notifyP1PwrOff(void* addr, int dataSize) {
 }
 
 int Hal3aIpcServerAdapter::setSensorMode(void* addr, int dataSize) {
-  CheckError((dataSize < sizeof(hal3a_set_sensor_mode_params)), UNKNOWN_ERROR,
-             "@%s, buffer is small", __FUNCTION__);
-  int sensor_index = hal3a_server_parsing_sensor_idx(addr);
-  if (sensor_index < 0)
-    return -1;
+    CheckAndLogError((dataSize < sizeof(hal3a_set_sensor_mode_params)),
+                     UNKNOWN_ERROR, "@%s, buffer is small", __FUNCTION__);
+    int sensor_index = hal3a_server_parsing_sensor_idx(addr);
+    if (sensor_index < 0) return -1;
 
-  hal3a_set_sensor_mode_params* params =
-      static_cast<hal3a_set_sensor_mode_params*>(addr);
-  if (!params) {
-    IPC_LOGE("Set Sensor Mode Buffer is NULL");
-    return -1;
+    hal3a_set_sensor_mode_params* params =
+        static_cast<hal3a_set_sensor_mode_params*>(addr);
+    if (!params) {
+        IPC_LOGE("Set Sensor Mode Buffer is NULL");
+        return -1;
   }
 
   LOG1("%s sensor idx:%d ++++", __func__, sensor_index);
@@ -1394,16 +1384,15 @@ int Hal3aIpcServerAdapter::setSensorMode(void* addr, int dataSize) {
 }
 
 int Hal3aIpcServerAdapter::attachCb(void* addr, int dataSize) {
-  CheckError((dataSize < sizeof(hal3a_attach_cb_params)), UNKNOWN_ERROR,
-             "@%s, buffer is small", __FUNCTION__);
-  int sensor_index = hal3a_server_parsing_sensor_idx(addr);
-  if (sensor_index < 0)
-    return -1;
+    CheckAndLogError((dataSize < sizeof(hal3a_attach_cb_params)), UNKNOWN_ERROR,
+                     "@%s, buffer is small", __FUNCTION__);
+    int sensor_index = hal3a_server_parsing_sensor_idx(addr);
+    if (sensor_index < 0) return -1;
 
-  hal3a_attach_cb_params* params = static_cast<hal3a_attach_cb_params*>(addr);
-  if (!params) {
-    IPC_LOGE("Attach Callback Buffer is NULL");
-    return -1;
+    hal3a_attach_cb_params* params = static_cast<hal3a_attach_cb_params*>(addr);
+    if (!params) {
+        IPC_LOGE("Attach Callback Buffer is NULL");
+        return -1;
   }
 
   LOG1("%s sensor idx:%d ++++", __func__, sensor_index);
@@ -1427,17 +1416,16 @@ int Hal3aIpcServerAdapter::attachCb(void* addr, int dataSize) {
 }
 
 int Hal3aIpcServerAdapter::detachCb(void* addr, int dataSize) {
-  CheckError((dataSize < sizeof(hal3a_detach_cb_params)), UNKNOWN_ERROR,
-             "@%s, buffer is small", __FUNCTION__);
-  int sensor_index = hal3a_server_parsing_sensor_idx(addr);
-  if (sensor_index < 0)
-    return -1;
-  LOG1("%s sensor idx:%d ++++", __func__, sensor_index);
+    CheckAndLogError((dataSize < sizeof(hal3a_detach_cb_params)), UNKNOWN_ERROR,
+                     "@%s, buffer is small", __FUNCTION__);
+    int sensor_index = hal3a_server_parsing_sensor_idx(addr);
+    if (sensor_index < 0) return -1;
+    LOG1("%s sensor idx:%d ++++", __func__, sensor_index);
 
-  hal3a_detach_cb_params* params = static_cast<hal3a_detach_cb_params*>(addr);
-  if (!params) {
-    IPC_LOGE("Attach Callback Buffer is NULL");
-    return -1;
+    hal3a_detach_cb_params* params = static_cast<hal3a_detach_cb_params*>(addr);
+    if (!params) {
+        IPC_LOGE("Attach Callback Buffer is NULL");
+        return -1;
   }
 
   MINT32 i4Ret;
@@ -1456,19 +1444,18 @@ int Hal3aIpcServerAdapter::detachCb(void* addr, int dataSize) {
 }
 
 int Hal3aIpcServerAdapter::get(void* addr, int dataSize) {
-  CheckError((dataSize < sizeof(hal3a_get_params)), UNKNOWN_ERROR,
-             "@%s, buffer is small", __FUNCTION__);
-  int sensor_index = hal3a_server_parsing_sensor_idx(addr);
-  if (sensor_index < 0)
-    return -1;
-  LOG1("%s sensor idx:%d ++++", __func__, sensor_index);
+    CheckAndLogError((dataSize < sizeof(hal3a_get_params)), UNKNOWN_ERROR,
+                     "@%s, buffer is small", __FUNCTION__);
+    int sensor_index = hal3a_server_parsing_sensor_idx(addr);
+    if (sensor_index < 0) return -1;
+    LOG1("%s sensor idx:%d ++++", __func__, sensor_index);
 
-  MetaSet_T result3A;
-  int ret = 1;
-  hal3a_get_params* params = static_cast<hal3a_get_params*>(addr);
-  if (!params) {
-    IPC_LOGE("Get Buffer is NULL");
-    return -1;
+    MetaSet_T result3A;
+    int ret = 1;
+    hal3a_get_params* params = static_cast<hal3a_get_params*>(addr);
+    if (!params) {
+        IPC_LOGE("Get Buffer is NULL");
+        return -1;
   }
 
   if (!mpHal3A[sensor_index]) {
@@ -1500,19 +1487,18 @@ int Hal3aIpcServerAdapter::get(void* addr, int dataSize) {
 }
 
 int Hal3aIpcServerAdapter::getCur(void* addr, int dataSize) {
-  CheckError((dataSize < sizeof(hal3a_get_cur_params)), UNKNOWN_ERROR,
-             "@%s, buffer is small", __FUNCTION__);
-  int sensor_index = hal3a_server_parsing_sensor_idx(addr);
-  if (sensor_index < 0)
-    return -1;
-  LOG1("%s sensor idx:%d ++++", __func__, sensor_index);
+    CheckAndLogError((dataSize < sizeof(hal3a_get_cur_params)), UNKNOWN_ERROR,
+                     "@%s, buffer is small", __FUNCTION__);
+    int sensor_index = hal3a_server_parsing_sensor_idx(addr);
+    if (sensor_index < 0) return -1;
+    LOG1("%s sensor idx:%d ++++", __func__, sensor_index);
 
-  MetaSet_T result3A;
-  int ret = 0;
-  hal3a_get_cur_params* params = static_cast<hal3a_get_cur_params*>(addr);
-  if (!params) {
-    IPC_LOGE("GetCur Buffer is NULL");
-    return -1;
+    MetaSet_T result3A;
+    int ret = 0;
+    hal3a_get_cur_params* params = static_cast<hal3a_get_cur_params*>(addr);
+    if (!params) {
+        IPC_LOGE("GetCur Buffer is NULL");
+        return -1;
   }
 
   if (!mpHal3A[sensor_index]) {
@@ -1544,17 +1530,17 @@ int Hal3aIpcServerAdapter::getCur(void* addr, int dataSize) {
 }
 
 bool Hal3aIpcServerAdapter::setFDInfoOnActiveArray(void* addr, int dataSize) {
-  CheckError((dataSize < sizeof(hal3a_set_fdInfo_params)), UNKNOWN_ERROR,
-             "@%s, buffer is small", __FUNCTION__);
-  int sensor_index = hal3a_server_parsing_sensor_idx(addr);
-  if (sensor_index < 0)
-    return -1;
-  LOG1("%s sensor idx:%d ++++", __func__, sensor_index);
+    CheckAndLogError((dataSize < sizeof(hal3a_set_fdInfo_params)),
+                     UNKNOWN_ERROR, "@%s, buffer is small", __FUNCTION__);
+    int sensor_index = hal3a_server_parsing_sensor_idx(addr);
+    if (sensor_index < 0) return -1;
+    LOG1("%s sensor idx:%d ++++", __func__, sensor_index);
 
-  hal3a_set_fdInfo_params* params = static_cast<hal3a_set_fdInfo_params*>(addr);
-  if (!params) {
-    IPC_LOGE("Set FD Info On Active Array Buffer is NULL");
-    return -1;
+    hal3a_set_fdInfo_params* params =
+        static_cast<hal3a_set_fdInfo_params*>(addr);
+    if (!params) {
+        IPC_LOGE("Set FD Info On Active Array Buffer is NULL");
+        return -1;
   }
 
   params->detectFace.faces = &params->faceDetectInfo[0];

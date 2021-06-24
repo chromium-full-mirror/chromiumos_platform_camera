@@ -77,62 +77,71 @@ GraphConfigImpl::~GraphConfigImpl() {
 
 void GraphConfigImpl::addCustomKeyMap() {
     LOGIPC("@%s", __func__);
-    CheckError(!mInitialized, VOID_VALUE, "@%s, mInitialized is false", __func__);
+    CheckAndLogError(!mInitialized, VOID_VALUE, "@%s, mInitialized is false",
+                     __func__);
 
     bool ret = mCommon.requestSync(IPC_GRAPH_ADD_KEY);
-    CheckError(!ret, VOID_VALUE, "@%s, requestSync fails", __func__);
+    CheckAndLogError(!ret, VOID_VALUE, "@%s, requestSync fails", __func__);
 }
 
 status_t GraphConfigImpl::parse(int cameraId, const char* graphDescFile, const char* settingsFile) {
     LOGIPC("@%s", __func__);
-    CheckError(!mInitialized, UNKNOWN_ERROR, "@%s, mInitialized is false", __func__);
+    CheckAndLogError(!mInitialized, UNKNOWN_ERROR, "@%s, mInitialized is false",
+                     __func__);
 
     bool ret = mIpc.clientFlattenParse(mMemParse.mAddr, mMemParse.mSize, cameraId, graphDescFile,
                                        settingsFile);
-    CheckError(!ret, UNKNOWN_ERROR, "@%s, clientFlattenParse fails", __func__);
+    CheckAndLogError(!ret, UNKNOWN_ERROR, "@%s, clientFlattenParse fails",
+                     __func__);
 
     status_t rt = mCommon.requestSync(IPC_GRAPH_PARSE, mMemParse.mHandle);
-    CheckError(!rt, UNKNOWN_ERROR, "@%s, requestSync fails", __func__);
+    CheckAndLogError(!rt, UNKNOWN_ERROR, "@%s, requestSync fails", __func__);
 
     return OK;
 }
 
 void GraphConfigImpl::releaseGraphNodes() {
     LOGIPC("@%s", __func__);
-    CheckError(!mInitialized, VOID_VALUE, "@%s, mInitialized is false", __func__);
+    CheckAndLogError(!mInitialized, VOID_VALUE, "@%s, mInitialized is false",
+                     __func__);
 
     bool ret = mCommon.requestSync(IPC_GRAPH_RELEASE_NODES);
-    CheckError(!ret, VOID_VALUE, "@%s, requestSync fails", __func__);
+    CheckAndLogError(!ret, VOID_VALUE, "@%s, requestSync fails", __func__);
 }
 
 status_t GraphConfigImpl::configStreams(const vector<HalStream*>& activeStreams) {
     LOGIPC("@%s", __func__);
-    CheckError(!mInitialized, UNKNOWN_ERROR, "@%s, mInitialized is false", __func__);
+    CheckAndLogError(!mInitialized, UNKNOWN_ERROR, "@%s, mInitialized is false",
+                     __func__);
 
     GraphBaseInfo info = {mCameraId, mConfigMode};
     bool ret = mIpc.clientFlattenConfigStreams(mMemConfig.mAddr, mMemConfig.mSize, info, mType,
                                                activeStreams);
-    CheckError(!ret, UNKNOWN_ERROR, "@%s, clientFlattenConfigStreams fails", __func__);
+    CheckAndLogError(!ret, UNKNOWN_ERROR,
+                     "@%s, clientFlattenConfigStreams fails", __func__);
 
     ret = mCommon.requestSync(IPC_GRAPH_CONFIG_STREAMS, mMemConfig.mHandle);
-    CheckError(!ret, UNKNOWN_ERROR, "@%s, requestSync fails", __func__);
+    CheckAndLogError(!ret, UNKNOWN_ERROR, "@%s, requestSync fails", __func__);
 
     return OK;
 }
 
 status_t GraphConfigImpl::getGraphConfigData(IGraphType::GraphConfigData* data) {
     LOGIPC("@%s", __func__);
-    CheckError(!mInitialized, UNKNOWN_ERROR, "@%s, mInitialized is false", __func__);
+    CheckAndLogError(!mInitialized, UNKNOWN_ERROR, "@%s, mInitialized is false",
+                     __func__);
 
     GraphBaseInfo info = {mCameraId, mConfigMode};
     bool ret = mIpc.clientFlattenGetGraphData(mMemGetData.mAddr, mMemGetData.mSize, info);
-    CheckError(!ret, UNKNOWN_ERROR, "@%s, clientFlattenGetGraphData fails", __func__);
+    CheckAndLogError(!ret, UNKNOWN_ERROR,
+                     "@%s, clientFlattenGetGraphData fails", __func__);
 
     ret = mCommon.requestSync(IPC_GRAPH_GET_CONFIG_DATA, mMemGetData.mHandle);
-    CheckError(!ret, UNKNOWN_ERROR, "@%s, requestSync fails", __func__);
+    CheckAndLogError(!ret, UNKNOWN_ERROR, "@%s, requestSync fails", __func__);
 
     ret = mIpc.clientUnflattenGetGraphData(mMemGetData.mAddr, mMemGetData.mSize, data);
-    CheckError(!ret, UNKNOWN_ERROR, "@%s, clientUnflattenGetGraphData fails", __func__);
+    CheckAndLogError(!ret, UNKNOWN_ERROR,
+                     "@%s, clientUnflattenGetGraphData fails", __func__);
 
     return OK;
 }
@@ -141,19 +150,22 @@ status_t GraphConfigImpl::pipelineGetConnections(
     const std::vector<std::string>& pgList, std::vector<IGraphType::ScalerInfo>* scalerInfo,
     std::vector<IGraphType::PipelineConnection>* confVector) {
     LOGIPC("@%s", __func__);
-    CheckError(!mInitialized, UNKNOWN_ERROR, "@%s, mInitialized is false", __func__);
+    CheckAndLogError(!mInitialized, UNKNOWN_ERROR, "@%s, mInitialized is false",
+                     __func__);
 
     GraphBaseInfo info = {mCameraId, mConfigMode};
     bool ret = mIpc.clientFlattenGetConnection(mMemGetConnection.mAddr, mMemGetConnection.mSize,
                                                info, pgList);
-    CheckError(!ret, UNKNOWN_ERROR, "@%s, clientFlattenGetConnection fails", __func__);
+    CheckAndLogError(!ret, UNKNOWN_ERROR,
+                     "@%s, clientFlattenGetConnection fails", __func__);
 
     ret = mCommon.requestSync(IPC_GRAPH_GET_CONNECTION, mMemGetConnection.mHandle);
-    CheckError(!ret, UNKNOWN_ERROR, "@%s, requestSync fails", __func__);
+    CheckAndLogError(!ret, UNKNOWN_ERROR, "@%s, requestSync fails", __func__);
 
     ret = mIpc.clientUnFlattenGetConnection(mMemGetConnection.mAddr, mMemGetConnection.mSize,
                                             scalerInfo, confVector);
-    CheckError(!ret, UNKNOWN_ERROR, "@%s, clientUnFlattenGetConnection fails", __func__);
+    CheckAndLogError(!ret, UNKNOWN_ERROR,
+                     "@%s, clientUnFlattenGetConnection fails", __func__);
 
     return OK;
 }
@@ -161,18 +173,21 @@ status_t GraphConfigImpl::pipelineGetConnections(
 status_t GraphConfigImpl::getPgIdForKernel(const uint32_t streamId, const int32_t kernelId,
                                            int32_t* pgId) {
     LOGIPC("@%s", __func__);
-    CheckError(!mInitialized, UNKNOWN_ERROR, "@%s, mInitialized is false", __func__);
+    CheckAndLogError(!mInitialized, UNKNOWN_ERROR, "@%s, mInitialized is false",
+                     __func__);
 
     GraphBaseInfo info = {mCameraId, mConfigMode};
     bool ret =
         mIpc.clientFlattenGetPgId(mMemGetPgId.mAddr, mMemGetPgId.mSize, info, streamId, kernelId);
-    CheckError(!ret, UNKNOWN_ERROR, "@%s, clientFlattenGetPgId fails", __func__);
+    CheckAndLogError(!ret, UNKNOWN_ERROR, "@%s, clientFlattenGetPgId fails",
+                     __func__);
 
     ret = mCommon.requestSync(IPC_GRAPH_GET_PG_ID, mMemGetPgId.mHandle);
-    CheckError(!ret, UNKNOWN_ERROR, "@%s, requestSync fails", __func__);
+    CheckAndLogError(!ret, UNKNOWN_ERROR, "@%s, requestSync fails", __func__);
 
     ret = mIpc.clientUnFlattenGetPgId(mMemGetPgId.mAddr, mMemGetPgId.mSize, pgId);
-    CheckError(!ret, UNKNOWN_ERROR, "@%s, clientUnFlattenGetPgId fails", __func__);
+    CheckAndLogError(!ret, UNKNOWN_ERROR, "@%s, clientUnFlattenGetPgId fails",
+                     __func__);
 
     return OK;
 }

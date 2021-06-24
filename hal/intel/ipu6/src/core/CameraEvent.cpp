@@ -36,8 +36,9 @@ void EventSource::registerListener(EventType eventType, EventListener* eventList
 {
     LOG1("@%s eventType: %d, listener: %p", __func__, eventType, eventListener);
 
-    CheckError(eventListener == nullptr, VOID_VALUE,
-          "%s: event listener is nullptr, skip registration.", __func__);
+    CheckAndLogError(eventListener == nullptr, VOID_VALUE,
+                     "%s: event listener is nullptr, skip registration.",
+                     __func__);
 
     AutoMutex l(mListenersLock);
 

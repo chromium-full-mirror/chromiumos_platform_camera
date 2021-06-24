@@ -82,7 +82,8 @@ status_t LensHw::setLens(std::shared_ptr<MediaEntity> entity)
     }
     std::shared_ptr<cros::V4L2Subdevice> lens;
     status_t status = entity->getDevice((std::shared_ptr<cros::V4L2Device>&) lens);
-    CheckError(status != NO_ERROR, status, "entity->getDevice fails, status:%d", status);
+    CheckAndLogError(status != NO_ERROR, status,
+                     "entity->getDevice fails, status:%d", status);
 
     mLensSubdev = lens;
 
@@ -96,7 +97,8 @@ int LensHw::moveFocusToPosition(int position)   // focus with absolute value
     if (position == mLastLensPosition) return NO_ERROR;
 
     status_t status = mLensSubdev->SetControl(V4L2_CID_FOCUS_ABSOLUTE, position);
-    CheckError(status != NO_ERROR, status, "failed to set focus position %d", position);
+    CheckAndLogError(status != NO_ERROR, status,
+                     "failed to set focus position %d", position);
 
     mLastLensPosition = position;
     // we use same clock as the timestamps from the buffers where

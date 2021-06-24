@@ -103,13 +103,13 @@ status_t ParameterWorker::configure(std::shared_ptr<GraphConfig> &config)
     PipeConfig pipeConfig;
     if (config->doesNodeExist("imgu:main")) {
         ret = getPipeConfig(pipeConfig, config, GC_MAIN);
-        CheckError(ret != OK, ret, "Failed to get pipe config main pipe");
+        CheckAndLogError(ret != OK, ret, "Failed to get pipe config main pipe");
 
         overrideCPFFMode(&pipeConfig, config);
         fillAicInputParams(sensorParams, pipeConfig, &mRuntimeParams);
     } else if (config->doesNodeExist("imgu:vf")) {
         ret = getPipeConfig(pipeConfig, config, GC_VF);
-        CheckError(ret != OK, ret, "Failed to get pipe config vf pipe");
+        CheckAndLogError(ret != OK, ret, "Failed to get pipe config vf pipe");
 
         overrideCPFFMode(&pipeConfig, config);
         fillAicInputParams(sensorParams, pipeConfig, &mRuntimeParams);
@@ -133,7 +133,8 @@ status_t ParameterWorker::configure(std::shared_ptr<GraphConfig> &config)
     AicMode aicMode = mPipeType == GraphConfig::PIPE_STILL ? AIC_MODE_STILL : AIC_MODE_VIDEO;
     if (mSkyCamAIC == nullptr) {
         mSkyCamAIC = SkyCamProxy::createProxy(mCameraId, aicMode, mIspPipes, NUM_ISP_PIPES, cmc, &mCpfData, &mRuntimeParams, 0, 0);
-        CheckError((mSkyCamAIC == nullptr), NO_MEMORY, "Not able to create SkyCam AIC");
+        CheckAndLogError((mSkyCamAIC == nullptr), NO_MEMORY,
+                         "Not able to create SkyCam AIC");
     }
 
     FrameInfo frame;
@@ -255,7 +256,7 @@ status_t ParameterWorker::postRun()
 void ParameterWorker::updateAicInputParams(const std::shared_ptr<DeviceMessage> &msg,
                                            IPU3AICRuntimeParams *params) const
 {
-    CheckError(!params, VOID_VALUE, "@%s, params is nullptr", __func__);
+    CheckAndLogError(!params, VOID_VALUE, "@%s, params is nullptr", __func__);
 
     const std::shared_ptr<CaptureUnitSettings>& settings =
         msg->pMsg.processingSettings->captureSettings;
@@ -279,7 +280,7 @@ void ParameterWorker::fillAicInputParams(const ia_aiq_frame_params &sensorFrameP
                                          const PipeConfig &pipeCfg,
                                          IPU3AICRuntimeParams *params)
 {
-    CheckError(!params, VOID_VALUE, "@%s, params is nullptr", __func__);
+    CheckAndLogError(!params, VOID_VALUE, "@%s, params is nullptr", __func__);
 
     //Fill AIC input frame params
     aic_input_frame_parameters_t *inFrameParams = &mRuntimeParamsInFrameParams;

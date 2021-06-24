@@ -37,22 +37,27 @@ CmcLibrary::~CmcLibrary()
 status_t CmcLibrary::ia_cmc_init(void* pData, int dataSize)
 {
     LOG1("@%s, pData:%p, dataSize:%d", __FUNCTION__, pData, dataSize);
-    CheckError((pData == nullptr), UNKNOWN_ERROR, "@%s, pData is nullptr", __FUNCTION__);
-    CheckError((dataSize < sizeof(cmc_init_params)), UNKNOWN_ERROR, "@%s, buffer is small", __FUNCTION__);
+    CheckAndLogError((pData == nullptr), UNKNOWN_ERROR, "@%s, pData is nullptr",
+                     __FUNCTION__);
+    CheckAndLogError((dataSize < sizeof(cmc_init_params)), UNKNOWN_ERROR,
+                     "@%s, buffer is small", __FUNCTION__);
 
     cmc_init_params* params = static_cast<cmc_init_params*>(pData);
     ia_binary_data aiqbData = {nullptr, 0};
 
     bool ret = mIpc.serverUnflattenInit(*params, &aiqbData);
-    CheckError(ret == false, UNKNOWN_ERROR, "@%s, serverUnflattenInit fails", __FUNCTION__);
+    CheckAndLogError(ret == false, UNKNOWN_ERROR,
+                     "@%s, serverUnflattenInit fails", __FUNCTION__);
 
     ia_cmc_t* cmc = ia_cmc_parser_init(&aiqbData);
-    CheckError((cmc == nullptr), UNKNOWN_ERROR, "@%s, ia_cmc_parser_init failed", __FUNCTION__);
+    CheckAndLogError((cmc == nullptr), UNKNOWN_ERROR,
+                     "@%s, ia_cmc_parser_init failed", __FUNCTION__);
 
     LOG1("@%s, cmc:%p", __FUNCTION__, cmc);
 
     ret = mIpc.serverFlattenInit(*cmc, params);
-    CheckError(ret == false, UNKNOWN_ERROR, "@%s, serverFlattenInit fails", __FUNCTION__);
+    CheckAndLogError(ret == false, UNKNOWN_ERROR,
+                     "@%s, serverFlattenInit fails", __FUNCTION__);
 
     return OK;
 }
@@ -60,8 +65,10 @@ status_t CmcLibrary::ia_cmc_init(void* pData, int dataSize)
 status_t CmcLibrary::ia_cmc_deinit(void* pData, int dataSize)
 {
     LOG1("@%s, pData:%p, dataSize:%d", __FUNCTION__, pData, dataSize);
-    CheckError((pData == nullptr), UNKNOWN_ERROR, "@%s, pData is nullptr", __FUNCTION__);
-    CheckError((dataSize < sizeof(cmc_deinit_params)), UNKNOWN_ERROR, "@%s, buffer is small", __FUNCTION__);
+    CheckAndLogError((pData == nullptr), UNKNOWN_ERROR, "@%s, pData is nullptr",
+                     __FUNCTION__);
+    CheckAndLogError((dataSize < sizeof(cmc_deinit_params)), UNKNOWN_ERROR,
+                     "@%s, buffer is small", __FUNCTION__);
 
     cmc_deinit_params* params = static_cast<cmc_deinit_params*>(pData);
 

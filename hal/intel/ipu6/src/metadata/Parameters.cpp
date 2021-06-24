@@ -1104,7 +1104,8 @@ int Parameters::getAwbConvergeSpeedMode(camera_converge_speed_mode_t& mode) cons
 
 int Parameters::setMakernoteData(const void* data, unsigned int size)
 {
-    CheckError(!data || size == 0, BAD_VALUE, "%s, invalid parameters", __func__);
+    CheckAndLogError(!data || size == 0, BAD_VALUE, "%s, invalid parameters",
+                     __func__);
     ParameterHelper::AutoWLock wl(mData);
 
     return ParameterHelper::getMetadata(mData).update(INTEL_CONTROL_MAKERNOTE_DATA, (uint8_t*)data, size);
@@ -1112,7 +1113,8 @@ int Parameters::setMakernoteData(const void* data, unsigned int size)
 
 int Parameters::getMakernoteData(void* data, unsigned int* size) const
 {
-    CheckError(!data || !size, BAD_VALUE, "%s, invalid parameters", __func__);
+    CheckAndLogError(!data || !size, BAD_VALUE, "%s, invalid parameters",
+                     __func__);
     ParameterHelper::AutoRLock rl(mData);
 
     auto entry = ParameterHelper::getMetadataEntry(mData, INTEL_CONTROL_MAKERNOTE_DATA);
@@ -1128,7 +1130,7 @@ int Parameters::getMakernoteData(void* data, unsigned int* size) const
 
 int Parameters::setCustomAicParam(const void* data, unsigned int length)
 {
-    CheckError(!data, BAD_VALUE, "%s, invalid parameters", __func__);
+    CheckAndLogError(!data, BAD_VALUE, "%s, invalid parameters", __func__);
     ParameterHelper::AutoWLock wl(mData);
 
     return ParameterHelper::getMetadata(mData).update(INTEL_CONTROL_CUSTOM_AIC_PARAM, (uint8_t*)data, length);
@@ -1136,7 +1138,8 @@ int Parameters::setCustomAicParam(const void* data, unsigned int length)
 
 int Parameters::getCustomAicParam(void* data, unsigned int* length) const
 {
-    CheckError(!data || !length, BAD_VALUE, "%s, invalid parameters", __func__);
+    CheckAndLogError(!data || !length, BAD_VALUE, "%s, invalid parameters",
+                     __func__);
     ParameterHelper::AutoRLock rl(mData);
 
     auto entry = ParameterHelper::getMetadataEntry(mData, INTEL_CONTROL_CUSTOM_AIC_PARAM);

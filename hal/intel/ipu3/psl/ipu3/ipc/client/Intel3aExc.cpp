@@ -53,18 +53,23 @@ ia_err Intel3aExc::AnalogGainToSensorUnits(
 {
     LOG1("@%s, gain_conversion:%p, analog_gain:%f, analog_gain_code:%p",
         __FUNCTION__, gain_conversion, analog_gain, analog_gain_code);
-    CheckError((gain_conversion == nullptr), ia_err_argument, "@%s, gain_conversion is nullptr", __FUNCTION__);
-    CheckError((analog_gain_code == nullptr), ia_err_argument, "@%s, analog_gain_code is nullptr", __FUNCTION__);
-    CheckError(mInitialized == false, ia_err_none, "@%s, mInitialized is false", __FUNCTION__);
+    CheckAndLogError((gain_conversion == nullptr), ia_err_argument,
+                     "@%s, gain_conversion is nullptr", __FUNCTION__);
+    CheckAndLogError((analog_gain_code == nullptr), ia_err_argument,
+                     "@%s, analog_gain_code is nullptr", __FUNCTION__);
+    CheckAndLogError(mInitialized == false, ia_err_none,
+                     "@%s, mInitialized is false", __FUNCTION__);
 
     ia_exc_analog_gain_to_sensor_units_params* params =
         static_cast<ia_exc_analog_gain_to_sensor_units_params*>(mMemGainToSensor.mAddr);
 
     bool ret = mIpc.clientFlattenGainToSensor(*gain_conversion, analog_gain, params);
-    CheckError(ret == false, ia_err_general, "@%s, clientFlattenGainToSensor fails", __FUNCTION__);
+    CheckAndLogError(ret == false, ia_err_general,
+                     "@%s, clientFlattenGainToSensor fails", __FUNCTION__);
 
     ret = mCommon.requestSync(IPC_3A_EXC_ANALOG_GAIN_TO_SENSOR, mMemGainToSensor.mHandle);
-    CheckError(ret == false, ia_err_general, "@%s, requestSync fails", __FUNCTION__);
+    CheckAndLogError(ret == false, ia_err_general, "@%s, requestSync fails",
+                     __FUNCTION__);
 
     *analog_gain_code = params->results.code;
 
@@ -79,18 +84,23 @@ ia_err Intel3aExc::SensorUnitsToAnalogGain(
     LOG1("@%s, gain_conversion:%p, gain_code:%d, analog_gain:%f",
         __FUNCTION__, gain_conversion, gain_code, *analog_gain);
 
-    CheckError((gain_conversion == nullptr), ia_err_argument, "@%s, gain_conversion is nullptr", __FUNCTION__);
-    CheckError((analog_gain == nullptr), ia_err_argument, "@%s, analog_gain is nullptr", __FUNCTION__);
-    CheckError(mInitialized == false, ia_err_none, "@%s, mInitialized is false", __FUNCTION__);
+    CheckAndLogError((gain_conversion == nullptr), ia_err_argument,
+                     "@%s, gain_conversion is nullptr", __FUNCTION__);
+    CheckAndLogError((analog_gain == nullptr), ia_err_argument,
+                     "@%s, analog_gain is nullptr", __FUNCTION__);
+    CheckAndLogError(mInitialized == false, ia_err_none,
+                     "@%s, mInitialized is false", __FUNCTION__);
 
     ia_exc_analog_gain_to_sensor_units_params* params =
         static_cast<ia_exc_analog_gain_to_sensor_units_params*>(mMemSensorToGain.mAddr);
 
     bool ret = mIpc.clientFlattenSensorToGain(*gain_conversion, gain_code, params);
-    CheckError(ret == false, ia_err_general, "@%s, clientFlattenSensorToGain fails", __FUNCTION__);
+    CheckAndLogError(ret == false, ia_err_general,
+                     "@%s, clientFlattenSensorToGain fails", __FUNCTION__);
 
     ret = mCommon.requestSync(IPC_3A_EXC_SENSOR_TO_ANALOG_GAIN, mMemSensorToGain.mHandle);
-    CheckError(ret == false, ia_err_general, "@%s, requestSync fails", __FUNCTION__);
+    CheckAndLogError(ret == false, ia_err_general, "@%s, requestSync fails",
+                     __FUNCTION__);
 
     *analog_gain = params->results.value;
 

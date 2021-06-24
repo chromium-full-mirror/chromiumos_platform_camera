@@ -53,18 +53,20 @@ IntelFaceEngine::~IntelFaceEngine()
 bool IntelFaceEngine::init(unsigned int max_face_num, int maxWidth, int maxHeight, face_detection_mode fd_mode)
 {
     LOG1("@%s, max_face_num:%d, fd_mode:%d", __FUNCTION__, max_face_num, fd_mode);
-    CheckError(!mInitialized, false, "@%s, mInitialized is false", __FUNCTION__);
+    CheckAndLogError(!mInitialized, false, "@%s, mInitialized is false",
+                     __FUNCTION__);
 
-    CheckError((maxWidth * maxHeight > MAX_FACE_FRAME_SIZE), false,
-                "@%s, maxWidth:%d, maxHeight:%d > MAX_FACE_FRAME_SIZE", __FUNCTION__, maxWidth, maxHeight);
+    CheckAndLogError((maxWidth * maxHeight > MAX_FACE_FRAME_SIZE), false,
+                     "@%s, maxWidth:%d, maxHeight:%d > MAX_FACE_FRAME_SIZE",
+                     __FUNCTION__, maxWidth, maxHeight);
 
     face_engine_init_params* params = static_cast<face_engine_init_params*>(mMemInit.mAddr);
 
     bool ret = mIpc.clientFlattenInit(max_face_num, fd_mode, params);
-    CheckError(!ret, false, "@%s, clientFlattenInit fails", __FUNCTION__);
+    CheckAndLogError(!ret, false, "@%s, clientFlattenInit fails", __FUNCTION__);
 
     ret = mCommon.requestSync(IPC_FACE_INIT, mMemInit.mHandle);
-    CheckError(!ret, false, "@%s, requestSync fails", __FUNCTION__);
+    CheckAndLogError(!ret, false, "@%s, requestSync fails", __FUNCTION__);
 
     return true;
 }
@@ -72,20 +74,22 @@ bool IntelFaceEngine::init(unsigned int max_face_num, int maxWidth, int maxHeigh
 void IntelFaceEngine::uninit()
 {
     LOG1("@%s", __FUNCTION__);
-    CheckError(!mInitialized, VOID_VALUE, "@%s, mInitialized is false", __FUNCTION__);
+    CheckAndLogError(!mInitialized, VOID_VALUE, "@%s, mInitialized is false",
+                     __FUNCTION__);
 
     bool ret = mCommon.requestSync(IPC_FACE_UNINIT);
-    CheckError(!ret, VOID_VALUE, "@%s, requestSync fails", __FUNCTION__);
+    CheckAndLogError(!ret, VOID_VALUE, "@%s, requestSync fails", __FUNCTION__);
 }
 
 bool IntelFaceEngine::prepareRun(const pvl_image &frame)
 {
     LOG1("@%s, size:%d, w:%d, h:%d, f:%d, s:%d, r:%d", __FUNCTION__,
          frame.size, frame.width, frame.height, frame.format, frame.stride, frame.rotation);
-    CheckError(!mInitialized, false, "@%s, mInitialized is false", __FUNCTION__);
+    CheckAndLogError(!mInitialized, false, "@%s, mInitialized is false",
+                     __FUNCTION__);
 
     ShmMemInfo *memRunBufTmp = acquireRunBuf();
-    CheckError((!memRunBufTmp), false, "Failed to acquire buffer");
+    CheckAndLogError((!memRunBufTmp), false, "Failed to acquire buffer");
 
     face_engine_run_params* params = static_cast<face_engine_run_params*>(memRunBufTmp->mAddr);
     bool ret = mIpc.clientFlattenRun(frame, params);
@@ -103,14 +107,16 @@ bool IntelFaceEngine::prepareRun(const pvl_image &frame)
 bool IntelFaceEngine::run(FaceEngineResult *results)
 {
     LOG1("@%s", __FUNCTION__);
-    CheckError(!mInitialized, false, "@%s, mInitialized is false", __FUNCTION__);
-    CheckError(!results, false, "input parameters are invalid");
+    CheckAndLogError(!mInitialized, false, "@%s, mInitialized is false",
+                     __FUNCTION__);
+    CheckAndLogError(!results, false, "input parameters are invalid");
     CLEAR(*results);
 
     ShmMemInfo *memRunBuf = nullptr;
     {
         std::lock_guard<std::mutex> l(mMemRunningPoolLock);
-        CheckError(mMemRunningPool.empty(), false, "mMemRunningPool is empty");
+        CheckAndLogError(mMemRunningPool.empty(), false,
+                         "mMemRunningPool is empty");
         memRunBuf = mMemRunningPool.front();
         mMemRunningPool.pop();
     }

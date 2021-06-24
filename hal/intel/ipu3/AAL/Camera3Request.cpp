@@ -324,8 +324,8 @@ Camera3Request::checkInputStream(camera3_capture_request* request3)
     if (request3->input_buffer == nullptr) return NO_ERROR;
 
     camera3_stream_t* stream = request3->input_buffer->stream;
-    CheckError(!stream, BAD_VALUE,
-    "%s: Request %d: stream is nullptr!", __FUNCTION__, request3->frame_number);
+    CheckAndLogError(!stream, BAD_VALUE, "%s: Request %d: stream is nullptr!",
+                     __FUNCTION__, request3->frame_number);
 
     if (stream->stream_type != CAMERA3_STREAM_INPUT &&
         stream->stream_type != CAMERA3_STREAM_BIDIRECTIONAL) {

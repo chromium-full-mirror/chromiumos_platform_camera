@@ -69,7 +69,9 @@ status_t PostProcessorCore::createProcessor()
             return UNKNOWN_ERROR;
         }
 
-        CheckError(!processor, UNKNOWN_ERROR, "%s, Failed to create the post processor: 0x%x", __func__, order.type);
+        CheckAndLogError(!processor, UNKNOWN_ERROR,
+                         "%s, Failed to create the post processor: 0x%x",
+                         __func__, order.type);
         mProcessorVector.push_back(processor);
     }
 
@@ -87,8 +89,10 @@ status_t PostProcessorCore::allocateBuffers()
         shared_ptr<camera3::Camera3Buffer> buf = camera3::MemoryUtils::allocateHeapBuffer(info.width, info.height,
                                                                                           info.stride, info.format,
                                                                                           mCameraId, info.size);
-        CheckError(!buf, NO_MEMORY, "@%s: Failed to allocate internal buffer: processor: %s",
-              __func__, mProcessorVector[i]->getName().c_str());
+        CheckAndLogError(
+            !buf, NO_MEMORY,
+            "@%s: Failed to allocate internal buffer: processor: %s", __func__,
+            mProcessorVector[i]->getName().c_str());
         mInterBuffers[mProcessorVector[i]] = buf;
     }
 
@@ -102,10 +106,12 @@ status_t PostProcessorCore::configure(const std::vector<PostProcessInfo> &proces
 
     mProcessorsInfo = processorOrder;
     int ret = createProcessor();
-    CheckError(ret != OK, ret, "%s, Failed to create the post processor", __func__);
+    CheckAndLogError(ret != OK, ret, "%s, Failed to create the post processor",
+                     __func__);
 
     ret = allocateBuffers();
-    CheckError(ret != OK, ret, "%s, Failed allocate the internal buffers", __func__);
+    CheckAndLogError(ret != OK, ret, "%s, Failed allocate the internal buffers",
+                     __func__);
 
     return OK;
 }
@@ -114,8 +120,10 @@ status_t PostProcessorCore::doPostProcessing(const shared_ptr<camera3::Camera3Bu
                                              const Parameters &parameter,
                                              shared_ptr<camera3::Camera3Buffer> outBuf)
 {
-    CheckError(!inBuf, UNKNOWN_ERROR, "%s, the inBuf is nullptr", __func__);
-    CheckError(!outBuf, UNKNOWN_ERROR, "%s, the outBuf is nullptr", __func__);
+    CheckAndLogError(!inBuf, UNKNOWN_ERROR, "%s, the inBuf is nullptr",
+                     __func__);
+    CheckAndLogError(!outBuf, UNKNOWN_ERROR, "%s, the outBuf is nullptr",
+                     __func__);
 
     shared_ptr<camera3::Camera3Buffer> input = inBuf;
     shared_ptr<camera3::Camera3Buffer> output = nullptr;
@@ -131,7 +139,8 @@ status_t PostProcessorCore::doPostProcessing(const shared_ptr<camera3::Camera3Bu
             ret = mProcessorVector[i]->doPostProcessing(input, parameter, output);
         else
             ret = mProcessorVector[i]->doPostProcessing(input, output);
-        CheckError(ret != OK, ret, "%s, Failed to do post processing: %s", __func__, mProcessorVector[i]->getName().c_str());
+        CheckAndLogError(ret != OK, ret, "%s, Failed to do post processing: %s",
+                         __func__, mProcessorVector[i]->getName().c_str());
 
         input = output;
     }

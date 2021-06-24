@@ -235,7 +235,7 @@ status_t CameraBuffer::waitOnAcquireFence()
 status_t CameraBuffer::getFence(camera3_stream_buffer* buf)
 {
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL1, LOG_TAG);
-    CheckError(!buf, BAD_VALUE, "@%s, buf is nullptr", __FUNCTION__);
+    CheckAndLogError(!buf, BAD_VALUE, "@%s, buf is nullptr", __FUNCTION__);
 
     buf->acquire_fence = mUserBuffer.acquire_fence;
     buf->release_fence = mUserBuffer.release_fence;
@@ -247,8 +247,9 @@ status_t CameraBuffer::registerBuffer()
 {
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL1, LOG_TAG);
     int ret = mGbmBufferManager->Register(mHandle);
-    CheckError(ret, UNKNOWN_ERROR, "@%s, Register fails, mHandle:%p, ret:%d",
-               __FUNCTION__, mHandle, ret);
+    CheckAndLogError(ret, UNKNOWN_ERROR,
+                     "@%s, Register fails, mHandle:%p, ret:%d", __FUNCTION__,
+                     mHandle, ret);
 
     mRegistered = true;
     return NO_ERROR;
@@ -259,8 +260,9 @@ status_t CameraBuffer::deregisterBuffer()
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL1, LOG_TAG);
     if (mRegistered) {
         int ret = mGbmBufferManager->Deregister(mHandle);
-        CheckError(ret, UNKNOWN_ERROR, "@%s: Deregister fails, mHandle:%p, ret:%d",
-                   __FUNCTION__, mHandle, ret);
+        CheckAndLogError(ret, UNKNOWN_ERROR,
+                         "@%s: Deregister fails, mHandle:%p, ret:%d",
+                         __FUNCTION__, mHandle, ret);
         mRegistered = false;
     }
 
@@ -281,12 +283,14 @@ status_t CameraBuffer::lock_()
         ret = (mFormat == HAL_PIXEL_FORMAT_BLOB)
                 ? mGbmBufferManager->Lock(mHandle, 0, 0, 0, mGbmBufferManager->GetWidth(mHandle), 1, &data)
                 : mGbmBufferManager->Lock(mHandle, 0, 0, 0, mWidth, mHeight, &data);
-        CheckError(ret, UNKNOWN_ERROR, "@%s: Lock fails, mHandle:%p", __FUNCTION__, mHandle);
+        CheckAndLogError(ret, UNKNOWN_ERROR, "@%s: Lock fails, mHandle:%p",
+                         __FUNCTION__, mHandle);
         mDataPtr = data;
     } else if (planeNum > 1) {
         struct android_ycbcr ycbrData;
         ret = mGbmBufferManager->LockYCbCr(mHandle, 0, 0, 0, mWidth, mHeight, &ycbrData);
-        CheckError(ret, UNKNOWN_ERROR, "@%s: Lock fails, mHandle:%p", __FUNCTION__, mHandle);
+        CheckAndLogError(ret, UNKNOWN_ERROR, "@%s: Lock fails, mHandle:%p",
+                         __FUNCTION__, mHandle);
         mDataPtr = ycbrData.y;
     } else {
         LOGE("ERROR @%s: planeNum is 0", __FUNCTION__);
@@ -298,7 +302,8 @@ status_t CameraBuffer::lock_()
     }
     LOG2("@%s, mDataPtr:%p, mSize:%d", __FUNCTION__, mDataPtr, mSize);
 
-    CheckError(!mSize, UNKNOWN_ERROR, "ERROR @%s: GetPlaneSize fails, it's 0", __FUNCTION__);
+    CheckAndLogError(!mSize, UNKNOWN_ERROR,
+                     "ERROR @%s: GetPlaneSize fails, it's 0", __FUNCTION__);
 
     mLocked = true;
 
@@ -308,14 +313,16 @@ status_t CameraBuffer::lock_()
 status_t CameraBuffer::lock()
 {
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL1, LOG_TAG);
-    CheckError(!mInit, INVALID_OPERATION, "@%s: cannot lock, not initialized", __FUNCTION__);
+    CheckAndLogError(!mInit, INVALID_OPERATION,
+                     "@%s: cannot lock, not initialized", __FUNCTION__);
 
     if (mType != BUF_TYPE_HANDLE) {
          mLocked = true;
          return NO_ERROR;
     }
 
-    CheckError(mLocked, INVALID_OPERATION, "@%s: already locked", __FUNCTION__);
+    CheckAndLogError(mLocked, INVALID_OPERATION, "@%s: already locked",
+                     __FUNCTION__);
 
     status_t status = lock_();
     if (status != NO_ERROR) {
@@ -333,11 +340,13 @@ status_t CameraBuffer::unlock()
          return NO_ERROR;
     }
 
-    CheckError(!mLocked, INVALID_OPERATION, "@%s: unlock a not locked buffer", __FUNCTION__);
+    CheckAndLogError(!mLocked, INVALID_OPERATION,
+                     "@%s: unlock a not locked buffer", __FUNCTION__);
 
     LOG2("@%s, mHandle:%p, mFormat:%d", __FUNCTION__, mHandle, mFormat);
     int ret = mGbmBufferManager->Unlock(mHandle);
-    CheckError(ret, UNKNOWN_ERROR, "@%s: Unlock fails, ret:%d", __FUNCTION__, ret);
+    CheckAndLogError(ret, UNKNOWN_ERROR, "@%s: Unlock fails, ret:%d",
+                     __FUNCTION__, ret);
 
     mLocked = false;
 
@@ -353,7 +362,8 @@ void CameraBuffer::dumpImage(const int type, const char *name)
 
     if (!isLocked()) {
         status_t status = lock();
-        CheckError(status != NO_ERROR, VOID_VALUE, "@%s, lock fails", __FUNCTION__);
+        CheckAndLogError(status != NO_ERROR, VOID_VALUE, "@%s, lock fails",
+                         __FUNCTION__);
     }
 
     dumpToFile(mDataPtr, mSize, mWidth, mHeight, mRequestID, name);
@@ -379,7 +389,9 @@ allocateHeapBuffer(int w, int h, int s, int v4l2Fmt, int cameraId, int dataSizeO
 
     void *dataPtr = nullptr;
     int ret = posix_memalign(&dataPtr, sysconf(_SC_PAGESIZE), dataSize);
-    CheckError((dataPtr == nullptr || ret != 0), nullptr, "@%s, posix_memalign fails, size:%d", __FUNCTION__, dataSize);
+    CheckAndLogError((dataPtr == nullptr || ret != 0), nullptr,
+                     "@%s, posix_memalign fails, size:%d", __FUNCTION__,
+                     dataSize);
 
     return std::shared_ptr<CameraBuffer>(new CameraBuffer(w, h, s, v4l2Fmt, dataPtr, cameraId, dataSizeOverride));
 }
@@ -396,13 +408,16 @@ allocateHandleBuffer(int w, int h, int gfxFmt, int usage, int cameraId)
     buffer_handle_t handle;
     uint32_t stride = 0;
     cros::CameraBufferManager* bufManager = cros::CameraBufferManager::GetInstance();
-    CheckError(bufManager == nullptr, nullptr, "@%s, GetInstance fails", __FUNCTION__);
+    CheckAndLogError(bufManager == nullptr, nullptr, "@%s, GetInstance fails",
+                     __FUNCTION__);
     int ret = bufManager->Allocate(w, h, gfxFmt, usage, &handle, &stride);
-    CheckError(ret != 0, nullptr, "@%s, Allocate fails, ret:%d", __FUNCTION__, ret);
+    CheckAndLogError(ret != 0, nullptr, "@%s, Allocate fails, ret:%d",
+                     __FUNCTION__, ret);
 
     std::shared_ptr<CameraBuffer> buffer(new CameraBuffer());
     ret = buffer->init(w, h, gfxFmt, handle, cameraId);
-    CheckError(ret != NO_ERROR, nullptr, "@%s, init fails, ret:%d", __FUNCTION__, ret);
+    CheckAndLogError(ret != NO_ERROR, nullptr, "@%s, init fails, ret:%d",
+                     __FUNCTION__, ret);
 
     return buffer;
 }

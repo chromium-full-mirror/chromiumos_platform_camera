@@ -37,8 +37,10 @@ CoordinateLibrary::~CoordinateLibrary()
 status_t CoordinateLibrary::convert(void* pData, int dataSize)
 {
     LOG1("@%s, pData:%p, dataSize:%d", __FUNCTION__, pData, dataSize);
-    CheckError((pData == nullptr), UNKNOWN_ERROR, "@%s, pData is nullptr", __FUNCTION__);
-    CheckError((dataSize < sizeof(convert_coordinates_params)), UNKNOWN_ERROR, "@%s, buffer is small", __FUNCTION__);
+    CheckAndLogError((pData == nullptr), UNKNOWN_ERROR, "@%s, pData is nullptr",
+                     __FUNCTION__);
+    CheckAndLogError((dataSize < sizeof(convert_coordinates_params)),
+                     UNKNOWN_ERROR, "@%s, buffer is small", __FUNCTION__);
 
     convert_coordinates_params* params = static_cast<convert_coordinates_params*>(pData);
     params->results = ia_coordinate_convert(&params->src_system, &params->trg_system, params->src_coordinate);

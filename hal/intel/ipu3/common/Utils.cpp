@@ -163,7 +163,8 @@ void dumpToFile(const void* data, int size, int width, int height, int reqId, co
     LOG2("%s filename is %s", __FUNCTION__, fileName.data());
 
     FILE* fp = fopen (fileName.data(), "w+");
-    CheckError(fp == nullptr, VOID_VALUE, "@%s, open file failed", __FUNCTION__);
+    CheckAndLogError(fp == nullptr, VOID_VALUE, "@%s, open file failed",
+                     __FUNCTION__);
 
     LOG1("Begin write image %s", fileName.data());
     if ((fwrite(data, size, 1, fp)) != 1)
@@ -177,7 +178,8 @@ void dumpToFile(const void* data, int size, int width, int height, int reqId, co
     // read the "dump_xxx" files name into vector
     std::vector<std::string> fileNames;
     DIR* dir = opendir(gDumpPath);
-    CheckError(dir == nullptr, VOID_VALUE, "@%s, call opendir() fail", __FUNCTION__);
+    CheckAndLogError(dir == nullptr, VOID_VALUE, "@%s, call opendir() fail",
+                     __FUNCTION__);
     struct dirent* dp = nullptr;
     while ((dp = readdir(dir)) != nullptr) {
         char* ret = strstr(dp->d_name, dumpPrefix.c_str());
@@ -215,7 +217,7 @@ CameraDumpAsync::CameraDumpAsync(std::string& pipeType, size_t pipelineDepth,
     }
 
     bool ret = mCameraThread.Start();
-    CheckError(!ret, VOID_VALUE, "Failed to start camera thread");
+    CheckAndLogError(!ret, VOID_VALUE, "Failed to start camera thread");
 
     mInitialized = true;
 }
@@ -251,14 +253,16 @@ void CameraDumpAsync::handleDumpImageToFile(MessageConfig msg)
 void CameraDumpAsync::dumpImageToFile(const void *data, uint32_t size,
                                       int reqId, const std::string &name)
 {
-    CheckError((mInitialized == false), VOID_VALUE, "Failed to initialize CameraDumpAsync");
+    CheckAndLogError((mInitialized == false), VOID_VALUE,
+                     "Failed to initialize CameraDumpAsync");
 
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL1, LOG_TAG);
     std::unique_ptr<char[]> dumpBuf;
     {
         std::lock_guard<std::mutex> l(mDumpRawImageLock);
-        CheckError((mDumpRawImageQueue.empty()), VOID_VALUE,
-                   "Request %d failed to get buffer for dumping image", reqId);
+        CheckAndLogError((mDumpRawImageQueue.empty()), VOID_VALUE,
+                         "Request %d failed to get buffer for dumping image",
+                         reqId);
 
         dumpBuf = std::move(mDumpRawImageQueue.front());
         mDumpRawImageQueue.pop();

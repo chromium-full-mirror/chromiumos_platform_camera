@@ -147,8 +147,10 @@ static int hal_dev_open(const hw_module_t* module, const char* name, hw_device_t
 
 #ifdef ENABLE_SANDBOXING
     if (!icamera::IntelAlgoClient::getInstance()->isIPCFine()) {
-        CheckError(icamera::IntelAlgoClient::getInstance()->initialize() != icamera::OK, -EINVAL,
-                   "%s, Connect to algo service fails", __func__);
+        CheckAndLogError(
+            icamera::IntelAlgoClient::getInstance()->initialize() !=
+                icamera::OK,
+            -EINVAL, "%s, Connect to algo service fails", __func__);
         icamera::PlatformData::parseGraphFromXmlFile();
     }
 #endif
@@ -203,8 +205,9 @@ static int hal_init(void) {
      * not based on the return value
      */
 #ifdef ENABLE_SANDBOXING
-    CheckError(icamera::IntelAlgoClient::getInstance()->initialize() != icamera::OK, -EINVAL,
-               "%s, Connect to algo service fails", __func__);
+    CheckAndLogError(
+        icamera::IntelAlgoClient::getInstance()->initialize() != icamera::OK,
+        -EINVAL, "%s, Connect to algo service fails", __func__);
 #endif
 
     auto infos = camera3::HalV3Utils::getCrosCameraInfo();
@@ -218,16 +221,16 @@ static int hal_init(void) {
         sCameraNumber = currentCameraNum;
     } else {
         sCameraNumber = (xmlCameraNum != -1) ? xmlCameraNum : crosCameraNum;
-        CheckError(currentCameraNum < sCameraNumber, -EINVAL,
-                   "@%s, expected cameras number: %d, found: %d", __func__,
-                   sCameraNumber, currentCameraNum);
+        CheckAndLogError(currentCameraNum < sCameraNumber, -EINVAL,
+                         "@%s, expected cameras number: %d, found: %d",
+                         __func__, sCameraNumber, currentCameraNum);
     }
 
     if (sCameraNumber != 0) {
         // Initialize PlatformData
         int ret = icamera::camera_hal_init();
-        CheckError(ret != icamera::OK, -EINVAL, "@%s, camera_hal_init fails, ret:%d",
-                   __func__, ret);
+        CheckAndLogError(ret != icamera::OK, -EINVAL,
+                         "@%s, camera_hal_init fails, ret:%d", __func__, ret);
         // Update orientation
         camera3::HalV3Utils::updateOrientation(infos);
     }
@@ -273,8 +276,8 @@ static void hal_tear_down() {
     LOG1("@%s", __func__);
 
     int ret = icamera::camera_hal_deinit();
-    CheckError(ret != icamera::OK, VOID_VALUE, "@%s, camera_hal_deinit fails, ret:%d", __func__,
-               ret);
+    CheckAndLogError(ret != icamera::OK, VOID_VALUE,
+                     "@%s, camera_hal_deinit fails, ret:%d", __func__, ret);
 #ifdef ENABLE_SANDBOXING
     icamera::IntelAlgoClient::releaseInstance();
 #endif

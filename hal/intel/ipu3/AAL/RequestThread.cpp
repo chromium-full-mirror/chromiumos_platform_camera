@@ -474,7 +474,8 @@ RequestThread::captureRequest(Camera3Request* request)
     if (inStream) {
         stream = static_cast<CameraStream*>(const_cast<CameraStream*>(inStream));
         status = stream->processRequest(request);
-        CheckError(status != NO_ERROR, status, "%s, processRequest fails", __FUNCTION__);
+        CheckAndLogError(status != NO_ERROR, status, "%s, processRequest fails",
+                         __FUNCTION__);
     }
 
     return status;

@@ -55,9 +55,10 @@ Mediatek3AClient::Mediatek3AClient()
       cros::CameraAlgorithmBackend::kVendorCpu,
       NSCam::Utils::getMojoManagerToken());
 
-  CheckError(!mBridge, VOID_VALUE, "@%s, mBridge is nullptr", __FUNCTION__);
-  CheckError((mBridge->Initialize(this) != 0), VOID_VALUE,
-             "@%s, call mBridge->Initialize fail", __FUNCTION__);
+  CheckAndLogError(!mBridge, VOID_VALUE, "@%s, mBridge is nullptr",
+                   __FUNCTION__);
+  CheckAndLogError((mBridge->Initialize(this) != 0), VOID_VALUE,
+                   "@%s, call mBridge->Initialize fail", __FUNCTION__);
 
   for (int i = 0; i < IPC_GROUP_NUM; i++) {
     mRunner[i] = std::unique_ptr<Runner>(
@@ -91,9 +92,10 @@ void Mediatek3AClient::tryReconnectBridge() {
   mBridge = cros::CameraAlgorithmBridge::CreateInstance(
       cros::CameraAlgorithmBackend::kVendorCpu,
       NSCam::Utils::getMojoManagerToken());
-  CheckError(!mBridge, VOID_VALUE, "@%s, mBridge is nullptr", __FUNCTION__);
-  CheckError((mBridge->Initialize(this) != 0), VOID_VALUE,
-             "@%s, call mBridge->Initialize fail", __FUNCTION__);
+  CheckAndLogError(!mBridge, VOID_VALUE, "@%s, mBridge is nullptr",
+                   __FUNCTION__);
+  CheckAndLogError((mBridge->Initialize(this) != 0), VOID_VALUE,
+                   "@%s, call mBridge->Initialize fail", __FUNCTION__);
 
   for (int i = 0; i < IPC_GROUP_NUM; i++)
     mRunner[i] = std::unique_ptr<Runner>(
@@ -140,24 +142,27 @@ int Mediatek3AClient::allocateShmMem(std::string const& name,
   void* shmAddr = nullptr;
 
   shmFd = shm_open(name.c_str(), O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
-  CheckError((shmFd == -1), UNKNOWN_ERROR, "@%s, call shm_open fail",
-             __FUNCTION__);
+  CheckAndLogError((shmFd == -1), UNKNOWN_ERROR, "@%s, call shm_open fail",
+                   __FUNCTION__);
 
   int ret = fcntl(shmFd, F_GETFD);
-  CheckError((ret == -1), UNKNOWN_ERROR, "@%s, call fcntl fail", __FUNCTION__);
+  CheckAndLogError((ret == -1), UNKNOWN_ERROR, "@%s, call fcntl fail",
+                   __FUNCTION__);
 
   ret = ftruncate(shmFd, size);
-  CheckError((ret == -1), UNKNOWN_ERROR, "@%s, call ftruncate fail",
-             __FUNCTION__);
+  CheckAndLogError((ret == -1), UNKNOWN_ERROR, "@%s, call ftruncate fail",
+                   __FUNCTION__);
 
   struct stat sb;
   ret = fstat(shmFd, &sb);
-  CheckError((ret == -1), UNKNOWN_ERROR, "@%s, call fstat fail", __FUNCTION__);
-  CheckError((sb.st_size != size), UNKNOWN_ERROR, "@%s, sb.st_size:%jd",
-             __FUNCTION__, (intmax_t)sb.st_size);
+  CheckAndLogError((ret == -1), UNKNOWN_ERROR, "@%s, call fstat fail",
+                   __FUNCTION__);
+  CheckAndLogError((sb.st_size != size), UNKNOWN_ERROR, "@%s, sb.st_size:%jd",
+                   __FUNCTION__, (intmax_t)sb.st_size);
 
   shmAddr = mmap(0, sb.st_size, PROT_WRITE, MAP_SHARED, shmFd, 0);
-  CheckError((!shmAddr), UNKNOWN_ERROR, "@%s, call mmap fail", __FUNCTION__);
+  CheckAndLogError((!shmAddr), UNKNOWN_ERROR, "@%s, call mmap fail",
+                   __FUNCTION__);
 
   *fd = shmFd;
   *addr = shmAddr;
@@ -180,12 +185,12 @@ void Mediatek3AClient::releaseShmMem(std::string const& name,
 int Mediatek3AClient::requestSync(IPC_CMD cmd,
                                   int32_t bufferHandle,
                                   int32_t group) {
-  CheckError(!mInitialized, UNKNOWN_ERROR, "@%s, mInitialized is false",
-             __FUNCTION__);
-  CheckError(!isIPCFine(), UNKNOWN_ERROR, "@%s, IPC error happens",
-             __FUNCTION__);
+    CheckAndLogError(!mInitialized, UNKNOWN_ERROR, "@%s, mInitialized is false",
+                     __FUNCTION__);
+    CheckAndLogError(!isIPCFine(), UNKNOWN_ERROR, "@%s, IPC error happens",
+                     __FUNCTION__);
 
-  return mRunner[group]->requestSync(cmd, bufferHandle, group);
+    return mRunner[group]->requestSync(cmd, bufferHandle, group);
 }
 
 int Mediatek3AClient::requestSync(IPC_CMD cmd, int32_t bufferHandle) {
@@ -199,8 +204,9 @@ int Mediatek3AClient::requestSync(IPC_CMD cmd) {
 int32_t Mediatek3AClient::registerBuffer(int bufferFd) {
   LOG1("@%s, bufferFd:%d, mInitialized:%d", __FUNCTION__, bufferFd,
        mInitialized);
-  CheckError(!mInitialized, -1, "@%s, mInitialized is false", __FUNCTION__);
-  CheckError(!isIPCFine(), -1, "@%s, IPC error happens", __FUNCTION__);
+  CheckAndLogError(!mInitialized, -1, "@%s, mInitialized is false",
+                   __FUNCTION__);
+  CheckAndLogError(!isIPCFine(), -1, "@%s, IPC error happens", __FUNCTION__);
 
   return mBridge->RegisterBuffer(bufferFd);
 }
@@ -208,9 +214,10 @@ int32_t Mediatek3AClient::registerBuffer(int bufferFd) {
 void Mediatek3AClient::deregisterBuffer(int32_t bufferHandle) {
   LOG1("@%s, bufferHandle:%d, mInitialized:%d", __FUNCTION__, bufferHandle,
        mInitialized);
-  CheckError(!mInitialized, VOID_VALUE, "@%s, mInitialized is false",
-             __FUNCTION__);
-  CheckError(!isIPCFine(), VOID_VALUE, "@%s, IPC error happens", __FUNCTION__);
+  CheckAndLogError(!mInitialized, VOID_VALUE, "@%s, mInitialized is false",
+                   __FUNCTION__);
+  CheckAndLogError(!isIPCFine(), VOID_VALUE, "@%s, IPC error happens",
+                   __FUNCTION__);
 
   std::vector<int32_t> handles({bufferHandle});
   mBridge->DeregisterBuffers(handles);
@@ -252,8 +259,8 @@ void Mediatek3AClient::returnCallback(
     uint32_t status,
     int32_t buffer_handle) {
   LOG1("@%s cmd:%d", __FUNCTION__, req_id);
-  CheckError(!callback_ops, VOID_VALUE, "@%s, callback_ops is nullptr",
-             __FUNCTION__);
+  CheckAndLogError(!callback_ops, VOID_VALUE, "@%s, callback_ops is nullptr",
+                   __FUNCTION__);
 
   auto s = const_cast<Mediatek3AClient*>(
       static_cast<const Mediatek3AClient*>(callback_ops));
@@ -264,8 +271,8 @@ void Mediatek3AClient::notifyCallback(
     const struct camera_algorithm_callback_ops* callback_ops,
     camera_algorithm_error_msg_code_t msg) {
   LOG1("@%s", __FUNCTION__);
-  CheckError(!callback_ops, VOID_VALUE, "@%s, callback_ops is nullptr",
-             __FUNCTION__);
+  CheckAndLogError(!callback_ops, VOID_VALUE, "@%s, callback_ops is nullptr",
+                   __FUNCTION__);
 
   auto s = const_cast<Mediatek3AClient*>(
       static_cast<const Mediatek3AClient*>(callback_ops));
@@ -308,8 +315,9 @@ Mediatek3AClient::Runner::Runner(IPC_GROUP group,
   pthread_condattr_destroy(&attr);
 
   ret = pthread_mutex_init(&mCbLock, nullptr);
-  CheckError(ret != 0, VOID_VALUE, "@%s, call pthread_mutex_init fails, ret:%d",
-             __FUNCTION__, ret);
+  CheckAndLogError(ret != 0, VOID_VALUE,
+                   "@%s, call pthread_mutex_init fails, ret:%d", __FUNCTION__,
+                   ret);
 
   mInitialized = true;
 }
@@ -336,8 +344,8 @@ int Mediatek3AClient::Runner::requestSync(IPC_CMD cmd,
 
   LOG1("@%s, cmd:%d, group:%d, bufferHandle:%d, mInitialized:%d, servGroup:%d",
        __FUNCTION__, cmd, mGroup, bufferHandle, mInitialized, servGroup);
-  CheckError(!mInitialized, UNKNOWN_ERROR, "@%s, mInitialized is false",
-             __FUNCTION__);
+  CheckAndLogError(!mInitialized, UNKNOWN_ERROR, "@%s, mInitialized is false",
+                   __FUNCTION__);
 
   std::vector<uint8_t> reqHeader(IPC_REQUEST_HEADER_USED_NUM);
   reqHeader[0] = IPC_MATCHING_KEY;
@@ -347,15 +355,16 @@ int Mediatek3AClient::Runner::requestSync(IPC_CMD cmd,
   // time.
   mBridge->Request(cmd, reqHeader, bufferHandle);
   int ret = waitCallback();
-  CheckError((ret != OK), UNKNOWN_ERROR, "@%s, cmd:%d call waitCallback fail",
-             __FUNCTION__, cmd);
+  CheckAndLogError((ret != OK), UNKNOWN_ERROR,
+                   "@%s, cmd:%d call waitCallback fail", __FUNCTION__, cmd);
 
   LOG1("@%s, cmd:%d, group:%d, mCbResult:%d, done!", __FUNCTION__, cmd, mGroup,
        mCbResult);
 
   // check callback result
-  CheckError((mCbResult != true), UNKNOWN_ERROR, "@%s, %s(%d) callback fail",
-             __FUNCTION__, Mediatek3AIpcCmdToString(cmd).c_str(), cmd);
+  CheckAndLogError((mCbResult != true), UNKNOWN_ERROR,
+                   "@%s, %s(%d) callback fail", __FUNCTION__,
+                   Mediatek3AIpcCmdToString(cmd).c_str(), cmd);
 
   return OK;
 }
@@ -380,9 +389,9 @@ void Mediatek3AClient::Runner::callbackHandler(uint32_t req_id,
     int ret = pthread_cond_signal(&mCbCond);
     pthread_mutex_unlock(&mCbLock);
 
-    CheckError(ret != 0, VOID_VALUE,
-               "@%s, call pthread_cond_signal fails, ret:%d", __FUNCTION__,
-               ret);
+    CheckAndLogError(ret != 0, VOID_VALUE,
+                     "@%s, call pthread_cond_signal fails, ret:%d",
+                     __FUNCTION__, ret);
   }
 }
 

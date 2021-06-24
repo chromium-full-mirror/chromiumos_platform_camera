@@ -65,7 +65,8 @@ IPU3CameraHw::init()
     status_t status = NO_ERROR;
 
     status = initStaticMetadata();
-    CheckError(status != NO_ERROR, status, "initStaticMetadata fails, status:%d", status);
+    CheckAndLogError(status != NO_ERROR, status,
+                     "initStaticMetadata fails, status:%d", status);
 
     if (PlatformData::isFaceAeEnabled(mCameraId)) {
         mFDMode = FD_MODE_SIMPLE;
@@ -336,7 +337,8 @@ IPU3CameraHw::processRequest(Camera3Request* request, int inFlightCount)
 
     int32_t testPatternMode = ANDROID_SENSOR_TEST_PATTERN_MODE_OFF;
     status_t status = getTestPatternMode(request, &testPatternMode);
-    CheckError(status != NO_ERROR, status, "@%s: failed to get test pattern mode", __FUNCTION__);
+    CheckAndLogError(status != NO_ERROR, status,
+                     "@%s: failed to get test pattern mode", __FUNCTION__);
 
     if (testPatternMode != mTestPatternMode) {
         LOG1("%s: request %d need reconfigure, infilght %d", __FUNCTION__,
@@ -358,7 +360,8 @@ IPU3CameraHw::processRequest(Camera3Request* request, int inFlightCount)
 status_t IPU3CameraHw::getTestPatternMode(Camera3Request* request, int32_t* testPatternMode)
 {
     const android::CameraMetadata *reqSetting = request->getSettings();
-    CheckError(reqSetting == nullptr, UNKNOWN_ERROR, "no settings in request - BUG");
+    CheckAndLogError(reqSetting == nullptr, UNKNOWN_ERROR,
+                     "no settings in request - BUG");
 
     const camera_metadata_t *meta = PlatformData::getStaticMetadata(mCameraId);
     camera_metadata_ro_entry entry, availableTestPatternModes;
@@ -368,8 +371,9 @@ status_t IPU3CameraHw::getTestPatternMode(Camera3Request* request, int32_t* test
 
     entry = reqSetting->find(ANDROID_SENSOR_TEST_PATTERN_MODE);
     MetadataHelper::getSetting(availableTestPatternModes, entry, testPatternMode);
-    CheckError(*testPatternMode < 0, BAD_VALUE, "@%s: invalid test pattern mode: %d",
-        __FUNCTION__, *testPatternMode);
+    CheckAndLogError(*testPatternMode < 0, BAD_VALUE,
+                     "@%s: invalid test pattern mode: %d", __FUNCTION__,
+                     *testPatternMode);
 
     LOG2("@%s: current test pattern mode: %d", __FUNCTION__, *testPatternMode);
     return NO_ERROR;
@@ -390,10 +394,12 @@ status_t IPU3CameraHw::configStreamsPrivate()
     }
 
     status = mCaptureUnit->configStreams(mActiveStreams, true);
-    CheckError(status != NO_ERROR, status, "Unable to configure stream for CaptureUnit");
+    CheckAndLogError(status != NO_ERROR, status,
+                     "Unable to configure stream for CaptureUnit");
 
     status = mImguUnit->configStreams(mActiveStreams);
-    CheckError(status != NO_ERROR, status, "Unable to configure stream for ImguUnit");
+    CheckAndLogError(status != NO_ERROR, status,
+                     "Unable to configure stream for ImguUnit");
 
     return mControlUnit->configStreamsDone(true);
 }

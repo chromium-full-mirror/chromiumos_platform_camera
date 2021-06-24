@@ -80,8 +80,8 @@ int32_t Mediatek3AServer::initialize(
     const camera_algorithm_callback_ops_t* callback_ops) {
   LOG1("@%s, callback_ops:%p", __FUNCTION__, callback_ops);
 
-  CheckError((!callback_ops), -EINVAL, "@%s, the callback_ops is nullptr",
-             __FUNCTION__);
+  CheckAndLogError((!callback_ops), -EINVAL, "@%s, the callback_ops is nullptr",
+                   __FUNCTION__);
 
   mCallback = callback_ops;
 
@@ -101,8 +101,8 @@ int32_t Mediatek3AServer::registerBuffer(int buffer_fd) {
 
   struct stat sb;
   int ret = fstat(buffer_fd, &sb);
-  CheckError((ret == -1), -EBADFD, "@%s, Failed to get buffer status",
-             __FUNCTION__);
+  CheckAndLogError((ret == -1), -EBADFD, "@%s, Failed to get buffer status",
+                   __FUNCTION__);
 
   /* query size for dma buf fd */
   uint64_t end_pos = lseek(buffer_fd, 0, SEEK_END);
@@ -112,8 +112,8 @@ int32_t Mediatek3AServer::registerBuffer(int buffer_fd) {
   void* addr =
       mmap(0, mmap_size, PROT_READ | PROT_WRITE, MAP_SHARED, buffer_fd, 0);
 
-  CheckError((addr == reinterpret_cast<void*>(-1)), -EBADFD,
-             "@%s, Failed to map buffer", __FUNCTION__);
+  CheckAndLogError((addr == reinterpret_cast<void*>(-1)), -EBADFD,
+                   "@%s, Failed to map buffer", __FUNCTION__);
 
   pthread_rwlock_wrlock(&mRWLock);
 

@@ -75,7 +75,7 @@ void ParameterHelper::merge(const CameraMetadata& metadata, Parameters* dst)
 
 void ParameterHelper::copyMetadata(const Parameters& source, CameraMetadata* metadata)
 {
-    CheckError((!metadata), VOID_VALUE, "null metadata to be updated!");
+    CheckAndLogError((!metadata), VOID_VALUE, "null metadata to be updated!");
 
     AutoRLock rl(source.mData);
     *metadata = getMetadata(source.mData);

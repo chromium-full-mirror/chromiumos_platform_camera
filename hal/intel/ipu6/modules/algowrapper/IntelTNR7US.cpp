@@ -53,8 +53,9 @@ IntelTNR7US::~IntelTNR7US() {
     }
 
     ret = pthread_mutex_destroy(&mLock);
-    CheckError(ret != 0, VOID_VALUE, "@%s, call pthread_mutex_destroy fails, ret:%d", __func__,
-               ret);
+    CheckAndLogError(ret != 0, VOID_VALUE,
+                     "@%s, call pthread_mutex_destroy fails, ret:%d", __func__,
+                     ret);
 }
 
 int IntelTNR7US::init(int width, int height, TnrType type) {
@@ -87,8 +88,9 @@ int IntelTNR7US::init(int width, int height, TnrType type) {
     pthread_condattr_destroy(&attr);
 
     ret = pthread_mutex_init(&mLock, NULL);
-    CheckError(ret != 0, UNKNOWN_ERROR, "@%s, call pthread_mutex_init fails, ret:%d", __func__,
-               ret);
+    CheckAndLogError(ret != 0, UNKNOWN_ERROR,
+                     "@%s, call pthread_mutex_init fails, ret:%d", __func__,
+                     ret);
 
     std::string threadName = "IntelTNR7US" + std::to_string(type + (mCameraId << 1));
     mThread = std::unique_ptr<base::Thread>(new base::Thread(threadName));
@@ -106,7 +108,8 @@ void* IntelTNR7US::allocCamBuf(uint32_t bufSize, int id) {
     LOG1("%s mCameraId %d type %d, id: %d", __func__, mCameraId, mTnrType, id);
     void* buffer = nullptr;
     int ret = posix_memalign(&buffer, getpagesize(), bufSize);
-    CheckError(ret != 0, nullptr, "%s, posix_memalign fails, ret:%d", __func__, ret);
+    CheckAndLogError(ret != 0, nullptr, "%s, posix_memalign fails, ret:%d",
+                     __func__, ret);
 
     CmSurface2DUP* surface = createCMSurface(buffer);
     if (!surface) {
@@ -128,10 +131,10 @@ void IntelTNR7US::freeAllBufs() {
 }
 
 int IntelTNR7US::prepareSurface(void* bufAddr, int size) {
-    CheckError(size < mWidth * mHeight * 3 / 2, UNKNOWN_ERROR, "%s, invalid buffer size:%d",
-               __func__, size);
+    CheckAndLogError(size < mWidth * mHeight * 3 / 2, UNKNOWN_ERROR,
+                     "%s, invalid buffer size:%d", __func__, size);
     CmSurface2DUP* surface = createCMSurface(bufAddr);
-    CheckError(!surface, UNKNOWN_ERROR, "Failed to create CMSurface");
+    CheckAndLogError(!surface, UNKNOWN_ERROR, "Failed to create CMSurface");
     mCMSurfaceMap[bufAddr] = surface;
 
     return OK;
@@ -142,11 +145,13 @@ int IntelTNR7US::runTnrFrame(const void* inBufAddr, void* outBufAddr, uint32_t i
     PERF_CAMERA_ATRACE();
     TRACE_LOG_PROCESS("IntelTNR7US", "runTnrFrame");
     LOG1("%s mCameraId %d, type %d", __func__, mCameraId, mTnrType);
-    CheckError(inBufAddr == nullptr || outBufAddr == nullptr || tnrParam == nullptr, UNKNOWN_ERROR,
-               "@%s, buffer is nullptr", __func__);
+    CheckAndLogError(
+        inBufAddr == nullptr || outBufAddr == nullptr || tnrParam == nullptr,
+        UNKNOWN_ERROR, "@%s, buffer is nullptr", __func__);
 
     CmSurface2DUP* inSurface = getBufferCMSurface(const_cast<void*>(inBufAddr));
-    CheckError(!inSurface, UNKNOWN_ERROR, "Failed to get CMSurface for input buffer");
+    CheckAndLogError(!inSurface, UNKNOWN_ERROR,
+                     "Failed to get CMSurface for input buffer");
 
     CmSurface2DUP* outSurface = nullptr;
     if (fd >= 0) {
@@ -154,7 +159,8 @@ int IntelTNR7US::runTnrFrame(const void* inBufAddr, void* outBufAddr, uint32_t i
     } else {
         outSurface = getBufferCMSurface(outBufAddr);
     }
-    CheckError(outSurface == nullptr, UNKNOWN_ERROR, "Failed to get CMSurface for output buffer");
+    CheckAndLogError(outSurface == nullptr, UNKNOWN_ERROR,
+                     "Failed to get CMSurface for output buffer");
 
     /* the frame N gpu tnr run should wait for parameters of frame N-1 update completed */
     nsecs_t startTime = CameraUtils::systemTime();
@@ -184,7 +190,7 @@ int IntelTNR7US::runTnrFrame(const void* inBufAddr, void* outBufAddr, uint32_t i
     if (fd >= 0) {
         destroyCMSurface(outSurface);
     }
-    CheckError(ret != OK, UNKNOWN_ERROR, "tnr7us process failed");
+    CheckAndLogError(ret != OK, UNKNOWN_ERROR, "tnr7us process failed");
 
     return OK;
 }
@@ -214,7 +220,9 @@ void IntelTNR7US::handleParamUpdate(int gain, bool forceUpdate) {
     int ret = pthread_cond_signal(&mUpdateDoneCondition);
     pthread_mutex_unlock(&mLock);
 
-    CheckError(ret != 0, VOID_VALUE, "@%s, call pthread_cond_signal fails, ret:%d", __func__, ret);
+    CheckAndLogError(ret != 0, VOID_VALUE,
+                     "@%s, call pthread_cond_signal fails, ret:%d", __func__,
+                     ret);
 }
 
 CmSurface2DUP* IntelTNR7US::getBufferCMSurface(void* bufAddr) {
@@ -229,7 +237,8 @@ CmSurface2DUP* IntelTNR7US::createCMSurface(void* bufAddr) {
     LOG1("%s ", __func__);
     CmSurface2DUP* cmSurface = nullptr;
     int32_t ret = createCmSurface2DUP(mWidth, mHeight, CM_SURFACE_FORMAT_NV12, bufAddr, cmSurface);
-    CheckError(ret != 0, nullptr, "failed to create CmSurface2DUP object");
+    CheckAndLogError(ret != 0, nullptr,
+                     "failed to create CmSurface2DUP object");
     return cmSurface;
 }
 

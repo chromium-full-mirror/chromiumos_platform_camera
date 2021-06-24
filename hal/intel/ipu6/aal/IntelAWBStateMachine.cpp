@@ -68,8 +68,10 @@ int IntelAWBStateMachine::processState(uint8_t controlMode, uint8_t sceneMode,
 }
 
 int IntelAWBStateMachine::processResult(bool converged, android::CameraMetadata* result) {
-    CheckError(!mCurrentAwbMode, icamera::UNKNOWN_ERROR, "Invalid AWB mode");
-    CheckError(!result, icamera::UNKNOWN_ERROR, "%s, result is nullptr", __func__);
+    CheckAndLogError(!mCurrentAwbMode, icamera::UNKNOWN_ERROR,
+                     "Invalid AWB mode");
+    CheckAndLogError(!result, icamera::UNKNOWN_ERROR, "%s, result is nullptr",
+                     __func__);
 
     return mCurrentAwbMode->processResult(converged, result);
 }
@@ -87,7 +89,7 @@ IntelAWBModeBase::IntelAWBModeBase()
 }
 
 void IntelAWBModeBase::updateResult(android::CameraMetadata* results) {
-    CheckError(!results, VOID_VALUE, "%s, result is nullptr", __func__);
+    CheckAndLogError(!results, VOID_VALUE, "%s, result is nullptr", __func__);
     LOG2("%s: current AWB state is: %d", __func__, mCurrentAwbState);
 
     //# METADATA_Dynamic control.awbMode done
@@ -135,7 +137,8 @@ int IntelAWBModeOff::processState(uint8_t controlMode, uint8_t sceneMode,
 
 int IntelAWBModeOff::processResult(bool converged, android::CameraMetadata* result) {
     UNUSED(converged);
-    CheckError(!result, icamera::UNKNOWN_ERROR, "%s, result is nullptr", __func__);
+    CheckAndLogError(!result, icamera::UNKNOWN_ERROR, "%s, result is nullptr",
+                     __func__);
     LOG2("%s", __func__);
 
     mCurrentAwbState = ANDROID_CONTROL_AWB_STATE_INACTIVE;
@@ -188,7 +191,8 @@ int IntelAWBModeAuto::processState(uint8_t controlMode, uint8_t sceneMode,
 }
 
 int IntelAWBModeAuto::processResult(bool converged, android::CameraMetadata* result) {
-    CheckError(!result, icamera::UNKNOWN_ERROR, "%s, result is nullptr", __func__);
+    CheckAndLogError(!result, icamera::UNKNOWN_ERROR, "%s, result is nullptr",
+                     __func__);
     switch (mCurrentAwbState) {
         case ANDROID_CONTROL_AWB_STATE_LOCKED:
             // do nothing

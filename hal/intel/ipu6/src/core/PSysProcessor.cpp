@@ -77,7 +77,9 @@ int PSysProcessor::configure(const std::vector<ConfigMode>& configModes)
 {
     //Create PSysDAGs actually
     LOG1("@%s ", __func__);
-    CheckError(mStatus == PIPELINE_CREATED, -1, "@%s mStatus is in wrong status: PIPELINE_CREATED", __func__);
+    CheckAndLogError(mStatus == PIPELINE_CREATED, -1,
+                     "@%s mStatus is in wrong status: PIPELINE_CREATED",
+                     __func__);
     mConfigModes = configModes;
     mSofSequence = -1;
 
@@ -119,7 +121,8 @@ int PSysProcessor::configure(const std::vector<ConfigMode>& configModes)
 
         TuningConfig tuningConfig;
         ret = PlatformData::getTuningConfigByConfigMode(mCameraId, cfg, tuningConfig);
-        CheckError(ret != OK, ret, "%s: can't get config for mode %d", __func__, cfg);
+        CheckAndLogError(ret != OK, ret, "%s: can't get config for mode %d",
+                         __func__, cfg);
 
         LOG1("Create PSysDAG for ConfigMode %d", cfg);
         unique_ptr<PSysDAG> pSysDAG = unique_ptr<PSysDAG>(new PSysDAG(mCameraId, this));
@@ -127,7 +130,8 @@ int PSysProcessor::configure(const std::vector<ConfigMode>& configModes)
         pSysDAG->setFrameInfo(mInputFrameInfo, outputFrameInfo);
         bool useTnrOutBuffer = mOpaqueRawPort != INVALID_PORT;
         ret = pSysDAG->configure(tuningConfig.configMode, tuningConfig.tuningMode, useTnrOutBuffer);
-        CheckError(ret != OK, ret, "@%s configure psys dag failed:%d", __func__, ret);
+        CheckAndLogError(ret != OK, ret, "@%s configure psys dag failed:%d",
+                         __func__, ret);
 
         mPSysDAGs[tuningConfig.configMode] = std::move(pSysDAG);
 
@@ -146,7 +150,9 @@ int PSysProcessor::registerUserOutputBufs(Port port, const shared_ptr<CameraBuff
     for (auto &psysDAGPair : mPSysDAGs) {
         if (!psysDAGPair.second) continue;
         int ret = psysDAGPair.second->registerUserOutputBufs(port, camBuffer);
-        CheckError(ret != OK, BAD_VALUE, "%s, register user buffer failed, ret: %d", __func__, ret);
+        CheckAndLogError(ret != OK, BAD_VALUE,
+                         "%s, register user buffer failed, ret: %d", __func__,
+                         ret);
     }
 
     return OK;
@@ -167,7 +173,8 @@ int PSysProcessor::start()
 
     if (needProducerBuffer) {
         int ret = allocProducerBuffers(mCameraId, rawBufferNum);
-        CheckError(ret != OK, NO_MEMORY, "Allocating producer buffer failed:%d", ret);
+        CheckAndLogError(ret != OK, NO_MEMORY,
+                         "Allocating producer buffer failed:%d", ret);
     }
 
     mThreadRunning = true;
@@ -448,7 +455,8 @@ int PSysProcessor::processNewFrame() {
     PERF_CAMERA_ATRACE();
     LOG2("@%s, mCameraId:%d", __func__, mCameraId);
 
-    CheckError(!mBufferProducer, INVALID_OPERATION, "No available producer");
+    CheckAndLogError(!mBufferProducer, INVALID_OPERATION,
+                     "No available producer");
 
     int ret = OK;
     CameraBufferPortMap srcBuffers, dstBuffers;
@@ -468,7 +476,8 @@ int PSysProcessor::processNewFrame() {
         }
 
         ret = prepareTask(&srcBuffers, &dstBuffers);
-        CheckError(ret != OK, UNKNOWN_ERROR, "%s, Failed to process frame", __func__);
+        CheckAndLogError(ret != OK, UNKNOWN_ERROR,
+                         "%s, Failed to process frame", __func__);
     } else {
         timeval curTime;
         int64_t sofInterval = 0;
@@ -522,7 +531,8 @@ int PSysProcessor::processNewFrame() {
             }
 
             ret = prepareTask(&srcBuffers, &dstBuffers);
-            CheckError(ret != OK, UNKNOWN_ERROR, "%s, Failed to process frame", __func__);
+            CheckAndLogError(ret != OK, UNKNOWN_ERROR,
+                             "%s, Failed to process frame", __func__);
         }
     }
 
@@ -686,8 +696,8 @@ void PSysProcessor::returnRawBuffer()
 
 status_t PSysProcessor::prepareTask(CameraBufferPortMap *srcBuffers,
                                     CameraBufferPortMap *dstBuffers) {
-    CheckError(srcBuffers->empty() || dstBuffers->empty(),
-               UNKNOWN_ERROR, "%s, the input or output buffer is empty", __func__);
+    CheckAndLogError(srcBuffers->empty() || dstBuffers->empty(), UNKNOWN_ERROR,
+                     "%s, the input or output buffer is empty", __func__);
     if (mHoldRawBuffers && mOpaqueRawPort == INVALID_PORT) {
         saveRawBuffer(srcBuffers);
     }
@@ -732,7 +742,8 @@ status_t PSysProcessor::prepareTask(CameraBufferPortMap *srcBuffers,
         for (auto &buffer : *dstBuffers) {
             if (buffer.first == mRawPort) {
                 dstBuf = buffer.second;
-                CheckError(!dstBuf, UNKNOWN_ERROR, "%s, dstBuf for output raw is null", __func__);
+                CheckAndLogError(!dstBuf, UNKNOWN_ERROR,
+                                 "%s, dstBuf for output raw is null", __func__);
                 dstBuf->updateV4l2Buffer(*mainBuf->getV4L2Buffer().Get());
                 dstBuffers->erase(mRawPort);
                 break;

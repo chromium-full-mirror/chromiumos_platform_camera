@@ -39,8 +39,10 @@ MknLibrary::~MknLibrary()
 status_t MknLibrary::init(void* pData, int dataSize)
 {
     LOG1("@%s, pData:%p, dataSize:%d", __FUNCTION__, pData, dataSize);
-    CheckError((pData == nullptr), UNKNOWN_ERROR, "@%s, pData is nullptr", __FUNCTION__);
-    CheckError((dataSize < sizeof(mkn_init_params)), UNKNOWN_ERROR, "@%s, buffer is small", __FUNCTION__);
+    CheckAndLogError((pData == nullptr), UNKNOWN_ERROR, "@%s, pData is nullptr",
+                     __FUNCTION__);
+    CheckAndLogError((dataSize < sizeof(mkn_init_params)), UNKNOWN_ERROR,
+                     "@%s, buffer is small", __FUNCTION__);
 
     mkn_init_params* params = static_cast<mkn_init_params*>(pData);
 
@@ -55,8 +57,10 @@ status_t MknLibrary::init(void* pData, int dataSize)
 status_t MknLibrary::uninit(void* pData, int dataSize)
 {
     LOG1("@%s, pData:%p, dataSize:%d", __FUNCTION__, pData, dataSize);
-    CheckError((pData == nullptr), UNKNOWN_ERROR, "@%s, pData is nullptr", __FUNCTION__);
-    CheckError((dataSize < sizeof(mkn_uninit_params)), UNKNOWN_ERROR, "@%s, buffer is small", __FUNCTION__);
+    CheckAndLogError((pData == nullptr), UNKNOWN_ERROR, "@%s, pData is nullptr",
+                     __FUNCTION__);
+    CheckAndLogError((dataSize < sizeof(mkn_uninit_params)), UNKNOWN_ERROR,
+                     "@%s, buffer is small", __FUNCTION__);
 
     mkn_uninit_params* params = static_cast<mkn_uninit_params*>(pData);
     LOG2("@%s, params->mkn_handle:%p", __FUNCTION__, reinterpret_cast<ia_mkn*>(params->mkn_handle));
@@ -69,8 +73,10 @@ status_t MknLibrary::uninit(void* pData, int dataSize)
 status_t MknLibrary::prepare(void* pData, int dataSize)
 {
     LOG1("@%s, pData:%p, dataSize:%d", __FUNCTION__, pData, dataSize);
-    CheckError((pData == nullptr), UNKNOWN_ERROR, "@%s, pData is nullptr", __FUNCTION__);
-    CheckError((dataSize < sizeof(mkn_prepare_params)), UNKNOWN_ERROR, "@%s, buffer is small", __FUNCTION__);
+    CheckAndLogError((pData == nullptr), UNKNOWN_ERROR, "@%s, pData is nullptr",
+                     __FUNCTION__);
+    CheckAndLogError((dataSize < sizeof(mkn_prepare_params)), UNKNOWN_ERROR,
+                     "@%s, buffer is small", __FUNCTION__);
 
     mkn_prepare_params* params = static_cast<mkn_prepare_params*>(pData);
 
@@ -86,7 +92,8 @@ status_t MknLibrary::prepare(void* pData, int dataSize)
     }
 
     bool ret = mIpc.serverFlattenPrepare(data, params);
-    CheckError(ret == false, UNKNOWN_ERROR, "@%s, serverFlattenPrepare fails", __FUNCTION__);
+    CheckAndLogError(ret == false, UNKNOWN_ERROR,
+                     "@%s, serverFlattenPrepare fails", __FUNCTION__);
 
     return OK;
 }
@@ -94,14 +101,17 @@ status_t MknLibrary::prepare(void* pData, int dataSize)
 status_t MknLibrary::enable(void* pData, int dataSize)
 {
     LOG1("@%s, pData:%p, dataSize:%d", __FUNCTION__, pData, dataSize);
-    CheckError((pData == nullptr), UNKNOWN_ERROR, "@%s, pData is nullptr", __FUNCTION__);
-    CheckError((dataSize < sizeof(mkn_enable_params)), UNKNOWN_ERROR, "@%s, buffer is small", __FUNCTION__);
+    CheckAndLogError((pData == nullptr), UNKNOWN_ERROR, "@%s, pData is nullptr",
+                     __FUNCTION__);
+    CheckAndLogError((dataSize < sizeof(mkn_enable_params)), UNKNOWN_ERROR,
+                     "@%s, buffer is small", __FUNCTION__);
 
     mkn_enable_params* params = static_cast<mkn_enable_params*>(pData);
 
     ia_mkn* mkn = reinterpret_cast<ia_mkn*>(params->mkn_handle);
     ia_err err = ia_mkn_enable(mkn, params->enable_data_collection);
-    CheckError(err != ia_err_none, ia_err_general, "@%s, call ia_mkn_enable() fails", __FUNCTION__);
+    CheckAndLogError(err != ia_err_none, ia_err_general,
+                     "@%s, call ia_mkn_enable() fails", __FUNCTION__);
 
     return err == ia_err_none ? NO_ERROR : UNKNOWN_ERROR;
 }

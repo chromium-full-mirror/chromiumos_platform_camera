@@ -46,8 +46,8 @@ status_t SWPostProcessor::configure(camera3_stream_t* outStream,
         return OK;
     }
     // Support NV12 only
-    CheckError((inputFmt != V4L2_PIX_FMT_NV12), BAD_VALUE,
-            "Don't support format 0x%x", inputFmt);
+    CheckAndLogError((inputFmt != V4L2_PIX_FMT_NV12), BAD_VALUE,
+                     "Don't support format 0x%x", inputFmt);
 
     int type = PROCESS_NONE;
     if (getRotationDegrees(outStream) > 0) {
@@ -80,13 +80,16 @@ status_t SWPostProcessor::cropFrameToSameAspectRatio(std::shared_ptr<CameraBuffe
                                                      std::shared_ptr<CameraBuffer>& refBuf,
                                                      std::shared_ptr<CameraBuffer>* dstBuf)
 {
-    CheckError((srcBuf == nullptr), UNKNOWN_ERROR, "@%s, srcBuf is nullptr", __FUNCTION__);
-    CheckError((refBuf == nullptr), UNKNOWN_ERROR, "@%s, refBuf is nullptr", __FUNCTION__);
-    CheckError(((srcBuf->format() != HAL_PIXEL_FORMAT_YCbCr_420_888) &&
-               (srcBuf->format() != HAL_PIXEL_FORMAT_IMPLEMENTATION_DEFINED) &&
-               (srcBuf->format() != HAL_PIXEL_FORMAT_NV12_LINEAR_CAMERA_INTEL)),
-               UNKNOWN_ERROR,
-               "@%s, invalid srcBuf format %x", __FUNCTION__, srcBuf->format());
+    CheckAndLogError((srcBuf == nullptr), UNKNOWN_ERROR,
+                     "@%s, srcBuf is nullptr", __FUNCTION__);
+    CheckAndLogError((refBuf == nullptr), UNKNOWN_ERROR,
+                     "@%s, refBuf is nullptr", __FUNCTION__);
+    CheckAndLogError(
+        ((srcBuf->format() != HAL_PIXEL_FORMAT_YCbCr_420_888) &&
+         (srcBuf->format() != HAL_PIXEL_FORMAT_IMPLEMENTATION_DEFINED) &&
+         (srcBuf->format() != HAL_PIXEL_FORMAT_NV12_LINEAR_CAMERA_INTEL)),
+        UNKNOWN_ERROR, "@%s, invalid srcBuf format %x", __FUNCTION__,
+        srcBuf->format());
 
     LOG2("@%s, src w:%d, h:%d; ref w:%d, h:%d", __FUNCTION__,
          srcBuf->width(), srcBuf->height(), refBuf->width(), refBuf->height());
@@ -108,10 +111,12 @@ status_t SWPostProcessor::cropFrameToSameAspectRatio(std::shared_ptr<CameraBuffe
          srcBuf->width(), srcBuf->height(), refBuf->width(), refBuf->height(), w, h);
 
     std::shared_ptr<CameraBuffer> buf = requestBuffer(mCameraId, w, h);
-    CheckError(buf == nullptr, UNKNOWN_ERROR, "@%s, Request buffer fails", __FUNCTION__);
+    CheckAndLogError(buf == nullptr, UNKNOWN_ERROR, "@%s, Request buffer fails",
+                     __FUNCTION__);
 
     auto status = ImageScalerCore::cropFrame(srcBuf, buf);
-    CheckError(status != NO_ERROR, status, "@%s, cropFrame fails", __FUNCTION__);
+    CheckAndLogError(status != NO_ERROR, status, "@%s, cropFrame fails",
+                     __FUNCTION__);
 
     *dstBuf = buf;
 
@@ -121,12 +126,16 @@ status_t SWPostProcessor::cropFrameToSameAspectRatio(std::shared_ptr<CameraBuffe
 status_t SWPostProcessor::scaleFrame(std::shared_ptr<CameraBuffer>& srcBuf,
                                      std::shared_ptr<CameraBuffer>& dstBuf)
 {
-    CheckError((srcBuf == nullptr), UNKNOWN_ERROR, "@%s, srcBuf is nullptr", __FUNCTION__);
-    CheckError((dstBuf == nullptr), UNKNOWN_ERROR, "@%s, dstBuf is nullptr", __FUNCTION__);
-    CheckError(((srcBuf->format() != HAL_PIXEL_FORMAT_YCbCr_420_888) &&
-               (srcBuf->format() != HAL_PIXEL_FORMAT_IMPLEMENTATION_DEFINED) &&
-               (srcBuf->format() != HAL_PIXEL_FORMAT_NV12_LINEAR_CAMERA_INTEL)), UNKNOWN_ERROR,
-               "@%s, invalid srcBuf format %x", __FUNCTION__, srcBuf->format());
+    CheckAndLogError((srcBuf == nullptr), UNKNOWN_ERROR,
+                     "@%s, srcBuf is nullptr", __FUNCTION__);
+    CheckAndLogError((dstBuf == nullptr), UNKNOWN_ERROR,
+                     "@%s, dstBuf is nullptr", __FUNCTION__);
+    CheckAndLogError(
+        ((srcBuf->format() != HAL_PIXEL_FORMAT_YCbCr_420_888) &&
+         (srcBuf->format() != HAL_PIXEL_FORMAT_IMPLEMENTATION_DEFINED) &&
+         (srcBuf->format() != HAL_PIXEL_FORMAT_NV12_LINEAR_CAMERA_INTEL)),
+        UNKNOWN_ERROR, "@%s, invalid srcBuf format %x", __FUNCTION__,
+        srcBuf->format());
 
     LOG2("@%s, src w:%d, h:%d; dst w:%d, h:%d", __FUNCTION__,
           srcBuf->width(), srcBuf->height(), dstBuf->width(), dstBuf->height());
@@ -146,9 +155,11 @@ status_t SWPostProcessor::scaleFrame(std::shared_ptr<CameraBuffer>& srcBuf,
                                 dstBuf->width(),
                                 srcBuf->v4l2Fmt(), mCameraId,
                                 PAGE_ALIGN(dstBuf->width() * dstBuf->height() * 3 / 2));
-    CheckError((buf.get() == nullptr), UNKNOWN_ERROR, "@%s, no memory for crop", __FUNCTION__);
+    CheckAndLogError((buf.get() == nullptr), UNKNOWN_ERROR,
+                     "@%s, no memory for crop", __FUNCTION__);
     status_t status = buf->lock();
-    CheckError(status != NO_ERROR, UNKNOWN_ERROR, "@%s, lock fails", __FUNCTION__);
+    CheckAndLogError(status != NO_ERROR, UNKNOWN_ERROR, "@%s, lock fails",
+                     __FUNCTION__);
 
     ImageScalerCore::scaleFrame(srcBuf, buf);
     mPostProcessBufs.push_back(buf);
@@ -169,8 +180,8 @@ status_t SWPostProcessor::processFrame(std::shared_ptr<CameraBuffer>& input,
     status_t status = OK;
 
     int rotateOrientation = getRotationDegrees(mStream);
-    CheckError(rotateOrientation % 90 > 0, UNKNOWN_ERROR, "@%s, unexpected rotation angle",
-               __FUNCTION__);
+    CheckAndLogError(rotateOrientation % 90 > 0, UNKNOWN_ERROR,
+                     "@%s, unexpected rotation angle", __FUNCTION__);
 
     bool shouldRotate = rotateOrientation > 0;
     bool shouldScaleUp = mProcessType & PROCESS_SCALING;
@@ -179,17 +190,21 @@ status_t SWPostProcessor::processFrame(std::shared_ptr<CameraBuffer>& input,
     std::shared_ptr<CameraBuffer> srcBuf;
     if (needReprocess) {
         const camera3_stream_buffer* inputBuf = request->getInputBuffer();
-        CheckError(!inputBuf, UNKNOWN_ERROR, "@%s, getInputBuffer fails", __FUNCTION__);
+        CheckAndLogError(!inputBuf, UNKNOWN_ERROR, "@%s, getInputBuffer fails",
+                         __FUNCTION__);
 
         int fmt = inputBuf->stream->format;
-        CheckError((fmt != HAL_PIXEL_FORMAT_YCbCr_420_888), UNKNOWN_ERROR,
-                   "@%s, input stream is not YCbCr_420_888, format:%x", __FUNCTION__, fmt);
+        CheckAndLogError((fmt != HAL_PIXEL_FORMAT_YCbCr_420_888), UNKNOWN_ERROR,
+                         "@%s, input stream is not YCbCr_420_888, format:%x",
+                         __FUNCTION__, fmt);
 
         const CameraStream* s = request->getInputStream();
-        CheckError(!s, UNKNOWN_ERROR, "@%s, getInputStream fails", __FUNCTION__);
+        CheckAndLogError(!s, UNKNOWN_ERROR, "@%s, getInputStream fails",
+                         __FUNCTION__);
 
         srcBuf = request->findBuffer(s);
-        CheckError((srcBuf == nullptr), UNKNOWN_ERROR, "@%s, findBuffer fails", __FUNCTION__);
+        CheckAndLogError((srcBuf == nullptr), UNKNOWN_ERROR,
+                         "@%s, findBuffer fails", __FUNCTION__);
     } else {
         srcBuf = input;
     }
@@ -214,8 +229,8 @@ status_t SWPostProcessor::processFrame(std::shared_ptr<CameraBuffer>& input,
                 std::swap(rotatedWidth, rotatedHeight);
             }
             rotatedBuf = requestBuffer(mCameraId, rotatedWidth, rotatedHeight);
-            CheckError(rotatedBuf == nullptr, UNKNOWN_ERROR, "@%s, Request buffer fails",
-                       __FUNCTION__);
+            CheckAndLogError(rotatedBuf == nullptr, UNKNOWN_ERROR,
+                             "@%s, Request buffer fails", __FUNCTION__);
             status = ImageScalerCore::rotateFrame(srcBuf, rotatedBuf, rotateOrientation,
                                                   mRotateBuffer);
         }
@@ -232,8 +247,8 @@ status_t SWPostProcessor::processFrame(std::shared_ptr<CameraBuffer>& input,
             ImageScalerCore::scaleFrame(rotatedBuf, output);
         } else {
             scaledBuf = requestBuffer(mCameraId, mStream->width, mStream->height);
-            CheckError(scaledBuf == nullptr, UNKNOWN_ERROR, "@%s, Request buffer fails",
-                       __FUNCTION__);
+            CheckAndLogError(scaledBuf == nullptr, UNKNOWN_ERROR,
+                             "@%s, Request buffer fails", __FUNCTION__);
             ImageScalerCore::scaleFrame(rotatedBuf, scaledBuf);
         }
     } else {
@@ -247,7 +262,8 @@ status_t SWPostProcessor::processFrame(std::shared_ptr<CameraBuffer>& input,
             lockBuffer(scaledBuf);
             lockBuffer(output);
             status_t ret = cropFrameToSameAspectRatio(scaledBuf, output, &croppedBuf);
-            CheckError((ret != OK), UNKNOWN_ERROR, "@%s, cropFrame fails", __FUNCTION__);
+            CheckAndLogError((ret != OK), UNKNOWN_ERROR, "@%s, cropFrame fails",
+                             __FUNCTION__);
         } else {
             croppedBuf = scaledBuf;
         }
@@ -257,8 +273,8 @@ status_t SWPostProcessor::processFrame(std::shared_ptr<CameraBuffer>& input,
         if (croppedBuf->width() != output->width() || croppedBuf->height() != output->height()) {
             lockBuffer(croppedBuf);
             finalScaledBuf = requestBuffer(mCameraId, output->width(), output->height());
-            CheckError(finalScaledBuf == nullptr, UNKNOWN_ERROR, "@%s, Request buffer fails",
-                       __FUNCTION__);
+            CheckAndLogError(finalScaledBuf == nullptr, UNKNOWN_ERROR,
+                             "@%s, Request buffer fails", __FUNCTION__);
             ImageScalerCore::scaleFrame(croppedBuf, finalScaledBuf);
         } else {
             finalScaledBuf = croppedBuf;
@@ -269,7 +285,8 @@ status_t SWPostProcessor::processFrame(std::shared_ptr<CameraBuffer>& input,
             int metadataOrientation = [&] {
                 auto* camera3Request = settings.get()->request;
                 auto* partRes = camera3Request->getPartialResultBuffer(CONTROL_UNIT_PARTIAL_RESULT);
-                CheckError(partRes == nullptr, -1, "@%s, partial result is null", __FUNCTION__);
+                CheckAndLogError(partRes == nullptr, -1,
+                                 "@%s, partial result is null", __FUNCTION__);
                 auto entry = (*partRes).find(ANDROID_JPEG_ORIENTATION);
                 if (entry.count == 1) {
                     return *entry.data.i32;
@@ -286,8 +303,9 @@ status_t SWPostProcessor::processFrame(std::shared_ptr<CameraBuffer>& input,
                     std::swap(rotatedWidth, rotatedHeight);
                 }
                 orientationCorrectedBuf = requestBuffer(mCameraId, rotatedWidth, rotatedHeight);
-                CheckError(orientationCorrectedBuf == nullptr, UNKNOWN_ERROR,
-                    "@%s, Request buffer fails", __FUNCTION__);
+                CheckAndLogError(orientationCorrectedBuf == nullptr,
+                                 UNKNOWN_ERROR, "@%s, Request buffer fails",
+                                 __FUNCTION__);
                 status = ImageScalerCore::rotateFrame(finalScaledBuf, orientationCorrectedBuf,
                                                       metadataOrientation, mRotateBuffer);
             } else {
@@ -302,7 +320,8 @@ status_t SWPostProcessor::processFrame(std::shared_ptr<CameraBuffer>& input,
 
             // update settings for jpeg
             status = mJpegTask->handleMessageSettings(*(settings.get()));
-            CheckError((status != OK), status, "@%s, handleMessageSettings fails", __FUNCTION__);
+            CheckAndLogError((status != OK), status,
+                             "@%s, handleMessageSettings fails", __FUNCTION__);
 
             // encode jpeg
             status = convertJpeg(orientationCorrectedBuf, output, request);
@@ -333,8 +352,8 @@ status_t SWPostProcessor::processFrame(std::shared_ptr<CameraBuffer>& input,
 status_t SWPostProcessor::lockBuffer(const std::shared_ptr<CameraBuffer>& buffer) const
 {
     if (!buffer->isLocked()) {
-        CheckError(buffer->lock() != NO_ERROR, NO_MEMORY, "@%s, Failed to lock buffer",
-                   __FUNCTION__);
+        CheckAndLogError(buffer->lock() != NO_ERROR, NO_MEMORY,
+                         "@%s, Failed to lock buffer", __FUNCTION__);
     }
     return OK;
 }
@@ -344,7 +363,8 @@ std::shared_ptr<CameraBuffer> SWPostProcessor::requestBuffer(int cameraId, int w
     auto buf = MemoryUtils::allocateHandleBuffer(width, height, HAL_PIXEL_FORMAT_YCbCr_420_888,
         GRALLOC_USAGE_HW_CAMERA_READ | GRALLOC_USAGE_SW_READ_OFTEN | GRALLOC_USAGE_SW_WRITE_OFTEN,
         cameraId);
-    CheckError((buf.get() == nullptr), nullptr, "@%s, No memory for scale", __FUNCTION__);
+    CheckAndLogError((buf.get() == nullptr), nullptr,
+                     "@%s, No memory for scale", __FUNCTION__);
     lockBuffer(buf);
     mPostProcessBufs.push_back(buf);
 
@@ -365,7 +385,8 @@ void SWPostProcessor::releaseBuffers()
 
 int SWPostProcessor::getRotationDegrees(camera3_stream_t* stream) const
 {
-    CheckError((stream == nullptr), 0, "%s, stream is nullptr", __FUNCTION__);
+    CheckAndLogError((stream == nullptr), 0, "%s, stream is nullptr",
+                     __FUNCTION__);
 
     if (stream->stream_type != CAMERA3_STREAM_OUTPUT) {
         LOG1("%s, no need rotation for stream type %d", __FUNCTION__,

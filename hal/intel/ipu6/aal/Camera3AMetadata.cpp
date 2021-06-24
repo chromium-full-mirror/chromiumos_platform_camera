@@ -43,7 +43,8 @@ Camera3AMetadata::~Camera3AMetadata() {
 void Camera3AMetadata::process3Astate(const icamera::Parameters& parameter,
                                       android::CameraMetadata* metadata) {
     LOG2("@%s", __func__);
-    CheckError(!metadata, VOID_VALUE, "%s, metadata is nullptr", __func__);
+    CheckAndLogError(!metadata, VOID_VALUE, "%s, metadata is nullptr",
+                     __func__);
 
     // get 3a info from metadata
     uint8_t afTrigger = ANDROID_CONTROL_AF_TRIGGER_IDLE;

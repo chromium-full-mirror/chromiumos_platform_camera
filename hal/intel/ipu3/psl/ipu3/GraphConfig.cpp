@@ -972,7 +972,8 @@ status_t GraphConfig::parseSensorNodeInfo(Node* sensorNode,
 
 status_t GraphConfig::getCio2MediaCtlData(int *cio2Format, MediaCtlConfig *mediaCtlConfig)
 {
-    CheckError((!mediaCtlConfig), BAD_VALUE, "@%s null ptr\n", __FUNCTION__);
+    CheckAndLogError((!mediaCtlConfig), BAD_VALUE, "@%s null ptr\n",
+                     __FUNCTION__);
 
     ConfigProperties cameraProps;      // camera properties
     css_err_t ret = css_err_none;
@@ -1064,16 +1065,20 @@ status_t GraphConfig::getCio2MediaCtlData(int *cio2Format, MediaCtlConfig *media
     int csiBEOutW = 0, csiBEOutH = 0;
     Node *csiBEOutput = nullptr;
     ret = mSettings->getDescendantByString("csi_be:output", &csiBEOutput);
-    CheckError(ret != css_err_none, UNKNOWN_ERROR, "Failed to get csi_be nodes from the graph");
+    CheckAndLogError(ret != css_err_none, UNKNOWN_ERROR,
+                     "Failed to get csi_be nodes from the graph");
 
     ret = csiBEOutput->getValue(GCSS_KEY_FORMAT, formatStr);
-    CheckError(ret != css_err_none, UNKNOWN_ERROR, "Failed to get format from the graph");
+    CheckAndLogError(ret != css_err_none, UNKNOWN_ERROR,
+                     "Failed to get format from the graph");
 
     retErr = getDimensions(csiBEOutput, csiBEOutW, csiBEOutH);
-    CheckError(retErr != OK, UNKNOWN_ERROR, "Failed to get values from csi be output");
+    CheckAndLogError(retErr != OK, UNKNOWN_ERROR,
+                     "Failed to get values from csi be output");
 
     /* consistency check, we have at least one CSI-BE */
-    CheckError(csiBEOutput == nullptr, UNKNOWN_ERROR, "CSI BE Output nullptr");
+    CheckAndLogError(csiBEOutput == nullptr, UNKNOWN_ERROR,
+                     "CSI BE Output nullptr");
 
     /* Set sensor pixel array parameter to the attributes in 'sensor_mode' node,
      * ignore the attributes in pixel_array and binner node due to upstream driver
@@ -1153,7 +1158,7 @@ status_t GraphConfig::getImguMediaCtlData(int32_t cameraId,
                                           bool enableStill,
                                           MediaCtlConfig *mediaCtlConfig)
 {
-    CheckError(!mediaCtlConfig, BAD_VALUE, "@%s null ptr\n", __func__);
+    CheckAndLogError(!mediaCtlConfig, BAD_VALUE, "@%s null ptr\n", __func__);
 
     int ret;
 
@@ -1289,7 +1294,8 @@ status_t GraphConfig::getImguMediaCtlData(int32_t cameraId,
         /* Use BGGR as bayer format when specific sensor receives test pattern request */
         if (testPatternMode != ANDROID_SENSOR_TEST_PATTERN_MODE_OFF) {
             const IPU3CameraCapInfo* capInfo = getIPU3CameraCapInfo(cameraId);
-            CheckError(capInfo == nullptr, UNKNOWN_ERROR, "@%s: failed to get cameraCapInfo", __FUNCTION__);
+            CheckAndLogError(capInfo == nullptr, UNKNOWN_ERROR,
+                             "@%s: failed to get cameraCapInfo", __FUNCTION__);
             if (mLut[i].nodeName.compare(inputName) == 0 &&
                 !capInfo->getTestPatternBayerFormat().empty()) {
                 format = gcu::getV4L2Format(capInfo->getTestPatternBayerFormat());
@@ -1305,7 +1311,8 @@ status_t GraphConfig::getImguMediaCtlData(int32_t cameraId,
              */
             int32_t outputNum = 0;
             ret = mSettings->getValue(GCSS_KEY_ACTIVE_OUTPUTS, outputNum);
-            CheckError(ret != css_err_none, UNKNOWN_ERROR, "Couldn't get active output from graph config");
+            CheckAndLogError(ret != css_err_none, UNKNOWN_ERROR,
+                             "Couldn't get active output from graph config");
 
             if (outputNum < MAX_OUTPUT_NUM_IN_PIPE) {
                 LOG2("Adding video node: %d %s %s", IMGU_NODE_MAIN, "video", outputName.c_str());
@@ -1352,7 +1359,8 @@ void GraphConfig::setMediaCtlConfig(std::shared_ptr<MediaController> mediaCtl,
     lut.ipuNodeName = IMGU_NODE_NULL;
 
     int ret = mSettings->getValue(GCSS_KEY_ACTIVE_OUTPUTS, outputNum);
-    CheckError(ret != css_err_none, VOID_VALUE, "Couldn't not get the active output from graph config");
+    CheckAndLogError(ret != css_err_none, VOID_VALUE,
+                     "Couldn't not get the active output from graph config");
 
     lut.uid = GCSS_KEY_IMGU_VF;
     lut.uidStr = GCSS::ItemUID::key2str(lut.uid);
@@ -1456,7 +1464,7 @@ status_t GraphConfig::addControls(const Node *sensorNode,
  */
 void GraphConfig::addVideoNodes(MediaCtlConfig *config)
 {
-    CheckError((!config), VOID_VALUE, "@%s null ptr\n", __FUNCTION__);
+    CheckAndLogError((!config), VOID_VALUE, "@%s null ptr\n", __FUNCTION__);
 
     MediaCtlElement mediaCtlElement;
 
@@ -1468,8 +1476,9 @@ void GraphConfig::addVideoNodes(MediaCtlConfig *config)
 
 void GraphConfig::addImguVideoNode(int ipuNodeName, const string& nodeName, MediaCtlConfig *config)
 {
-    CheckError((!config), VOID_VALUE, "@%s null ptr\n", __FUNCTION__);
-    CheckError((ipuNodeName == IMGU_NODE_NULL), VOID_VALUE, "@%s null ipu node name\n", __FUNCTION__);
+    CheckAndLogError((!config), VOID_VALUE, "@%s null ptr\n", __FUNCTION__);
+    CheckAndLogError((ipuNodeName == IMGU_NODE_NULL), VOID_VALUE,
+                     "@%s null ipu node name\n", __FUNCTION__);
 
     MediaCtlElement mediaCtlElement;
     mediaCtlElement.name = nodeName;

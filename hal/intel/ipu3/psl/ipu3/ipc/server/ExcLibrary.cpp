@@ -35,19 +35,25 @@ ExcLibrary::~ExcLibrary()
 status_t ExcLibrary::analog_gain_to_sensor_units(void* pData, int dataSize)
 {
     LOG1("@%s, pData:%p, dataSize:%d", __FUNCTION__, pData, dataSize);
-    CheckError((pData == nullptr), UNKNOWN_ERROR, "@%s, pData is nullptr", __FUNCTION__);
-    CheckError((dataSize < sizeof(ia_exc_analog_gain_to_sensor_units_params)), UNKNOWN_ERROR, "@%s, buffer is small", __FUNCTION__);
+    CheckAndLogError((pData == nullptr), UNKNOWN_ERROR, "@%s, pData is nullptr",
+                     __FUNCTION__);
+    CheckAndLogError(
+        (dataSize < sizeof(ia_exc_analog_gain_to_sensor_units_params)),
+        UNKNOWN_ERROR, "@%s, buffer is small", __FUNCTION__);
 
     ia_exc_analog_gain_to_sensor_units_params* params = static_cast<ia_exc_analog_gain_to_sensor_units_params*>(pData);
     cmc_parsed_analog_gain_conversion_t* iaLibInput = nullptr;
 
     bool ret = mIpc.serverUnflattenGainToSensor(*params, &iaLibInput);
-    CheckError(ret == false, UNKNOWN_ERROR, "@%s, serverUnflattenGainToSensor fails", __FUNCTION__);
+    CheckAndLogError(ret == false, UNKNOWN_ERROR,
+                     "@%s, serverUnflattenGainToSensor fails", __FUNCTION__);
 
     ia_err err = ia_exc_analog_gain_to_sensor_units(iaLibInput,
                                        params->input.value,
                                        &params->results.code);
-    CheckError(err != ia_err_none, ia_err_general, "@%s, call ia_exc_analog_gain_to_sensor_units() fails", __FUNCTION__);
+    CheckAndLogError(err != ia_err_none, ia_err_general,
+                     "@%s, call ia_exc_analog_gain_to_sensor_units() fails",
+                     __FUNCTION__);
     LOG2("@%s, ia_exc_analog_gain_to_sensor_units return:%d", __FUNCTION__, err);
 
     return err == ia_err_none ? NO_ERROR : UNKNOWN_ERROR;
@@ -56,19 +62,25 @@ status_t ExcLibrary::analog_gain_to_sensor_units(void* pData, int dataSize)
 status_t ExcLibrary::sensor_units_to_analog_gain(void* pData, int dataSize)
 {
     LOG1("@%s, pData:%p, dataSize:%d", __FUNCTION__, pData, dataSize);
-    CheckError((pData == nullptr), UNKNOWN_ERROR, "@%s, pData is nullptr", __FUNCTION__);
-    CheckError((dataSize < sizeof(ia_exc_analog_gain_to_sensor_units_params)), UNKNOWN_ERROR, "@%s, buffer is small", __FUNCTION__);
+    CheckAndLogError((pData == nullptr), UNKNOWN_ERROR, "@%s, pData is nullptr",
+                     __FUNCTION__);
+    CheckAndLogError(
+        (dataSize < sizeof(ia_exc_analog_gain_to_sensor_units_params)),
+        UNKNOWN_ERROR, "@%s, buffer is small", __FUNCTION__);
 
     ia_exc_analog_gain_to_sensor_units_params* params = static_cast<ia_exc_analog_gain_to_sensor_units_params*>(pData);
     cmc_parsed_analog_gain_conversion_t* iaLibInput = nullptr;
 
     bool ret = mIpc.serverUnflattenSensorToGain(*params, &iaLibInput);
-    CheckError(ret == false, UNKNOWN_ERROR, "@%s, serverUnflattenSensorToGain fails", __FUNCTION__);
+    CheckAndLogError(ret == false, UNKNOWN_ERROR,
+                     "@%s, serverUnflattenSensorToGain fails", __FUNCTION__);
 
     ia_err err = ia_exc_sensor_units_to_analog_gain(iaLibInput,
                                        params->input.code,
                                        &params->results.value);
-    CheckError(err != ia_err_none, ia_err_general, "@%s, call ia_exc_sensor_units_to_analog_gain() fails", __FUNCTION__);
+    CheckAndLogError(err != ia_err_none, ia_err_general,
+                     "@%s, call ia_exc_sensor_units_to_analog_gain() fails",
+                     __FUNCTION__);
     LOG2("@%s, ia_exc_sensor_units_to_analog_gain return:%d", __FUNCTION__, err);
 
     return err == ia_err_none ? NO_ERROR : UNKNOWN_ERROR;

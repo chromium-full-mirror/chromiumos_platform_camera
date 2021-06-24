@@ -51,8 +51,8 @@ status_t BufferPools::createBufferPools(int numBufs, std::shared_ptr<InputSystem
     std::shared_ptr<cros::V4L2VideoNode> node = isys->findOutputNode(ISYS_NODE_RAW);
     status_t status = NO_ERROR;
 
-    CheckError((node.get() == nullptr), UNKNOWN_ERROR,
-        "@%s: create buffer pool failed", __FUNCTION__);
+    CheckAndLogError((node.get() == nullptr), UNKNOWN_ERROR,
+                     "@%s: create buffer pool failed", __FUNCTION__);
     mBufferPoolSize = numBufs;
 
     /**
@@ -90,7 +90,8 @@ status_t BufferPools::createBufferPools(int numBufs, std::shared_ptr<InputSystem
     frameInfo.size =
         frameSize(frameInfo.format, frameInfo.stride, frameInfo.height);
     status = allocateCaptureBuffers(node, frameInfo, v4l2Buffers);
-    CheckError(status != NO_ERROR, status, "Failed to allocate capture buffer: 0x%X", status);
+    CheckAndLogError(status != NO_ERROR, status,
+                     "Failed to allocate capture buffer: 0x%X", status);
 
     return status;
 }
@@ -139,10 +140,10 @@ status_t BufferPools::allocateCaptureBuffers(
             return UNKNOWN_ERROR;
         }
         *v4l2Buf = v4l2Buffers[i];
-        CheckError(v4l2Buf->Memory() != V4L2_MEMORY_DMABUF, UNKNOWN_ERROR,
-                   "Unsupported memory type %d.", v4l2Buf->Memory());
-        CheckError(!mBufferManager, UNKNOWN_ERROR,
-                   "Failed to get buffer manager instance!");
+        CheckAndLogError(v4l2Buf->Memory() != V4L2_MEMORY_DMABUF, UNKNOWN_ERROR,
+                         "Unsupported memory type %d.", v4l2Buf->Memory());
+        CheckAndLogError(!mBufferManager, UNKNOWN_ERROR,
+                         "Failed to get buffer manager instance!");
         buffer_handle_t handle;
         uint32_t stride;
         if (mBufferManager->Allocate(

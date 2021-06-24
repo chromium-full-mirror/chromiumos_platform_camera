@@ -102,8 +102,10 @@ int IntelAFStateMachine::processTriggers(uint8_t afTrigger, uint8_t afMode) {
 
 int IntelAFStateMachine::processResult(int afState, bool lensMoving,
                                        android::CameraMetadata* result) {
-    CheckError(!mCurrentAfMode, icamera::UNKNOWN_ERROR, "Invalid AF mode");
-    CheckError(!result, icamera::UNKNOWN_ERROR, "%s, result is nullptr", __func__);
+    CheckAndLogError(!mCurrentAfMode, icamera::UNKNOWN_ERROR,
+                     "Invalid AF mode");
+    CheckAndLogError(!result, icamera::UNKNOWN_ERROR, "%s, result is nullptr",
+                     __func__);
 
     return mCurrentAfMode->processResult(afState, lensMoving, result);
 }
@@ -115,7 +117,8 @@ int IntelAFStateMachine::processResult(int afState, bool lensMoving,
  * In case of fixed focus sensor we always report locked
  */
 int IntelAFStateMachine::updateDefaults(android::CameraMetadata* result, bool fixedFocus) const {
-    CheckError(!result, icamera::UNKNOWN_ERROR, "%s, result is nullptr", __func__);
+    CheckAndLogError(!result, icamera::UNKNOWN_ERROR, "%s, result is nullptr",
+                     __func__);
     mCurrentAfMode->updateResult(result);
     uint8_t defaultState = ANDROID_CONTROL_AF_STATE_INACTIVE;
     if (fixedFocus) defaultState = ANDROID_CONTROL_AF_STATE_FOCUSED_LOCKED;
@@ -162,7 +165,7 @@ int IntelAfModeBase::processTriggers(uint8_t afTrigger, uint8_t afMode) {
 }
 
 void IntelAfModeBase::updateResult(android::CameraMetadata* results) {
-    CheckError(!results, VOID_VALUE, "%s, result is nullptr", __func__);
+    CheckAndLogError(!results, VOID_VALUE, "%s, result is nullptr", __func__);
     LOG2("%s", __func__);
 
     LOG2("%s afMode = %d state = %d", __func__, mLastAfControls.afMode, mCurrentAfState);
@@ -228,7 +231,8 @@ int IntelAFModeOff::processTriggers(uint8_t afTrigger, uint8_t afMode) {
 }
 
 int IntelAFModeOff::processResult(int afState, bool lensMoving, android::CameraMetadata* result) {
-    CheckError(!result, icamera::UNKNOWN_ERROR, "%s, result is nullptr", __func__);
+    CheckAndLogError(!result, icamera::UNKNOWN_ERROR, "%s, result is nullptr",
+                     __func__);
     /**
      * IN MANUAL and EDOF AF state never changes
      */
@@ -268,7 +272,8 @@ int IntelAFModeAuto::processTriggers(uint8_t afTrigger, uint8_t afMode) {
 }
 
 int IntelAFModeAuto::processResult(int afState, bool lensMoving, android::CameraMetadata* result) {
-    CheckError(!result, icamera::UNKNOWN_ERROR, "%s, result is nullptr", __func__);
+    CheckAndLogError(!result, icamera::UNKNOWN_ERROR, "%s, result is nullptr",
+                     __func__);
     LOG2("%s", __func__);
     mLensState = lensMoving ? ANDROID_LENS_STATE_MOVING : ANDROID_LENS_STATE_STATIONARY;
 
@@ -360,7 +365,8 @@ int IntelAFModeContinuousPicture::processTriggers(uint8_t afTrigger, uint8_t afM
 
 int IntelAFModeContinuousPicture::processResult(int afState, bool lensMoving,
                                                 android::CameraMetadata* result) {
-    CheckError(!result, icamera::UNKNOWN_ERROR, "%s, result is nullptr", __func__);
+    CheckAndLogError(!result, icamera::UNKNOWN_ERROR, "%s, result is nullptr",
+                     __func__);
     LOG2("%s", __func__);
     mLensState = lensMoving ? ANDROID_LENS_STATE_MOVING : ANDROID_LENS_STATE_STATIONARY;
 

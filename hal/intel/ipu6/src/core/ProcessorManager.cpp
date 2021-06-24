@@ -112,7 +112,8 @@ int ProcessorManager::configureProcessors(const std::vector<ConfigMode>& configM
         processor->setFrameInfo(item.mInputConfigs, item.mOutputConfigs);
         processor->setParameters(param);
         int ret = processor->configure(configModes);
-        CheckError(ret < 0, ret, "Configure processor failed with:%d", ret);
+        CheckAndLogError(ret < 0, ret, "Configure processor failed with:%d",
+                         ret);
 
         processor->setBufferProducer(preProcess ? preProcess : producer);
         preProcess = processor;

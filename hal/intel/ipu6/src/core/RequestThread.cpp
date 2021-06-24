@@ -164,8 +164,8 @@ int RequestThread::configure(const stream_config_t *streamList) {
         int ret = PlatformData::getConfigModesByOperationMode(mCameraId,
                                                               mStreamConfig.operation_mode,
                                                               configModes);
-        CheckError((ret != OK || configModes.empty()), ret,
-                   "%s, get real ConfigMode failed %d", __func__, ret);
+        CheckAndLogError((ret != OK || configModes.empty()), ret,
+                         "%s, get real ConfigMode failed %d", __func__, ret);
 
         mRequestConfigMode = configModes[0];
         LOG2("%s: use concrete mode %d as default initial mode for auto op mode",
@@ -278,7 +278,7 @@ RequestThread::copyRequestParams(const Parameters *srcParams)
 
     if (mReqParamsPool.empty()) {
         shared_ptr<Parameters> sParams = std::make_shared<Parameters>();
-        CheckError(!sParams, nullptr, "%s: no memory!", __func__);
+        CheckAndLogError(!sParams, nullptr, "%s: no memory!", __func__);
         mReqParamsPool.push(sParams);
     }
 

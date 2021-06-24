@@ -29,37 +29,37 @@
 namespace IPC3DNR {
 
 int NR3DIpcServerAdapter::create(void* addr, int dataSize) {
-  CheckError((dataSize < sizeof(nr3d_create_params)), UNKNOWN_ERROR,
-             "@%s, buffer is small", __FUNCTION__);
-  MY_LOGD("m_pEisAlg create");
-  if (m_pEisAlg == NULL) {
-    m_pEisAlg = MTKEis::createInstance();
+    CheckAndLogError((dataSize < sizeof(nr3d_create_params)), UNKNOWN_ERROR,
+                     "@%s, buffer is small", __FUNCTION__);
+    MY_LOGD("m_pEisAlg create");
     if (m_pEisAlg == NULL) {
-      MY_LOGE("MTKEis::createInstance fail");
-      return UNKNOWN_ERROR;
-    }
+        m_pEisAlg = MTKEis::createInstance();
+        if (m_pEisAlg == NULL) {
+            MY_LOGE("MTKEis::createInstance fail");
+            return UNKNOWN_ERROR;
+        }
   }
   return OK;
 }
 
 int NR3DIpcServerAdapter::destroy(void* addr, int dataSize) {
-  CheckError((dataSize < sizeof(nr3d_destory_params)), UNKNOWN_ERROR,
-             "@%s, buffer is small", __FUNCTION__);
-  if (m_pEisAlg != NULL) {
-    MY_LOGD("m_pEisAlg uninit");
-    m_pEisAlg->destroyInstance();
-    m_pEisAlg = NULL;
+    CheckAndLogError((dataSize < sizeof(nr3d_destory_params)), UNKNOWN_ERROR,
+                     "@%s, buffer is small", __FUNCTION__);
+    if (m_pEisAlg != NULL) {
+        MY_LOGD("m_pEisAlg uninit");
+        m_pEisAlg->destroyInstance();
+        m_pEisAlg = NULL;
   }
   return OK;
 }
 
 int NR3DIpcServerAdapter::init(void* addr, int dataSize) {
-  CheckError((dataSize < sizeof(nr3d_init_params)), UNKNOWN_ERROR,
-             "@%s, buffer is small", __FUNCTION__);
-  nr3d_init_params* init_params = static_cast<nr3d_init_params*>(addr);
-  if (!init_params) {
-    MY_LOGE("NR3D Init Buffer is NULL");
-    return -1;
+    CheckAndLogError((dataSize < sizeof(nr3d_init_params)), UNKNOWN_ERROR,
+                     "@%s, buffer is small", __FUNCTION__);
+    nr3d_init_params* init_params = static_cast<nr3d_init_params*>(addr);
+    if (!init_params) {
+        MY_LOGE("NR3D Init Buffer is NULL");
+        return -1;
   }
   if (m_pEisAlg->EisInit(&init_params->ipcEisInitData) != S_EIS_OK) {
     MY_LOGE("EisInit fail");
@@ -69,12 +69,12 @@ int NR3DIpcServerAdapter::init(void* addr, int dataSize) {
 }
 
 int NR3DIpcServerAdapter::main(void* addr, int dataSize) {
-  CheckError((dataSize < sizeof(nr3d_main_params)), UNKNOWN_ERROR,
-             "@%s, buffer is small", __FUNCTION__);
-  nr3d_main_params* main_params = static_cast<nr3d_main_params*>(addr);
-  if (!main_params) {
-    MY_LOGE("NR3D Main Buffer is NULL");
-    return -1;
+    CheckAndLogError((dataSize < sizeof(nr3d_main_params)), UNKNOWN_ERROR,
+                     "@%s, buffer is small", __FUNCTION__);
+    nr3d_main_params* main_params = static_cast<nr3d_main_params*>(addr);
+    if (!main_params) {
+        MY_LOGE("NR3D Main Buffer is NULL");
+        return -1;
   }
   if (m_pEisAlg->EisMain(&main_params->ipcEisMianData) != S_EIS_OK) {
     MY_LOGE("EisAlg:EisMain fail");
@@ -84,22 +84,23 @@ int NR3DIpcServerAdapter::main(void* addr, int dataSize) {
 }
 
 int NR3DIpcServerAdapter::reset(void* addr, int dataSize) {
-  CheckError((dataSize < sizeof(nr3d_reset_params)), UNKNOWN_ERROR,
-             "@%s, buffer is small", __FUNCTION__);
-  if (m_pEisAlg != NULL) {
-    MY_LOGD("m_pEisAlg reset");
-    m_pEisAlg->EisReset();
+    CheckAndLogError((dataSize < sizeof(nr3d_reset_params)), UNKNOWN_ERROR,
+                     "@%s, buffer is small", __FUNCTION__);
+    if (m_pEisAlg != NULL) {
+        MY_LOGD("m_pEisAlg reset");
+        m_pEisAlg->EisReset();
   }
   return OK;
 }
 
 int NR3DIpcServerAdapter::featureCtrl(void* addr, int dataSize) {
-  CheckError((dataSize < sizeof(nr3d_featurectrl_params)), UNKNOWN_ERROR,
-             "@%s, buffer is small", __FUNCTION__);
-  nr3d_featurectrl_params* params = static_cast<nr3d_featurectrl_params*>(addr);
-  if (!params) {
-    MY_LOGE("NR3D Feature Ctrl Buffer is NULL");
-    return -1;
+    CheckAndLogError((dataSize < sizeof(nr3d_featurectrl_params)),
+                     UNKNOWN_ERROR, "@%s, buffer is small", __FUNCTION__);
+    nr3d_featurectrl_params* params =
+        static_cast<nr3d_featurectrl_params*>(addr);
+    if (!params) {
+        MY_LOGE("NR3D Feature Ctrl Buffer is NULL");
+        return -1;
   }
   switch (params->eFeatureCtrl) {
     case EIS_FEATURE_SET_PROC_INFO:

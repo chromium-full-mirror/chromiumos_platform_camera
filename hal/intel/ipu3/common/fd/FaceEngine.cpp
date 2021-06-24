@@ -39,10 +39,11 @@ FaceEngine::FaceEngine(int cameraId, unsigned int maxFaceNum,
     CLEAR(mResult);
 
     bool ret = mCameraThread.Start();
-    CheckError(!ret, VOID_VALUE, "@%s, Camera thread failed to start", __FUNCTION__);
+    CheckAndLogError(!ret, VOID_VALUE, "@%s, Camera thread failed to start",
+                     __FUNCTION__);
 
     ret = mFace.init(maxFaceNum, mMaxWidth, mMaxHeight, mMode);
-    CheckError(!ret, VOID_VALUE, "@%s, mFace.init fails", __FUNCTION__);
+    CheckAndLogError(!ret, VOID_VALUE, "@%s, mFace.init fails", __FUNCTION__);
 
     mInitialized = true;
 }
@@ -58,12 +59,14 @@ FaceEngine::~FaceEngine()
 void FaceEngine::run(const pvl_image& frame)
 {
     LOG1("@%s", __FUNCTION__);
-    CheckError(mInitialized == false, VOID_VALUE, "@%s, mInitialized is false", __FUNCTION__);
+    CheckAndLogError(mInitialized == false, VOID_VALUE,
+                     "@%s, mInitialized is false", __FUNCTION__);
 
     mWidth = frame.width;
     mHeight = frame.height;
     bool ret = mFace.prepareRun(frame);
-    CheckError(!ret, VOID_VALUE, "Failed to prepare to run face detection");
+    CheckAndLogError(!ret, VOID_VALUE,
+                     "Failed to prepare to run face detection");
 
     base::Callback<void()> closure = base::Bind(&FaceEngine::handleRun, base::Unretained(this));
     mCameraThread.PostTaskAsync<void>(FROM_HERE, closure);
@@ -89,7 +92,8 @@ void FaceEngine::getMaxSupportedResolution(int* maxWidth, int* maxHeight) const
 int FaceEngine::getFacesNum(void)
 {
     std::lock_guard<std::mutex> l(mLock);
-    CheckError(mInitialized == false, 0, "@%s, mInitialized is false", __FUNCTION__);
+    CheckAndLogError(mInitialized == false, 0, "@%s, mInitialized is false",
+                     __FUNCTION__);
 
     LOG1("@%s, mResult.faceNum:%d", __FUNCTION__, mResult.faceNum);
     return mResult.faceNum;
@@ -98,8 +102,10 @@ int FaceEngine::getFacesNum(void)
 int FaceEngine::getResult(FaceEngineResult* result)
 {
     LOG1("@%s", __FUNCTION__);
-    CheckError(!result, UNKNOWN_ERROR, "@%s, result is nullptr", __FUNCTION__);
-    CheckError(mInitialized == false, UNKNOWN_ERROR, "@%s, mInitialized is false", __FUNCTION__);
+    CheckAndLogError(!result, UNKNOWN_ERROR, "@%s, result is nullptr",
+                     __FUNCTION__);
+    CheckAndLogError(mInitialized == false, UNKNOWN_ERROR,
+                     "@%s, mInitialized is false", __FUNCTION__);
 
     std::lock_guard<std::mutex> l(mLock);
     for (int i = 0; i < mResult.faceNum; i++) {
@@ -113,7 +119,8 @@ int FaceEngine::getResult(FaceEngineResult* result)
 
 int FaceEngine::getResult(ia_face_state* faceState)
 {
-    CheckError(mInitialized == false, UNKNOWN_ERROR, "@%s, mInitialized is false", __FUNCTION__);
+    CheckAndLogError(mInitialized == false, UNKNOWN_ERROR,
+                     "@%s, mInitialized is false", __FUNCTION__);
 
     /*
         face rectangle from face lib: (Ln, Tn, Rn, Bn)
@@ -135,7 +142,8 @@ int FaceEngine::getResult(ia_face_state* faceState)
 
     std::lock_guard<std::mutex> l(mLock);
     LOG1("@%s, faceNum:%d, mHeight:%d, mWidth:%d", __FUNCTION__, mResult.faceNum, mHeight, mWidth);
-    CheckError(!faceState, UNKNOWN_ERROR, "@%s, faceState is nullptr", __FUNCTION__);
+    CheckAndLogError(!faceState, UNKNOWN_ERROR, "@%s, faceState is nullptr",
+                     __FUNCTION__);
 
     faceState->num_faces = mResult.faceNum;
 
@@ -167,8 +175,10 @@ int FaceEngine::getResult(ia_face_state* faceState)
 int FaceEngine::getResult(CVFaceEngineAbstractResult* result)
 {
     LOG1("@%s", __FUNCTION__);
-    CheckError(result == nullptr, UNKNOWN_ERROR, "@%s, result is nullptr", __FUNCTION__);
-    CheckError(mInitialized == false, UNKNOWN_ERROR, "@%s, mInitialized is false", __FUNCTION__);
+    CheckAndLogError(result == nullptr, UNKNOWN_ERROR, "@%s, result is nullptr",
+                     __FUNCTION__);
+    CheckAndLogError(mInitialized == false, UNKNOWN_ERROR,
+                     "@%s, mInitialized is false", __FUNCTION__);
 
     const ia_coordinate_system iaCoord = {IA_COORDINATE_TOP, IA_COORDINATE_LEFT,
                                           IA_COORDINATE_BOTTOM, IA_COORDINATE_RIGHT};

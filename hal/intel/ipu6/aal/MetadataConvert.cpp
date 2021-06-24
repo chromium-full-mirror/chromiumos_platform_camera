@@ -42,8 +42,9 @@ struct ValuePair {
 template <typename T>
 static int getAndroidValue(int halValue, const ValuePair<T>* table, int tableCount,
                            T* androidValue) {
-    CheckError(!table, icamera::BAD_VALUE, "null table!");
-    CheckError(!androidValue, icamera::BAD_VALUE, "androidValue is nullptr!");
+    CheckAndLogError(!table, icamera::BAD_VALUE, "null table!");
+    CheckAndLogError(!androidValue, icamera::BAD_VALUE,
+                     "androidValue is nullptr!");
 
     for (int i = 0; i < tableCount; i++) {
         if (halValue == table[i].halValue) {
@@ -56,8 +57,8 @@ static int getAndroidValue(int halValue, const ValuePair<T>* table, int tableCou
 
 template <typename T>
 static int getHalValue(T androidValue, const ValuePair<T>* table, int tableCount, int* halValue) {
-    CheckError(!table, icamera::BAD_VALUE, "null table!");
-    CheckError(!halValue, icamera::BAD_VALUE, "halValue is nullptr!");
+    CheckAndLogError(!table, icamera::BAD_VALUE, "null table!");
+    CheckAndLogError(!halValue, icamera::BAD_VALUE, "halValue is nullptr!");
 
     for (int i = 0; i < tableCount; i++) {
         if (androidValue == table[i].androidValue) {
@@ -467,7 +468,8 @@ int MetadataConvert::requestMetadataToHALMetadata(const android::CameraMetadata&
                                                   icamera::Parameters* parameter,
                                                   bool forceConvert) {
     LOG1("@%s: settings entry count %d", __func__, settings.entryCount());
-    CheckError(parameter == nullptr, icamera::BAD_VALUE, "%s, parameter is nullptr", __func__);
+    CheckAndLogError(parameter == nullptr, icamera::BAD_VALUE,
+                     "%s, parameter is nullptr", __func__);
 
     uint8_t intent = ANDROID_CONTROL_CAPTURE_INTENT_PREVIEW;
     camera_metadata_ro_entry entry = settings.find(ANDROID_CONTROL_CAPTURE_INTENT);
@@ -520,7 +522,8 @@ int MetadataConvert::HALMetadataToRequestMetadata(const icamera::Parameters& par
                                                   android::CameraMetadata* settings, int cameraId) {
     LOG1("@%s", __func__);
 
-    CheckError(settings == nullptr, icamera::BAD_VALUE, "%s, settings is nullptr", __func__);
+    CheckAndLogError(settings == nullptr, icamera::BAD_VALUE,
+                     "%s, settings is nullptr", __func__);
 
     // ANDROID_COLOR_CORRECTION
     convertColorCorrectionParameter(parameter, settings);
@@ -574,7 +577,8 @@ int MetadataConvert::HALCapabilityToStaticMetadata(const icamera::Parameters& pa
                                                    android::CameraMetadata* settings) {
     LOG1("@%s", __func__);
 
-    CheckError(settings == nullptr, icamera::BAD_VALUE, "%s, settings is nullptr", __func__);
+    CheckAndLogError(settings == nullptr, icamera::BAD_VALUE,
+                     "%s, settings is nullptr", __func__);
 
     // ANDROID_COLOR_CORRECTION
     uint8_t aberrationAvailable = ANDROID_COLOR_CORRECTION_ABERRATION_MODE_OFF;
@@ -629,10 +633,12 @@ int MetadataConvert::HALCapabilityToStaticMetadata(const icamera::Parameters& pa
 
 void MetadataConvert::convertFaceDetectionMetadata(
     const icamera::CVFaceDetectionAbstractResult& fdResult, android::CameraMetadata* settings) {
-    CheckError(settings == nullptr, VOID_VALUE, "@%s, settings is nullptr", __func__);
+    CheckAndLogError(settings == nullptr, VOID_VALUE,
+                     "@%s, settings is nullptr", __func__);
 
     camera_metadata_entry entry = settings->find(ANDROID_STATISTICS_FACE_DETECT_MODE);
-    CheckError(entry.count == 0, VOID_VALUE, "@%s: No face detection mode setting", __func__);
+    CheckAndLogError(entry.count == 0, VOID_VALUE,
+                     "@%s: No face detection mode setting", __func__);
 
     const uint8_t mode = entry.data.u8[0];
     if (mode == ANDROID_STATISTICS_FACE_DETECT_MODE_OFF) {
@@ -2199,8 +2205,10 @@ void MetadataConvert::fillAdvancedFeatureStaticMetadata(const icamera::Parameter
 int MetadataConvert::convertToHalWindow(const int32_t* data, int dataCount,
                                         icamera::camera_window_list_t* windows) {
     windows->clear();
-    CheckError((!data), icamera::BAD_VALUE, "null data to convert hal window!");
-    CheckError((dataCount % 5 != 0), icamera::BAD_VALUE, "wrong data count %d!", dataCount);
+    CheckAndLogError((!data), icamera::BAD_VALUE,
+                     "null data to convert hal window!");
+    CheckAndLogError((dataCount % 5 != 0), icamera::BAD_VALUE,
+                     "wrong data count %d!", dataCount);
 
     icamera::camera_window_t window;
     for (int i = 0; i < dataCount / 5; i += 5) {
@@ -2217,8 +2225,9 @@ int MetadataConvert::convertToHalWindow(const int32_t* data, int dataCount,
 int MetadataConvert::convertToMetadataRegion(const icamera::camera_window_list_t& windows,
                                              int dataCount, int32_t* data) {
     size_t num = windows.size();
-    CheckError((!data), 0, "null data to convert Metadata region!");
-    CheckError(((unsigned int)dataCount < num * 5), 0, "small dataCount!");
+    CheckAndLogError((!data), 0, "null data to convert Metadata region!");
+    CheckAndLogError(((unsigned int)dataCount < num * 5), 0,
+                     "small dataCount!");
 
     for (size_t i = 0; i < windows.size(); i++) {
         data[i * 5] = windows[i].left;

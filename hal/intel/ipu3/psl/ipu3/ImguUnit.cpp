@@ -208,7 +208,7 @@ status_t ImguUnit::configStreams(std::vector<camera3_stream_t*> &activeStreams)
     int repeatedStreamIndex = -1;
     status_t status = mGCM.sortStreamsByPipe(activeStreams, &mActiveStreams.yuvStreams,
                                              &mActiveStreams.blobStreams, &repeatedStreamIndex);
-    CheckError(status != OK, status, "Sort streams failed %d", status);
+    CheckAndLogError(status != OK, status, "Sort streams failed %d", status);
 
     //The last stream of yuvStreams is directly placed into the mStreamListenerMapping
     //for mapStreamWithDeviceNode function.
@@ -219,8 +219,9 @@ status_t ImguUnit::configStreams(std::vector<camera3_stream_t*> &activeStreams)
     int blobNum = mActiveStreams.blobStreams.size();
     int yuvNum = mActiveStreams.yuvStreams.size();
 
-    CheckError(blobNum > 2, BAD_VALUE, "Don't support blobNum %d", blobNum);
-    CheckError(yuvNum > 3, BAD_VALUE, "Don't support yuvNum %d", yuvNum);
+    CheckAndLogError(blobNum > 2, BAD_VALUE, "Don't support blobNum %d",
+                     blobNum);
+    CheckAndLogError(yuvNum > 3, BAD_VALUE, "Don't support yuvNum %d", yuvNum);
 
     if (yuvNum > 0) {
         mImguPipe[GraphConfig::PIPE_VIDEO] =
@@ -229,7 +230,7 @@ status_t ImguUnit::configStreams(std::vector<camera3_stream_t*> &activeStreams)
         // only statistics from VIDEO pipe is used to run 3A, register stats buffer for VIDEO pipe.
         status = mImguPipe[GraphConfig::PIPE_VIDEO]->configStreams(mActiveStreams.yuvStreams,
                           mGCM, mAfFilterBuffPool, mRgbsGridBuffPool);
-        CheckError(status != OK, status, "Configure Video Pipe failed");
+        CheckAndLogError(status != OK, status, "Configure Video Pipe failed");
     }
 
     if (blobNum > 0) {
@@ -238,14 +239,15 @@ status_t ImguUnit::configStreams(std::vector<camera3_stream_t*> &activeStreams)
 
         status = mImguPipe[GraphConfig::PIPE_STILL]->configStreams(mActiveStreams.blobStreams,
                           mGCM, nullptr, nullptr);
-        CheckError(status != OK, status, "Configure Still Pipe failed");
+        CheckAndLogError(status != OK, status, "Configure Still Pipe failed");
     }
 
     // Start works after configuring all IPU pipes
     for (size_t i = 0; i < GraphConfig::PIPE_MAX; i++) {
         if (mImguPipe[i] != nullptr) {
             status = mImguPipe[i]->startWorkers();
-            CheckError(status != OK, status, "Start works failed, pipe %zu", i);
+            CheckAndLogError(status != OK, status,
+                             "Start works failed, pipe %zu", i);
         }
     }
 
@@ -356,7 +358,9 @@ ImguUnit::ImguPipe::ImguPipe(int cameraId, GraphConfig::PipeType pipeType,
     pthread_condattr_destroy(&attr);
 
     ret = pthread_mutex_init(&mFirstLock, nullptr);
-    CheckError(ret != 0, VOID_VALUE, "@%s, call pthread_cond_init fails, ret:%d", __FUNCTION__, ret);
+    CheckAndLogError(ret != 0, VOID_VALUE,
+                     "@%s, call pthread_cond_init fails, ret:%d", __FUNCTION__,
+                     ret);
 
     if (!mCameraThread.Start()) {
         LOGE("pipe %d thread failed to start", pipeType);
@@ -437,22 +441,27 @@ status_t ImguUnit::ImguPipe::configStreams(std::vector<camera3_stream_t*> &strea
     graphConfig->setPipeType(mPipeType);
 
     status_t status = mMediaCtlHelper.configure(gcm, mediaType);
-    CheckError(status != OK, status, "failed to configure video MediaCtlHelper");
+    CheckAndLogError(status != OK, status,
+                     "failed to configure video MediaCtlHelper");
 
     clearWorkers();
 
     mConfiguredNodesPerName = mMediaCtlHelper.getConfiguredNodesPerName(mediaType);
-    CheckError(mConfiguredNodesPerName.size() == 0, UNKNOWN_ERROR, "No nodes present");
+    CheckAndLogError(mConfiguredNodesPerName.size() == 0, UNKNOWN_ERROR,
+                     "No nodes present");
 
     status = mapStreamWithDeviceNode(gcm, streams);
-    CheckError(status != OK, status, "failed to map stream with Device node");
+    CheckAndLogError(status != OK, status,
+                     "failed to map stream with Device node");
 
     status = createProcessingTasks(graphConfig, afGridBuffPool, rgbsGridBuffPool);
-    CheckError(status != NO_ERROR, status, "Tasks creation failed (ret = %d)", status);
+    CheckAndLogError(status != NO_ERROR, status,
+                     "Tasks creation failed (ret = %d)", status);
 
     status = mPollerThread->init(mPipeConfig.nodes,
                                  this, POLLPRI | POLLIN | POLLOUT | POLLERR, false);
-    CheckError(status != NO_ERROR, status, "PollerThread init failed (ret = %d)", status);
+    CheckAndLogError(status != NO_ERROR, status,
+                     "PollerThread init failed (ret = %d)", status);
 
     mPollErrorTimes = 0;
     return OK;
@@ -464,7 +473,8 @@ status_t ImguUnit::ImguPipe::startWorkers()
 
     for (const auto &it : mPipeConfig.deviceWorkers) {
         status_t status = (*it).startWorker();
-        CheckError(status != OK, status, "Failed to start workers, status %d", status);
+        CheckAndLogError(status != OK, status,
+                         "Failed to start workers, status %d", status);
     }
 
     return OK;
@@ -475,7 +485,7 @@ status_t ImguUnit::ImguPipe::mapStreamWithDeviceNode(const GraphConfigManager &g
 {
     int streamNum = streams.size();
     LOG1("%s pipe type %d, streamNum %d", __FUNCTION__, mPipeType, streamNum);
-    CheckError(streamNum == 0, UNKNOWN_ERROR, "streamNum is 0");
+    CheckAndLogError(streamNum == 0, UNKNOWN_ERROR, "streamNum is 0");
 
     mStreamNodeMapping.clear();
     mStreamListenerMapping.clear();
@@ -641,7 +651,8 @@ status_t ImguUnit::ImguPipe::createProcessingTasks(std::shared_ptr<GraphConfig> 
 
     for (const auto &it : mPipeConfig.deviceWorkers) {
         status_t status = (*it).configure(graphConfig);
-        CheckError(status != OK, status, "Failed to configure workers, status %d.", status);
+        CheckAndLogError(status != OK, status,
+                         "Failed to configure workers, status %d.", status);
     }
 
     std::vector<ICaptureEventSource*>::iterator it = mListenerDeviceWorkers.begin();
@@ -730,12 +741,13 @@ status_t ImguUnit::ImguPipe::processNextRequest()
     }
 
     std::shared_ptr<DeviceMessage> msg = mMessagesPending[0];
-    CheckError(msg == nullptr, BAD_VALUE, "@%s: mMessagePending[0] is nullptr", __FUNCTION__);
+    CheckAndLogError(msg == nullptr, BAD_VALUE,
+                     "@%s: mMessagePending[0] is nullptr", __FUNCTION__);
     mMessagesPending.erase(mMessagesPending.begin());
 
     // update and return metadata firstly
     Camera3Request *request = msg->cbMetadataMsg.request;
-    CheckError(request == nullptr, BAD_VALUE, "Request is nullptr");
+    CheckAndLogError(request == nullptr, BAD_VALUE, "Request is nullptr");
 
     if (GraphConfig::PIPE_STILL == mPipeType
         && (mLastRequestId + 1) != request->getId()){
@@ -756,14 +768,16 @@ status_t ImguUnit::ImguPipe::processNextRequest()
     status_t status = NO_ERROR;
     if (mFirstRequest) {
         status = kickstart(request);
-        CheckError(status != OK, status, "failed to kick start, status %d", status);
+        CheckAndLogError(status != OK, status,
+                         "failed to kick start, status %d", status);
     }
 
     msg->pMsg.lastRawNonScaledBuffer = nullptr;
     std::vector<std::shared_ptr<IDeviceWorker>>::iterator it = mPipeConfig.deviceWorkers.begin();
     for (;it != mPipeConfig.deviceWorkers.end(); ++it) {
         status = (*it)->prepareRun(msg);
-        CheckError(status != OK, status, "failed to prepare works, status %d", status);
+        CheckAndLogError(status != OK, status,
+                         "failed to prepare works, status %d", status);
     }
 
     mPipeConfig.nodes.clear();
@@ -778,7 +792,8 @@ status_t ImguUnit::ImguPipe::processNextRequest()
     status = mPollerThread->pollRequest(request->getId(),
                                         IPU3_EVENT_POLL_TIMEOUT,
                                         &(mPipeConfig.nodes));
-    CheckError(status != OK, status, "failed to poll request, status %d", status);
+    CheckAndLogError(status != OK, status, "failed to poll request, status %d",
+                     status);
 
     mState = IMGU_RUNNING;
 
@@ -804,7 +819,8 @@ status_t ImguUnit::ImguPipe::kickstart(Camera3Request* request)
             firstNodes.push_back((*firstit)->getNode());
     }
 
-    CheckError(status != OK, status, "@%s, fail to call prepareRun", __FUNCTION__);
+    CheckAndLogError(status != OK, status, "@%s, fail to call prepareRun",
+                     __FUNCTION__);
 
     /* poll first Imgu frame */
     pthread_mutex_lock(&mFirstLock);
@@ -834,13 +850,15 @@ status_t ImguUnit::ImguPipe::kickstart(Camera3Request* request)
     firstit = mFirstWorkers.begin();
     for (;firstit != mFirstWorkers.end(); ++firstit) {
         status |= (*firstit)->run();
-        CheckError(status != OK, status, "failed to run works, status %d", status);
+        CheckAndLogError(status != OK, status, "failed to run works, status %d",
+                         status);
     }
 
     firstit = mFirstWorkers.begin();
     for (;firstit != mFirstWorkers.end(); ++firstit) {
         status |= (*firstit)->postRun();
-        CheckError(status != OK, status, "failed to post-run works, status %d", status);
+        CheckAndLogError(status != OK, status,
+                         "failed to post-run works, status %d", status);
     }
 
     return status;
@@ -854,8 +872,9 @@ ImguUnit::ImguPipe::updateProcUnitResults(Camera3Request &request,
     status_t status = NO_ERROR;
 
     android::CameraMetadata *ctrlUnitResult = request.getPartialResultBuffer(CONTROL_UNIT_PARTIAL_RESULT);
-    CheckError(ctrlUnitResult == nullptr, UNKNOWN_ERROR,
-               "Failed to retrieve Metadata buffer for reqId = %d", request.getId());
+    CheckAndLogError(ctrlUnitResult == nullptr, UNKNOWN_ERROR,
+                     "Failed to retrieve Metadata buffer for reqId = %d",
+                     request.getId());
 
     // update DVS metadata
     updateDVSMetadata(*ctrlUnitResult, settings);

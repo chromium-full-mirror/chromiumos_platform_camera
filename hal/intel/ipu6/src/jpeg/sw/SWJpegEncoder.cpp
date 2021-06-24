@@ -52,7 +52,8 @@ std::unique_ptr<IJpegEncoder> IJpegEncoder::createJpegEncoder() {
  * \return false if encoding fails
  */
 bool SWJpegEncoder::doJpegEncode(EncodePackage* package) {
-    CheckError(package == nullptr, false, "@%s, package is nullptr", __func__);
+    CheckAndLogError(package == nullptr, false, "@%s, package is nullptr",
+                     __func__);
 
     int status = 0;
     nsecs_t startTime = CameraUtils::systemTime();

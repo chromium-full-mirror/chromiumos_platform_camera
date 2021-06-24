@@ -156,7 +156,8 @@ ia_err IntelCca::init(const cca::cca_init_params& initParams) {
     LOGIPC("@%s, mCameraId:%d, tuningMode:%d, bitmap:%d", __func__,
            mCameraId, mTuningMode, initParams.bitmap);
 
-    CheckError(!mInitialized, ia_err_general, "@%s, mInitialized is false", __func__);
+    CheckAndLogError(!mInitialized, ia_err_general,
+                     "@%s, mInitialized is false", __func__);
 
     intel_cca_init_data* params = static_cast<intel_cca_init_data*>(mMemInit.mAddr);
     params->cameraId = mCameraId;
@@ -164,7 +165,8 @@ ia_err IntelCca::init(const cca::cca_init_params& initParams) {
     params->inParams = initParams;
 
     ia_err ret = mCommon.requestSyncCca(IPC_CCA_INIT, mMemInit.mHandle);
-    CheckError(ret != ia_err_none, ia_err_general, "@%s, requestSyncCca fails", __func__);
+    CheckAndLogError(ret != ia_err_none, ia_err_general,
+                     "@%s, requestSyncCca fails", __func__);
 
     return ret;
 }
@@ -173,7 +175,8 @@ ia_err IntelCca::setStatsParams(const cca::cca_stats_params& params) {
     LOGIPC("@%s, mCameraId:%d, tuningMode:%d, in params size:%d", __func__,
            mCameraId, mTuningMode, sizeof(cca::cca_stats_params));
 
-    CheckError(!mInitialized, ia_err_general, "@%s, mInitialized is false", __func__);
+    CheckAndLogError(!mInitialized, ia_err_general,
+                     "@%s, mInitialized is false", __func__);
 
     intel_cca_set_stats_data* statsParams =
         static_cast<intel_cca_set_stats_data*>(mMemStats.mAddr);
@@ -182,7 +185,8 @@ ia_err IntelCca::setStatsParams(const cca::cca_stats_params& params) {
     statsParams->inParams = params;
 
     ia_err ret = mCommon.requestSyncCca(IPC_CCA_SET_STATS, mMemStats.mHandle);
-    CheckError(ret != ia_err_none, ia_err_general, "@%s, requestSyncCca fails", __func__);
+    CheckAndLogError(ret != ia_err_none, ia_err_general,
+                     "@%s, requestSyncCca fails", __func__);
 
     return ret;
 }
@@ -192,8 +196,10 @@ ia_err IntelCca::runAEC(uint64_t frameId, const cca::cca_ae_input_params& params
     LOGIPC("@%s, mCameraId:%d, tuningMode:%d, in params size:%d, results size:%d", __func__,
            mCameraId, mTuningMode, sizeof(cca::cca_ae_input_params), sizeof(cca::cca_ae_results));
 
-    CheckError(!results, ia_err_argument, "@%s, results is nullptr", __func__);
-    CheckError(!mInitialized, ia_err_general, "@%s, mInitialized is false", __func__);
+    CheckAndLogError(!results, ia_err_argument, "@%s, results is nullptr",
+                     __func__);
+    CheckAndLogError(!mInitialized, ia_err_general,
+                     "@%s, mInitialized is false", __func__);
 
     intel_cca_run_aec_data* aecParams = static_cast<intel_cca_run_aec_data*>(mMemAEC.mAddr);
     aecParams->cameraId = mCameraId;
@@ -202,7 +208,8 @@ ia_err IntelCca::runAEC(uint64_t frameId, const cca::cca_ae_input_params& params
     aecParams->inParams = params;
 
     ia_err ret = mCommon.requestSyncCca(IPC_CCA_RUN_AEC, mMemAEC.mHandle);
-    CheckError(ret != ia_err_none, ia_err_general, "@%s, requestSyncCca fails", __func__);
+    CheckAndLogError(ret != ia_err_none, ia_err_general,
+                     "@%s, requestSyncCca fails", __func__);
 
     *results = aecParams->results;
 
@@ -214,8 +221,10 @@ ia_err IntelCca::runAIQ(uint64_t frameId, const cca::cca_aiq_params& params,
     LOGIPC("@%s, mCameraId:%d, tuningMode:%d, in params size:%d, results size:%d", __func__,
            mCameraId, mTuningMode, sizeof(cca::cca_aiq_params), sizeof(results));
 
-    CheckError(!results, ia_err_argument, "@%s, results is nullptr", __func__);
-    CheckError(!mInitialized, ia_err_general, "@%s, mInitialized is false", __func__);
+    CheckAndLogError(!results, ia_err_argument, "@%s, results is nullptr",
+                     __func__);
+    CheckAndLogError(!mInitialized, ia_err_general,
+                     "@%s, mInitialized is false", __func__);
 
     intel_cca_run_aiq_data* aiqParams = static_cast<intel_cca_run_aiq_data*>(mMemAIQ.mAddr);
     aiqParams->cameraId = mCameraId;
@@ -224,7 +233,8 @@ ia_err IntelCca::runAIQ(uint64_t frameId, const cca::cca_aiq_params& params,
     aiqParams->inParams = params;
 
     ia_err ret = mCommon.requestSyncCca(IPC_CCA_RUN_AIQ, mMemAIQ.mHandle);
-    CheckError(ret != ia_err_none, ia_err_general, "@%s, requestSyncCca fails", __func__);
+    CheckAndLogError(ret != ia_err_none, ia_err_general,
+                     "@%s, requestSyncCca fails", __func__);
 
     *results = aiqParams->results;
 
@@ -234,7 +244,8 @@ ia_err IntelCca::runAIQ(uint64_t frameId, const cca::cca_aiq_params& params,
 ia_err IntelCca::runLTM(uint64_t frameId, const cca::cca_ltm_input_params& params) {
     LOGIPC("@%s, mCameraId:%d, tuningMode:%d, in params size:%d", __func__,
            mCameraId, mTuningMode, sizeof(cca::cca_ltm_input_params));
-    CheckError(!mInitialized, ia_err_general, "@%s, mInitialized is false", __func__);
+    CheckAndLogError(!mInitialized, ia_err_general,
+                     "@%s, mInitialized is false", __func__);
 
     intel_cca_run_ltm_data* ltmParams = static_cast<intel_cca_run_ltm_data*>(mMemLTM.mAddr);
     ltmParams->cameraId = mCameraId;
@@ -243,14 +254,16 @@ ia_err IntelCca::runLTM(uint64_t frameId, const cca::cca_ltm_input_params& param
     ltmParams->inParams = params;
 
     ia_err ret = mCommon.requestSyncCca(IPC_CCA_RUN_LTM, mMemLTM.mHandle);
-    CheckError(ret != ia_err_none, ia_err_general, "@%s, requestSyncCca fails", __func__);
+    CheckAndLogError(ret != ia_err_none, ia_err_general,
+                     "@%s, requestSyncCca fails", __func__);
 
     return ret;
 }
 
 ia_err IntelCca::updateZoom(const cca::cca_dvs_zoom& params) {
     LOGIPC("@%s, mCameraId:%d, tuningMode:%d", __func__, mCameraId, mTuningMode);
-    CheckError(!mInitialized, ia_err_general, "@%s, mInitialized is false", __func__);
+    CheckAndLogError(!mInitialized, ia_err_general,
+                     "@%s, mInitialized is false", __func__);
 
     intel_cca_update_zoom_data* zoomParams =
         static_cast<intel_cca_update_zoom_data*>(mMemZoom.mAddr);
@@ -259,14 +272,16 @@ ia_err IntelCca::updateZoom(const cca::cca_dvs_zoom& params) {
     zoomParams->inParams = params;
 
     ia_err ret = mCommon.requestSyncCca(IPC_CCA_UPDATE_ZOOM, mMemZoom.mHandle);
-    CheckError(ret != ia_err_none, ia_err_general, "@%s, requestSyncCca fails", __func__);
+    CheckAndLogError(ret != ia_err_none, ia_err_general,
+                     "@%s, requestSyncCca fails", __func__);
 
     return ret;
 }
 
 ia_err IntelCca::runDVS(uint64_t frameId) {
     LOGIPC("@%s, mCameraId:%d, tuningMode:%d", __func__, mCameraId, mTuningMode);
-    CheckError(!mInitialized, ia_err_general, "@%s, mInitialized is false", __func__);
+    CheckAndLogError(!mInitialized, ia_err_general,
+                     "@%s, mInitialized is false", __func__);
 
     intel_cca_run_dvs_data* params = static_cast<intel_cca_run_dvs_data*>(mMemDVS.mAddr);
     params->cameraId = mCameraId;
@@ -274,7 +289,8 @@ ia_err IntelCca::runDVS(uint64_t frameId) {
     params->frameId = frameId;
 
     ia_err ret = mCommon.requestSyncCca(IPC_CCA_RUN_DVS, mMemDVS.mHandle);
-    CheckError(ret != ia_err_none, ia_err_general, "@%s, requestSyncCca fails", __func__);
+    CheckAndLogError(ret != ia_err_none, ia_err_general,
+                     "@%s, requestSyncCca fails", __func__);
 
     return ret;
 }
@@ -282,9 +298,11 @@ ia_err IntelCca::runDVS(uint64_t frameId) {
 ia_err IntelCca::runAIC(uint64_t frameId, cca::cca_pal_input_params* params, ia_binary_data* pal) {
     LOGIPC("@%s, mCameraId:%d, tuningMode:%d, cca::cca_pal_input_params size:%d", __func__,
            mCameraId, mTuningMode, sizeof(cca::cca_pal_input_params));
-    CheckError(!params, ia_err_argument, "@%s, params is nullptr", __func__);
-    CheckError(!pal, ia_err_argument, "@%s, pal is nullptr", __func__);
-    CheckError(!mInitialized, ia_err_general, "@%s, mInitialized is false", __func__);
+    CheckAndLogError(!params, ia_err_argument, "@%s, params is nullptr",
+                     __func__);
+    CheckAndLogError(!pal, ia_err_argument, "@%s, pal is nullptr", __func__);
+    CheckAndLogError(!mInitialized, ia_err_general,
+                     "@%s, mInitialized is false", __func__);
 
     intel_cca_run_aic_data* aicParams = static_cast<intel_cca_run_aic_data*>(mMemAIC.mAddr);
     aicParams->cameraId = mCameraId;
@@ -295,13 +313,14 @@ ia_err IntelCca::runAIC(uint64_t frameId, cca::cca_pal_input_params* params, ia_
     aicParams->palOutData = *pal;
 
     int32_t palDataHandle = mCommon.getShmMemHandle(pal->data);
-    CheckError(!palDataHandle, ia_err_general, "%s, pal buf:%p is not in SHM", __func__, pal->data);
+    CheckAndLogError(!palDataHandle, ia_err_general,
+                     "%s, pal buf:%p is not in SHM", __func__, pal->data);
     LOGIPC("%s, pal buffer:%p, buffer handle:%d", __func__, pal->data, palDataHandle);
     aicParams->palDataHandle = palDataHandle;
 
     ia_err ret = mCommon.requestSyncCca(IPC_CCA_RUN_AIC, mMemAIC.mHandle);
-    CheckError(ret != ia_err_none && ret != ia_err_not_run, ia_err_general,
-               "@%s, requestSyncCca fails", __func__);
+    CheckAndLogError(ret != ia_err_none && ret != ia_err_not_run,
+                     ia_err_general, "@%s, requestSyncCca fails", __func__);
     pal->size = aicParams->palOutData.size;
     LOGIPC("%s, pal->size:%d", __func__, pal->size);
 
@@ -310,15 +329,17 @@ ia_err IntelCca::runAIC(uint64_t frameId, cca::cca_pal_input_params* params, ia_
 
 ia_err IntelCca::getCMC(cca::cca_cmc* cmc) {
     LOGIPC("@%s, mCameraId:%d, tuningMode:%d", __func__, mCameraId, mTuningMode);
-    CheckError(!cmc, ia_err_argument, "@%s, cmc is nullptr", __func__);
-    CheckError(!mInitialized, ia_err_general, "@%s, mInitialized is false", __func__);
+    CheckAndLogError(!cmc, ia_err_argument, "@%s, cmc is nullptr", __func__);
+    CheckAndLogError(!mInitialized, ia_err_general,
+                     "@%s, mInitialized is false", __func__);
 
     intel_cca_get_cmc_data* params = static_cast<intel_cca_get_cmc_data*>(mMemCMC.mAddr);
     params->cameraId = mCameraId;
     params->tuningMode = mTuningMode;
 
     ia_err ret = mCommon.requestSyncCca(IPC_CCA_GET_CMC, mMemCMC.mHandle);
-    CheckError(ret != ia_err_none, ia_err_general, "@%s, requestSyncCca fails", __func__);
+    CheckAndLogError(ret != ia_err_none, ia_err_general,
+                     "@%s, requestSyncCca fails", __func__);
 
     *cmc = params->results;
 
@@ -328,8 +349,9 @@ ia_err IntelCca::getCMC(cca::cca_cmc* cmc) {
 ia_err IntelCca::getMKN(ia_mkn_trg type, cca::cca_mkn* mkn) {
     LOGIPC("@%s, mCameraId:%d, tuningMode:%d, results size:%d", __func__,
            mCameraId, mTuningMode, sizeof(cca::cca_mkn));
-    CheckError(!mkn, ia_err_argument, "@%s, mkn is nullptr", __func__);
-    CheckError(!mInitialized, ia_err_general, "@%s, mInitialized is false", __func__);
+    CheckAndLogError(!mkn, ia_err_argument, "@%s, mkn is nullptr", __func__);
+    CheckAndLogError(!mInitialized, ia_err_general,
+                     "@%s, mInitialized is false", __func__);
 
     intel_cca_mkn_data* params = static_cast<intel_cca_mkn_data*>(mMemMKN.mAddr);
     params->cameraId = mCameraId;
@@ -339,22 +361,25 @@ ia_err IntelCca::getMKN(ia_mkn_trg type, cca::cca_mkn* mkn) {
     params->resultsHandle = mCommon.getShmMemHandle(mkn);
 
     ia_err ret = mCommon.requestSyncCca(IPC_CCA_GET_MKN, mMemMKN.mHandle);
-    CheckError(ret != ia_err_none, ia_err_general, "@%s, requestSyncCca fails", __func__);
+    CheckAndLogError(ret != ia_err_none, ia_err_general,
+                     "@%s, requestSyncCca fails", __func__);
 
     return ret;
 }
 
 ia_err IntelCca::getAiqd(cca::cca_aiqd* aiqd) {
     LOGIPC("@%s, mCameraId:%d, tuningMode:%d", __func__, mCameraId, mTuningMode);
-    CheckError(!aiqd, ia_err_argument, "@%s, aiqd is nullptr", __func__);
-    CheckError(!mInitialized, ia_err_general, "@%s, mInitialized is false", __func__);
+    CheckAndLogError(!aiqd, ia_err_argument, "@%s, aiqd is nullptr", __func__);
+    CheckAndLogError(!mInitialized, ia_err_general,
+                     "@%s, mInitialized is false", __func__);
 
     intel_cca_get_aiqd_data* params = static_cast<intel_cca_get_aiqd_data*>(mMemAIQD.mAddr);
     params->cameraId = mCameraId;
     params->tuningMode = mTuningMode;
 
     ia_err ret = mCommon.requestSyncCca(IPC_CCA_GET_AIQD, mMemAIQD.mHandle);
-    CheckError(ret != ia_err_none, ia_err_general, "@%s, requestSyncCca fails", __func__);
+    CheckAndLogError(ret != ia_err_none, ia_err_general,
+                     "@%s, requestSyncCca fails", __func__);
 
     *aiqd = params->results;
 
@@ -364,7 +389,8 @@ ia_err IntelCca::getAiqd(cca::cca_aiqd* aiqd) {
 ia_err IntelCca::updateTuning(uint8_t lardTags, const ia_lard_input_params& lardParams,
                               const cca::cca_nvm& nvm) {
     LOGIPC("@%s, mCameraId:%d, tuningMode:%d", __func__, mCameraId, mTuningMode);
-    CheckError(!mInitialized, ia_err_general, "@%s, mInitialized is false", __func__);
+    CheckAndLogError(!mInitialized, ia_err_general,
+                     "@%s, mInitialized is false", __func__);
 
     intel_cca_update_tuning_data* params =
         static_cast<intel_cca_update_tuning_data*>(mMemTuning.mAddr);
@@ -375,29 +401,34 @@ ia_err IntelCca::updateTuning(uint8_t lardTags, const ia_lard_input_params& lard
     params->nvmParams = nvm;
 
     ia_err ret = mCommon.requestSyncCca(IPC_CCA_UPDATE_TUNING, mMemTuning.mHandle);
-    CheckError(ret != ia_err_none, ia_err_general, "@%s, requestSyncCca fails", __func__);
+    CheckAndLogError(ret != ia_err_none, ia_err_general,
+                     "@%s, requestSyncCca fails", __func__);
 
     return ret;
 }
 
 void IntelCca::deinit() {
     LOGIPC("@%s, mCameraId:%d, tuningMode:%d", __func__, mCameraId, mTuningMode);
-    CheckError(!mInitialized, VOID_VALUE, "@%s, mInitialized is false", __func__);
+    CheckAndLogError(!mInitialized, VOID_VALUE, "@%s, mInitialized is false",
+                     __func__);
 
     intel_cca_deinit_data* params = static_cast<intel_cca_deinit_data*>(mMemDeinit.mAddr);
     params->cameraId = mCameraId;
     params->tuningMode = mTuningMode;
 
     ia_err ret = mCommon.requestSyncCca(IPC_CCA_DEINIT, mMemDeinit.mHandle);
-    CheckError(ret != ia_err_none, VOID_VALUE, "@%s, requestSyncCca fails", __func__);
+    CheckAndLogError(ret != ia_err_none, VOID_VALUE,
+                     "@%s, requestSyncCca fails", __func__);
 }
 
 ia_err IntelCca::decodeStats(uint64_t statsPointer, uint32_t statsSize,
                              ia_isp_bxt_statistics_query_results_t* results) {
     LOGIPC("@%s, mCameraId:%d, tuningMode:%d, statsPointer:0x%x, statsSize:%d", __func__,
            mCameraId, mTuningMode, statsPointer, statsSize);
-    CheckError(!results, ia_err_argument, "@%s, results is nullptr", __func__);
-    CheckError(!mInitialized, ia_err_general, "@%s, mInitialized is false", __func__);
+    CheckAndLogError(!results, ia_err_argument, "@%s, results is nullptr",
+                     __func__);
+    CheckAndLogError(!mInitialized, ia_err_general,
+                     "@%s, mInitialized is false", __func__);
 
     intel_cca_decode_stats_data* params =
         static_cast<intel_cca_decode_stats_data*>(mMemDecodeStats.mAddr);
@@ -409,7 +440,8 @@ ia_err IntelCca::decodeStats(uint64_t statsPointer, uint32_t statsSize,
     params->statsBuffer.size = statsSize;
 
     ia_err ret = mCommon.requestSyncCca(IPC_CCA_DECODE_STATS, mMemDecodeStats.mHandle);
-    CheckError(ret != ia_err_none, ia_err_general, "@%s, requestSyncCca fails", __func__);
+    CheckAndLogError(ret != ia_err_none, ia_err_general,
+                     "@%s, requestSyncCca fails", __func__);
 
     *results = params->results;
 
@@ -419,7 +451,7 @@ ia_err IntelCca::decodeStats(uint64_t statsPointer, uint32_t statsSize,
 uint32_t IntelCca::getPalDataSize(const cca::cca_program_group& programGroup) {
     LOGIPC("@%s, mCameraId:%d, tuningMode:%d, in params size:%d", __func__,
            mCameraId, mTuningMode, sizeof(cca::cca_program_group));
-    CheckError(!mInitialized, 0, "@%s, mInitialized is false", __func__);
+    CheckAndLogError(!mInitialized, 0, "@%s, mInitialized is false", __func__);
 
     intel_cca_get_pal_data_size* params =
         static_cast<intel_cca_get_pal_data_size*>(mMemPalSize.mAddr);
@@ -428,7 +460,8 @@ uint32_t IntelCca::getPalDataSize(const cca::cca_program_group& programGroup) {
     params->pg = programGroup;
 
     ia_err ret = mCommon.requestSyncCca(IPC_CCA_GET_PAL_SIZE, mMemPalSize.mHandle);
-    CheckError(ret != ia_err_none, 0, "@%s, requestSyncCca fails", __func__);
+    CheckAndLogError(ret != ia_err_none, 0, "@%s, requestSyncCca fails",
+                     __func__);
 
     LOGIPC("@%s, returnSize:%d", __func__, params->returnSize);
     return params->returnSize;
@@ -437,7 +470,8 @@ uint32_t IntelCca::getPalDataSize(const cca::cca_program_group& programGroup) {
 void* IntelCca::allocMem(int streamId, const std::string& name, int index, int size) {
     LOGIPC("@%s, mCameraId:%d, tuningMode:%d, name:%s, index:%d, streamId:%d, size:%d", __func__,
            mCameraId, mTuningMode, name.c_str(), index, streamId, size);
-    CheckError(mInitialized == false, nullptr, "@%s, mInitialized is false", __func__);
+    CheckAndLogError(mInitialized == false, nullptr,
+                     "@%s, mInitialized is false", __func__);
 
     std::string number = std::to_string(streamId) + std::to_string(index) +
                          std::to_string(mCameraId) + std::to_string(mTuningMode) +
@@ -446,7 +480,8 @@ void* IntelCca::allocMem(int streamId, const std::string& name, int index, int s
 
     ShmMemInfo memInfo = {};
     bool ret = mCommon.allocShmMem(finalName, size, &memInfo);
-    CheckError(ret == false, nullptr, "%s, mCommon.allocShmMem fails for pal buf", __func__);
+    CheckAndLogError(ret == false, nullptr,
+                     "%s, mCommon.allocShmMem fails for pal buf", __func__);
     LOGIPC("%s, the buffer handle: %d, address: %p", __func__, memInfo.mHandle, memInfo.mAddr);
 
     mMemsOuter[memInfo.mAddr] = memInfo;
@@ -457,7 +492,8 @@ void* IntelCca::allocMem(int streamId, const std::string& name, int index, int s
 void IntelCca::freeMem(void* addr) {
     LOGIPC("@%s, mCameraId:%d, tuningMode:%d, addr: %p", __func__, mCameraId, mTuningMode, addr);
 
-    CheckError(mInitialized == false, VOID_VALUE, "@%s, mInitialized is false", __func__);
+    CheckAndLogError(mInitialized == false, VOID_VALUE,
+                     "@%s, mInitialized is false", __func__);
 
     if (mMemsOuter.find(addr) != mMemsOuter.end()) {
         mCommon.freeShmMem(mMemsOuter[addr]);

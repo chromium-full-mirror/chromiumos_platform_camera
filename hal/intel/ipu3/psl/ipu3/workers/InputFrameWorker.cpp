@@ -82,8 +82,8 @@ void InputFrameWorker::dumpRaw(const cros::V4L2Buffer &v4l2Buf, Camera3Request &
         return;
     }
 
-    CheckError((v4l2Buf.Memory() != V4L2_MEMORY_DMABUF), VOID_VALUE,
-               "just support V4L2_MEMORY_DMABUF dump");
+    CheckAndLogError((v4l2Buf.Memory() != V4L2_MEMORY_DMABUF), VOID_VALUE,
+                     "just support V4L2_MEMORY_DMABUF dump");
 
     uint32_t size = v4l2Buf.Length(0);
     int v4l2Buffd = v4l2Buf.Fd(0);
@@ -95,7 +95,7 @@ void InputFrameWorker::dumpRaw(const cros::V4L2Buffer &v4l2Buf, Camera3Request &
     }
 
     void* addr = mmap(nullptr, size, PROT_READ, MAP_SHARED, v4l2Buffd, 0);
-    CheckError((addr == MAP_FAILED), VOID_VALUE, "mmap fails");
+    CheckAndLogError((addr == MAP_FAILED), VOID_VALUE, "mmap fails");
 
     std::string name;
     if (mPipeType == GraphConfig::PIPE_STILL && jpegBufCnt > 0) {
@@ -116,11 +116,11 @@ status_t InputFrameWorker::prepareRun(std::shared_ptr<DeviceMessage> msg)
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL2, LOG_TAG);
 
     int memType = mNode->GetMemoryType();
-    CheckError(memType != V4L2_MEMORY_DMABUF, BAD_VALUE,
-               "@%s unsupported memory type %d.", __func__, memType);
+    CheckAndLogError(memType != V4L2_MEMORY_DMABUF, BAD_VALUE,
+                     "@%s unsupported memory type %d.", __func__, memType);
 
     Camera3Request* request = msg->pMsg.processingSettings->request;
-    CheckError(!request, BAD_VALUE, "@%s request is nullptr", __func__);
+    CheckAndLogError(!request, BAD_VALUE, "@%s request is nullptr", __func__);
 
     LOG2("@%s, mPipeType:%d, request id %d, mLastRequestId %d",
           __FUNCTION__, mPipeType, request->getId(), mLastRequestId);
@@ -135,7 +135,8 @@ status_t InputFrameWorker::prepareRun(std::shared_ptr<DeviceMessage> msg)
     int index = rawV4L2Buf->Index();
     mBuffers[index].SetFd(rawV4L2Buf->Fd(0), 0);
     int fd = mBuffers[index].Fd(0);
-    CheckError(fd < 0, BAD_VALUE, "@%s invalid fd(%d) passed from isys.\n", __func__, fd);
+    CheckAndLogError(fd < 0, BAD_VALUE,
+                     "@%s invalid fd(%d) passed from isys.\n", __func__, fd);
 
     status_t status = mNode->PutFrame(&mBuffers[index]);
 

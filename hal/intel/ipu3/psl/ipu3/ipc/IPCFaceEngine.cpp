@@ -39,7 +39,8 @@ bool IPCFaceEngine::clientFlattenInit(unsigned int max_face_num,
                                       face_engine_init_params* params)
 {
     LOG1("@%s, params:%p", __FUNCTION__, params);
-    CheckError(params == nullptr, false, "@%s, params is nullptr", __FUNCTION__);
+    CheckAndLogError(params == nullptr, false, "@%s, params is nullptr",
+                     __FUNCTION__);
 
     params->max_face_num = max_face_num;
     params->fd_mode = fd_mode;
@@ -50,7 +51,8 @@ bool IPCFaceEngine::clientFlattenInit(unsigned int max_face_num,
 bool IPCFaceEngine::clientFlattenRun(const pvl_image& frame, face_engine_run_params* params)
 {
     LOG1("@%s, params:%p", __FUNCTION__, params);
-    CheckError(params == nullptr, false, "@%s, params is nullptr", __FUNCTION__);
+    CheckAndLogError(params == nullptr, false, "@%s, params is nullptr",
+                     __FUNCTION__);
 
     if (frame.size > MAX_FACE_FRAME_SIZE) {
         LOGE("@%s, face frame buffer is too small!, w:%d,h:%d,size:%d",
@@ -72,7 +74,8 @@ bool IPCFaceEngine::clientFlattenRun(const pvl_image& frame, face_engine_run_par
 bool IPCFaceEngine::serverUnflattenRun(const face_engine_run_params& inParams, pvl_image* image)
 {
     LOG1("@%s, image:%p", __FUNCTION__, image);
-    CheckError(image == nullptr, false, "@%s, iamge is nullptr", __FUNCTION__);
+    CheckAndLogError(image == nullptr, false, "@%s, iamge is nullptr",
+                     __FUNCTION__);
 
     image->data = const_cast<uint8_t*>(inParams.data);
     image->size = inParams.size;

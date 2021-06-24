@@ -171,10 +171,12 @@ const char* CameraDump::getDumpPath(void)
 }
 
 void CameraDump::writeData(const void* data, int size, const char* fileName) {
-    CheckError((data == nullptr || size == 0 || fileName == nullptr), VOID_VALUE, "Nothing needs to be dumped");
+    CheckAndLogError((data == nullptr || size == 0 || fileName == nullptr),
+                     VOID_VALUE, "Nothing needs to be dumped");
 
     FILE *fp = fopen (fileName, "w+");
-    CheckError(fp == nullptr, VOID_VALUE, "open dump file %s failed", fileName);
+    CheckAndLogError(fp == nullptr, VOID_VALUE, "open dump file %s failed",
+                     fileName);
 
     LOG1("Write data to file:%s", fileName);
     if ((fwrite(data, size, 1, fp)) != 1)
@@ -215,7 +217,8 @@ static string getAiqSettingAppendix(int cameraId, long sequence)
     if (aiqResults == nullptr) {
         LOGW("%s: no result for sequence %ld! use the latest instead", __func__, sequence);
         aiqResults = const_cast<AiqResult*>(AiqResultStorage::getInstance(cameraId)->getAiqResult());
-        CheckError((aiqResults == nullptr), string(settingAppendix), "Cannot find available aiq result.");
+        CheckAndLogError((aiqResults == nullptr), string(settingAppendix),
+                         "Cannot find available aiq result.");
     }
 
     ia_aiq_exposure_sensor_parameters *sensorExposure =
@@ -223,7 +226,8 @@ static string getAiqSettingAppendix(int cameraId, long sequence)
     ia_aiq_exposure_parameters *exposure =
                                        aiqResults->mAeResults.exposures[0].exposure;
 
-    CheckError((sensorExposure == nullptr || exposure == nullptr), string(settingAppendix), "Cannot find aiq exposures");
+    CheckAndLogError((sensorExposure == nullptr || exposure == nullptr),
+                     string(settingAppendix), "Cannot find aiq exposures");
 
     double ag = sensorExposure->analog_gain_code_global;
     double dg = sensorExposure->digital_gain_global;
@@ -358,7 +362,7 @@ static string formatBinFileName(int cameraId, const char *prefix, BinParam_t *bi
 void CameraDump::dumpImage(int cameraId, const shared_ptr<CameraBuffer> &camBuffer,
                            ModuleType_t type, Port port)
 {
-    CheckError(camBuffer == nullptr, VOID_VALUE, "invalid param");
+    CheckAndLogError(camBuffer == nullptr, VOID_VALUE, "invalid param");
 
     if (camBuffer->getSequence() < gDumpSkipNum) return;
 
@@ -394,7 +398,7 @@ void CameraDump::dumpImage(int cameraId, const shared_ptr<CameraBuffer> &camBuff
 
 void CameraDump::dumpBinary(int cameraId, const void *data, int size, BinParam_t *binParam)
 {
-    CheckError(binParam == nullptr, VOID_VALUE, "invalid param");
+    CheckAndLogError(binParam == nullptr, VOID_VALUE, "invalid param");
 
     if (binParam->sequence < gDumpSkipNum) return;
 

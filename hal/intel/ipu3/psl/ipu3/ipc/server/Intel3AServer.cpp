@@ -75,7 +75,8 @@ int32_t Intel3AServer::initialize(const camera_algorithm_callback_ops_t* callbac
 {
     LOG1("@%s, callback_ops:%p", __FUNCTION__, callback_ops);
 
-    CheckError((!callback_ops), -EINVAL, "@%s, the callback_ops is nullptr", __FUNCTION__);
+    CheckAndLogError((!callback_ops), -EINVAL,
+                     "@%s, the callback_ops is nullptr", __FUNCTION__);
 
     mCallback = callback_ops;
 
@@ -87,7 +88,8 @@ int32_t Intel3AServer::initialize(const camera_algorithm_callback_ops_t* callbac
             &LogHelper::cca_print_info
         };
         ia_err ret = ia_log_init(&env);
-        CheckError(ret != ia_err_none, -ENOMEM, "@%s, ia_log_init fails, ret:%d", __FUNCTION__, ret);
+        CheckAndLogError(ret != ia_err_none, -ENOMEM,
+                         "@%s, ia_log_init fails, ret:%d", __FUNCTION__, ret);
         mIaLogInitialized = true;
     }
 
@@ -97,15 +99,17 @@ int32_t Intel3AServer::initialize(const camera_algorithm_callback_ops_t* callbac
 int32_t Intel3AServer::registerBuffer(int buffer_fd)
 {
     LOG1("@%s, buffer_fd:%d", __FUNCTION__, buffer_fd);
-    CheckError((mHandles.find(buffer_fd) != mHandles.end()),
-                -EINVAL, "@%s, Buffer already registered", __FUNCTION__);
+    CheckAndLogError((mHandles.find(buffer_fd) != mHandles.end()), -EINVAL,
+                     "@%s, Buffer already registered", __FUNCTION__);
 
     struct stat sb;
     int ret = fstat(buffer_fd, &sb);
-    CheckError((ret == -1), -EBADFD, "@%s, Failed to get buffer status", __FUNCTION__);
+    CheckAndLogError((ret == -1), -EBADFD, "@%s, Failed to get buffer status",
+                     __FUNCTION__);
 
     void* addr = mmap(0, sb.st_size, PROT_WRITE, MAP_SHARED, buffer_fd, 0);
-    CheckError((!addr), -EBADFD, "@%s, Failed to map buffer", __FUNCTION__);
+    CheckAndLogError((!addr), -EBADFD, "@%s, Failed to map buffer",
+                     __FUNCTION__);
 
     int32_t handle = mHandleSeed++;
     mHandles[buffer_fd] = handle;

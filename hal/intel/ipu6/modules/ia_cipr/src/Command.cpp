@@ -63,8 +63,9 @@ Command::~Command() {
 }
 
 Result Command::getConfig(PSysCommandConfig* cfg) {
-    CheckError(!mInitialized, Result::InternalError, "@%s mInitialized false", __func__);
-    CheckError(!cfg, Result::InvaildArg, "@%s, cfg is nullptr", __func__);
+    CheckAndLogError(!mInitialized, Result::InternalError,
+                     "@%s mInitialized false", __func__);
+    CheckAndLogError(!cfg, Result::InvaildArg, "@%s, cfg is nullptr", __func__);
 
     cfg->token = mCmd->iocCmd.user_token;
     cfg->issueID = mCmd->iocCmd.issue_id;
@@ -83,11 +84,13 @@ Result Command::getConfig(PSysCommandConfig* cfg) {
 Result Command::updateKernel(const PSysCommandConfig& cfg, const MemoryDesc& memory) {
     ProcessGroupCommand* ppg_command_ext = reinterpret_cast<ProcessGroupCommand*>(memory.cpuPtr);
 
-    CheckError(ppg_command_ext->header.size != memory.size ||
-                   ppg_command_ext->header.offset != sizeof(PSysCmdExtHeader) ||
-                   (ppg_command_ext->header.version != psys_command_ext_ppg_0 &&
-                    ppg_command_ext->header.version != psys_command_ext_ppg_1),
-               Result::InvaildArg, "Invalid command extension buffer received! (%p)", cfg.extBuf);
+    CheckAndLogError(
+        ppg_command_ext->header.size != memory.size ||
+            ppg_command_ext->header.offset != sizeof(PSysCmdExtHeader) ||
+            (ppg_command_ext->header.version != psys_command_ext_ppg_0 &&
+             ppg_command_ext->header.version != psys_command_ext_ppg_1),
+        Result::InvaildArg, "Invalid command extension buffer received! (%p)",
+        cfg.extBuf);
 
     if (ppg_command_ext->header.version == psys_command_ext_ppg_1) {
         CIPR::memoryCopy(
@@ -124,7 +127,8 @@ Result Command::updatePG(const PSysCommandConfig& cfg) {
     mCmd->pgManifestBuf = cfg.pgManifestBuf;
 
     ret = getLegacyPGMem(cfg, &memory);
-    CheckError(ret != Result::OK, ret, "@%s: getLegacyPGMem error", __func__);
+    CheckAndLogError(ret != Result::OK, ret, "@%s: getLegacyPGMem error",
+                     __func__);
 
     if (memory.flags & MemoryFlag::PSysAPI) {
         updateKernel(cfg, memory);
@@ -137,11 +141,14 @@ Result Command::updatePG(const PSysCommandConfig& cfg) {
 }
 
 Result Command::setConfig(const PSysCommandConfig& cfg) {
-    CheckError(!mInitialized, Result::InternalError, "@%s, mInitialized == false", __func__);
-    CheckError(mCmd->userBuffers.size() < cfg.buffers.size(), Result::InvaildArg,
-               "Config bufcount cannot be higher than in the command!");
-    CheckError(cfg.buffers.empty() && mCmd->iocCmd.buffers, Result::InvaildArg,
-               "To nullify buffers, create command with bufcount 0");
+    CheckAndLogError(!mInitialized, Result::InternalError,
+                     "@%s, mInitialized == false", __func__);
+    CheckAndLogError(mCmd->userBuffers.size() < cfg.buffers.size(),
+                     Result::InvaildArg,
+                     "Config bufcount cannot be higher than in the command!");
+    CheckAndLogError(cfg.buffers.empty() && mCmd->iocCmd.buffers,
+                     Result::InvaildArg,
+                     "To nullify buffers, create command with bufcount 0");
 
     Result ret = updatePG(cfg);
     if (ret != Result::OK) return ret;
@@ -158,8 +165,9 @@ Result Command::setConfig(const PSysCommandConfig& cfg) {
     mCmd->iocCmd.bufcount = cfg.buffers.size();
     mCmd->pg = cfg.pg;
     if (cfg.pg && cfg.pg->mMemoryDesc.sysBuff) {
-        CheckError(!((cfg.pg->mMemoryDesc.sysBuff)->flags & IPU_BUFFER_FLAG_DMA_HANDLE),
-                   Result::GeneralError, "@%s, Wrong flag!", __func__);
+        CheckAndLogError(!((cfg.pg->mMemoryDesc.sysBuff)->flags &
+                           IPU_BUFFER_FLAG_DMA_HANDLE),
+                         Result::GeneralError, "@%s, Wrong flag!", __func__);
 
         mCmd->iocCmd.pg = cfg.pg->mMemoryDesc.sysBuff->base.fd;
     }
@@ -177,13 +185,16 @@ Result Command::grokBuffers(const PSysCommandConfig& cfg) {
             continue;
         } else if (!current->mMemoryDesc.sysBuff && current->isRegion()) {
             current = current->getParent();
-            CheckError(!current, Result::InvaildArg, "Cannot find the parent of buffer:%p",
-                       cfg.buffers[i]);
+            CheckAndLogError(!current, Result::InvaildArg,
+                             "Cannot find the parent of buffer:%p",
+                             cfg.buffers[i]);
         }
 
-        CheckError(
-            !current->mMemoryDesc.sysBuff || !(current->mMemoryDesc.flags & MemoryFlag::Migrated),
-            Result::InvaildArg, "%s, Cannot queue singular buffer object %p", __func__, current);
+        CheckAndLogError(
+            !current->mMemoryDesc.sysBuff ||
+                !(current->mMemoryDesc.flags & MemoryFlag::Migrated),
+            Result::InvaildArg, "%s, Cannot queue singular buffer object %p",
+            __func__, current);
 
         mCmd->iocCmd.buffers[i] = *current->mMemoryDesc.sysBuff;
         mCmd->iocCmd.buffers[i].data_offset = current->mOffset;
@@ -194,8 +205,9 @@ Result Command::grokBuffers(const PSysCommandConfig& cfg) {
 }
 
 Result Command::enqueue(Context* ctx) {
-    CheckError(!mInitialized, Result::InternalError, "@%s, mInitialized is false", __func__);
-    CheckError(!ctx, Result::InvaildArg, "@%s, ctx is nullptr", __func__);
+    CheckAndLogError(!mInitialized, Result::InternalError,
+                     "@%s, mInitialized is false", __func__);
+    CheckAndLogError(!ctx, Result::InvaildArg, "@%s, ctx is nullptr", __func__);
 
     return ctx->doIoctl(static_cast<int>(IPU_IOC_QCMD), mCmd);
 }

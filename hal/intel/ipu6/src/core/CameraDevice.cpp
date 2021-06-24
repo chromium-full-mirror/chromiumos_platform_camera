@@ -121,18 +121,18 @@ int CameraDevice::init()
     AutoMutex   m(mDeviceLock);
 
     int ret = mProducer->init();
-    CheckError(ret < 0, ret, "%s: Init capture unit failed", __func__);
+    CheckAndLogError(ret < 0, ret, "%s: Init capture unit failed", __func__);
 
     ret = mSofSource->init();
-    CheckError(ret != OK, ret, "@%s: init sync manager failed", __func__);
+    CheckAndLogError(ret != OK, ret, "@%s: init sync manager failed", __func__);
 
     initDefaultParameters();
 
     ret = m3AControl->init();
-    CheckError((ret != OK), ret, "%s: Init 3A Unit falied", __func__);
+    CheckAndLogError((ret != OK), ret, "%s: Init 3A Unit falied", __func__);
 
     ret = mLensCtrl->init();
-    CheckError((ret != OK), ret, "%s: Init Lens falied", __func__);
+    CheckAndLogError((ret != OK), ret, "%s: Init Lens falied", __func__);
 
     mRequestThread->run("RequestThread", PRIORITY_NORMAL);
 
@@ -284,15 +284,20 @@ int CameraDevice::configure(stream_config_t *streamList)
     PERF_CAMERA_ATRACE();
 
     int numOfStreams = streamList->num_streams;
-    CheckError(!streamList->streams, BAD_VALUE, "%s: No valid stream config", __func__);
-    CheckError(numOfStreams > MAX_STREAM_NUMBER || numOfStreams <= 0, BAD_VALUE,
-          "%s: The requested stream number(%d) is invalid. Should be between [1-%d]",
-          __func__, numOfStreams, MAX_STREAM_NUMBER);
+    CheckAndLogError(!streamList->streams, BAD_VALUE,
+                     "%s: No valid stream config", __func__);
+    CheckAndLogError(numOfStreams > MAX_STREAM_NUMBER || numOfStreams <= 0,
+                     BAD_VALUE,
+                     "%s: The requested stream number(%d) is invalid. Should "
+                     "be between [1-%d]",
+                     __func__, numOfStreams, MAX_STREAM_NUMBER);
 
     AutoMutex lock(mDeviceLock);
 
-    CheckError((mState != DEVICE_STOP) && (mState != DEVICE_INIT) && (mState != DEVICE_CONFIGURE),
-               INVALID_OPERATION, "%s: Add streams in wrong state %d", __func__, mState);
+    CheckAndLogError((mState != DEVICE_STOP) && (mState != DEVICE_INIT) &&
+                         (mState != DEVICE_CONFIGURE),
+                     INVALID_OPERATION, "%s: Add streams in wrong state %d",
+                     __func__, mState);
 
     mRequestThread->configure(streamList);
 
@@ -313,7 +318,7 @@ int CameraDevice::configureL(stream_config_t *streamList, bool clean)
     LOG1("@%s, mCameraId:%d, operation_mode %x", __func__, mCameraId, (ConfigMode)streamList->operation_mode);
 
     int ret = analyzeStream(streamList);
-    CheckError(ret != OK, ret, "@%s, analyzeStream failed", __func__);
+    CheckAndLogError(ret != OK, ret, "@%s, analyzeStream failed", __func__);
 
     // If configured before, destroy current streams first.
     if (mStreamNum > 0 && clean) {
@@ -325,20 +330,23 @@ int CameraDevice::configureL(stream_config_t *streamList, bool clean)
     mProducer->removeAllFrameAvailableListener();
     if (clean) {
         ret = createStreams(streamList);
-        CheckError(ret < 0, ret, "@%s create stream failed with %d", __func__, ret);
+        CheckAndLogError(ret < 0, ret, "@%s create stream failed with %d",
+                         __func__, ret);
     }
     mRequestThread->postConfigure(streamList);
 
     int mcId = -1;
     if (mGCM != nullptr) {
         ret = mGCM->configStreams(streamList);
-        CheckError(ret != OK, INVALID_OPERATION, "No matching graph config found");
+        CheckAndLogError(ret != OK, INVALID_OPERATION,
+                         "No matching graph config found");
 
         mcId = mGCM->getSelectedMcId();
     }
 
     std::map<Port, stream_t> producerConfigs = selectProducerConfig(streamList, mcId);
-    CheckError(producerConfigs.empty(), BAD_VALUE, "The config for producer is invalid.");
+    CheckAndLogError(producerConfigs.empty(), BAD_VALUE,
+                     "The config for producer is invalid.");
 
     bool needProcessor = isProcessorNeeded(streamList, producerConfigs[MAIN_PORT]);
     for (auto& item : producerConfigs) {
@@ -355,13 +363,16 @@ int CameraDevice::configureL(stream_config_t *streamList, bool clean)
     PlatformData::getConfigModesByOperationMode(mCameraId, streamList->operation_mode, configModes);
 
     ret = initIntelCcaHandle(configModes);
-    CheckError(ret < 0, BAD_VALUE, "@%s failed to create intel cca handle", __func__);
+    CheckAndLogError(ret < 0, BAD_VALUE,
+                     "@%s failed to create intel cca handle", __func__);
 
     ret = mProducer->configure(producerConfigs, configModes);
-    CheckError(ret < 0, BAD_VALUE, "@%s Device Configure failed", __func__);
+    CheckAndLogError(ret < 0, BAD_VALUE, "@%s Device Configure failed",
+                     __func__);
 
     ret = mSofSource->configure();
-    CheckError(ret != OK, ret, "@%s failed to configure SOF source device", __func__);
+    CheckAndLogError(ret != OK, ret,
+                     "@%s failed to configure SOF source device", __func__);
 
     m3AControl->configure(streamList);
 
@@ -371,11 +382,14 @@ int CameraDevice::configureL(stream_config_t *streamList, bool clean)
                                                           streamList, mParameter, mParamGenerator);
         ret = mProcessorManager->configureProcessors(configModes,
                                                      mProducer, mParameter);
-        CheckError(ret != OK, ret, "@%s configure post processor failed with:%d", __func__, ret);
+        CheckAndLogError(ret != OK, ret,
+                         "@%s configure post processor failed with:%d",
+                         __func__, ret);
     }
 
     ret = bindStreams(streamList);
-    CheckError(ret < 0, ret, "@%s bind stream failed with %d", __func__, ret);
+    CheckAndLogError(ret < 0, ret, "@%s bind stream failed with %d", __func__,
+                     ret);
 
     mState = DEVICE_CONFIGURE;
     return OK;
@@ -507,8 +521,9 @@ void CameraDevice::deinitIntelCcaHandle() {
 
     for (auto &mode : mTuningModes) {
         IntelCca *intelCca = IntelCca::getInstance(mCameraId, mode);
-        CheckError(!intelCca, VOID_VALUE,
-                   "%s, Failed to get cca: mode(%d), cameraId(%d)", __func__, mode, mCameraId);
+        CheckAndLogError(!intelCca, VOID_VALUE,
+                         "%s, Failed to get cca: mode(%d), cameraId(%d)",
+                         __func__, mode, mCameraId);
 
         if (PlatformData::isAiqdEnabled(mCameraId)) {
             cca::cca_aiqd aiqd = {};
@@ -542,7 +557,9 @@ int CameraDevice::initIntelCcaHandle(const std::vector<ConfigMode> &configModes)
     for (auto &cfg : configModes) {
         TuningMode tuningMode;
         int ret = PlatformData::getTuningModeByConfigMode(mCameraId, cfg, tuningMode);
-        CheckError(ret != OK, ret, "%s: Failed to get tuningMode, cfg: %d", __func__, cfg);
+        CheckAndLogError(ret != OK, ret,
+                         "%s: Failed to get tuningMode, cfg: %d", __func__,
+                         cfg);
 
         PERF_CAMERA_ATRACE_PARAM1_IMAGING("intelCca->init", 1);
 
@@ -551,9 +568,10 @@ int CameraDevice::initIntelCcaHandle(const std::vector<ConfigMode> &configModes)
         cca::cca_init_params params = {};
         ret = PlatformData::getCpf(mCameraId, tuningMode, &cpfData);
         if (ret == OK && cpfData.data) {
-            CheckError(cpfData.size > cca::MAX_CPF_LEN, UNKNOWN_ERROR,
-                       "%s, AIQB buffer is too small cpfData:%d > MAX_CPF_LEN:%d",
-                       __func__, cpfData.size, cca::MAX_CPF_LEN);
+            CheckAndLogError(
+                cpfData.size > cca::MAX_CPF_LEN, UNKNOWN_ERROR,
+                "%s, AIQB buffer is too small cpfData:%d > MAX_CPF_LEN:%d",
+                __func__, cpfData.size, cca::MAX_CPF_LEN);
             MEMCPY_S(params.aiq_cpf.buf, cca::MAX_CPF_LEN, cpfData.data, cpfData.size);
             params.aiq_cpf.size = cpfData.size;
         }
@@ -561,9 +579,10 @@ int CameraDevice::initIntelCcaHandle(const std::vector<ConfigMode> &configModes)
         // Initialize cca_nvm data
         ia_binary_data* nvmData = PlatformData::getNvm(mCameraId);
         if (nvmData) {
-            CheckError(nvmData->size > cca::MAX_NVM_LEN,  UNKNOWN_ERROR,
-                       "%s, NVM buffer is too small: nvmData:%d  MAX_NVM_LEN:%d",
-                       __func__, nvmData->size, cca::MAX_NVM_LEN);
+            CheckAndLogError(
+                nvmData->size > cca::MAX_NVM_LEN, UNKNOWN_ERROR,
+                "%s, NVM buffer is too small: nvmData:%d  MAX_NVM_LEN:%d",
+                __func__, nvmData->size, cca::MAX_NVM_LEN);
             MEMCPY_S(params.aiq_nvm.buf, cca::MAX_NVM_LEN, nvmData->data, nvmData->size);
             params.aiq_nvm.size = nvmData->size;
         }
@@ -571,16 +590,18 @@ int CameraDevice::initIntelCcaHandle(const std::vector<ConfigMode> &configModes)
         // Initialize cca_aiqd data
         ia_binary_data* aiqdData = PlatformData::getAiqd(mCameraId, tuningMode);
         if (aiqdData) {
-            CheckError(aiqdData->size > cca::MAX_AIQD_LEN,  UNKNOWN_ERROR,
-                       "%s, AIQD buffer is too small aiqdData:%d > MAX_AIQD_LEN:%d",
-                       __func__, aiqdData->size, cca::MAX_AIQD_LEN);
+            CheckAndLogError(
+                aiqdData->size > cca::MAX_AIQD_LEN, UNKNOWN_ERROR,
+                "%s, AIQD buffer is too small aiqdData:%d > MAX_AIQD_LEN:%d",
+                __func__, aiqdData->size, cca::MAX_AIQD_LEN);
             MEMCPY_S(params.aiq_aiqd.buf, cca::MAX_AIQD_LEN, aiqdData->data, aiqdData->size);
             params.aiq_aiqd.size = aiqdData->size;
         }
 
         SensorFrameParams sensorParam = {};
         ret = PlatformData::calculateFrameParams(mCameraId, sensorParam);
-        CheckError(ret != OK, ret, "%s: Failed to calculate frame params", __func__);
+        CheckAndLogError(ret != OK, ret, "%s: Failed to calculate frame params",
+                         __func__);
         AiqUtils::convertToAiqFrameParam(sensorParam, params.frameParams);
 
         params.frameUse = ia_aiq_frame_use_video;
@@ -619,14 +640,16 @@ int CameraDevice::initIntelCcaHandle(const std::vector<ConfigMode> &configModes)
         // INTEL_DVS_S
         if (PlatformData::isDvsSupported(mCameraId)) {
             ret = configCcaDvsData(mCameraId, cfg, &params);
-            CheckError(ret != OK, UNKNOWN_ERROR, "%s, Failed to configCcaDvsData", __func__);
+            CheckAndLogError(ret != OK, UNKNOWN_ERROR,
+                             "%s, Failed to configCcaDvsData", __func__);
             params.bitmap |= cca::CCA_MODULE_DVS;
         }
         // INTEL_DVS_E
 
         IntelCca *intelCca = IntelCca::getInstance(mCameraId, tuningMode);
-        CheckError(!intelCca, UNKNOWN_ERROR,
-                   "%s, Failed to get cca: mode(%d), cameraId(%d)", __func__, tuningMode, mCameraId);
+        CheckAndLogError(!intelCca, UNKNOWN_ERROR,
+                         "%s, Failed to get cca: mode(%d), cameraId(%d)",
+                         __func__, tuningMode, mCameraId);
         ia_err iaErr = intelCca->init(params);
         if (iaErr == ia_err_none) {
             mTuningModes.push_back(tuningMode);
@@ -637,7 +660,8 @@ int CameraDevice::initIntelCcaHandle(const std::vector<ConfigMode> &configModes)
         }
 
         ret = PlatformData::initMakernote(mCameraId, tuningMode);
-        CheckError(ret != OK, UNKNOWN_ERROR, "%s, PlatformData::initMakernote fails", __func__);
+        CheckAndLogError(ret != OK, UNKNOWN_ERROR,
+                         "%s, PlatformData::initMakernote fails", __func__);
     }
 
     mCcaInitialized = true;
@@ -852,13 +876,15 @@ int CameraDevice::analyzeStream(stream_config_t *streamList)
         const stream_t& stream = streamList->streams[i];
 
         if (stream.streamType == CAMERA_STREAM_INPUT) {
-            CheckError(inputStreamId >= 0, BAD_VALUE, "Don't support two input streams!");
+            CheckAndLogError(inputStreamId >= 0, BAD_VALUE,
+                             "Don't support two input streams!");
             inputStreamId = i;
             continue;
         }
 
         if (stream.usage == CAMERA_STREAM_OPAQUE_RAW) {
-            CheckError(opaqueRawStreamId >= 0, BAD_VALUE, "Don't support two RAW streams!");
+            CheckAndLogError(opaqueRawStreamId >= 0, BAD_VALUE,
+                             "Don't support two RAW streams!");
             opaqueRawStreamId = i;
             continue;
         }
@@ -867,8 +893,11 @@ int CameraDevice::analyzeStream(stream_config_t *streamList)
         int ret = mParameter.getCropRegion(cropRegion);
         if (ret != OK || cropRegion.flag == 0) {
             bool valid = PlatformData::isSupportedStream(mCameraId, stream);
-            CheckError(!valid, BAD_VALUE, "Stream config is not supported. format:%s (%dx%d)",
-                       CameraUtils::pixelCode2String(stream.format), stream.width, stream.height);
+            CheckAndLogError(
+                !valid, BAD_VALUE,
+                "Stream config is not supported. format:%s (%dx%d)",
+                CameraUtils::pixelCode2String(stream.format), stream.width,
+                stream.height);
         }
 
         bool saved = false;
@@ -904,17 +933,21 @@ int CameraDevice::analyzeStream(stream_config_t *streamList)
 
     bool checkInput = !PlatformData::isIsysEnabled(mCameraId);
     if (checkInput) {
-        CheckError(inputStreamId < 0, BAD_VALUE, "Input stream was missing");
+        CheckAndLogError(inputStreamId < 0, BAD_VALUE,
+                         "Input stream was missing");
     }
     // Handle input stream
     if (inputStreamId >= 0) {
-        CheckError(mSortedStreamIds.empty(), BAD_VALUE, "There is no output stream!");
+        CheckAndLogError(mSortedStreamIds.empty(), BAD_VALUE,
+                         "There is no output stream!");
         // Check if input stream is supported or not
         const stream_t& stream = streamList->streams[inputStreamId];
         camera_resolution_t inputResolution = {stream.width, stream.height};
         bool valid = PlatformData::isISysSupportedResolution(mCameraId, inputResolution);
-        CheckError(!valid, BAD_VALUE, "Stream config is not supported. format:%s (%dx%d)",
-                   CameraUtils::pixelCode2String(stream.format), stream.width, stream.height);
+        CheckAndLogError(!valid, BAD_VALUE,
+                         "Stream config is not supported. format:%s (%dx%d)",
+                         CameraUtils::pixelCode2String(stream.format),
+                         stream.width, stream.height);
         // Push input stream index to the end of vector mSortedStreamIds
         mSortedStreamIds.push_back(inputStreamId);
         // Use MAIN PORT for input stream
@@ -957,8 +990,10 @@ int CameraDevice::start()
     mRequestThread->wait1stRequestDone();
 
     AutoMutex   m(mDeviceLock);
-    CheckError(mState != DEVICE_BUFFER_READY, BAD_VALUE, "start camera in wrong status %d", mState);
-    CheckError(mStreamNum == 0, BAD_VALUE, "@%s: device doesn't add any stream yet.", __func__);
+    CheckAndLogError(mState != DEVICE_BUFFER_READY, BAD_VALUE,
+                     "start camera in wrong status %d", mState);
+    CheckAndLogError(mStreamNum == 0, BAD_VALUE,
+                     "@%s: device doesn't add any stream yet.", __func__);
 
     int ret = startLocked();
     if (ret != OK) {
@@ -993,12 +1028,15 @@ int CameraDevice::stop()
 int CameraDevice::allocateMemory(camera_buffer_t *ubuffer)
 {
     LOG1("@%s, mCameraId:%d", __func__, mCameraId);
-    CheckError(mState < DEVICE_CONFIGURE, BAD_VALUE, "@%s: Wrong state id %d", __func__, mState);
-    CheckError(ubuffer->s.id < 0 || ubuffer->s.id >= mStreamNum, BAD_VALUE,
-          "@%s: Wrong stream id %d", __func__, ubuffer->s.id);
+    CheckAndLogError(mState < DEVICE_CONFIGURE, BAD_VALUE,
+                     "@%s: Wrong state id %d", __func__, mState);
+    CheckAndLogError(ubuffer->s.id < 0 || ubuffer->s.id >= mStreamNum,
+                     BAD_VALUE, "@%s: Wrong stream id %d", __func__,
+                     ubuffer->s.id);
 
     int ret = mStreams[ubuffer->s.id]->allocateMemory(ubuffer);
-    CheckError(ret < 0, ret, "@%s: failed, index: %d", __func__, ubuffer->index);
+    CheckAndLogError(ret < 0, ret, "@%s: failed, index: %d", __func__,
+                     ubuffer->index);
 
     return ret;
 }
@@ -1008,8 +1046,9 @@ int CameraDevice::allocateMemory(camera_buffer_t *ubuffer)
  */
 int CameraDevice::dqbuf(int streamId, camera_buffer_t **ubuffer, Parameters* settings)
 {
-    CheckError(streamId < 0 || streamId > mStreamNum, BAD_VALUE,
-          "@%s: the given stream(%d) is invalid.", __func__, streamId);
+    CheckAndLogError(streamId < 0 || streamId > mStreamNum, BAD_VALUE,
+                     "@%s: the given stream(%d) is invalid.", __func__,
+                     streamId);
 
     LOG2("@%s, camera id:%d, stream id:%d", __func__, mCameraId, streamId);
 
@@ -1019,7 +1058,8 @@ int CameraDevice::dqbuf(int streamId, camera_buffer_t **ubuffer, Parameters* set
 
     if (ret == NO_INIT) return ret;
 
-    CheckError(!*ubuffer || ret != OK, ret, "failed to get ubuffer from stream %d", streamId);
+    CheckAndLogError(!*ubuffer || ret != OK, ret,
+                     "failed to get ubuffer from stream %d", streamId);
 
     // Update and keep latest result, copy to settings when needed.
     ret = mParamGenerator->getParameters((*ubuffer)->sequence, &mResultParameter);
@@ -1034,24 +1074,27 @@ int CameraDevice::dqbuf(int streamId, camera_buffer_t **ubuffer, Parameters* set
 int CameraDevice::handleQueueBuffer(int bufferNum, camera_buffer_t **ubuffer, long sequence)
 {
     LOG2("@%s, mCameraId:%d, sequence = %ld", __func__, mCameraId, sequence);
-    CheckError(mState < DEVICE_CONFIGURE, BAD_VALUE,"@%s: Wrong state id %d", __func__, mState);
+    CheckAndLogError(mState < DEVICE_CONFIGURE, BAD_VALUE,
+                     "@%s: Wrong state id %d", __func__, mState);
 
     // All streams need to be queued with either a real buffer from user or an empty buffer.
     for (int streamId = 0; streamId < mStreamNum; streamId++) {
         bool isBufferQueued = false;
-        CheckError(mStreams[streamId] == nullptr, BAD_VALUE,
-              "@%s: stream %d is nullptr", __func__, streamId);
+        CheckAndLogError(mStreams[streamId] == nullptr, BAD_VALUE,
+                         "@%s: stream %d is nullptr", __func__, streamId);
 
         // Find if user has queued a buffer for mStreams[streamId].
         for (int bufferId = 0; bufferId < bufferNum; bufferId++) {
             camera_buffer_t* buffer = ubuffer[bufferId];
             int streamIdInBuf = buffer->s.id;
-            CheckError(streamIdInBuf < 0 || streamIdInBuf > mStreamNum, BAD_VALUE,
-                "@%s: Wrong stream id %d", __func__, streamIdInBuf);
+            CheckAndLogError(streamIdInBuf < 0 || streamIdInBuf > mStreamNum,
+                             BAD_VALUE, "@%s: Wrong stream id %d", __func__,
+                             streamIdInBuf);
 
             if (streamIdInBuf == streamId) {
                 int ret = mStreams[streamId]->qbuf(buffer, sequence);
-                CheckError(ret < 0, ret, "@%s: queue buffer:%p failed:%d", __func__, buffer, ret);
+                CheckAndLogError(ret < 0, ret, "@%s: queue buffer:%p failed:%d",
+                                 __func__, buffer, ret);
                 isBufferQueued = true;
                 break;
             }
@@ -1061,7 +1104,8 @@ int CameraDevice::handleQueueBuffer(int bufferNum, camera_buffer_t **ubuffer, lo
         // an empty buffer to keep the BufferQueue run.
         if (!isBufferQueued) {
             int ret = mStreams[streamId]->qbuf(nullptr, sequence);
-            CheckError(ret < 0, ret, "@%s: queue empty buffer failed:%d", __func__, ret);
+            CheckAndLogError(ret < 0, ret, "@%s: queue empty buffer failed:%d",
+                             __func__, ret);
         }
     }
 
@@ -1071,15 +1115,19 @@ int CameraDevice::handleQueueBuffer(int bufferNum, camera_buffer_t **ubuffer, lo
 int CameraDevice::registerBuffer(camera_buffer_t **ubuffer, int bufferNum)
 {
     LOG1("@%s, mCameraId:%d", __func__, mCameraId);
-    CheckError(mState < DEVICE_CONFIGURE, BAD_VALUE,"@%s: Wrong state id %d", __func__, mState);
+    CheckAndLogError(mState < DEVICE_CONFIGURE, BAD_VALUE,
+                     "@%s: Wrong state id %d", __func__, mState);
     if (mProcessors.empty()) return OK;
 
     for (int bufferId = 0; bufferId < bufferNum; bufferId++) {
         camera_buffer_t *buffer = ubuffer[bufferId];
-        CheckError(buffer == nullptr, BAD_VALUE, "@%s, the queue ubuffer %d is NULL", __func__, bufferId);
+        CheckAndLogError(buffer == nullptr, BAD_VALUE,
+                         "@%s, the queue ubuffer %d is NULL", __func__,
+                         bufferId);
         int streamIdInBuf = buffer->s.id;
-        CheckError(streamIdInBuf < 0 || streamIdInBuf > mStreamNum, BAD_VALUE,
-                "@%s: Wrong stream id %d", __func__, streamIdInBuf);
+        CheckAndLogError(streamIdInBuf < 0 || streamIdInBuf > mStreamNum,
+                         BAD_VALUE, "@%s: Wrong stream id %d", __func__,
+                         streamIdInBuf);
         std::shared_ptr<CameraBuffer> camBuffer =
             mStreams[streamIdInBuf]->userBufferToCameraBuffer(buffer);
         for (auto& iter : mStreamIdToPortMap) {
@@ -1105,7 +1153,8 @@ int CameraDevice::qbuf(camera_buffer_t **ubuffer,
         if (mState == DEVICE_CONFIGURE || mState == DEVICE_STOP) {
             // Start 3A here then the HAL can run 3A for request
             int ret = m3AControl->start();
-            CheckError((ret != OK), BAD_VALUE, "Start 3a unit failed with ret:%d.", ret);
+            CheckAndLogError((ret != OK), BAD_VALUE,
+                             "Start 3a unit failed with ret:%d.", ret);
 
             mState = DEVICE_BUFFER_READY;
         }
@@ -1200,20 +1249,24 @@ int CameraDevice::startLocked()
     //Start all the streams
     for(int i = 0; i < mStreamNum; i++) {
         ret = mStreams[i]->start();
-        CheckError(ret < 0, BAD_VALUE, "Start stream %d failed with ret:%d.", i, ret);
+        CheckAndLogError(ret < 0, BAD_VALUE,
+                         "Start stream %d failed with ret:%d.", i, ret);
     }
 
     for (auto& item : mProcessors) {
         ret = item->start();
-        CheckError((ret < 0), BAD_VALUE, "Start image processor failed with ret:%d.", ret);
+        CheckAndLogError((ret < 0), BAD_VALUE,
+                         "Start image processor failed with ret:%d.", ret);
     }
 
     //Start the CaptureUnit for streamon
     ret = mProducer->start();
-    CheckError((ret < 0), BAD_VALUE, "Start capture unit failed with ret:%d.", ret);
+    CheckAndLogError((ret < 0), BAD_VALUE,
+                     "Start capture unit failed with ret:%d.", ret);
 
     ret = mSofSource->start();
-    CheckError((ret != OK), BAD_VALUE, "Start SOF event source failed with ret:%d.", ret);
+    CheckAndLogError((ret != OK), BAD_VALUE,
+                     "Start SOF event source failed with ret:%d.", ret);
 
     return OK;
 }
@@ -1299,18 +1352,20 @@ int CameraDevice::reconfigure(stream_config_t *streamList)
 
         // Init and config with new mode
         int ret = mProducer->init();
-        CheckError(ret < 0, ret, "%s: Init capture unit failed", __func__);
+        CheckAndLogError(ret < 0, ret, "%s: Init capture unit failed",
+                         __func__);
 
         ret = mSofSource->init();
-        CheckError(ret != OK, ret, "@%s: init sync manager failed", __func__);
+        CheckAndLogError(ret != OK, ret, "@%s: init sync manager failed",
+                         __func__);
 
         initDefaultParameters();
 
         ret = m3AControl->init();
-        CheckError((ret != OK), ret, "%s: Init 3A Unit falied", __func__);
+        CheckAndLogError((ret != OK), ret, "%s: Init 3A Unit falied", __func__);
 
         ret = mLensCtrl->init();
-        CheckError((ret != OK), ret, "%s: Init Lens falied", __func__);
+        CheckAndLogError((ret != OK), ret, "%s: Init Lens falied", __func__);
 
         mState = DEVICE_INIT;
 
@@ -1321,10 +1376,12 @@ int CameraDevice::reconfigure(stream_config_t *streamList)
         for (auto& item : mProcessors) {
             item->setParameters(mParameter);
         }
-        CheckError((ret != OK), ret, "%s: set parameters falied", __func__);
+        CheckAndLogError((ret != OK), ret, "%s: set parameters falied",
+                         __func__);
 
         ret = m3AControl->start();
-        CheckError((ret != OK), BAD_VALUE, "Start 3a unit failed with ret:%d.", ret);
+        CheckAndLogError((ret != OK), BAD_VALUE,
+                         "Start 3a unit failed with ret:%d.", ret);
 
         mState = DEVICE_BUFFER_READY;
 
@@ -1397,8 +1454,9 @@ void CameraDevice::handleEvent(EventData eventData)
             int32_t userRequestId = 0;
             int ret = mParamGenerator->getUserRequestId(eventData.data.requestReady.sequence,
                                                         userRequestId);
-            CheckError(ret != OK, VOID_VALUE, "failed to find request id,  seq %ld",
-                       eventData.data.requestReady.sequence);
+            CheckAndLogError(ret != OK, VOID_VALUE,
+                             "failed to find request id,  seq %ld",
+                             eventData.data.requestReady.sequence);
             data.data.buffer_ready.sequence = eventData.data.requestReady.sequence;
             data.data.buffer_ready.timestamp = eventData.data.requestReady.timestamp;
             data.data.buffer_ready.frameNumber = static_cast<uint32_t>(userRequestId);

@@ -71,11 +71,13 @@ StreamUseCase GraphConfigManager::getUseCaseFromStream(ConfigMode configMode, co
 status_t GraphConfigManager::configStreams(const stream_config_t *streamList)
 {
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL1);
-    CheckError(!streamList, BAD_VALUE, "%s: Null streamList configured", __func__);
+    CheckAndLogError(!streamList, BAD_VALUE, "%s: Null streamList configured",
+                     __func__);
 
     vector <ConfigMode> configModes;
     int ret = PlatformData::getConfigModesByOperationMode(mCameraId, streamList->operation_mode, configModes);
-    CheckError(ret != OK, ret, "%s, get ConfigMode failed %d", __func__, ret);
+    CheckAndLogError(ret != OK, ret, "%s, get ConfigMode failed %d", __func__,
+                     ret);
 
     // Convert the stream_t to HalStream
     // Use the stream list with descending order to find graph settings.
@@ -95,7 +97,8 @@ status_t GraphConfigManager::configStreams(const stream_config_t *streamList)
             useCase,
         };
         HalStream* halStream = new HalStream(props, static_cast<void*>(&streamList->streams[i]));
-        CheckError(!halStream, UNKNOWN_ERROR, "Failed to create hal stream");
+        CheckAndLogError(!halStream, UNKNOWN_ERROR,
+                         "Failed to create hal stream");
 
         for (size_t j = 0; j < mHalStreamVec.size(); j++) {
             if (halStream->width() * halStream->height() > mHalStreamVec[j]->width() * mHalStreamVec[j]->height()) {
@@ -121,8 +124,9 @@ status_t GraphConfigManager::configStreams(const stream_config_t *streamList)
         CheckWarning(ret != OK, ret, "%s, Failed to configure graph: real ConfigMode %x", __func__, mode);
 
         int id = graphConfig->getSelectedMcId();
-        CheckError((id != -1 && mMcId != -1 && mMcId != id), UNKNOWN_ERROR,
-                    "Not support two different MC ID at same time:(%d/%d)", mMcId, id);
+        CheckAndLogError(
+            (id != -1 && mMcId != -1 && mMcId != id), UNKNOWN_ERROR,
+            "Not support two different MC ID at same time:(%d/%d)", mMcId, id);
         mMcId = id;
         LOGG("%s: Add graph setting for op_mode %d", __func__, mode);
         mGraphConfigMap[mode] = graphConfig;

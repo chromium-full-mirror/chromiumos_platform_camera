@@ -99,8 +99,9 @@ MRESULT NR3DIpcClientAdapter::EisInit(void* initInData) {
   }
   nr3d_init_params* params = static_cast<nr3d_init_params*>(mMemInit.mAddr);
   memcpy(&params->ipcEisInitData, eisInitInfo, sizeof(EIS_SET_ENV_INFO_STRUCT));
-  CheckError(sendRequest(IPC_NR3D_EIS_INIT, &mMemInit) == false,
-             FAILED_TRANSACTION, "@%s, EisClientInit fails", __FUNCTION__);
+  CheckAndLogError(sendRequest(IPC_NR3D_EIS_INIT, &mMemInit) == false,
+                   FAILED_TRANSACTION, "@%s, EisClientInit fails",
+                   __FUNCTION__);
   return S_EIS_OK;
 }
 
@@ -111,16 +112,18 @@ MRESULT NR3DIpcClientAdapter::EisMain(EIS_RESULT_INFO_STRUCT* eisResult) {
     return E_EIS_ERR;
   }
   nr3d_main_params* params = static_cast<nr3d_main_params*>(mMemMain.mAddr);
-  CheckError(sendRequest(IPC_NR3D_EIS_MAIN, &mMemMain) == false,
-             FAILED_TRANSACTION, "@%s, EisClientMain fails", __FUNCTION__);
+  CheckAndLogError(sendRequest(IPC_NR3D_EIS_MAIN, &mMemMain) == false,
+                   FAILED_TRANSACTION, "@%s, EisClientMain fails",
+                   __FUNCTION__);
   memcpy(eisResult, &params->ipcEisMianData, sizeof(EIS_RESULT_INFO_STRUCT));
   return S_EIS_OK;
 }
 
 MRESULT NR3DIpcClientAdapter::EisReset() {
-  CheckError(sendRequest(IPC_NR3D_EIS_RESET, &mMemReset) == false,
-             FAILED_TRANSACTION, "@%s, EisClientReset fails", __FUNCTION__);
-  return S_EIS_OK;
+    CheckAndLogError(sendRequest(IPC_NR3D_EIS_RESET, &mMemReset) == false,
+                     FAILED_TRANSACTION, "@%s, EisClientReset fails",
+                     __FUNCTION__);
+    return S_EIS_OK;
 }
 
 MRESULT NR3DIpcClientAdapter::EisFeatureCtrl(MUINT32 FeatureID,
@@ -147,7 +150,7 @@ MRESULT NR3DIpcClientAdapter::EisFeatureCtrl(MUINT32 FeatureID,
       MY_LOGD("EIS_FEATURE_SET_PROC_INFO DivH:%d", eisProcInfo->DivH);
       MY_LOGD("EIS_FEATURE_SET_PROC_INFO DivV:%d", eisProcInfo->DivV);
       MY_LOGD("EIS_FEATURE_SET_PROC_INFO EisWinNum:%d", eisProcInfo->EisWinNum);
-      CheckError(
+      CheckAndLogError(
           sendRequest(IPC_NR3D_EIS_FEATURECTRL, &mMemFeatureCtrl) == false,
           FAILED_TRANSACTION, "@%s, EisClientFeatureCtrl fails", __FUNCTION__);
       break;
@@ -159,7 +162,7 @@ MRESULT NR3DIpcClientAdapter::EisFeatureCtrl(MUINT32 FeatureID,
       }
       memcpy(&params->arg.ipcEisPlusData, eisPlusData,
              sizeof(EIS_GET_PLUS_INFO_STRUCT));
-      CheckError(
+      CheckAndLogError(
           sendRequest(IPC_NR3D_EIS_FEATURECTRL, &mMemFeatureCtrl) == false,
           FAILED_TRANSACTION, "@%s, EisClientFeatureCtrl fails", __FUNCTION__);
       memcpy(eisPlusData, &params->arg.ipcEisPlusData,
@@ -176,7 +179,7 @@ MRESULT NR3DIpcClientAdapter::EisFeatureCtrl(MUINT32 FeatureID,
         return E_EIS_ERR;
       }
       memcpy(&params->arg.ipcEisOriGmv, eisOriGmv, sizeof(EIS_GMV_INFO_STRUCT));
-      CheckError(
+      CheckAndLogError(
           sendRequest(IPC_NR3D_EIS_FEATURECTRL, &mMemFeatureCtrl) == false,
           FAILED_TRANSACTION, "@%s, EisClientFeatureCtrl fails", __FUNCTION__);
       memcpy(eisOriGmv, &params->arg.ipcEisOriGmv, sizeof(EIS_GMV_INFO_STRUCT));
@@ -184,10 +187,11 @@ MRESULT NR3DIpcClientAdapter::EisFeatureCtrl(MUINT32 FeatureID,
       MY_LOGD("EIS_FEATURE_GET_ORI_GMV EIS_GMVy:%d", eisOriGmv->EIS_GMVy);
       break;
     case EIS_FEATURE_SAVE_LOG:
-      CheckError(
-          sendRequest(IPC_NR3D_EIS_FEATURECTRL, &mMemFeatureCtrl) == false,
-          FAILED_TRANSACTION, "@%s, EisClientFeatureCtrl fails", __FUNCTION__);
-      break;
+        CheckAndLogError(
+            sendRequest(IPC_NR3D_EIS_FEATURECTRL, &mMemFeatureCtrl) == false,
+            FAILED_TRANSACTION, "@%s, EisClientFeatureCtrl fails",
+            __FUNCTION__);
+        break;
     default:
       break;
   }

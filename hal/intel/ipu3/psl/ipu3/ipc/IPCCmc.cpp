@@ -37,11 +37,14 @@ IPCCmc::~IPCCmc()
 bool IPCCmc::clientFlattenInit(const ia_binary_data& aiqb, cmc_init_params* params)
 {
     LOG1("@%s, aiqb: data:%p, size:%d, params:%p", __FUNCTION__, aiqb.data, aiqb.size, params);
-    CheckError(params == nullptr, false, "@%s, pData is nullptr", __FUNCTION__);
-    CheckError(aiqb.data == nullptr, false, "@%s, aiqb_data.data is nullptr", __FUNCTION__);
-    CheckError(aiqb.size == 0, false, "@%s, aiqb_data.size is 0", __FUNCTION__);
-    CheckError(aiqb.size > sizeof(params->input.data),
-        false, "@%s, aiqb:%d is too big", __FUNCTION__, aiqb.size);
+    CheckAndLogError(params == nullptr, false, "@%s, pData is nullptr",
+                     __FUNCTION__);
+    CheckAndLogError(aiqb.data == nullptr, false,
+                     "@%s, aiqb_data.data is nullptr", __FUNCTION__);
+    CheckAndLogError(aiqb.size == 0, false, "@%s, aiqb_data.size is 0",
+                     __FUNCTION__);
+    CheckAndLogError(aiqb.size > sizeof(params->input.data), false,
+                     "@%s, aiqb:%d is too big", __FUNCTION__, aiqb.size);
 
     ia_binary_data_mod* input = &params->input;
     MEMCPY_S(input->data, sizeof(input->data), aiqb.data, aiqb.size);
@@ -53,7 +56,8 @@ bool IPCCmc::clientFlattenInit(const ia_binary_data& aiqb, cmc_init_params* para
 bool IPCCmc::clientUnflattenInit(const cmc_init_params& params, ia_cmc_t** cmc, uintptr_t* cmcRemoteHandle)
 {
     LOG1("@%s, cmc:%p", __FUNCTION__, cmc);
-    CheckError(cmc == nullptr, false, "@%s, cmc is nullptr", __FUNCTION__);
+    CheckAndLogError(cmc == nullptr, false, "@%s, cmc is nullptr",
+                     __FUNCTION__);
 
     ia_cmc_data* results = const_cast<ia_cmc_data*>(&params.results);
     ia_cmc_t* base = &results->base;
@@ -130,7 +134,8 @@ bool IPCCmc::clientUnflattenInit(const cmc_init_params& params, ia_cmc_t** cmc, 
 bool IPCCmc::serverUnflattenInit(const cmc_init_params& params, ia_binary_data* aiqb)
 {
     LOG1("@%s, aiqb:%p", __FUNCTION__, aiqb);
-    CheckError(aiqb == nullptr, false, "@%s, aiqbData is nullptr", __FUNCTION__);
+    CheckAndLogError(aiqb == nullptr, false, "@%s, aiqbData is nullptr",
+                     __FUNCTION__);
 
     ia_binary_data_mod* input = const_cast<ia_binary_data_mod*>(&params.input);
     aiqb->data = input->data;
@@ -142,7 +147,8 @@ bool IPCCmc::serverUnflattenInit(const cmc_init_params& params, ia_binary_data* 
 bool IPCCmc::serverFlattenInit(const ia_cmc_t& cmc, cmc_init_params* params)
 {
     LOG1("@%s, params:%p", __FUNCTION__, params);
-    CheckError(params == nullptr, false, "@%s, params is nullptr", __FUNCTION__);
+    CheckAndLogError(params == nullptr, false, "@%s, params is nullptr",
+                     __FUNCTION__);
 
     ia_cmc_data* results = &params->results;
     ia_cmc_t* base = &results->base;
@@ -207,12 +213,18 @@ bool IPCCmc::serverFlattenInit(const ia_cmc_t& cmc, cmc_init_params* params)
         results->cmc_parsed_analog_gain_conversion.cmc_analog_gain_conversion =
             *base->cmc_parsed_analog_gain_conversion.cmc_analog_gain_conversion;
 
-        CheckError(base->cmc_parsed_analog_gain_conversion.cmc_analog_gain_conversion->num_segments > MAX_NUM_SEGMENTS,
+        CheckAndLogError(
+            base->cmc_parsed_analog_gain_conversion.cmc_analog_gain_conversion
+                    ->num_segments > MAX_NUM_SEGMENTS,
             false, "@%s, num_segments:%d is too big", __FUNCTION__,
-            base->cmc_parsed_analog_gain_conversion.cmc_analog_gain_conversion->num_segments);
-        CheckError(base->cmc_parsed_analog_gain_conversion.cmc_analog_gain_conversion->num_pairs > MAX_NUM_ANALOG_PAIRS, false,
-            "@%s, num_pairs:%d is too big", __FUNCTION__,
-            base->cmc_parsed_analog_gain_conversion.cmc_analog_gain_conversion->num_pairs);
+            base->cmc_parsed_analog_gain_conversion.cmc_analog_gain_conversion
+                ->num_segments);
+        CheckAndLogError(
+            base->cmc_parsed_analog_gain_conversion.cmc_analog_gain_conversion
+                    ->num_pairs > MAX_NUM_ANALOG_PAIRS,
+            false, "@%s, num_pairs:%d is too big", __FUNCTION__,
+            base->cmc_parsed_analog_gain_conversion.cmc_analog_gain_conversion
+                ->num_pairs);
 
         if (base->cmc_parsed_analog_gain_conversion.cmc_analog_gain_segments) {
             MEMCPY_S(results->cmc_parsed_analog_gain_conversion.cmc_analog_gain_segments,

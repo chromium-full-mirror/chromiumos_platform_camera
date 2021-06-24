@@ -80,8 +80,10 @@ int IntelAEStateMachine::processState(uint8_t controlMode, uint8_t sceneMode,
  * \param[IN] results: cameraMetadata to write dynamic tags.
  */
 int IntelAEStateMachine::processResult(bool aeConverged, android::CameraMetadata* result) {
-    CheckError(!mCurrentAeMode, icamera::UNKNOWN_ERROR, "Invalid AE mode");
-    CheckError(!result, icamera::UNKNOWN_ERROR, "%s, result is nullptr", __func__);
+    CheckAndLogError(!mCurrentAeMode, icamera::UNKNOWN_ERROR,
+                     "Invalid AE mode");
+    CheckAndLogError(!result, icamera::UNKNOWN_ERROR, "%s, result is nullptr",
+                     __func__);
 
     return mCurrentAeMode->processResult(aeConverged, result);
 }
@@ -102,7 +104,7 @@ IntelAEModeBase::IntelAEModeBase()
 }
 
 void IntelAEModeBase::updateResult(android::CameraMetadata* results) {
-    CheckError(!results, VOID_VALUE, "%s, result is nullptr", __func__);
+    CheckAndLogError(!results, VOID_VALUE, "%s, result is nullptr", __func__);
     LOG2("%s: current AE state is: %d", __func__, mCurrentAeState);
 
     //# METADATA_Dynamic control.aeMode done
@@ -153,7 +155,8 @@ int IntelAEModeOff::processState(uint8_t controlMode, uint8_t sceneMode,
 
 int IntelAEModeOff::processResult(bool aeConverged, android::CameraMetadata* result) {
     UNUSED(aeConverged);
-    CheckError(!result, icamera::UNKNOWN_ERROR, "%s, result is nullptr", __func__);
+    CheckAndLogError(!result, icamera::UNKNOWN_ERROR, "%s, result is nullptr",
+                     __func__);
     LOG2("%s", __func__);
 
     mCurrentAeState = ANDROID_CONTROL_AE_STATE_INACTIVE;
@@ -220,7 +223,8 @@ int IntelAEModeAuto::processState(uint8_t controlMode, uint8_t sceneMode,
 }
 
 int IntelAEModeAuto::processResult(bool aeConverged, android::CameraMetadata* result) {
-    CheckError(!result, icamera::UNKNOWN_ERROR, "%s, result is nullptr", __func__);
+    CheckAndLogError(!result, icamera::UNKNOWN_ERROR, "%s, result is nullptr",
+                     __func__);
     switch (mCurrentAeState) {
         case ANDROID_CONTROL_AE_STATE_LOCKED:
             // do nothing

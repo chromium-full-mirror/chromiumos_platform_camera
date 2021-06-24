@@ -48,7 +48,8 @@ std::shared_ptr<SkyCamProxy> SkyCamProxy::createProxy(int cameraId, AicMode aicM
 
     LOGD("Use IPC implementation");
     proxyObject = std::make_shared<SkyCamMojoProxy>(aicMode);
-    CheckError(proxyObject == nullptr, nullptr, "@%s: proxyObject is nullptr", __FUNCTION__);
+    CheckAndLogError(proxyObject == nullptr, nullptr,
+                     "@%s: proxyObject is nullptr", __FUNCTION__);
 
     status_t ret = proxyObject->init(cameraId, pipes, numPipes, cmcParsed, aiqb, runtimeParams,
                     dumpAicParameters, testFrameworkDump);

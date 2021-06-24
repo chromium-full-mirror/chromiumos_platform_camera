@@ -39,8 +39,10 @@ AicLibrary::~AicLibrary()
 status_t AicLibrary::init(void* pData, int dataSize)
 {
     LOG1("@%s, pData:%p, dataSize:%d", __FUNCTION__, pData, dataSize);
-    CheckError((pData == nullptr), UNKNOWN_ERROR, "@%s, pData is nullptr", __FUNCTION__);
-    CheckError((dataSize < sizeof(Transport)), UNKNOWN_ERROR, "@%s, buffer is small", __FUNCTION__);
+    CheckAndLogError((pData == nullptr), UNKNOWN_ERROR, "@%s, pData is nullptr",
+                     __FUNCTION__);
+    CheckAndLogError((dataSize < sizeof(Transport)), UNKNOWN_ERROR,
+                     "@%s, buffer is small", __FUNCTION__);
 
     ia_binary_data aiqb = {nullptr, 0};
     unsigned int numPipes = 0;
@@ -57,10 +59,13 @@ status_t AicLibrary::init(void* pData, int dataSize)
                                             &numPipes,
                                             &dumpAicParameters,
                                             &testFrameworkDump);
-    CheckError((ret == false), UNKNOWN_ERROR, "@%s, clientUnflattenInit fails", __FUNCTION__);
-    CheckError((numPipes > NUM_ISP_PIPES), UNKNOWN_ERROR,
-        "@%s, numPipes:%d is bigger than NUM_ISP_PIPES:%d", __FUNCTION__, numPipes, NUM_ISP_PIPES);
-    CheckError(cmc == nullptr, UNKNOWN_ERROR, "@%s, cmc is nullptr", __FUNCTION__);
+    CheckAndLogError((ret == false), UNKNOWN_ERROR,
+                     "@%s, clientUnflattenInit fails", __FUNCTION__);
+    CheckAndLogError((numPipes > NUM_ISP_PIPES), UNKNOWN_ERROR,
+                     "@%s, numPipes:%d is bigger than NUM_ISP_PIPES:%d",
+                     __FUNCTION__, numPipes, NUM_ISP_PIPES);
+    CheckAndLogError(cmc == nullptr, UNKNOWN_ERROR, "@%s, cmc is nullptr",
+                     __FUNCTION__);
 
     ISPPipe *tempISPPipes[NUM_ISP_PIPES];
     for (int i = 0; i < numPipes; i++) {
@@ -83,13 +88,16 @@ status_t AicLibrary::init(void* pData, int dataSize)
 void AicLibrary::run(void* pData, int dataSize)
 {
     LOG1("@%s, pData:%p, dataSize:%d", __FUNCTION__, pData, dataSize);
-    CheckError((pData == nullptr), VOID_VALUE, "@%s, pData is nullptr", __FUNCTION__);
-    CheckError((dataSize < sizeof(Transport)), VOID_VALUE, "@%s, buffer is small", __FUNCTION__);
+    CheckAndLogError((pData == nullptr), VOID_VALUE, "@%s, pData is nullptr",
+                     __FUNCTION__);
+    CheckAndLogError((dataSize < sizeof(Transport)), VOID_VALUE,
+                     "@%s, buffer is small", __FUNCTION__);
 
     Transport* transport = static_cast<Transport*>(pData);
     IPU3AICRuntimeParams* params = nullptr;
     bool ret = mIpc.serverUnflattenRun(*transport, &params);
-    CheckError(ret == false, VOID_VALUE, "@%s, serverUnflattenRun fails", __FUNCTION__);
+    CheckAndLogError(ret == false, VOID_VALUE, "@%s, serverUnflattenRun fails",
+                     __FUNCTION__);
 
     mSkyCam[transport->aicMode]->Run(params, 1);
 }
@@ -97,13 +105,16 @@ void AicLibrary::run(void* pData, int dataSize)
 void AicLibrary::reset(void* pData, int dataSize)
 {
     LOG1("@%s, pData:%p, dataSize:%d", __FUNCTION__, pData, dataSize);
-    CheckError((pData == nullptr), VOID_VALUE, "@%s, pData is nullptr", __FUNCTION__);
-    CheckError((dataSize < sizeof(Transport)), VOID_VALUE, "@%s, buffer is small", __FUNCTION__);
+    CheckAndLogError((pData == nullptr), VOID_VALUE, "@%s, pData is nullptr",
+                     __FUNCTION__);
+    CheckAndLogError((dataSize < sizeof(Transport)), VOID_VALUE,
+                     "@%s, buffer is small", __FUNCTION__);
 
     Transport* transport = static_cast<Transport*>(pData);
     IPU3AICRuntimeParams* params = nullptr;
     bool ret = mIpc.serverUnflattenRun(*transport, &params);
-    CheckError(ret == false, VOID_VALUE, "@%s, serverUnflattenRun fails", __FUNCTION__);
+    CheckAndLogError(ret == false, VOID_VALUE, "@%s, serverUnflattenRun fails",
+                     __FUNCTION__);
 
     mSkyCam[transport->aicMode]->Reset(*params);
 }
@@ -111,12 +122,15 @@ void AicLibrary::reset(void* pData, int dataSize)
 status_t AicLibrary::getAicVersion(void* pData, int dataSize)
 {
     LOG1("@%s, pData:%p, dataSize:%d", __FUNCTION__, pData, dataSize);
-    CheckError((pData == nullptr), UNKNOWN_ERROR, "@%s, pData is nullptr", __FUNCTION__);
-    CheckError((dataSize < sizeof(ia_aic_version_params)), UNKNOWN_ERROR, "@%s, buffer is small", __FUNCTION__);
+    CheckAndLogError((pData == nullptr), UNKNOWN_ERROR, "@%s, pData is nullptr",
+                     __FUNCTION__);
+    CheckAndLogError((dataSize < sizeof(ia_aic_version_params)), UNKNOWN_ERROR,
+                     "@%s, buffer is small", __FUNCTION__);
 
     ia_aic_version_params* params = static_cast<ia_aic_version_params*>(pData);
     std::string version = mSkyCam[params->aicMode]->GetAICVersion();
-    CheckError(version.size() == 0, UNKNOWN_ERROR, "@%s, GetAICVersion fails", __FUNCTION__);
+    CheckAndLogError(version.size() == 0, UNKNOWN_ERROR,
+                     "@%s, GetAICVersion fails", __FUNCTION__);
 
     strncpy(params->data, version.c_str(), sizeof(params->data));
     params->data[MAX_IA_AIC_VERSION_PARAMS_DATA_SIZE - 1] = '\0';
@@ -129,12 +143,15 @@ status_t AicLibrary::getAicVersion(void* pData, int dataSize)
 status_t AicLibrary::getAicConfig(void* pData, int dataSize)
 {
     LOG1("@%s, pData:%p, dataSize:%d", __FUNCTION__, pData, dataSize);
-    CheckError((pData == nullptr), UNKNOWN_ERROR, "@%s, pData is nullptr", __FUNCTION__);
-    CheckError((dataSize < sizeof(aic_config)), UNKNOWN_ERROR, "@%s, buffer is small", __FUNCTION__);
+    CheckAndLogError((pData == nullptr), UNKNOWN_ERROR, "@%s, pData is nullptr",
+                     __FUNCTION__);
+    CheckAndLogError((dataSize < sizeof(aic_config)), UNKNOWN_ERROR,
+                     "@%s, buffer is small", __FUNCTION__);
 
     IPU3AicConfig* params = static_cast<IPU3AicConfig*>(pData);
     aic_config* cfg = mIspPipes[params->aicMode][0]->GetAicConfig();
-    CheckError(cfg == nullptr, UNKNOWN_ERROR, "@%s, BUG: GetAicConfig fails", __FUNCTION__);
+    CheckAndLogError(cfg == nullptr, UNKNOWN_ERROR,
+                     "@%s, BUG: GetAicConfig fails", __FUNCTION__);
 
     MEMCPY_S(&params->aicConfig, dataSize, cfg, sizeof(aic_config));
 

@@ -65,13 +65,14 @@ void Dvs::handleEvent(EventData eventData) {
     if (eventData.type != EVENT_PSYS_STATS_BUF_READY) return;
 
     IntelCca* intelCcaHandle = IntelCca::getInstance(mCameraId, mTuningMode);
-    CheckError(!intelCcaHandle, VOID_VALUE, "@%s, Failed to get IntelCca instance", __func__);
+    CheckAndLogError(!intelCcaHandle, VOID_VALUE,
+                     "@%s, Failed to get IntelCca instance", __func__);
 
     // Run DVS
     LOG2("%s: handle EVENT_PSYS_STATS_BUF_READY", __func__);
     ia_err iaErr = intelCcaHandle->runDVS(eventData.data.statsReady.sequence);
     int ret = AiqUtils::convertError(iaErr);
-    CheckError(ret != OK, VOID_VALUE, "Error running DVS: %d", ret);
+    CheckAndLogError(ret != OK, VOID_VALUE, "Error running DVS: %d", ret);
     return;
 }
 }  // namespace icamera

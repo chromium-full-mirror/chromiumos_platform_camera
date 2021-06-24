@@ -249,9 +249,11 @@ status_t GraphConfigManager::sortStreamsByPipe(const std::vector<camera3_stream_
                                                std::vector<camera3_stream_t*>* blobStreams,
                                                int* repeatedStreamIndex)
 {
-    CheckError(yuvStreams == nullptr, BAD_VALUE, "yuvStreams is nullptr");
-    CheckError(blobStreams == nullptr, BAD_VALUE, "blobStreams is nullptr");
-    CheckError(repeatedStreamIndex == nullptr, BAD_VALUE, "repeatedStreamIndex is nullptr");
+    CheckAndLogError(yuvStreams == nullptr, BAD_VALUE, "yuvStreams is nullptr");
+    CheckAndLogError(blobStreams == nullptr, BAD_VALUE,
+                     "blobStreams is nullptr");
+    CheckAndLogError(repeatedStreamIndex == nullptr, BAD_VALUE,
+                     "repeatedStreamIndex is nullptr");
 
     *repeatedStreamIndex = -1;
     bool hasImpl = false;
@@ -301,7 +303,8 @@ status_t GraphConfigManager::sortStreamsByPipe(const std::vector<camera3_stream_
 status_t GraphConfigManager::
 mapVideoStreamToKey(const std::vector<camera3_stream_t*> &videoStreams, bool *hasVideoStream)
 {
-    CheckError(!hasVideoStream, UNKNOWN_ERROR, "hasVideoStream is nullptr");
+    CheckAndLogError(!hasVideoStream, UNKNOWN_ERROR,
+                     "hasVideoStream is nullptr");
 
     int yuvNum = videoStreams.size();
     LOG2("yuvNum:%d", yuvNum);
@@ -319,8 +322,8 @@ mapVideoStreamToKey(const std::vector<camera3_stream_t*> &videoStreams, bool *ha
     if (mForceUseOneNodeInVideoPipe) {
         yuvNum = 1;
     }
-    CheckError(yuvNum > MAX_GRAPH_SETTING_STREAM, UNKNOWN_ERROR,
-               "yuvNum:%d > maxNum:%d", yuvNum, MAX_GRAPH_SETTING_STREAM);
+    CheckAndLogError(yuvNum > MAX_GRAPH_SETTING_STREAM, UNKNOWN_ERROR,
+                     "yuvNum:%d > maxNum:%d", yuvNum, MAX_GRAPH_SETTING_STREAM);
 
     // store active output number for video pipe
     ItemUID streamCount = {GCSS_KEY_ACTIVE_OUTPUTS};
@@ -349,7 +352,8 @@ mapVideoStreamToKey(const std::vector<camera3_stream_t*> &videoStreams, bool *ha
 status_t GraphConfigManager::
 mapStillStreamToKey(const std::vector<camera3_stream_t*> &stillStreams, bool *hasStillStream)
 {
-    CheckError(!hasStillStream, UNKNOWN_ERROR, "hasStillStream is nullptr");
+    CheckAndLogError(!hasStillStream, UNKNOWN_ERROR,
+                     "hasStillStream is nullptr");
 
     int blobNum = stillStreams.size();
     LOG2("blobNum:%d", blobNum);
@@ -402,7 +406,8 @@ status_t GraphConfigManager::getCsiBeOutput(GCSS::GraphConfigNode &queryResult,
     GraphConfigNode result = {};
     MediaType type = enableStill ? IMGU_STILL : IMGU_VIDEO;
     std::shared_ptr<GraphConfig> graph = mGraphConfigMap[type];
-    CheckError(graph == nullptr, UNKNOWN_ERROR, "Graph config is nullptr");
+    CheckAndLogError(graph == nullptr, UNKNOWN_ERROR,
+                     "Graph config is nullptr");
 
     css_err_t ret = mGraphQueryManager->getGraph(&queryResult, &result);
     if (ret != css_err_none) {
@@ -411,10 +416,12 @@ status_t GraphConfigManager::getCsiBeOutput(GCSS::GraphConfigNode &queryResult,
         return UNKNOWN_ERROR;
     }
     status_t status = graph->prepare(&result, streamToSinkIdMap);
-    CheckError(status != OK, UNKNOWN_ERROR, "failed to prepare graph config");
+    CheckAndLogError(status != OK, UNKNOWN_ERROR,
+                     "failed to prepare graph config");
 
     status = graph->graphGetDimensionsByName(CSI_BE_OUTPUT, output->width, output->height);
-    CheckError(status != OK, UNKNOWN_ERROR, "Cannot find <%s> node", CSI_BE_OUTPUT);
+    CheckAndLogError(status != OK, UNKNOWN_ERROR, "Cannot find <%s> node",
+                     CSI_BE_OUTPUT);
 
     return status;
 }
@@ -436,9 +443,11 @@ status_t GraphConfigManager::matchQueryResultByCsiSetting(int *videoResultIdx,
         string streamType;
         CsiBeOutput output = {};
 
-        CheckError(mVideoQueryResults[i] == nullptr, UNKNOWN_ERROR, "the video query result %zu is nullptr", i);
+        CheckAndLogError(mVideoQueryResults[i] == nullptr, UNKNOWN_ERROR,
+                         "the video query result %zu is nullptr", i);
         status = getCsiBeOutput(*mVideoQueryResults[i], mVideoStreamToSinkIdMap, false, &output);
-        CheckError(status != OK, UNKNOWN_ERROR, "Couldn't get csi BE output for video pipe");
+        CheckAndLogError(status != OK, UNKNOWN_ERROR,
+                         "Couldn't get csi BE output for video pipe");
 
         mVideoQueryResults[i]->getValue(GCSS_KEY_STREAM_TYPE, streamType);
         if (streamType.compare("video") && streamType.compare("both")) {
@@ -456,9 +465,11 @@ status_t GraphConfigManager::matchQueryResultByCsiSetting(int *videoResultIdx,
         string streamType;
         CsiBeOutput output = {};
 
-        CheckError(mStillQueryResults[i] == nullptr, UNKNOWN_ERROR, "the still query result %zu is nullptr", i);
+        CheckAndLogError(mStillQueryResults[i] == nullptr, UNKNOWN_ERROR,
+                         "the still query result %zu is nullptr", i);
         status = getCsiBeOutput(*mStillQueryResults[i], mStillStreamToSinkIdMap, true, &output);
-        CheckError(status != OK, UNKNOWN_ERROR, "Couldn't get csi BE output for still pipe");
+        CheckAndLogError(status != OK, UNKNOWN_ERROR,
+                         "Couldn't get csi BE output for still pipe");
 
         mStillQueryResults[i]->getValue(GCSS_KEY_STREAM_TYPE, streamType);
         if (streamType.compare("still") && streamType.compare("both")) {
@@ -492,8 +503,9 @@ status_t GraphConfigManager::matchQueryResultByCsiSetting(int *videoResultIdx,
                 break;
         }
 
-        CheckError(*videoResultIdx < 0 && *stillResultIdx < 0,
-                   UNKNOWN_ERROR, "Failed to find match csi be resolution!");
+        CheckAndLogError(*videoResultIdx < 0 && *stillResultIdx < 0,
+                         UNKNOWN_ERROR,
+                         "Failed to find match csi be resolution!");
     }
 
     if (*videoResultIdx >= 0) {
@@ -532,7 +544,7 @@ status_t GraphConfigManager::configStreams(const vector<camera3_stream_t*> &stre
     std::vector<camera3_stream_t *> videoStreams;
     std::vector<camera3_stream_t *> stillStreams;
     status_t ret = sortStreamsByPipe(streams, &videoStreams, &stillStreams, &repeatedStreamIndex);
-    CheckError(ret != OK, ret, "Sort streams failed %d", ret);
+    CheckAndLogError(ret != OK, ret, "Sort streams failed %d", ret);
 
     mGraphConfigMap.clear();
 
@@ -554,8 +566,9 @@ status_t GraphConfigManager::configStreams(const vector<camera3_stream_t*> &stre
 
         // case 1: first time fails, and it just has one stream.
         // case 2: second time fails.
-        CheckError(videoStreams.size() == 1 || mForceUseOneNodeInVideoPipe,
-                   ret, "ret:%d, queryVideoGraphSettings fails", ret);
+        CheckAndLogError(
+            videoStreams.size() == 1 || mForceUseOneNodeInVideoPipe, ret,
+            "ret:%d, queryVideoGraphSettings fails", ret);
 
         LOGW("queryVideoGraphSettings fails, try again with one node enabled");
         mForceUseOneNodeInVideoPipe = true;
@@ -571,7 +584,9 @@ status_t GraphConfigManager::configStreams(const vector<camera3_stream_t*> &stre
     mapStillStreamToKey(stillStreams, &hasStillStream);
     if (hasStillStream) {
         ret = queryStillGraphSettings();
-        CheckError(ret != OK, ret, "@%s, Failed to query graph settings for still pipe", __func__);
+        CheckAndLogError(ret != OK, ret,
+                         "@%s, Failed to query graph settings for still pipe",
+                         __func__);
         mGraphConfigMap[IMGU_STILL] = std::make_shared<GraphConfig>();
         mStillGraphResult = std::unique_ptr<GraphConfigNode>(new GraphConfigNode);
     }
@@ -579,10 +594,12 @@ status_t GraphConfigManager::configStreams(const vector<camera3_stream_t*> &stre
     dumpStreamConfig(streams); // TODO: remove this when GC integration is done
 
     ret = prepareGraphConfig();
-    CheckError(ret != OK, UNKNOWN_ERROR, "Failed to prepare graph config");
+    CheckAndLogError(ret != OK, UNKNOWN_ERROR,
+                     "Failed to prepare graph config");
 
     ret = prepareMediaCtlConfig(testPatternMode);
-    CheckError(ret != OK, UNKNOWN_ERROR, "failed to prepare media control config");
+    CheckAndLogError(ret != OK, UNKNOWN_ERROR,
+                     "failed to prepare media control config");
 
     return OK;
 }
@@ -600,12 +617,14 @@ status_t GraphConfigManager::prepareGraphConfig()
 
     int videoResultIndex = -1, stillResultIndex = -1;
     status = matchQueryResultByCsiSetting(&videoResultIndex, &stillResultIndex);
-    CheckError(status != NO_ERROR, status, "failed to find match query result by csi be settings");
+    CheckAndLogError(status != NO_ERROR, status,
+                     "failed to find match query result by csi be settings");
 
     for (auto& it : mGraphConfigMap) {
         bool isVideoPipe = (it.first == IMGU_VIDEO) ? true : false;
         std::shared_ptr<GraphConfig> gc = it.second;
-        CheckError(gc.get() == nullptr, UNKNOWN_ERROR, "Graph config is nullptr");
+        CheckAndLogError(gc.get() == nullptr, UNKNOWN_ERROR,
+                         "Graph config is nullptr");
 
         GCSS::GraphConfigNode *queryResult = isVideoPipe ?
                      mVideoQueryResults[videoResultIndex] : mStillQueryResults[stillResultIndex];
@@ -667,7 +686,8 @@ status_t GraphConfigManager::prepareMediaCtlConfig(int32_t testPatternMode)
 
         if (!isCIO2MediaCtlConfiged) {
             status = gc->getCio2MediaCtlData(&cio2Format, &mMediaCtlConfigs[CIO2]);
-            CheckError(status != OK, status, "Couldn't get mediaCtl data");
+            CheckAndLogError(status != OK, status,
+                             "Couldn't get mediaCtl data");
             isCIO2MediaCtlConfiged = true;
         }
 
@@ -676,8 +696,9 @@ status_t GraphConfigManager::prepareMediaCtlConfig(int32_t testPatternMode)
                                          testPatternMode,
                                          !isVideoPipe,
                                          &mMediaCtlConfigs[type]);
-        CheckError(status != OK, status, "Couldn't get Imgu mediaCtl data for %s pipe",
-                   isVideoPipe ? "video" : "still");
+        CheckAndLogError(status != OK, status,
+                         "Couldn't get Imgu mediaCtl data for %s pipe",
+                         isVideoPipe ? "video" : "still");
     }
 
     return status;
@@ -711,7 +732,8 @@ const MediaCtlConfig* GraphConfigManager::getMediaCtlConfig(IStreamConfigProvide
  */
 std::shared_ptr<GraphConfig> GraphConfigManager::getBaseGraphConfig(MediaType type)
 {
-    CheckError(mGraphConfigMap.empty(), nullptr, "@%s, no valid graph config found", __func__);
+    CheckAndLogError(mGraphConfigMap.empty(), nullptr,
+                     "@%s, no valid graph config found", __func__);
     std::shared_ptr<GraphConfig> gc = nullptr;
 
     if (type == CIO2) {
@@ -728,7 +750,8 @@ std::shared_ptr<GraphConfig> GraphConfigManager::getBaseGraphConfig(MediaType ty
         return nullptr;
     }
 
-    CheckError(gc.get() == nullptr, nullptr, "Failed to acquire GraphConfig!!- BUG");
+    CheckAndLogError(gc.get() == nullptr, nullptr,
+                     "Failed to acquire GraphConfig!!- BUG");
 
     gc->init(0);
     return gc;

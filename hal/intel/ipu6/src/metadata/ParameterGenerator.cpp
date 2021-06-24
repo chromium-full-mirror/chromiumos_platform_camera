@@ -31,8 +31,12 @@
 
 namespace icamera {
 
-#define CHECK_REQUEST_ID(id) CheckError((id < 0), UNKNOWN_ERROR, "%s: error request id %ld!", __func__, id);
-#define CHECK_SEQUENCE(id) CheckError((id < 0), UNKNOWN_ERROR, "%s: error sequence %ld!", __func__, id);
+#define CHECK_REQUEST_ID(id)                                               \
+    CheckAndLogError((id < 0), UNKNOWN_ERROR, "%s: error request id %ld!", \
+                     __func__, id);
+#define CHECK_SEQUENCE(id)                                               \
+    CheckAndLogError((id < 0), UNKNOWN_ERROR, "%s: error sequence %ld!", \
+                     __func__, id);
 
 ParameterGenerator::ParameterGenerator(int cameraId) :
     mCameraId(cameraId),
@@ -109,7 +113,7 @@ int ParameterGenerator::saveParameters(long sequence, long requestId, const Para
 
 void ParameterGenerator::updateParameters(long sequence, const Parameters *param)
 {
-    CheckError(!param, VOID_VALUE, "The param is nullptr!");
+    CheckAndLogError(!param, VOID_VALUE, "The param is nullptr!");
 
     LOG2("%s, sequence %ld", __func__, sequence);
 
@@ -178,7 +182,8 @@ void ParameterGenerator::updateParameters(long sequence, const Parameters *param
 
 int ParameterGenerator::getParameters(long sequence, Parameters *param, bool resultOnly)
 {
-    CheckError((param == nullptr), UNKNOWN_ERROR, "nullptr to get param!");
+    CheckAndLogError((param == nullptr), UNKNOWN_ERROR,
+                     "nullptr to get param!");
 
     if (!resultOnly) {
         AutoMutex l(mParamsLock);
@@ -235,8 +240,9 @@ int ParameterGenerator::generateParametersL(long sequence, Parameters *params)
 int ParameterGenerator::updateWithAiqResultsL(long sequence, Parameters *params)
 {
     const AiqResult *aiqResult = AiqResultStorage::getInstance(mCameraId)->getAiqResult(sequence);
-    CheckError((aiqResult == nullptr), UNKNOWN_ERROR,
-           "%s Aiq result of sequence %ld does not exist", __func__, sequence);
+    CheckAndLogError((aiqResult == nullptr), UNKNOWN_ERROR,
+                     "%s Aiq result of sequence %ld does not exist", __func__,
+                     sequence);
 
     // Update AE related parameters
     camera_ae_state_t aeState = aiqResult->mAeResults.exposures[0].converged ?
@@ -368,8 +374,9 @@ int ParameterGenerator::updateTonemapCurve(long sequence, Parameters *params)
         return OK;
 
     const AiqResult *aiqResult = AiqResultStorage::getInstance(mCameraId)->getAiqResult(sequence);
-    CheckError((aiqResult == nullptr), UNKNOWN_ERROR,
-               "%s Aiq result of sequence %ld does not exist", __func__, sequence);
+    CheckAndLogError((aiqResult == nullptr), UNKNOWN_ERROR,
+                     "%s Aiq result of sequence %ld does not exist", __func__,
+                     sequence);
     const cca::cca_gbce_params &gbceResults = aiqResult->mGbceResults;
 
     int multiplier = gbceResults.gamma_lut_size / mTonemapMaxCurvePoints;

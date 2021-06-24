@@ -67,7 +67,7 @@ int CameraHal::init()
     }
 
     int ret = PlatformData::init();
-    CheckError(ret != OK, NO_INIT, "PlatformData init failed");
+    CheckAndLogError(ret != OK, NO_INIT, "PlatformData init failed");
 
     mState = HAL_INIT;
 
@@ -102,7 +102,7 @@ int CameraHal::deviceOpen(int cameraId)
     PERF_CAMERA_ATRACE();
 
     AutoMutex l(mLock);
-    CheckError(mState == HAL_UNINIT, NO_INIT,"HAL is not initialized");
+    CheckAndLogError(mState == HAL_UNINIT, NO_INIT, "HAL is not initialized");
 
     //Create the camera device that will be freed in close
     if (mCameraDevices[cameraId]) {

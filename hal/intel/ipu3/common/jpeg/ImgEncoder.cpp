@@ -54,10 +54,12 @@ bool ImgEncoder::encodeSync(EncodePackage& package)
                     package.input->height() == package.output->height();
     bool sameSizeButRotate = package.input->width() == package.output->height() &&
                              package.input->height() == package.output->width();
-    CheckError(!sameSize && !sameSizeButRotate,
-               0, "@%s, ImgEncoder::encodeSync failed: input size != output size, %d, %d, %d, %d",
-               __FUNCTION__, package.input->width(), package.input->height(),
-               package.output->width(), package.output->height());
+    CheckAndLogError(!sameSize && !sameSizeButRotate, 0,
+                     "@%s, ImgEncoder::encodeSync failed: input size != output "
+                     "size, %d, %d, %d, %d",
+                     __FUNCTION__, package.input->width(),
+                     package.input->height(), package.output->width(),
+                     package.output->height());
 
     std::lock_guard<std::mutex> l(mEncodeLock);
     auto srcBuf = package.input;

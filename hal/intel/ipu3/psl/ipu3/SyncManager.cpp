@@ -526,8 +526,10 @@ status_t SyncManager::handleSOF(MessageFrameEvent msg)
         int mode = mCapInfo->getSensorTestPatternMode(mQueuedSettings[0]->testPatternMode);
 
         status = mSensorOp->setTestPattern(mode);
-        CheckError((status != NO_ERROR), status, "@%s, Fail to set test pattern mode = %d [%d]!",
-                    __FUNCTION__, mQueuedSettings[0]->testPatternMode, status);
+        CheckAndLogError((status != NO_ERROR), status,
+                         "@%s, Fail to set test pattern mode = %d [%d]!",
+                         __FUNCTION__, mQueuedSettings[0]->testPatternMode,
+                         status);
 
         /**
          * Mark the exposure id where this settings should be in effect.

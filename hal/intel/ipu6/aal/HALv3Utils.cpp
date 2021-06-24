@@ -117,8 +117,8 @@ int fillHALStreams(int cameraId, const camera3_stream_t& camera3Stream, icamera:
     LOG1("@%s, cameraId:%d", __func__, cameraId);
 
     stream->format = HALFormatToV4l2Format(cameraId, camera3Stream.format, camera3Stream.usage);
-    CheckError(stream->format == -1, icamera::BAD_VALUE, "unsupported format %x",
-               camera3Stream.format);
+    CheckAndLogError(stream->format == -1, icamera::BAD_VALUE,
+                     "unsupported format %x", camera3Stream.format);
 
     // For rotation cases, aal needs to get the psl output mapping to user requirement.
     if (getRotationDegrees(camera3Stream) > 0) {

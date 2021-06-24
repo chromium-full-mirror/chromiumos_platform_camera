@@ -42,7 +42,7 @@ IntelTNR7US::~IntelTNR7US() {
         int32_t requestHandle =
             mCommon.getShmMemHandle(static_cast<void*>(mTnrRequestInfo), GPU_ALGO_SHM);
         int ret = mCommon.requestSync(IPC_GPU_TNR_DEINIT, requestHandle);
-        CheckError(!ret, VOID_VALUE, "@%s, requestSync fails", __func__);
+        CheckAndLogError(!ret, VOID_VALUE, "@%s, requestSync fails", __func__);
         mCommon.freeShmMem(mTnrRequestInfoMem, GPU_ALGO_SHM);
     }
 }
@@ -54,7 +54,7 @@ int IntelTNR7US::init(int width, int height, TnrType type) {
     mTnrRequestInfoMem.mSize = sizeof(TnrRequestInfo);
     bool ret = mCommon.allocShmMem(mTnrRequestInfoMem.mName, mTnrRequestInfoMem.mSize,
                                    &mTnrRequestInfoMem, GPU_ALGO_SHM);
-    CheckError(!ret, UNKNOWN_ERROR, "@%s, allocShmMem fails", __func__);
+    CheckAndLogError(!ret, UNKNOWN_ERROR, "@%s, allocShmMem fails", __func__);
     mTnrRequestInfo = static_cast<TnrRequestInfo*>(mTnrRequestInfoMem.mAddr);
 
     initName = "/TnrInit" + std::to_string(personal) + "Shm";
@@ -86,11 +86,13 @@ int IntelTNR7US::init(int width, int height, TnrType type) {
 int IntelTNR7US::runTnrFrame(const void* inBufAddr, void* outBufAddr, uint32_t inBufSize,
                              uint32_t outBufSize, Tnr7Param* tnrParam, bool syncUpdate, int fd) {
     LOG1("%s type:%d", __func__, mTnrType);
-    CheckError(!inBufAddr || !outBufAddr || !tnrParam, UNKNOWN_ERROR,
-               "@%s, invalid data buffer or parameter buffer", __func__);
+    CheckAndLogError(!inBufAddr || !outBufAddr || !tnrParam, UNKNOWN_ERROR,
+                     "@%s, invalid data buffer or parameter buffer", __func__);
     int32_t inHandle = mCommon.getShmMemHandle(const_cast<void*>(inBufAddr), GPU_ALGO_SHM);
-    CheckError(inHandle < 0, UNKNOWN_ERROR, "@%s, can't find inBuf handle", __func__);
-    CheckError(mParamMems.mAddr != tnrParam, UNKNOWN_ERROR, "@%s, invalid tnr parameter", __func__);
+    CheckAndLogError(inHandle < 0, UNKNOWN_ERROR,
+                     "@%s, can't find inBuf handle", __func__);
+    CheckAndLogError(mParamMems.mAddr != tnrParam, UNKNOWN_ERROR,
+                     "@%s, invalid tnr parameter", __func__);
 
     if (fd >= 0) {
         LOG1("%s type:%d using usr buffer fd: %d", __func__, mTnrType, fd);
@@ -99,8 +101,8 @@ int IntelTNR7US::runTnrFrame(const void* inBufAddr, void* outBufAddr, uint32_t i
         mTnrRequestInfo->outHandle =
             mCommon.getShmMemHandle(static_cast<void*>(outBufAddr), GPU_ALGO_SHM);
     }
-    CheckError(mTnrRequestInfo->outHandle < 0, UNKNOWN_ERROR, "@%s, can't init outBuf handle",
-               __func__);
+    CheckAndLogError(mTnrRequestInfo->outHandle < 0, UNKNOWN_ERROR,
+                     "@%s, can't init outBuf handle", __func__);
 
     mTnrRequestInfo->inHandle = inHandle;
     mTnrRequestInfo->paramHandle = mParamMems.mHandle;
@@ -119,7 +121,7 @@ int IntelTNR7US::runTnrFrame(const void* inBufAddr, void* outBufAddr, uint32_t i
         mCommon.deregisterGbmBuffer(mTnrRequestInfo->outHandle, GPU_ALGO_SHM);
     }
 
-    CheckError(!ret, OK, "@%s, run tnr fails", __func__);
+    CheckAndLogError(!ret, OK, "@%s, run tnr fails", __func__);
 
     return OK;
 }
@@ -133,7 +135,7 @@ void* IntelTNR7US::allocCamBuf(uint32_t bufSize, int id) {
     shm.mName = initName.c_str();
     shm.mSize = bufSize;
     bool ret = mCommon.allocShmMem(shm.mName, shm.mSize, &shm, GPU_ALGO_SHM);
-    CheckError(!ret, nullptr, "@%s, allocShmMem fails", __func__);
+    CheckAndLogError(!ret, nullptr, "@%s, allocShmMem fails", __func__);
     mTnrRequestInfo->surfaceHandle = shm.mHandle;
     mTnrRequestInfo->type = mTnrType;
     mTnrRequestInfo->cameraId = mCameraId;
@@ -171,7 +173,7 @@ Tnr7Param* IntelTNR7US::allocTnr7ParamBuf() {
     mParamMems.mName = initName.c_str();
     mParamMems.mSize = sizeof(Tnr7Param);
     bool ret = mCommon.allocShmMem(mParamMems.mName, mParamMems.mSize, &mParamMems, GPU_ALGO_SHM);
-    CheckError(!ret, nullptr, "@%s, allocShmMem fails", __func__);
+    CheckAndLogError(!ret, nullptr, "@%s, allocShmMem fails", __func__);
 
     return reinterpret_cast<Tnr7Param*>(mParamMems.mAddr);
 }
@@ -189,7 +191,9 @@ int IntelTNR7US::asyncParamUpdate(int gain, bool forceUpdate) {
     IPC_CMD cmd = mTnrType > 0 ? IPC_GPU_TNR_THREAD2_PARAM_UPDATE : IPC_GPU_TNR_PARAM_UPDATE;
     bool ret = mCommon.requestSync(cmd, requestHandle);
 
-    CheckError(!ret, UNKNOWN_ERROR, "@%s, IPC_GPU_TNR_PARAM_UPDATE requestSync fails", __func__);
+    CheckAndLogError(!ret, UNKNOWN_ERROR,
+                     "@%s, IPC_GPU_TNR_PARAM_UPDATE requestSync fails",
+                     __func__);
     return OK;
 }
 

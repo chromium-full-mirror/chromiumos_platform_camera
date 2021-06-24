@@ -83,7 +83,8 @@ status_t ImageProcessorCore::cropFrame(const std::shared_ptr<camera3::Camera3Buf
                                  srcI420BufU, srcW / 2,
                                  srcI420BufV, srcW / 2,
                                  srcW, srcH);
-    CheckError((ret != 0), UNKNOWN_ERROR, "@%s, NV12ToI420 fails", __func__);
+    CheckAndLogError((ret != 0), UNKNOWN_ERROR, "@%s, NV12ToI420 fails",
+                     __func__);
 
     std::unique_ptr<uint8_t[]> dstI420BufUV;
     unsigned int dstI420BufUVSize = dstW * dstH / 2;
@@ -98,7 +99,8 @@ status_t ImageProcessorCore::cropFrame(const std::shared_ptr<camera3::Camera3Buf
                                 (srcW - dstW) / 2, (srcH - dstH) / 2,
                                 srcW, srcH, dstW, dstH,
                                 libyuv::RotationMode::kRotate0, libyuv::FourCC::FOURCC_I420);
-    CheckError(ret != 0, UNKNOWN_ERROR, "@%s, ConvertToI420 fails", __func__);
+    CheckAndLogError(ret != 0, UNKNOWN_ERROR, "@%s, ConvertToI420 fails",
+                     __func__);
 
     uint8_t* dstBufUV = static_cast<uint8_t*>(output->data()) + dstW * dstH;
     libyuv::MergeUVPlane(dstI420BufU, (dstW + 1) / 2,
@@ -151,10 +153,13 @@ status_t ImageProcessorCore::rotateFrame(const std::shared_ptr<camera3::Camera3B
          __func__, input->width(), input->height(), input->v4l2Fmt(),
          output->width(), output->height(), output->v4l2Fmt());
 
-    CheckError(output->width() != input->height() || output->height() != input->width(),
-          BAD_VALUE, "output resolution mis-match [%d x %d] -> [%d x %d]",
-          input->width(), input->height(), output->width(), output->height());
-    CheckError((angle != 90 && angle != 270), BAD_VALUE, "angle value:%d is wrong", angle);
+    CheckAndLogError(
+        output->width() != input->height() ||
+            output->height() != input->width(),
+        BAD_VALUE, "output resolution mis-match [%d x %d] -> [%d x %d]",
+        input->width(), input->height(), output->width(), output->height());
+    CheckAndLogError((angle != 90 && angle != 270), BAD_VALUE,
+                     "angle value:%d is wrong", angle);
 
     const uint8_t* inBuffer = static_cast<uint8_t*>(input->data());
     uint8_t* outBuffer = static_cast<uint8_t*>(output->data());
@@ -183,7 +188,8 @@ status_t ImageProcessorCore::rotateFrame(const std::shared_ptr<camera3::Camera3B
                       I420Buffer + outW * outH, outW / 2,
                       I420Buffer + outW * outH * 5 / 4, outW / 2,
                       inW, inH, mRotationMode[angle]);
-        CheckError((ret < 0), UNKNOWN_ERROR, "@%s, rotate fail [%d]!", __func__, ret);
+        CheckAndLogError((ret < 0), UNKNOWN_ERROR, "@%s, rotate fail [%d]!",
+                         __func__, ret);
 
         ret = libyuv::I420ToNV12(I420Buffer, outW,
                                  I420Buffer + outW * outH, outW / 2,
@@ -191,7 +197,8 @@ status_t ImageProcessorCore::rotateFrame(const std::shared_ptr<camera3::Camera3B
                                  outBuffer, outStride,
                                  outBuffer +  outStride * outH, outStride,
                                  outW, outH);
-        CheckError((ret < 0), UNKNOWN_ERROR, "@%s, convert fail [%d]!", __func__, ret);
+        CheckAndLogError((ret < 0), UNKNOWN_ERROR, "@%s, convert fail [%d]!",
+                         __func__, ret);
     }
 
     return OK;

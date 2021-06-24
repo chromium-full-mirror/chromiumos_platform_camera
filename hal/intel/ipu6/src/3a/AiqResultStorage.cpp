@@ -91,8 +91,9 @@ const AiqStatistics* AiqResultStorage::getAndLockAiqStatistics()
     if (mCurrentAiqStatsIndex == -1)
         return nullptr;
 
-    CheckError(mAiqStatistics[mCurrentAiqStatsIndex].mSequence == -1,
-          nullptr, "Invalid sequence id -1 of stored aiq statistics");
+    CheckAndLogError(mAiqStatistics[mCurrentAiqStatsIndex].mSequence == -1,
+                     nullptr,
+                     "Invalid sequence id -1 of stored aiq statistics");
 
     mAiqStatistics[mCurrentAiqStatsIndex].mInUse = true;
     return &mAiqStatistics[mCurrentAiqStatsIndex];

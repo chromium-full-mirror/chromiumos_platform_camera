@@ -79,8 +79,8 @@ int PolicyManager::addExecutorBundle(const std::vector<std::string>& executors,
     AutoMutex lock(mPolicyLock);
 
     uint8_t size = executors.size();
-    CheckError(size != depths.size(),
-          BAD_VALUE, "The size for executor and its depth not match");
+    CheckAndLogError(size != depths.size(), BAD_VALUE,
+                     "The size for executor and its depth not match");
 
     int maxDepth = 0;
     std::map<std::string, ExecutorData> executorData;

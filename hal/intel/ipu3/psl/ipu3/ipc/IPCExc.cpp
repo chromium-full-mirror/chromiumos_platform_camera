@@ -36,7 +36,8 @@ static void fillIpcParams(const cmc_parsed_analog_gain_conversion_t& gain_conver
                             ia_exc_analog_gain_to_sensor_units_params* params)
 {
     LOG1("@%s, params:%p", __FUNCTION__, params);
-    CheckError(params == nullptr, VOID_VALUE, "@%s, params is nullptr", __FUNCTION__);
+    CheckAndLogError(params == nullptr, VOID_VALUE, "@%s, params is nullptr",
+                     __FUNCTION__);
 
     params->base = gain_conversion;
     cmc_parsed_analog_gain_conversion_t* base = &params->base;
@@ -64,7 +65,8 @@ static void fillConversionParams(ia_exc_analog_gain_to_sensor_units_params& gain
                             cmc_parsed_analog_gain_conversion_t** libInput)
 {
     LOG1("@%s", __FUNCTION__);
-    CheckError(libInput == nullptr, VOID_VALUE, "@%s, libInput is nullptr", __FUNCTION__);
+    CheckAndLogError(libInput == nullptr, VOID_VALUE,
+                     "@%s, libInput is nullptr", __FUNCTION__);
 
     cmc_parsed_analog_gain_conversion_t* base = &gain_conversion.base;
 
@@ -89,7 +91,8 @@ bool IPCExc::clientFlattenGainToSensor(const cmc_parsed_analog_gain_conversion_t
                             ia_exc_analog_gain_to_sensor_units_params* params)
 {
     LOG1("@%s, params:%p", __FUNCTION__, params);
-    CheckError(params == nullptr, false, "@%s, params is nullptr", __FUNCTION__);
+    CheckAndLogError(params == nullptr, false, "@%s, params is nullptr",
+                     __FUNCTION__);
 
     fillIpcParams(gain_conversion, params);
 
@@ -102,7 +105,8 @@ bool IPCExc::serverUnflattenGainToSensor(ia_exc_analog_gain_to_sensor_units_para
                              cmc_parsed_analog_gain_conversion_t** libInput)
 {
     LOG1("@%s, libInput:%p", __FUNCTION__, libInput);
-    CheckError(libInput == nullptr, false, "@%s, libInput is nullptr", __FUNCTION__);
+    CheckAndLogError(libInput == nullptr, false, "@%s, libInput is nullptr",
+                     __FUNCTION__);
 
     fillConversionParams(params, libInput);
 
@@ -114,7 +118,8 @@ bool IPCExc::clientFlattenSensorToGain(const cmc_parsed_analog_gain_conversion_t
                              ia_exc_analog_gain_to_sensor_units_params* params)
 {
     LOG1("@%s, params:%p", __FUNCTION__, params);
-    CheckError(params == nullptr, false, "@%s, params is nullptr", __FUNCTION__);
+    CheckAndLogError(params == nullptr, false, "@%s, params is nullptr",
+                     __FUNCTION__);
 
     fillIpcParams(gain_conversion, params);
 
@@ -128,7 +133,8 @@ bool IPCExc::serverUnflattenSensorToGain(ia_exc_analog_gain_to_sensor_units_para
                              cmc_parsed_analog_gain_conversion_t** libInput)
 {
     LOG1("@%s, libInput:%p", __FUNCTION__, libInput);
-    CheckError(libInput == nullptr, false, "@%s, libInput is nullptr", __FUNCTION__);
+    CheckAndLogError(libInput == nullptr, false, "@%s, libInput is nullptr",
+                     __FUNCTION__);
 
     fillConversionParams(params, libInput);
 

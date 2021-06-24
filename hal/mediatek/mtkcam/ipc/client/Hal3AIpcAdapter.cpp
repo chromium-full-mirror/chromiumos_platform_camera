@@ -312,7 +312,8 @@ MINT32 Hal3AIpcAdapter::MetaSetFlatten(const std::vector<MetaSet_T*>& requestQ,
 
 MINT32 Hal3AIpcAdapter::config(const ConfigInfo_T& rConfigInfo) {
   LOG1("%s ++++", __func__);
-  CheckError(mInitialized == false, NO_INIT, "@%s, init fails", __FUNCTION__);
+  CheckAndLogError(mInitialized == false, NO_INIT, "@%s, init fails",
+                   __FUNCTION__);
   hal3a_config_params* params =
       static_cast<hal3a_config_params*>(mMemConfig.mAddr);
   int appRet = 0, halRet = 0;
@@ -374,32 +375,35 @@ MINT32 Hal3AIpcAdapter::config(const ConfigInfo_T& rConfigInfo) {
   params->rConfigInfo.matFromAct = rConfigInfo.matFromAct;
   params->rConfigInfo.matToAct = rConfigInfo.matToAct;
 
-  CheckError(sendRequest(IPC_HAL3A_CONFIG, &mMemConfig) == false,
-             FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
+  CheckAndLogError(sendRequest(IPC_HAL3A_CONFIG, &mMemConfig) == false,
+                   FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
 
   LOG1("%s ----", __func__);
   return MTRUE;
 }
 
 MINT32 Hal3AIpcAdapter::start(MINT32 i4StartNum) {
-  CheckError(mInitialized == false, NO_INIT, "@%s, init fails", __FUNCTION__);
-  hal3a_start_params* params =
-      static_cast<hal3a_start_params*>(mMemStart.mAddr);
-  params->i4StartNum = i4StartNum;
-  LOG1("i4StartNum: %d start++++", i4StartNum);
+    CheckAndLogError(mInitialized == false, NO_INIT, "@%s, init fails",
+                     __FUNCTION__);
+    hal3a_start_params* params =
+        static_cast<hal3a_start_params*>(mMemStart.mAddr);
+    params->i4StartNum = i4StartNum;
+    LOG1("i4StartNum: %d start++++", i4StartNum);
 
-  CheckError(sendRequest(IPC_HAL3A_START, &mMemStart) == false,
-             FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
+    CheckAndLogError(sendRequest(IPC_HAL3A_START, &mMemStart) == false,
+                     FAILED_TRANSACTION, "@%s, requestSync fails",
+                     __FUNCTION__);
 
-  LOG1("i4StartNum:0x%x start----", i4StartNum);
-  return 0;
+    LOG1("i4StartNum:0x%x start----", i4StartNum);
+    return 0;
 }
 
 MINT32 Hal3AIpcAdapter::stop() {
   LOG1("%s ++++", __func__);
-  CheckError(mInitialized == false, NO_INIT, "@%s, init fails", __FUNCTION__);
-  CheckError(sendRequest(IPC_HAL3A_STOP, &mMemStop) == false,
-             FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
+  CheckAndLogError(mInitialized == false, NO_INIT, "@%s, init fails",
+                   __FUNCTION__);
+  CheckAndLogError(sendRequest(IPC_HAL3A_STOP, &mMemStop) == false,
+                   FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
 
   if (m_pLsc2ImgBuf) {
     m_pLsc2ImgBuf->unlockBuf("LSC_P2_CPU");
@@ -411,21 +415,22 @@ MINT32 Hal3AIpcAdapter::stop() {
 }
 
 MVOID Hal3AIpcAdapter::stopStt() {
-  CheckError(sendRequest(IPC_HAL3A_STOP_STT, &mMemStopStt) == false, VOID_VALUE,
-             "@%s, requestSync fails", __FUNCTION__);
-  return;
+    CheckAndLogError(sendRequest(IPC_HAL3A_STOP_STT, &mMemStopStt) == false,
+                     VOID_VALUE, "@%s, requestSync fails", __FUNCTION__);
+    return;
 }
 
 MINT32 Hal3AIpcAdapter::set(const std::vector<MetaSet_T*>& requestQ) {
   LOG1("%s ++++", __func__);
-  CheckError(mInitialized == false, NO_INIT, "@%s, init fails", __FUNCTION__);
+  CheckAndLogError(mInitialized == false, NO_INIT, "@%s, init fails",
+                   __FUNCTION__);
   hal3a_set_params* params = static_cast<hal3a_set_params*>(mMemSet.mAddr);
   int ret = MTRUE;
   ret = MetaSetFlatten(requestQ, &params->requestQ);
   if (ret == MFALSE)
     return MFALSE;
-  CheckError(sendRequest(IPC_HAL3A_SET, &mMemSet, IPC_GROUP_SET) == false,
-             FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
+  CheckAndLogError(sendRequest(IPC_HAL3A_SET, &mMemSet, IPC_GROUP_SET) == false,
+                   FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
 
   LOG1("%s ----", __func__);
   return MTRUE;
@@ -437,7 +442,8 @@ MINT32 Hal3AIpcAdapter::setIsp(MINT32 flowType,
                                MetaSet_T* pResult) {
   LOG1("%s ++++", __func__);
   std::lock_guard<std::mutex> l(mIspMutex);
-  CheckError(mInitialized == false, NO_INIT, "@%s, init fails", __FUNCTION__);
+  CheckAndLogError(mInitialized == false, NO_INIT, "@%s, init fails",
+                   __FUNCTION__);
   hal3a_setisp_params* params =
       static_cast<hal3a_setisp_params*>(mMemSetIsp.mAddr);
 
@@ -508,7 +514,7 @@ MINT32 Hal3AIpcAdapter::setIsp(MINT32 flowType,
   }
   params->p2tuningbuf_handle = it_p2tuningbuf_handle->second;
 
-  CheckError(
+  CheckAndLogError(
       sendRequest(IPC_HAL3A_SETISP, &mMemSetIsp, IPC_GROUP_SETISP) == false,
       FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
 
@@ -575,14 +581,15 @@ MINT32 Hal3AIpcAdapter::setIsp(MINT32 flowType,
 }
 MINT32 Hal3AIpcAdapter::startRequestQ(const std::vector<MetaSet_T*>& requestQ) {
   LOG1("%s ++++", __func__);
-  CheckError(mInitialized == false, NO_INIT, "@%s, init fails", __FUNCTION__);
+  CheckAndLogError(mInitialized == false, NO_INIT, "@%s, init fails",
+                   __FUNCTION__);
   hal3a_start_requestq_params* params =
       static_cast<hal3a_start_requestq_params*>(mMemStartRequestQ.mAddr);
   int ret = MTRUE;
   ret = MetaSetFlatten(requestQ, &params->requestQ);
   if (ret == MFALSE)
     return MFALSE;
-  CheckError(
+  CheckAndLogError(
       sendRequest(IPC_HAL3A_START_REQUEST_Q, &mMemStartRequestQ) == false,
       FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
 
@@ -593,15 +600,17 @@ MINT32 Hal3AIpcAdapter::startRequestQ(const std::vector<MetaSet_T*>& requestQ) {
 MINT32 Hal3AIpcAdapter::startCapture(const std::vector<MetaSet_T*>& requestQ,
                                      MINT32 i4StartNum) {
   LOG1("%s ++++", __func__);
-  CheckError(mInitialized == false, NO_INIT, "@%s, init fails", __FUNCTION__);
+  CheckAndLogError(mInitialized == false, NO_INIT, "@%s, init fails",
+                   __FUNCTION__);
   hal3a_start_capture_params* params =
       static_cast<hal3a_start_capture_params*>(mMemStartCapture.mAddr);
   int ret = MTRUE;
   ret = MetaSetFlatten(requestQ, &params->requestQ);
   if (ret == MFALSE)
     return MFALSE;
-  CheckError(sendRequest(IPC_HAL3A_START_CAPTURE, &mMemStartCapture) == false,
-             FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
+  CheckAndLogError(
+      sendRequest(IPC_HAL3A_START_CAPTURE, &mMemStartCapture) == false,
+      FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
 
   LOG1("%s ----", __func__);
   return MTRUE;
@@ -609,14 +618,15 @@ MINT32 Hal3AIpcAdapter::startCapture(const std::vector<MetaSet_T*>& requestQ,
 
 MINT32 Hal3AIpcAdapter::preset(const std::vector<MetaSet_T*>& requestQ) {
   LOG1("%s ++++", __func__);
-  CheckError(mInitialized == false, NO_INIT, "@%s, init fails", __FUNCTION__);
+  CheckAndLogError(mInitialized == false, NO_INIT, "@%s, init fails",
+                   __FUNCTION__);
   hal3a_preset_params* params =
       static_cast<hal3a_preset_params*>(mMempPreset.mAddr);
   int ret = MTRUE;
   ret = MetaSetFlatten(requestQ, &params->requestQ);
   if (ret == MFALSE)
     return MFALSE;
-  CheckError(
+  CheckAndLogError(
       sendRequest(IPC_HAL3A_PRESET, &mMempPreset, IPC_GROUP_PRESET) == false,
       FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
 
@@ -766,9 +776,9 @@ MINT32 Hal3AIpcAdapter::send3ACtrlHalSensor(hal3a_send3actrl_params* params,
   }
 
   params->e3ACtrl = e3ACtrl;
-  CheckError(sendRequest(IPC_HAL3A_SEND3ACTRL, &mMemSend3aCtrl,
-                         IPC_GROUP_3ACTRL) == false,
-             FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
+  CheckAndLogError(sendRequest(IPC_HAL3A_SEND3ACTRL, &mMemSend3aCtrl,
+                               IPC_GROUP_3ACTRL) == false,
+                   FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
 
   return MTRUE;
 }
@@ -789,9 +799,9 @@ MINT32 Hal3AIpcAdapter::send3ACtrlPeriSensor(hal3a_send3actrl_params* params,
   }
 
   params->e3ACtrl = e3ACtrl;
-  CheckError(sendRequest(IPC_HAL3A_SEND3ACTRL, &mMemSend3aCtrl,
-                         IPC_GROUP_3ACTRL) == false,
-             FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
+  CheckAndLogError(sendRequest(IPC_HAL3A_SEND3ACTRL, &mMemSend3aCtrl,
+                               IPC_GROUP_3ACTRL) == false,
+                   FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
 
   return MTRUE;
 }
@@ -801,7 +811,8 @@ MINT32 Hal3AIpcAdapter::send3ACtrl(E3ACtrl_T e3ACtrl,
                                    MINTPTR i4Arg2) {
   /* Set Static Info is Initialization */
   if (e3ACtrl != E3ACtrl_IPC_SetStaticInfo) {
-    CheckError(mInitialized == false, NO_INIT, "@%s, init fails", __FUNCTION__);
+      CheckAndLogError(mInitialized == false, NO_INIT, "@%s, init fails",
+                       __FUNCTION__);
   }
 
   hal3a_getsensorparam_params* params_gsp =
@@ -868,9 +879,10 @@ MINT32 Hal3AIpcAdapter::send3ACtrl(E3ACtrl_T e3ACtrl,
       }
 
       params->e3ACtrl = e3ACtrl;
-      CheckError(sendRequest(IPC_HAL3A_SEND3ACTRL, &mMemSend3aCtrl,
-                             IPC_GROUP_3ACTRL) == false,
-                 FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
+      CheckAndLogError(sendRequest(IPC_HAL3A_SEND3ACTRL, &mMemSend3aCtrl,
+                                   IPC_GROUP_3ACTRL) == false,
+                       FAILED_TRANSACTION, "@%s, requestSync fails",
+                       __FUNCTION__);
       memcpy(pAEInitExpoSetting, &params->arg1.initExpoSetting,
              sizeof(AEInitExpoSetting_T));
       break;
@@ -885,9 +897,10 @@ MINT32 Hal3AIpcAdapter::send3ACtrl(E3ACtrl_T e3ACtrl,
         return MFALSE;
       }
       params->e3ACtrl = e3ACtrl;
-      CheckError(sendRequest(IPC_HAL3A_SEND3ACTRL, &mMemSend3aCtrl,
-                             IPC_GROUP_3ACTRL) == false,
-                 FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
+      CheckAndLogError(sendRequest(IPC_HAL3A_SEND3ACTRL, &mMemSend3aCtrl,
+                                   IPC_GROUP_3ACTRL) == false,
+                       FAILED_TRANSACTION, "@%s, requestSync fails",
+                       __FUNCTION__);
       break;
 
     case E3ACtrl_IPC_Set_MetaStaticInfo:
@@ -900,9 +913,10 @@ MINT32 Hal3AIpcAdapter::send3ACtrl(E3ACtrl_T e3ACtrl,
         return MFALSE;
       }
       params->e3ACtrl = e3ACtrl;
-      CheckError(sendRequest(IPC_HAL3A_SEND3ACTRL, &mMemSend3aCtrl,
-                             IPC_GROUP_3ACTRL) == false,
-                 FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
+      CheckAndLogError(sendRequest(IPC_HAL3A_SEND3ACTRL, &mMemSend3aCtrl,
+                                   IPC_GROUP_3ACTRL) == false,
+                       FAILED_TRANSACTION, "@%s, requestSync fails",
+                       __FUNCTION__);
       break;
 
     case E3ACtrl_IPC_SetDynamicInfo:
@@ -915,9 +929,10 @@ MINT32 Hal3AIpcAdapter::send3ACtrl(E3ACtrl_T e3ACtrl,
         return MFALSE;
       }
       params->e3ACtrl = e3ACtrl;
-      CheckError(sendRequest(IPC_HAL3A_SEND3ACTRL, &mMemSend3aCtrl,
-                             IPC_GROUP_3ACTRL) == false,
-                 FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
+      CheckAndLogError(sendRequest(IPC_HAL3A_SEND3ACTRL, &mMemSend3aCtrl,
+                                   IPC_GROUP_3ACTRL) == false,
+                       FAILED_TRANSACTION, "@%s, requestSync fails",
+                       __FUNCTION__);
       break;
 
     case E3ACtrl_IPC_SetDynamicInfoEx:
@@ -931,15 +946,16 @@ MINT32 Hal3AIpcAdapter::send3ACtrl(E3ACtrl_T e3ACtrl,
         return MFALSE;
       }
       params->e3ACtrl = e3ACtrl;
-      CheckError(sendRequest(IPC_HAL3A_SEND3ACTRL, &mMemSend3aCtrl,
-                             IPC_GROUP_3ACTRL) == false,
-                 FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
+      CheckAndLogError(sendRequest(IPC_HAL3A_SEND3ACTRL, &mMemSend3aCtrl,
+                                   IPC_GROUP_3ACTRL) == false,
+                       FAILED_TRANSACTION, "@%s, requestSync fails",
+                       __FUNCTION__);
       break;
 
     case E3ACtrl_IPC_AE_GetSensorParamEnable:
       params_gsp->arg1.enabled = i4Arg1;
       params_gsp->e3ACtrl = e3ACtrl;
-      CheckError(
+      CheckAndLogError(
           sendRequest(IPC_HAL3A_GETSENSORPARAM_ENABLE, &mMemGetSensorParam,
                       IPC_GROUP_CB_SENSOR_ENABLE) == false,
           FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
@@ -948,9 +964,10 @@ MINT32 Hal3AIpcAdapter::send3ACtrl(E3ACtrl_T e3ACtrl,
     case E3ACtrl_IPC_AE_GetSensorParam:
       params_gsp->arg2.timeoutMs = i4Arg2;
       params_gsp->e3ACtrl = e3ACtrl;
-      CheckError(sendRequest(IPC_HAL3A_GETSENSORPARAM, &mMemGetSensorParam,
-                             IPC_GROUP_GETSENSORPARAM) == false,
-                 FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
+      CheckAndLogError(
+          sendRequest(IPC_HAL3A_GETSENSORPARAM, &mMemGetSensorParam,
+                      IPC_GROUP_GETSENSORPARAM) == false,
+          FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
       if (!i4Arg1) {
         IPC_LOGE("Argument for IPC Sensor Parameter is NULL");
         return MFALSE;
@@ -962,9 +979,10 @@ MINT32 Hal3AIpcAdapter::send3ACtrl(E3ACtrl_T e3ACtrl,
     case E3ACtrl_IPC_P1_NotifyCbEnable:
       params_ncb->arg1.enabled = i4Arg1;
       params_ncb->e3ACtrl = e3ACtrl;
-      CheckError(sendRequest(IPC_HAL3A_NOTIFYCB_ENABLE, &mMemNotifyCallBack,
-                             IPC_GROUP_CB_SENSOR_ENABLE) == false,
-                 FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
+      CheckAndLogError(
+          sendRequest(IPC_HAL3A_NOTIFYCB_ENABLE, &mMemNotifyCallBack,
+                      IPC_GROUP_CB_SENSOR_ENABLE) == false,
+          FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
       break;
 
     case E3ACtrl_IPC_P1_NotifyCb:
@@ -972,9 +990,10 @@ MINT32 Hal3AIpcAdapter::send3ACtrl(E3ACtrl_T e3ACtrl,
       params_ncb->arg1.enabled = i4Arg1;
       params_ncb->e3ACtrl = e3ACtrl;
 
-      CheckError(sendRequest(IPC_HAL3A_NOTIFYCB, &mMemNotifyCallBack,
-                             IPC_GROUP_NOTIFYCB) == false,
-                 FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
+      CheckAndLogError(sendRequest(IPC_HAL3A_NOTIFYCB, &mMemNotifyCallBack,
+                                   IPC_GROUP_NOTIFYCB) == false,
+                       FAILED_TRANSACTION, "@%s, requestSync fails",
+                       __FUNCTION__);
 
       rc = params_ncb->callback_ret;
       if (params_ncb->arg1.enabled != 1 && params_ncb->callback_ret) {
@@ -1016,13 +1035,15 @@ MINT32 Hal3AIpcAdapter::send3ACtrl(E3ACtrl_T e3ACtrl,
       params_tp->e3ACtrl = e3ACtrl;
 
       if (IPC_IspTuningMgr_T::cmdTERMINATED == i4Arg1) {
-        CheckError(sendRequest(IPC_HAL3A_TUNINGPIPE_TERM, &mMemTuningPipe,
-                               IPC_GROUP_TUNINGPIPE_TERM) == false,
-                   FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
+          CheckAndLogError(
+              sendRequest(IPC_HAL3A_TUNINGPIPE_TERM, &mMemTuningPipe,
+                          IPC_GROUP_TUNINGPIPE_TERM) == false,
+              FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
       } else {
-        CheckError(sendRequest(IPC_HAL3A_TUNINGPIPE, &mMemTuningPipe,
-                               IPC_GROUP_TUNINGPIPE) == false,
-                   FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
+          CheckAndLogError(sendRequest(IPC_HAL3A_TUNINGPIPE, &mMemTuningPipe,
+                                       IPC_GROUP_TUNINGPIPE) == false,
+                           FAILED_TRANSACTION, "@%s, requestSync fails",
+                           __FUNCTION__);
       }
       // P1nodeImp just use magicnum and response so now no handle bufVa
       if (IPC_IspTuningMgr_T::cmdWAIT_REQUEST == i4Arg1) {
@@ -1069,9 +1090,10 @@ MINT32 Hal3AIpcAdapter::send3ACtrl(E3ACtrl_T e3ACtrl,
         pTuningDrvBufVa = pTuning->bufVa;
       }
       params_tp->e3ACtrl = e3ACtrl;
-      CheckError(sendRequest(IPC_HAL3A_TUNINGPIPE, &mMemTuningPipe,
-                             IPC_GROUP_TUNINGPIPE) == false,
-                 FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
+      CheckAndLogError(sendRequest(IPC_HAL3A_TUNINGPIPE, &mMemTuningPipe,
+                                   IPC_GROUP_TUNINGPIPE) == false,
+                       FAILED_TRANSACTION, "@%s, requestSync fails",
+                       __FUNCTION__);
 
       if (IPC_IspTuningMgr_T::cmdRESULT_FROM_FMK == i4Arg1) {
         if (params_tp->flag) {
@@ -1110,9 +1132,10 @@ MINT32 Hal3AIpcAdapter::send3ACtrl(E3ACtrl_T e3ACtrl,
         params_sp->arg1.ipcMetaBuf.bufFd = mSttIPCHandles[pMeta1->bufFd];
       }
       params_sp->e3ACtrl = e3ACtrl;
-      CheckError(sendRequest(IPC_HAL3A_STTPIPE, &mMemSttPipe,
-                             IPC_GROUP_STTPIPE) == false,
-                 FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
+      CheckAndLogError(sendRequest(IPC_HAL3A_STTPIPE, &mMemSttPipe,
+                                   IPC_GROUP_STTPIPE) == false,
+                       FAILED_TRANSACTION, "@%s, requestSync fails",
+                       __FUNCTION__);
 
       // to response p1 whether enque 3A failed or not
       if (IPC_Metabuf1_T::cmdENQUE_FROM_DRV == pMeta1->cmd) {
@@ -1152,9 +1175,10 @@ MINT32 Hal3AIpcAdapter::send3ACtrl(E3ACtrl_T e3ACtrl,
       }
 
       params_sp2->e3ACtrl = e3ACtrl;
-      CheckError(sendRequest(IPC_HAL3A_STT2PIPE, &mMemStt2Pipe,
-                             IPC_GROUP_STT2PIPE) == false,
-                 FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
+      CheckAndLogError(sendRequest(IPC_HAL3A_STT2PIPE, &mMemStt2Pipe,
+                                   IPC_GROUP_STT2PIPE) == false,
+                       FAILED_TRANSACTION, "@%s, requestSync fails",
+                       __FUNCTION__);
 
       // to response p1 whether enque 3A failed or not
       if (IPC_Metabuf2_T::cmdENQUE_FROM_DRV == pMeta2->cmd) {
@@ -1183,9 +1207,10 @@ MINT32 Hal3AIpcAdapter::send3ACtrl(E3ACtrl_T e3ACtrl,
       }
       memcpy(&params_hwe->arg1.evt, evt, sizeof(v4l2::P1Event));
       params_hwe->e3ACtrl = e3ACtrl;
-      CheckError(sendRequest(IPC_HAL3A_HWEVENT, &mMemHwEvent,
-                             IPC_GROUP_HWEVENT) == false,
-                 FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
+      CheckAndLogError(sendRequest(IPC_HAL3A_HWEVENT, &mMemHwEvent,
+                                   IPC_GROUP_HWEVENT) == false,
+                       FAILED_TRANSACTION, "@%s, requestSync fails",
+                       __FUNCTION__);
       break;
 
     case E3ACtrl_SetAEPlineLimitation:
@@ -1204,9 +1229,10 @@ MINT32 Hal3AIpcAdapter::send3ACtrl(E3ACtrl_T e3ACtrl,
       params_pl->ipcLimitParams.u4IncreaseShutter_x100 =
           rLimitParams.u4IncreaseShutter_x100;
 
-      CheckError(sendRequest(IPC_HAL3A_AEPLINELIMIT, &mMemAePlineLimit,
-                             IPC_GROUP_AEPLINELIMIT) == false,
-                 FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
+      CheckAndLogError(sendRequest(IPC_HAL3A_AEPLINELIMIT, &mMemAePlineLimit,
+                                   IPC_GROUP_AEPLINELIMIT) == false,
+                       FAILED_TRANSACTION, "@%s, requestSync fails",
+                       __FUNCTION__);
       break;
 
     case E3ACtrl_IPC_AF_ExchangeLensConfig:
@@ -1221,9 +1247,10 @@ MINT32 Hal3AIpcAdapter::send3ACtrl(E3ACtrl_T e3ACtrl,
           pLensConfig->cmd == IPC_LensConfig_T::ASK_TO_STOP) {
         params_le->e3ACtrl = e3ACtrl;
         params_le->lensConfig.cmd = pLensConfig->cmd;
-        CheckError(sendRequest(IPC_HAL3A_AFLENS_ENABLE, &mMemAfLensEnable,
-                               IPC_GROUP_AF_ENABLE) == false,
-                   FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
+        CheckAndLogError(sendRequest(IPC_HAL3A_AFLENS_ENABLE, &mMemAfLensEnable,
+                                     IPC_GROUP_AF_ENABLE) == false,
+                         FAILED_TRANSACTION, "@%s, requestSync fails",
+                         __FUNCTION__);
         pLensConfig->cmd = params_le->lensConfig.cmd;
         pLensConfig->succeeded = params_le->lensConfig.succeeded;
       } else {
@@ -1236,9 +1263,10 @@ MINT32 Hal3AIpcAdapter::send3ACtrl(E3ACtrl_T e3ACtrl,
           params_lc->lensConfig.succeeded = pLensConfig->succeeded;
         }
 
-        CheckError(sendRequest(IPC_HAL3A_AFLENSCONFIG, &mMemAfLensConfig,
-                               IPC_GROUP_AF) == false,
-                   FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
+        CheckAndLogError(sendRequest(IPC_HAL3A_AFLENSCONFIG, &mMemAfLensConfig,
+                                     IPC_GROUP_AF) == false,
+                         FAILED_TRANSACTION, "@%s, requestSync fails",
+                         __FUNCTION__);
 
         pLensConfig->cmd = params_lc->lensConfig.cmd;
         pLensConfig->succeeded = params_lc->lensConfig.succeeded;
@@ -1252,16 +1280,18 @@ MINT32 Hal3AIpcAdapter::send3ACtrl(E3ACtrl_T e3ACtrl,
       params->arg1.enabled = i4Arg1;
       params->arg2.enabled = i4Arg2;
       params->e3ACtrl = e3ACtrl;
-      CheckError(sendRequest(IPC_HAL3A_SEND3ACTRL, &mMemSend3aCtrl,
-                             IPC_GROUP_3ACTRL) == false,
-                 FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
+      CheckAndLogError(sendRequest(IPC_HAL3A_SEND3ACTRL, &mMemSend3aCtrl,
+                                   IPC_GROUP_3ACTRL) == false,
+                       FAILED_TRANSACTION, "@%s, requestSync fails",
+                       __FUNCTION__);
       break;
 
     case E3ACtrl_GetIsAEStable:
       params->e3ACtrl = e3ACtrl;
-      CheckError(sendRequest(IPC_HAL3A_SEND3ACTRL, &mMemSend3aCtrl,
-                             IPC_GROUP_3ACTRL) == false,
-                 FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
+      CheckAndLogError(sendRequest(IPC_HAL3A_SEND3ACTRL, &mMemSend3aCtrl,
+                                   IPC_GROUP_3ACTRL) == false,
+                       FAILED_TRANSACTION, "@%s, requestSync fails",
+                       __FUNCTION__);
       *(reinterpret_cast<MUINT32*>(i4Arg1)) = params->arg1.AeStable;
       break;
 
@@ -1274,8 +1304,9 @@ MINT32 Hal3AIpcAdapter::send3ACtrl(E3ACtrl_T e3ACtrl,
 
 MBOOL Hal3AIpcAdapter::notifyP1PwrOn() {
   LOG1("%s ++++", __func__);
-  CheckError(mInitialized == false, false, "@%s, init fails", __FUNCTION__);
-  CheckError(
+  CheckAndLogError(mInitialized == false, false, "@%s, init fails",
+                   __FUNCTION__);
+  CheckAndLogError(
       sendRequest(IPC_HAL3A_NOTIFY_P1_PWR_ON, &mMemNofifyP1PwrOn) == false,
       false, "@%s, requestSync fails", __FUNCTION__);
   LOG1("%s ----", __func__);
@@ -1284,12 +1315,12 @@ MBOOL Hal3AIpcAdapter::notifyP1PwrOn() {
 
 MVOID Hal3AIpcAdapter::notifyP1Done(MUINT32 u4MagicNum, MVOID* pvArg) {
   LOG1("%s ++++", __func__);
-  CheckError(mInitialized == false, VOID_VALUE, "@%s, init fails",
-             __FUNCTION__);
+  CheckAndLogError(mInitialized == false, VOID_VALUE, "@%s, init fails",
+                   __FUNCTION__);
   hal3a_notify_p1_pwr_done_params* params =
       static_cast<hal3a_notify_p1_pwr_done_params*>(mMemNofifyP1Done.mAddr);
   params->u4MagicNum = u4MagicNum;
-  CheckError(
+  CheckAndLogError(
       sendRequest(IPC_HAL3A_NOTIFY_P1_PWR_DONE, &mMemNofifyP1Done) == false,
       VOID_VALUE, "@%s, requestSync fails", __FUNCTION__);
   LOG1("%s ----", __func__);
@@ -1298,8 +1329,9 @@ MVOID Hal3AIpcAdapter::notifyP1Done(MUINT32 u4MagicNum, MVOID* pvArg) {
 
 MBOOL Hal3AIpcAdapter::notifyP1PwrOff() {
   LOG1("%s ++++", __func__);
-  CheckError(mInitialized == false, false, "@%s, init fails", __FUNCTION__);
-  CheckError(
+  CheckAndLogError(mInitialized == false, false, "@%s, init fails",
+                   __FUNCTION__);
+  CheckAndLogError(
       sendRequest(IPC_HAL3A_NOTIFY_P1_PWR_OFF, &mMemNofifyP1PwrOff) == false,
       false, "@%s, requestSync fails", __FUNCTION__);
   LOG1("%s ----", __func__);
@@ -1308,13 +1340,13 @@ MBOOL Hal3AIpcAdapter::notifyP1PwrOff() {
 
 MVOID Hal3AIpcAdapter::setSensorMode(MINT32 i4SensorMode) {
   LOG1("%s ++++", __func__);
-  CheckError(mInitialized == false, VOID_VALUE, "@%s, init fails",
-             __FUNCTION__);
+  CheckAndLogError(mInitialized == false, VOID_VALUE, "@%s, init fails",
+                   __FUNCTION__);
   hal3a_set_sensor_mode_params* params =
       static_cast<hal3a_set_sensor_mode_params*>(mMemSetSensorMode.mAddr);
   params->i4SensorMode = i4SensorMode;
 
-  CheckError(
+  CheckAndLogError(
       sendRequest(IPC_HAL3A_SET_SENSOR_MODE, &mMemSetSensorMode) == false,
       VOID_VALUE, "@%s, requestSync fails", __FUNCTION__);
   LOG1("%s ----", __func__);
@@ -1323,7 +1355,8 @@ MVOID Hal3AIpcAdapter::setSensorMode(MINT32 i4SensorMode) {
 
 MINT32 Hal3AIpcAdapter::attachCb(IHal3ACb::ECb_T eId, IHal3ACb* pCb) {
   int rc;
-  CheckError(mInitialized == false, NO_INIT, "@%s, init fails", __FUNCTION__);
+  CheckAndLogError(mInitialized == false, NO_INIT, "@%s, init fails",
+                   __FUNCTION__);
   hal3a_attach_cb_params* params =
       static_cast<hal3a_attach_cb_params*>(mMemAttachCB.mAddr);
   params->eId = eId;
@@ -1333,8 +1366,8 @@ MINT32 Hal3AIpcAdapter::attachCb(IHal3ACb::ECb_T eId, IHal3ACb* pCb) {
   if (rc < 0)
     return rc;
 
-  CheckError(sendRequest(IPC_HAL3A_ATTACH_CB, &mMemAttachCB) == false,
-             FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
+  CheckAndLogError(sendRequest(IPC_HAL3A_ATTACH_CB, &mMemAttachCB) == false,
+                   FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
   LOG1("%s eId:%d ---- ", __func__, eId);
 
   return 0;
@@ -1342,14 +1375,15 @@ MINT32 Hal3AIpcAdapter::attachCb(IHal3ACb::ECb_T eId, IHal3ACb* pCb) {
 
 MINT32 Hal3AIpcAdapter::detachCb(IHal3ACb::ECb_T eId, IHal3ACb* pCb) {
   LOG1("%s ++++", __func__);
-  CheckError(mInitialized == false, NO_INIT, "@%s, init fails", __FUNCTION__);
+  CheckAndLogError(mInitialized == false, NO_INIT, "@%s, init fails",
+                   __FUNCTION__);
   hal3a_detach_cb_params* params =
       static_cast<hal3a_detach_cb_params*>(mMemDetachCB.mAddr);
   params->eId = eId;
   params->pCb = pCb;
 
-  CheckError(sendRequest(IPC_HAL3A_DETACH_CB, &mMemDetachCB) == false,
-             FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
+  CheckAndLogError(sendRequest(IPC_HAL3A_DETACH_CB, &mMemDetachCB) == false,
+                   FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
 
   m_CbSet[eId].removeCallback(pCb);
   LOG1("%s ----", __func__);
@@ -1357,26 +1391,27 @@ MINT32 Hal3AIpcAdapter::detachCb(IHal3ACb::ECb_T eId, IHal3ACb* pCb) {
 }
 
 void Hal3AIpcAdapter::runCallback(int msg) {
-  CheckError(mInitialized == false, VOID_VALUE, "@%s, init fails",
-             __FUNCTION__);
-  hal3a_attach_cb_params* params =
-      static_cast<hal3a_attach_cb_params*>(mMemAttachCB.mAddr);
-  msg = params->eId;
+    CheckAndLogError(mInitialized == false, VOID_VALUE, "@%s, init fails",
+                     __FUNCTION__);
+    hal3a_attach_cb_params* params =
+        static_cast<hal3a_attach_cb_params*>(mMemAttachCB.mAddr);
+    msg = params->eId;
 
-  m_CbSet[msg].doNotifyCb(msg, params->cb_result[msg]._ext1,
-                          params->cb_result[msg]._ext2,
-                          params->cb_result[msg]._ext3);
+    m_CbSet[msg].doNotifyCb(msg, params->cb_result[msg]._ext1,
+                            params->cb_result[msg]._ext2,
+                            params->cb_result[msg]._ext3);
 
-  LOG1("%s msg:%d", __func__, msg);
+    LOG1("%s msg:%d", __func__, msg);
 }
 
 MINT32 Hal3AIpcAdapter::get(MUINT32 frmId, MetaSet_T* result) {
   LOG1("%s ++++", __func__);
-  CheckError(mInitialized == false, NO_INIT, "@%s, init fails", __FUNCTION__);
+  CheckAndLogError(mInitialized == false, NO_INIT, "@%s, init fails",
+                   __FUNCTION__);
   hal3a_get_params* params = static_cast<hal3a_get_params*>(mMemGet.mAddr);
   params->frmId = frmId;
-  CheckError(sendRequest(IPC_HAL3A_GET, &mMemGet, IPC_GROUP_GET) == false,
-             FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
+  CheckAndLogError(sendRequest(IPC_HAL3A_GET, &mMemGet, IPC_GROUP_GET) == false,
+                   FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
 
   /* unflatten result3A to P1node*/
   result->MagicNum = params->result.MagicNum;
@@ -1402,13 +1437,14 @@ MINT32 Hal3AIpcAdapter::get(MUINT32 frmId, MetaSet_T* result) {
 
 MINT32 Hal3AIpcAdapter::getCur(MUINT32 frmId, MetaSet_T* result) {
   LOG1("%s ++++", __func__);
-  CheckError(mInitialized == false, NO_INIT, "@%s, init fails", __FUNCTION__);
+  CheckAndLogError(mInitialized == false, NO_INIT, "@%s, init fails",
+                   __FUNCTION__);
   hal3a_get_cur_params* params =
       static_cast<hal3a_get_cur_params*>(mMemGetCur.mAddr);
   params->frmId = frmId;
 
-  CheckError(sendRequest(IPC_HAL3A_GET_CUR, &mMemGetCur) == false,
-             FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
+  CheckAndLogError(sendRequest(IPC_HAL3A_GET_CUR, &mMemGetCur) == false,
+                   FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
 
   /* unflatten result3a here. */
   result->MagicNum = params->result.MagicNum;
@@ -1434,7 +1470,8 @@ MINT32 Hal3AIpcAdapter::getCur(MUINT32 frmId, MetaSet_T* result) {
 
 MBOOL Hal3AIpcAdapter::setFDInfoOnActiveArray(MVOID* prFaces) {
   LOG1("%s ++++", __func__);
-  CheckError(mInitialized == false, NO_INIT, "@%s, init fails", __FUNCTION__);
+  CheckAndLogError(mInitialized == false, NO_INIT, "@%s, init fails",
+                   __FUNCTION__);
   hal3a_set_fdInfo_params* params =
       static_cast<hal3a_set_fdInfo_params*>(mMemSetFDInfo.mAddr);
 
@@ -1447,7 +1484,7 @@ MBOOL Hal3AIpcAdapter::setFDInfoOnActiveArray(MVOID* prFaces) {
     memcpy(&(params->facePoseInfo[i]), &(rFaceMeta->posInfo[i]),
            sizeof(MtkFaceInfo));
   }
-  CheckError(
+  CheckAndLogError(
       sendRequest(IPC_HAL3A_SET_FDINFO, &mMemSetFDInfo, IPC_GROUP_FD) == false,
       FAILED_TRANSACTION, "@%s, requestSync fails", __FUNCTION__);
 

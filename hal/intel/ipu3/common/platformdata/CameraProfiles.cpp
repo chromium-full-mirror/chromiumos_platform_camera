@@ -61,14 +61,15 @@ CameraProfiles::CameraProfiles(CameraHWInfo *cameraHWInfo) :
 status_t CameraProfiles::init()
 {
     LOG1("@%s", __FUNCTION__);
-    CheckError(!mCameraCommon, BAD_VALUE, "CameraHWInfo is nullptr");
+    CheckAndLogError(!mCameraCommon, BAD_VALUE, "CameraHWInfo is nullptr");
 
     struct stat st;
     int pathExists = stat(DEFAULT_XML_FILE_NAME, &st);
-    CheckError(pathExists != 0, UNKNOWN_ERROR, "Error, could not find camera3_profiles.xml!");
+    CheckAndLogError(pathExists != 0, UNKNOWN_ERROR,
+                     "Error, could not find camera3_profiles.xml!");
 
     status_t status = mCameraCommon->init(getMediaDeviceByName(CIO2_MEDIA_DEVICE));
-    CheckError(status != OK, UNKNOWN_ERROR, "Failed to init camera HW");
+    CheckAndLogError(status != OK, UNKNOWN_ERROR, "Failed to init camera HW");
 
     // Assumption: Driver enumeration order will match the CameraId
     // CameraId in camera_profiles.xml. Main camera is always at
@@ -103,13 +104,16 @@ int CameraProfiles::getXmlCameraId(int cameraId) const
 
 bool CameraProfiles::isFaceAeEnabled(int cameraId) const
 {
-    CheckError(cameraId < 0 || cameraId >= MAX_CAMERAS, false, "cameraId:%d is incorrect", cameraId);
+    CheckAndLogError(cameraId < 0 || cameraId >= MAX_CAMERAS, false,
+                     "cameraId:%d is incorrect", cameraId);
     return mFaceAeEnabled[cameraId];
 }
 
 int CameraProfiles::faceEngineRunningInterval(int cameraId) const
 {
-    CheckError(cameraId < 0 || cameraId >= MAX_CAMERAS, FACE_ENGINE_DEFAULT_RUNNING_INTERVAL, "cameraId:%d is incorrect", cameraId);
+    CheckAndLogError(cameraId < 0 || cameraId >= MAX_CAMERAS,
+                     FACE_ENGINE_DEFAULT_RUNNING_INTERVAL,
+                     "cameraId:%d is incorrect", cameraId);
     return mFaceEngineRunningInterval[cameraId];
 }
 
@@ -142,7 +146,8 @@ CameraProfiles::~CameraProfiles()
 const CameraCapInfo *CameraProfiles::getCameraCapInfo(int cameraId)
 {
     auto it = std::find(mCameraIdPool.begin(), mCameraIdPool.end(), cameraId);
-    CheckError(it == mCameraIdPool.end(), nullptr, "Failed to find match camera id.");
+    CheckAndLogError(it == mCameraIdPool.end(), nullptr,
+                     "Failed to find match camera id.");
 
     return mCaps[cameraId];
 }
@@ -1392,8 +1397,9 @@ void CameraProfiles::handleCommon(const char *name, const char **atts)
         return;
     }
 
-    CheckError(atts[1] == nullptr, VOID_VALUE, "atts[1] is nullptr");
-    CheckError(mXmlSensorIndex >= MAX_CAMERAS, VOID_VALUE, "mXmlSensorIndex:%d >= MAX_CAMERAS", mXmlSensorIndex);
+    CheckAndLogError(atts[1] == nullptr, VOID_VALUE, "atts[1] is nullptr");
+    CheckAndLogError(mXmlSensorIndex >= MAX_CAMERAS, VOID_VALUE,
+                     "mXmlSensorIndex:%d >= MAX_CAMERAS", mXmlSensorIndex);
 
     if (strcmp(name, "faceAeEnabled") == 0) {
         if (strcmp("true", atts[1]) == 0) {
@@ -1422,7 +1428,8 @@ void CameraProfiles::handleAndroidStaticMetadata(const char *name, const char **
     if (!validateStaticMetadata(name, atts))
         return;
 
-    CheckError(mStaticMeta.empty(), VOID_VALUE, "Camera isn't added, unable to get the static metadata");
+    CheckAndLogError(mStaticMeta.empty(), VOID_VALUE,
+                     "Camera isn't added, unable to get the static metadata");
     camera_metadata_t *currentMeta = nullptr;
     currentMeta = mStaticMeta.at(mXmlSensorIndex);
 
@@ -1471,13 +1478,15 @@ void CameraProfiles::handleAndroidStaticMetadata(const char *name, const char **
             count = parseGenericTypes(atts[1], tagInfo, METADATASIZE, mMetadataCache);
         }
     }
-    CheckError(count == 0, VOID_VALUE, "Error parsing static tag %s. ignoring", tagInfo->name);
+    CheckAndLogError(count == 0, VOID_VALUE,
+                     "Error parsing static tag %s. ignoring", tagInfo->name);
 
     LOG1("@%s: writing static tag %s: count %d", __FUNCTION__, tagInfo->name, count);
 
     status_t res = add_camera_metadata_entry(currentMeta, tagInfo->value, mMetadataCache, count);
-    CheckError(res != OK, VOID_VALUE, "call add_camera_metadata_entry fail for tag:%s",
-        get_camera_metadata_tag_name(tagInfo->value));
+    CheckAndLogError(res != OK, VOID_VALUE,
+                     "call add_camera_metadata_entry fail for tag:%s",
+                     get_camera_metadata_tag_name(tagInfo->value));
 
     // save the key to mCharacteristicsKeys used to update the
     // REQUEST_AVAILABLE_CHARACTERISTICS_KEYS
@@ -1585,7 +1594,8 @@ void CameraProfiles::handleSensorInfo(const char *name, const char **atts)
             }
 
             tablePtr = strtok_r(nullptr, ",", &savePtr);
-            CheckError(tablePtr == nullptr, VOID_VALUE, "Driver test pattern is nullptr");
+            CheckAndLogError(tablePtr == nullptr, VOID_VALUE,
+                             "Driver test pattern is nullptr");
 
             info->mTestPatternMap[mode] = atoi(tablePtr);
 
@@ -1684,7 +1694,8 @@ int CameraProfiles::readNvmDataFromDevice(int cameraId)
     LOG1("@%s", __FUNCTION__);
 
     IPU3CameraCapInfo *info = static_cast<IPU3CameraCapInfo*>(mCaps[cameraId]);
-    CheckError(!info, UNKNOWN_ERROR, "Could not get Camera capability info");
+    CheckAndLogError(!info, UNKNOWN_ERROR,
+                     "Could not get Camera capability info");
 
     // if the nvm data have been read from the device, skip to read it again.
     if (info->isNvmDataValid()) {
@@ -1712,7 +1723,8 @@ int CameraProfiles::readNvmDataFromDevice(int cameraId)
     LOG1("NVM data for %s is located in %s", sensorName.c_str(), nvmDataPath.c_str());
 
     FILE *nvmFile = fopen(nvmDataPath.c_str(), "rb");
-    CheckError(!nvmFile, UNKNOWN_ERROR, "Failed to open NVM file: %s", nvmDataPath.c_str());
+    CheckAndLogError(!nvmFile, UNKNOWN_ERROR, "Failed to open NVM file: %s",
+                     nvmDataPath.c_str());
 
     fseek(nvmFile, 0, SEEK_END);
     int maxNvmDataSize = info->getMaxNvmDataSize();
@@ -1727,7 +1739,7 @@ int CameraProfiles::readNvmDataFromDevice(int cameraId)
     LOG1("NVM data size: %d bytes", nvmDataSize);
     int ret = fread(nvmData.get(), nvmDataSize, 1, nvmFile);
     fclose(nvmFile);
-    CheckError(ret == 0, UNKNOWN_ERROR, "Cannot read nvm data");
+    CheckAndLogError(ret == 0, UNKNOWN_ERROR, "Cannot read nvm data");
 
     info->setNvmData(nvmData, nvmDataSize);
 

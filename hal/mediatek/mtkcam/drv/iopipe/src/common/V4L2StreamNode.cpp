@@ -302,9 +302,9 @@ status_t V4L2StreamNode::setFormatLocked(
     }
   }
   status_t ret = mNode->SetFormat(v4l2_fmt);
-  CheckError(ret != NO_ERROR, ret, "SetFormat failed");
+  CheckAndLogError(ret != NO_ERROR, ret, "SetFormat failed");
   ret = mNode->GetFormat(&mFormat);
-  CheckError(ret != NO_ERROR, ret, "GetFormat failed");
+  CheckAndLogError(ret != NO_ERROR, ret, "GetFormat failed");
 
   // should not use incomplete v4l2_fmt
   // update for meta data
@@ -331,7 +331,8 @@ status_t V4L2StreamNode::setupBuffersLocked() {
   status_t ret = mNode->SetupBuffers(
       (mBufferPoolSize > 0) ? mBufferPoolSize : STREAM_NODE_BUFFERS, false,
       mType, &mBuffers);
-  CheckError(ret != NO_ERROR, ret, "@%s SetupBuffers failed", __FUNCTION__);
+  CheckAndLogError(ret != NO_ERROR, ret, "@%s SetupBuffers failed",
+                   __FUNCTION__);
   for (auto& it : mBuffers) {
     if (it.Length(0) != mFormat.SizeImage(0)) {
       LOGW("@%s incosistent size (%zu vs %zu)", __FUNCTION__, it.Length(0),
@@ -342,13 +343,15 @@ status_t V4L2StreamNode::setupBuffersLocked() {
       std::vector<void*> mapped;
       ret = mNode->MapMemory(it.Index(), PROT_READ | PROT_WRITE, MAP_SHARED,
                              &mapped);
-      CheckError(ret != NO_ERROR || mapped.size() > 1, ret, "MapMemory failed");
+      CheckAndLogError(ret != NO_ERROR || mapped.size() > 1, ret,
+                       "MapMemory failed");
       LOGI("MapMemory: idx: %d, addr: %p", it.Index(), mapped[0]);
       mMappAddrs.insert(std::make_pair(it.Index(), mapped[0]));
 
       std::vector<int> fds;
       ret = mNode->ExportFrame(it.Index(), &fds);
-      CheckError(ret != NO_ERROR || fds.size() > 1, ret, "ExportFrame failed");
+      CheckAndLogError(ret != NO_ERROR || fds.size() > 1, ret,
+                       "ExportFrame failed");
       LOGI("ExportFrame: idx: %d, fd: %d", it.Index(), fds[0]);
 
       mFds.insert(std::make_pair(it.Index(), fds[0]));
@@ -368,7 +371,7 @@ status_t V4L2StreamNode::startLocked() {
   }
 
   status_t ret = mNode->Start();
-  CheckError(ret != NO_ERROR, ret, "Start failed");
+  CheckAndLogError(ret != NO_ERROR, ret, "Start failed");
   mState = StreamNodeState::STARTED;
   return NO_ERROR;
 }
@@ -382,7 +385,7 @@ status_t V4L2StreamNode::stopLocked() {
   }
 
   status_t ret = mNode->Stop();
-  CheckError(ret != NO_ERROR, ret, "Stop failed");
+  CheckAndLogError(ret != NO_ERROR, ret, "Stop failed");
   mState = StreamNodeState::STOPED;
   return NO_ERROR;
 }
@@ -420,8 +423,8 @@ status_t V4L2StreamNode::setTransformLocked(BufInfo const& buf) {
     ret = mNode->GetControl(V4L2_CID_ROTATE, &mTransform);
     if (ret == NO_ERROR && mTransform != rotation) {
       ret = mNode->SetControl(V4L2_CID_ROTATE, rotation);
-      CheckError(ret != NO_ERROR, ret, "@%s SetControl:Rotate failed",
-                 __FUNCTION__);
+      CheckAndLogError(ret != NO_ERROR, ret, "@%s SetControl:Rotate failed",
+                       __FUNCTION__);
       mTransform = transform;
     }
   }
@@ -451,7 +454,7 @@ status_t V4L2StreamNode::start() {
   LOGD("+");
 
   if (mState == StreamNodeState::PREPARED) {
-    CheckError(startLocked() != NO_ERROR, -EINVAL, "start failed");
+      CheckAndLogError(startLocked() != NO_ERROR, -EINVAL, "start failed");
   } else {
     LOGE("Invalid device state");
     return -EINVAL;
@@ -467,7 +470,7 @@ status_t V4L2StreamNode::stop() {
 
   if ((mState == StreamNodeState::PREPARED) ||
       (mState == StreamNodeState::STARTED)) {
-    CheckError(stopLocked() != NO_ERROR, -EINVAL, "stop failed");
+      CheckAndLogError(stopLocked() != NO_ERROR, -EINVAL, "stop failed");
   } else {
     LOGE("Invalid device state");
     return -EINVAL;
@@ -487,16 +490,16 @@ status_t V4L2StreamNode::setFormatAnGetdBuffers(
     LOGE("Invalid device state");
     return -EINVAL;
   }
-  CheckError(!buffers->empty(), -EINVAL, "invalid buffers");
+  CheckAndLogError(!buffers->empty(), -EINVAL, "invalid buffers");
 
   if (mState == StreamNodeState::OPEN) {
-    CheckError(setFormatLocked(imgParam) != NO_ERROR, -EINVAL,
-               "setFormat failed");
+      CheckAndLogError(setFormatLocked(imgParam) != NO_ERROR, -EINVAL,
+                       "setFormat failed");
   }
   if (mState == StreamNodeState::CONFIGURED) {
     mType = V4L2_MEMORY_MMAP;
-    CheckError(setupBuffersLocked() != NO_ERROR, -EINVAL,
-               "setupBuffers failed");
+    CheckAndLogError(setupBuffersLocked() != NO_ERROR, -EINVAL,
+                     "setupBuffers failed");
   }
 
   for (auto& it : mBuffers) {
@@ -510,11 +513,12 @@ status_t V4L2StreamNode::setFormatAnGetdBuffers(
         PortBufInfo_v1(fd->second, (uintptr_t)va->second, 0, 0, 0);
     std::shared_ptr<NSCam::ImageBufferHeap> heap =
         ImageBufferHeap::create(LOG_TAG, *imgParam, port);
-    CheckError(heap == nullptr, -EINVAL, "create heap failed");
+    CheckAndLogError(heap == nullptr, -EINVAL, "create heap failed");
 
     if (imgParam->imgFormat != eImgFmt_BLOB) {
       std::shared_ptr<IImageBuffer> buffer = heap->createImageBuffer();
-      CheckError(buffer == nullptr, -EINVAL, "create image buffer failed");
+      CheckAndLogError(buffer == nullptr, -EINVAL,
+                       "create image buffer failed");
       if (mType == V4L2_MEMORY_MMAP) {
         mMMAPedImages[buffer.get()] = &it;
         LOGD("MMAP relationship (vb2 index, IImageBuffer)=(%d, %p)", it.Index(),
@@ -524,7 +528,7 @@ status_t V4L2StreamNode::setFormatAnGetdBuffers(
     } else {
       std::shared_ptr<IImageBuffer> buffer =
           heap->createImageBuffer_FromBlobHeap(0, imgParam->bufSize);
-      CheckError(buffer == nullptr, -EINVAL, "create meta buffer failed");
+      CheckAndLogError(buffer == nullptr, -EINVAL, "create meta buffer failed");
       if (mType == V4L2_MEMORY_MMAP) {
         mMMAPedImages[buffer.get()] = &it;
         LOGD("MMAP relationship (vb2 index, IImageBuffer)=(%d, %p)", it.Index(),
@@ -542,8 +546,8 @@ status_t V4L2StreamNode::setBufFormat(
   LOGD("+");
 
   if (mState == StreamNodeState::OPEN) {
-    CheckError(setFormatLocked(imgParam) != NO_ERROR, -EINVAL,
-               "setFormat failed");
+      CheckAndLogError(setFormatLocked(imgParam) != NO_ERROR, -EINVAL,
+                       "setFormat failed");
   } else {
     LOGE("Invalid device state");
     return -EINVAL;
@@ -558,8 +562,8 @@ status_t V4L2StreamNode::setupBuffers() {
   std::lock_guard<std::mutex> _l(mOpLock);
 
   if (mState == StreamNodeState::CONFIGURED) {
-    CheckError(setupBuffersLocked() != NO_ERROR, -EINVAL,
-               "setupBuffers failed");
+      CheckAndLogError(setupBuffersLocked() != NO_ERROR, -EINVAL,
+                       "setupBuffers failed");
   } else {
     LOGE("Invalid device state");
     return -EINVAL;
@@ -621,8 +625,8 @@ status_t V4L2StreamNode::enque(BufInfo const& buf,
         b->getImgFormat(), b->getImgSize(), bufStridesInBytes,
         bufBoundaryInBytes, b->getPlaneCount());
 
-    CheckError(setFormatLocked(&imgParam) != NO_ERROR, -EINVAL,
-               "setFormat failed");
+    CheckAndLogError(setFormatLocked(&imgParam) != NO_ERROR, -EINVAL,
+                     "setFormat failed");
     // should not use incomplete v4l2_fmt
     if (mFormat.SizeImage(0) != b->getBufSizeInBytes(0)) {
       LOGW("@%s incosistent size (%zu vs %zu)", __FUNCTION__,
@@ -630,11 +634,11 @@ status_t V4L2StreamNode::enque(BufInfo const& buf,
     }
   }
   if (mState == StreamNodeState::CONFIGURED) {
-    CheckError(setupBuffersLocked() != NO_ERROR, -EINVAL,
-               "setupBuffers failed");
+      CheckAndLogError(setupBuffersLocked() != NO_ERROR, -EINVAL,
+                       "setupBuffers failed");
   }
   if ((!lazystartLocked) && (mState == StreamNodeState::PREPARED)) {
-    CheckError(startLocked() != NO_ERROR, -EINVAL, "start failed");
+      CheckAndLogError(startLocked() != NO_ERROR, -EINVAL, "start failed");
   }
 
   /* since MMAP buffer doesn't support dynamic change buffer, the buffer
@@ -666,7 +670,8 @@ status_t V4L2StreamNode::enque(BufInfo const& buf,
     for (; it != mImageBuffers.end(); ++it) {
       if (it->second != nullptr && it->second->getFD() == b->getFD()) {
         auto search = mV4L2Buffers.find(it->first);
-        CheckError(search == mV4L2Buffers.end(), -EINVAL, "search failed");
+        CheckAndLogError(search == mV4L2Buffers.end(), -EINVAL,
+                         "search failed");
         vb = search->second;
         LOGI("Found in ImageBuffers Maps, idx: %d, vb->img(fd): %p->%p(%d)",
              it->first, vb, b, b->getFD());
@@ -793,7 +798,7 @@ status_t V4L2StreamNode::enque(BufInfo const& buf,
 
   // enque
   status_t ret = mNode->PutFrame(vb);
-  CheckError(ret != NO_ERROR, ret, "PutFrame failed");
+  CheckAndLogError(ret != NO_ERROR, ret, "PutFrame failed");
   LOGD(
       "put port=%d, name=%s, vb(index=%d, magic_num=%d, request_api=%#x) "
       "imgbuf(fd=%d, %p)",
@@ -815,15 +820,15 @@ status_t V4L2StreamNode::deque(BufInfo* p_buf) {
   timeval time;
   IImageBuffer*& buffer = buf.mBuffer;
   status_t ret = mNode->GrabFrame(&vb);
-  CheckError(ret < 0, ret, "GrabFrame failed");
+  CheckAndLogError(ret < 0, ret, "GrabFrame failed");
 
   auto v = mUsedBuffers.find(vb.Index());
-  CheckError(v == mUsedBuffers.end(), ret, "search failed");
+  CheckAndLogError(v == mUsedBuffers.end(), ret, "search failed");
   mFreeBuffers.insert(std::make_pair(vb.Index(), v->second));
   mUsedBuffers.erase(vb.Index());
 
   auto b = mImageBuffers.find(vb.Index());
-  CheckError(b == mImageBuffers.end(), ret, "search failed");
+  CheckAndLogError(b == mImageBuffers.end(), ret, "search failed");
   buffer = b->second;
 
   mImageBuffers.erase(vb.Index());

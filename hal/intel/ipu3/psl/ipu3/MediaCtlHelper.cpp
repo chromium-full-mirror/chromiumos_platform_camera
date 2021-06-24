@@ -58,7 +58,8 @@ status_t MediaCtlHelper::configure(IStreamConfigProvider &graphConfigMgr,
 
     // Handle new common config
     mMediaCtlConfig = graphConfigMgr.getMediaCtlConfig(type);
-    CheckError(mMediaCtlConfig == nullptr, UNKNOWN_ERROR, "mMediaCtlConfig is nullptr");
+    CheckAndLogError(mMediaCtlConfig == nullptr, UNKNOWN_ERROR,
+                     "mMediaCtlConfig is nullptr");
 
     status_t status = mMediaCtl->getMediaDevInfo(deviceInfo);
     if (status != NO_ERROR) {
@@ -88,17 +89,21 @@ status_t MediaCtlHelper::configure(IStreamConfigProvider &graphConfigMgr,
         MediaCtlControlParams pipeCtrl = mMediaCtlConfig->mControlParams[i];
         if (pipeCtrl.controlId == V4L2_CID_INTEL_IPU3_MODE) {
             int ctrlVal = 0;
-            CheckError(mIPU3ImguModes.find(pipeCtrl.value) == mIPU3ImguModes.end(), UNKNOWN_ERROR,
-                       "pipeCtrl.value:%d is uncorrect", pipeCtrl.value);
+            CheckAndLogError(
+                mIPU3ImguModes.find(pipeCtrl.value) == mIPU3ImguModes.end(),
+                UNKNOWN_ERROR, "pipeCtrl.value:%d is uncorrect",
+                pipeCtrl.value);
             status = mMediaCtl->queryIPU3ImguMode(pipeCtrl.entityName.c_str(),
                                                   mIPU3ImguModes[pipeCtrl.value],
                                                   &ctrlVal);
-            CheckError(status != NO_ERROR, status, "queryIPU3ImguMode fails, status:%d", status);
+            CheckAndLogError(status != NO_ERROR, status,
+                             "queryIPU3ImguMode fails, status:%d", status);
 
             status = mMediaCtl->setControl(pipeCtrl.entityName.c_str(),
                                            pipeCtrl.controlId, ctrlVal,
                                            pipeCtrl.controlName.c_str());
-            CheckError(status != NO_ERROR, status, "Cannot set PIPE_MODE control (ret = %d)", status);
+            CheckAndLogError(status != NO_ERROR, status,
+                             "Cannot set PIPE_MODE control (ret = %d)", status);
 
             break;
         }
@@ -190,9 +195,9 @@ std::map<IPU3NodeNames, std::shared_ptr<cros::V4L2VideoNode>> MediaCtlHelper::
         getConfiguredNodesPerName(IStreamConfigProvider::MediaType mediaType)
 {
     std::map<IPU3NodeNames, std::shared_ptr<cros::V4L2VideoNode>> configuredNodes;
-    CheckError((mediaType != IStreamConfigProvider::IMGU_VIDEO) &&
-               (mediaType != IStreamConfigProvider::IMGU_STILL),
-               configuredNodes, "Invalid media types: %d", mediaType);
+    CheckAndLogError((mediaType != IStreamConfigProvider::IMGU_VIDEO) &&
+                         (mediaType != IStreamConfigProvider::IMGU_STILL),
+                     configuredNodes, "Invalid media types: %d", mediaType);
 
     return mConfiguredNodesPerName;
 }

@@ -42,13 +42,13 @@
  * message
  */
 #define VOID_VALUE
-#define CheckError(condition, err_code, err_msg, args...) \
-  do {                                                    \
-    if (condition) {                                      \
-      IPC_LOGE(err_msg, ##args);                          \
-      return err_code;                                    \
-    }                                                     \
-  } while (0)
+#define CheckAndLogError(condition, err_code, err_msg, args...) \
+    do {                                                        \
+        if (condition) {                                        \
+            IPC_LOGE(err_msg, ##args);                          \
+            return err_code;                                    \
+        }                                                       \
+    } while (0)
 
 /**
  * Use to check input parameter and if failed, return err_code and print warning

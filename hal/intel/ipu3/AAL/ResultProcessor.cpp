@@ -413,8 +413,8 @@ void ResultProcessor::returnPendingBuffers(RequestState_t* reqState)
 
     for (i = 0; i < reqState->pendingOutputBuffers.size(); i++) {
         pendingBuf = reqState->pendingOutputBuffers[i];
-        CheckError(pendingBuf == nullptr, VOID_VALUE, "@%s: pendingBuf is nullptr, index: %d",
-            __func__, i);
+        CheckAndLogError(pendingBuf == nullptr, VOID_VALUE,
+                         "@%s: pendingBuf is nullptr, index: %d", __func__, i);
         processCaptureResult(reqState,pendingBuf);
     }
     reqState->pendingOutputBuffers.clear();
@@ -431,7 +431,8 @@ void ResultProcessor::processCaptureResult(RequestState_t* reqState,std::shared_
     camera3_capture_result_t result = {};
     camera3_stream_buffer_t buf = {};
     Camera3Request* request = reqState->request;
-    CheckError(request == nullptr, VOID_VALUE, "@%s: request is nullptr", __FUNCTION__);
+    CheckAndLogError(request == nullptr, VOID_VALUE, "@%s: request is nullptr",
+                     __FUNCTION__);
 
     if (!request->isInputBuffer(resultBuf)) {
         result.num_output_buffers = 1;

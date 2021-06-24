@@ -58,7 +58,8 @@ bool Intel3aMkn::init(ia_mkn_config_bits mkn_config_bits,
 {
     LOG1("@%s, mkn_config_bits:%d, mkn_section_1_size:%zu, mkn_section_2_size:%zu",
         __FUNCTION__, mkn_config_bits, mkn_section_1_size, mkn_section_2_size);
-    CheckError(mInitialized == false, false, "@%s, mInitialized is false", __FUNCTION__);
+    CheckAndLogError(mInitialized == false, false, "@%s, mInitialized is false",
+                     __FUNCTION__);
 
     mkn_init_params* params = static_cast<mkn_init_params*>(mMemInit.mAddr);
 
@@ -66,10 +67,12 @@ bool Intel3aMkn::init(ia_mkn_config_bits mkn_config_bits,
                                 mkn_section_1_size,
                                 mkn_section_2_size,
                                 params);
-    CheckError(ret == false, false, "@%s, clientFlattenInit fails", __FUNCTION__);
+    CheckAndLogError(ret == false, false, "@%s, clientFlattenInit fails",
+                     __FUNCTION__);
 
     ret = mCommon.requestSync(IPC_3A_MKN_INIT, mMemInit.mHandle);
-    CheckError(ret == false, false, "@%s, requestSync fails", __FUNCTION__);
+    CheckAndLogError(ret == false, false, "@%s, requestSync fails",
+                     __FUNCTION__);
 
     mMknHandle = params->results;
     LOG2("@%s, mMknHandle:%p", __FUNCTION__, reinterpret_cast<ia_mkn*>(mMknHandle));
@@ -80,14 +83,17 @@ bool Intel3aMkn::init(ia_mkn_config_bits mkn_config_bits,
 void Intel3aMkn::uninit()
 {
     LOG1("@%s", __FUNCTION__);
-    CheckError(reinterpret_cast<ia_mkn*>(mMknHandle) == nullptr, VOID_VALUE, "@%s, mkn is nullptr", __FUNCTION__);
-    CheckError(mInitialized == false, VOID_VALUE, "@%s, mInitialized is false", __FUNCTION__);
+    CheckAndLogError(reinterpret_cast<ia_mkn*>(mMknHandle) == nullptr,
+                     VOID_VALUE, "@%s, mkn is nullptr", __FUNCTION__);
+    CheckAndLogError(mInitialized == false, VOID_VALUE,
+                     "@%s, mInitialized is false", __FUNCTION__);
 
     mkn_uninit_params* params = static_cast<mkn_uninit_params*>(mMemUninit.mAddr);
     params->mkn_handle = mMknHandle;
 
     bool ret = mCommon.requestSync(IPC_3A_MKN_UNINIT, mMemUninit.mHandle);
-    CheckError(ret == false, VOID_VALUE, "@%s, requestSync fails", __FUNCTION__);
+    CheckAndLogError(ret == false, VOID_VALUE, "@%s, requestSync fails",
+                     __FUNCTION__);
 }
 
 ia_binary_data Intel3aMkn::prepare(ia_mkn_trg data_target)
@@ -95,19 +101,24 @@ ia_binary_data Intel3aMkn::prepare(ia_mkn_trg data_target)
     LOG1("@%s", __FUNCTION__);
 
     ia_binary_data mknData = {nullptr, 0};
-    CheckError(reinterpret_cast<ia_mkn*>(mMknHandle) == nullptr, mknData, "@%s, mkn is nullptr", __FUNCTION__);
-    CheckError(mInitialized == false, mknData, "@%s, mInitialized is false", __FUNCTION__);
+    CheckAndLogError(reinterpret_cast<ia_mkn*>(mMknHandle) == nullptr, mknData,
+                     "@%s, mkn is nullptr", __FUNCTION__);
+    CheckAndLogError(mInitialized == false, mknData,
+                     "@%s, mInitialized is false", __FUNCTION__);
 
     mkn_prepare_params* params = static_cast<mkn_prepare_params*>(mMemPrepare.mAddr);
 
     bool ret = mIpc.clientFlattenPrepare(mMknHandle, data_target, params);
-    CheckError(ret == false, mknData, "@%s, clientFlattenPrepare fails", __FUNCTION__);
+    CheckAndLogError(ret == false, mknData, "@%s, clientFlattenPrepare fails",
+                     __FUNCTION__);
 
     ret = mCommon.requestSync(IPC_3A_MKN_PREPARE, mMemPrepare.mHandle);
-    CheckError(ret == false, mknData, "@%s, requestSync fails", __FUNCTION__);
+    CheckAndLogError(ret == false, mknData, "@%s, requestSync fails",
+                     __FUNCTION__);
 
     ret = mIpc.clientUnflattenPrepare(*params, &mknData);
-    CheckError(ret == false, mknData, "@%s, clientUnflattenPrepare fails", __FUNCTION__);
+    CheckAndLogError(ret == false, mknData, "@%s, clientUnflattenPrepare fails",
+                     __FUNCTION__);
 
     return mknData;
 }
@@ -116,15 +127,18 @@ ia_err Intel3aMkn::enable(bool enable_data_collection)
 {
     LOG1("@%s, enable_data_collection:%d", __FUNCTION__, enable_data_collection);
 
-    CheckError(reinterpret_cast<ia_mkn*>(mMknHandle) == nullptr, ia_err_general, "@%s, mkn is nullptr", __FUNCTION__);
-    CheckError(mInitialized == false, ia_err_general, "@%s, mInitialized is false", __FUNCTION__);
+    CheckAndLogError(reinterpret_cast<ia_mkn*>(mMknHandle) == nullptr,
+                     ia_err_general, "@%s, mkn is nullptr", __FUNCTION__);
+    CheckAndLogError(mInitialized == false, ia_err_general,
+                     "@%s, mInitialized is false", __FUNCTION__);
 
     mkn_enable_params* params = static_cast<mkn_enable_params*>(mMemEnable.mAddr);
     params->mkn_handle = mMknHandle;
     params->enable_data_collection = enable_data_collection;
 
     bool ret = mCommon.requestSync(IPC_3A_MKN_ENABLE, mMemEnable.mHandle);
-    CheckError(ret == false, ia_err_general, "@%s, requestSync fails", __FUNCTION__);
+    CheckAndLogError(ret == false, ia_err_general, "@%s, requestSync fails",
+                     __FUNCTION__);
 
     return ia_err_none;
 }

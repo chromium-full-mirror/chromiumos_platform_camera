@@ -60,7 +60,8 @@ status_t Intel3aPlus::initAIQ(int maxGridW,
 
     status_t status = NO_ERROR;
     status = init(maxGridW, maxGridH, nvmData, sensorName);
-    CheckError(status != NO_ERROR, status, "@%s, init() fails", __FUNCTION__);
+    CheckAndLogError(status != NO_ERROR, status, "@%s, init() fails",
+                     __FUNCTION__);
 
     /**
      * Cache all the values we are going to need from the static metadata
@@ -159,8 +160,10 @@ void Intel3aPlus::initIsoMappingRatio()
         return;
 
     const ia_cmc_t* cmc = getCmc();
-    CheckError(cmc == nullptr, VOID_VALUE, "@%s, cmc is nullptr", __FUNCTION__);
-    CheckError(cmc->cmc_sensitivity == nullptr, VOID_VALUE, "@%s, cmc_sensitivity is nullptr", __FUNCTION__);
+    CheckAndLogError(cmc == nullptr, VOID_VALUE, "@%s, cmc is nullptr",
+                     __FUNCTION__);
+    CheckAndLogError(cmc->cmc_sensitivity == nullptr, VOID_VALUE,
+                     "@%s, cmc_sensitivity is nullptr", __FUNCTION__);
 
     /* Get base/module ISO */
     int32_t baseIso = cmc->cmc_sensitivity->base_iso;
@@ -213,11 +216,13 @@ int32_t Intel3aPlus::mapUiIso2RealIso (int32_t iso)
     if (mSupportIsoMap == false)
         return iso;
 
-    CheckError(fabs(mPseudoIsoRatio) < EPSILON, iso, "@%s, mPseudoIsoRatio < EPSILON", __FUNCTION__);
+    CheckAndLogError(fabs(mPseudoIsoRatio) < EPSILON, iso,
+                     "@%s, mPseudoIsoRatio < EPSILON", __FUNCTION__);
 
     const ia_cmc_t* cmc = getCmc();
-    CheckError(cmc == nullptr, iso, "@%s, cmc is nullptr", __FUNCTION__);
-    CheckError(cmc->cmc_sensitivity == nullptr, iso, "@%s, cmc_sensitivity is nullptr", __FUNCTION__);
+    CheckAndLogError(cmc == nullptr, iso, "@%s, cmc is nullptr", __FUNCTION__);
+    CheckAndLogError(cmc->cmc_sensitivity == nullptr, iso,
+                     "@%s, cmc_sensitivity is nullptr", __FUNCTION__);
 
     int baseIso = cmc->cmc_sensitivity->base_iso;
     if (iso < mMinSensitivity) {
@@ -245,11 +250,13 @@ int32_t Intel3aPlus::mapRealIso2UiIso (int32_t iso)
     if (mSupportIsoMap == false)
         return iso;
 
-    CheckError(fabs(mPseudoIsoRatio) < EPSILON, iso, "@%s, mPseudoIsoRatio < EPSILON", __FUNCTION__);
+    CheckAndLogError(fabs(mPseudoIsoRatio) < EPSILON, iso,
+                     "@%s, mPseudoIsoRatio < EPSILON", __FUNCTION__);
 
     const ia_cmc_t* cmc = getCmc();
-    CheckError(cmc == nullptr, iso, "@%s, cmc is nullptr", __FUNCTION__);
-    CheckError(cmc->cmc_sensitivity == nullptr, iso, "@%s, cmc_sensitivity is nullptr", __FUNCTION__);
+    CheckAndLogError(cmc == nullptr, iso, "@%s, cmc is nullptr", __FUNCTION__);
+    CheckAndLogError(cmc->cmc_sensitivity == nullptr, iso,
+                     "@%s, cmc_sensitivity is nullptr", __FUNCTION__);
 
     int baseIso = cmc->cmc_sensitivity->base_iso;
     if (iso < baseIso) {

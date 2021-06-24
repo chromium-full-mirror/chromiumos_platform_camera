@@ -801,17 +801,20 @@ status_t PlatformData::getCpfAndCmc(ia_binary_data& cpfData,
     cpfData.size = aiqConf->size();
 
     const Intel3aCmc* cmc = aiqConf->getCMC();
-    CheckError(cmc == nullptr, NO_INIT, "@%s, call getCMC() fails", __FUNCTION__);
+    CheckAndLogError(cmc == nullptr, NO_INIT, "@%s, call getCMC() fails",
+                     __FUNCTION__);
 
     if (cmcData) {
         *cmcData = cmc->getCmc();
-        CheckError(*cmcData == nullptr, NO_INIT, "@%s, call getCmc() fails", __FUNCTION__);
+        CheckAndLogError(*cmcData == nullptr, NO_INIT,
+                         "@%s, call getCmc() fails", __FUNCTION__);
     }
 
     if (cmcHandle) {
         *cmcHandle = cmc->getCmcHandle();
-        CheckError(reinterpret_cast<ia_cmc_t*>(*cmcHandle) == nullptr,
-            NO_INIT, "@%s, call getCmcHandle() fails", __FUNCTION__);
+        CheckAndLogError(reinterpret_cast<ia_cmc_t *>(*cmcHandle) == nullptr,
+                         NO_INIT, "@%s, call getCmcHandle() fails",
+                         __FUNCTION__);
     }
 
     return OK;
@@ -819,19 +822,22 @@ status_t PlatformData::getCpfAndCmc(ia_binary_data& cpfData,
 
 bool PlatformData::isFaceAeEnabled(int cameraId)
 {
-    CheckError(mInstance == nullptr, false, "@%s, mInstance is nullptr", __FUNCTION__);
+    CheckAndLogError(mInstance == nullptr, false, "@%s, mInstance is nullptr",
+                     __FUNCTION__);
     return mInstance->isFaceAeEnabled(cameraId);
 }
 
 int PlatformData::faceEngineRunningInterval(int cameraId)
 {
-    CheckError(mInstance == nullptr, false, "@%s, mInstance is nullptr", __FUNCTION__);
+    CheckAndLogError(mInstance == nullptr, false, "@%s, mInstance is nullptr",
+                     __FUNCTION__);
     return mInstance->faceEngineRunningInterval(cameraId);
 }
 
 int PlatformData::readNvmDataFromDevice(int cameraId)
 {
-    CheckError(mInstance == nullptr, false, "@%s, mInstance is nullptr", __FUNCTION__);
+    CheckAndLogError(mInstance == nullptr, false, "@%s, mInstance is nullptr",
+                     __FUNCTION__);
 
     return mInstance->readNvmDataFromDevice(cameraId);
 }
@@ -1181,8 +1187,9 @@ status_t CameraHWInfo::getAvailableSensorModes(const std::string &sensorName,
 void CameraHWInfo::getMediaCtlElementNames(std::vector<std::string> &elementNames) const
 {
     int fd = open(mMediaControllerPathName.c_str(), O_RDONLY);
-    CheckError(fd == -1, VOID_VALUE, "@%s, Could not open media controller device: %s",
-           __FUNCTION__, strerror(errno));
+    CheckAndLogError(fd == -1, VOID_VALUE,
+                     "@%s, Could not open media controller device: %s",
+                     __FUNCTION__, strerror(errno));
 
     struct media_entity_desc entity;
     CLEAR(entity);
@@ -1194,8 +1201,9 @@ void CameraHWInfo::getMediaCtlElementNames(std::vector<std::string> &elementName
         entity.id |= MEDIA_ENT_ID_FLAG_NEXT;
     }
 
-    CheckError(close(fd) > 0, VOID_VALUE, "@%s, Error in closing media controller: %s",
-           __FUNCTION__, strerror(errno));
+    CheckAndLogError(close(fd) > 0, VOID_VALUE,
+                     "@%s, Error in closing media controller: %s", __FUNCTION__,
+                     strerror(errno));
 }
 
 std::string CameraHWInfo::getFullMediaCtlElementName(const std::vector<std::string> elementNames,

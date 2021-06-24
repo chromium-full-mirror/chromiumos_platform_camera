@@ -122,7 +122,7 @@ int AiqUnit::deinit()
 
 int AiqUnit::configure(const stream_config_t *streamList)
 {
-    CheckError(streamList == nullptr, BAD_VALUE, "streamList is nullptr");
+    CheckAndLogError(streamList == nullptr, BAD_VALUE, "streamList is nullptr");
 
     AutoMutex l(mAiqUnitLock);
     LOG1("@%s mCameraId = %d", __func__, mCameraId);
@@ -136,20 +136,20 @@ int AiqUnit::configure(const stream_config_t *streamList)
     PlatformData::getConfigModesByOperationMode(mCameraId, streamList->operation_mode, configModes);
 
     int ret = mAiqSetting->configure(streamList);
-    CheckError(ret != OK, ret, "configure AIQ settings error: %d", ret);
+    CheckAndLogError(ret != OK, ret, "configure AIQ settings error: %d", ret);
 
     ret = mAiqEngine->configure(configModes);
-    CheckError(ret != OK, ret, "configure AIQ engine error: %d", ret);
+    CheckAndLogError(ret != OK, ret, "configure AIQ engine error: %d", ret);
     // INTEL_DVS_S
     if (mDvs) {
         ret = mDvs->configure(configModes);
-        CheckError(ret != OK, ret, "configure DVS engine error: %d", ret);
+        CheckAndLogError(ret != OK, ret, "configure DVS engine error: %d", ret);
     }
     // INTEL_DVS_E
     // LOCAL_TONEMAP_S
     if (mLtm) {
         ret = mLtm->configure(configModes);
-        CheckError(ret != OK, ret, "configure LTM engine error: %d", ret);
+        CheckAndLogError(ret != OK, ret, "configure LTM engine error: %d", ret);
     }
     // LOCAL_TONEMAP_E
 
@@ -210,7 +210,7 @@ int AiqUnit::run3A(long requestId, long applyingSeq, long* effectSeq)
     }
 
     int ret = mAiqEngine->run3A(requestId, applyingSeq, effectSeq);
-    CheckError(ret != OK, ret, "run 3A failed.");
+    CheckAndLogError(ret != OK, ret, "run 3A failed.");
 
     return OK;
 }

@@ -256,7 +256,7 @@ int getStride(int cssFmt, int width) {
 
 bool getTerminalPairs(int pgId, TERMINAL_PAIR_TYPE type, std::vector<TerminalPair>* pairs) {
     LOG2("@%s, pgId:%d, type:%d, pairs:%p", __func__, pgId, type, pairs);
-    CheckError(!pairs, false, "@%s, pairs is nullptr", __func__);
+    CheckAndLogError(!pairs, false, "@%s, pairs is nullptr", __func__);
 
     struct TerminalPairs {
         int pgId;

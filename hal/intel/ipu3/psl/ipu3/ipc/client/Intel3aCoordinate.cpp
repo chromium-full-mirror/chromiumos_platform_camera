@@ -30,7 +30,8 @@ Intel3aCoordinate::Intel3aCoordinate():
     mMem.mName = "/coordinateShm";
     mMem.mSize = sizeof(convert_coordinates_params);
     bool ret = mCommon.allocShmMem(mMem.mName, mMem.mSize, &mMem);
-    CheckError(ret == false, VOID_VALUE, "@%s, %s allocShmMem fails", __FUNCTION__, mMem.mName.c_str());
+    CheckAndLogError(ret == false, VOID_VALUE, "@%s, %s allocShmMem fails",
+                     __FUNCTION__, mMem.mName.c_str());
 
     LOG1("@%s, done", __FUNCTION__);
     mInitialized = true;
@@ -53,7 +54,8 @@ Intel3aCoordinate::convert(
         __FUNCTION__, src_coordinate.x, src_coordinate.y);
 
     ia_coordinate re = {-1, -1};
-    CheckError(mInitialized == false, re, "@%s, mInitialized is false", __FUNCTION__);
+    CheckAndLogError(mInitialized == false, re, "@%s, mInitialized is false",
+                     __FUNCTION__);
 
     convert_coordinates_params* params = static_cast<convert_coordinates_params*>(mMem.mAddr);
 
@@ -62,7 +64,7 @@ Intel3aCoordinate::convert(
     params->src_coordinate = src_coordinate;
 
     bool ret = mCommon.requestSync(IPC_3A_COORDINATE_COVERT, mMem.mHandle);
-    CheckError(ret == false, re, "@%s, requestSync fails", __FUNCTION__);
+    CheckAndLogError(ret == false, re, "@%s, requestSync fails", __FUNCTION__);
 
     return params->results;
 }

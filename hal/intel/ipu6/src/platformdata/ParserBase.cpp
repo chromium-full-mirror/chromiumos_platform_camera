@@ -41,7 +41,7 @@ const char *ParserBase::skipWhiteSpace(const char *src)
 
 int ParserBase::parseXmlParameterToChar(const char *str, unsigned char *table)
 {
-    CheckError(str == nullptr, -1, "@%s, str is nullptr", __func__);
+    CheckAndLogError(str == nullptr, -1, "@%s, str is nullptr", __func__);
 
     int index = 0;
     char *savePtr, *tablePtr;
@@ -86,13 +86,15 @@ int ParserBase::parseXmlFile(const std::string &xmlFile)
     FILE *fp = nullptr;
     int bufSize = 4 * 1024;  // parse 4k data every time
 
-    CheckError(xmlFile.empty(), UNKNOWN_ERROR, "xmlFile is empty");
+    CheckAndLogError(xmlFile.empty(), UNKNOWN_ERROR, "xmlFile is empty");
 
     LOGXML("@%s, parsing profile: %s", __func__, xmlFile.c_str());
 
     fp = ::fopen(xmlFile.c_str(), "r");
-    CheckError(nullptr == fp, UNKNOWN_ERROR, "@%s, line:%d, Can not open profile file %s in read mode, fp is nullptr",
-          __func__, __LINE__, xmlFile.c_str());
+    CheckAndLogError(nullptr == fp, UNKNOWN_ERROR,
+                     "@%s, line:%d, Can not open profile file %s in read mode, "
+                     "fp is nullptr",
+                     __func__, __LINE__, xmlFile.c_str());
 
     std::unique_ptr<char[]>pBuf(new char[bufSize]);
     XML_Parser parser = ::XML_ParserCreate(nullptr);
@@ -145,7 +147,7 @@ void ParserBase::getAvaliableXmlFile(const std::vector<const char *> &avaliableX
 int ParserBase::getDataFromXmlFile(std::string fileName)
 {
     LOGXML("@%s", __func__);
-    CheckError(fileName.size() == 0, UNKNOWN_ERROR, "file name is null");
+    CheckAndLogError(fileName.size() == 0, UNKNOWN_ERROR, "file name is null");
 
     std::string curFolderFileName = std::string("./") + fileName;
     std::string sysFolderFileName = PlatformData::getCameraCfgPath() + fileName;
@@ -156,8 +158,9 @@ int ParserBase::getDataFromXmlFile(std::string fileName)
 
     std::string chosenXmlFile;
     getAvaliableXmlFile(profiles, chosenXmlFile);
-    CheckError(chosenXmlFile.empty(), UNKNOWN_ERROR, "%s is not found in: %s or %s",
-          fileName.c_str(), curFolderFileName.c_str(), sysFolderFileName.c_str());
+    CheckAndLogError(chosenXmlFile.empty(), UNKNOWN_ERROR,
+                     "%s is not found in: %s or %s", fileName.c_str(),
+                     curFolderFileName.c_str(), sysFolderFileName.c_str());
 
     return parseXmlFile(chosenXmlFile);
 }

@@ -42,8 +42,10 @@ Intel3AClient::Intel3AClient():
 
     mBridge = cros::CameraAlgorithmBridge::CreateInstance(
         cros::CameraAlgorithmBackend::kVendorCpu, g_mojo_manager_token);
-    CheckError(!mBridge, VOID_VALUE, "@%s, mBridge is nullptr", __FUNCTION__);
-    CheckError((mBridge->Initialize(this) != 0), VOID_VALUE, "@%s, call mBridge->Initialize fail", __FUNCTION__);
+    CheckAndLogError(!mBridge, VOID_VALUE, "@%s, mBridge is nullptr",
+                     __FUNCTION__);
+    CheckAndLogError((mBridge->Initialize(this) != 0), VOID_VALUE,
+                     "@%s, call mBridge->Initialize fail", __FUNCTION__);
 
     for (int i = 0; i < IPC_GROUP_NUM; i++) {
         mRunner[i] = std::unique_ptr<Runner>(new Runner(static_cast<IPC_GROUP>(i), mBridge.get()));
@@ -94,21 +96,27 @@ int Intel3AClient::allocateShmMem(std::string& name, int size, int* fd, void** a
     void* shmAddr = nullptr;
 
     shmFd = shm_open(name.c_str(), O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
-    CheckError((shmFd == -1), UNKNOWN_ERROR, "@%s, call shm_open fail", __FUNCTION__);
+    CheckAndLogError((shmFd == -1), UNKNOWN_ERROR, "@%s, call shm_open fail",
+                     __FUNCTION__);
 
     int ret = fcntl(shmFd, F_GETFD);
-    CheckError((ret == -1), UNKNOWN_ERROR, "@%s, call fcntl fail", __FUNCTION__);
+    CheckAndLogError((ret == -1), UNKNOWN_ERROR, "@%s, call fcntl fail",
+                     __FUNCTION__);
 
     ret = ftruncate(shmFd, size);
-    CheckError((ret == -1), UNKNOWN_ERROR, "@%s, call fcntl fail", __FUNCTION__);
+    CheckAndLogError((ret == -1), UNKNOWN_ERROR, "@%s, call fcntl fail",
+                     __FUNCTION__);
 
     struct stat sb;
     ret = fstat(shmFd, &sb);
-    CheckError((ret == -1), UNKNOWN_ERROR, "@%s, call fstat fail", __FUNCTION__);
-    CheckError((sb.st_size != size), UNKNOWN_ERROR, "@%s, sb.st_size:%jd", __FUNCTION__, (intmax_t)sb.st_size);
+    CheckAndLogError((ret == -1), UNKNOWN_ERROR, "@%s, call fstat fail",
+                     __FUNCTION__);
+    CheckAndLogError((sb.st_size != size), UNKNOWN_ERROR, "@%s, sb.st_size:%jd",
+                     __FUNCTION__, (intmax_t)sb.st_size);
 
     shmAddr = mmap(0, sb.st_size, PROT_WRITE, MAP_SHARED, shmFd, 0);
-    CheckError((!shmAddr), UNKNOWN_ERROR, "@%s, call mmap fail", __FUNCTION__);
+    CheckAndLogError((!shmAddr), UNKNOWN_ERROR, "@%s, call mmap fail",
+                     __FUNCTION__);
 
     *fd = shmFd;
     *addr = shmAddr;
@@ -129,8 +137,10 @@ int Intel3AClient::requestSync(IPC_CMD cmd, int32_t bufferHandle)
 {
     LOG1("@%s, cmd:%d:%s, bufferHandle:%d, mInitialized:%d",
          __FUNCTION__, cmd, Intel3AIpcCmdToString(cmd), bufferHandle, mInitialized);
-    CheckError(!mInitialized, UNKNOWN_ERROR, "@%s, mInitialized is false", __FUNCTION__);
-    CheckError(!isIPCFine(), UNKNOWN_ERROR, "@%s, IPC error happens", __FUNCTION__);
+    CheckAndLogError(!mInitialized, UNKNOWN_ERROR, "@%s, mInitialized is false",
+                     __FUNCTION__);
+    CheckAndLogError(!isIPCFine(), UNKNOWN_ERROR, "@%s, IPC error happens",
+                     __FUNCTION__);
 
     IPC_GROUP group = Intel3AIpcCmdToGroup(cmd);
 
@@ -145,8 +155,9 @@ int Intel3AClient::requestSync(IPC_CMD cmd)
 int32_t Intel3AClient::registerBuffer(int bufferFd)
 {
     LOG1("@%s, bufferFd:%d, mInitialized:%d", __FUNCTION__, bufferFd, mInitialized);
-    CheckError(!mInitialized, -1, "@%s, mInitialized is false", __FUNCTION__);
-    CheckError(!isIPCFine(), -1, "@%s, IPC error happens", __FUNCTION__);
+    CheckAndLogError(!mInitialized, -1, "@%s, mInitialized is false",
+                     __FUNCTION__);
+    CheckAndLogError(!isIPCFine(), -1, "@%s, IPC error happens", __FUNCTION__);
 
     return mBridge->RegisterBuffer(bufferFd);
 }
@@ -154,8 +165,10 @@ int32_t Intel3AClient::registerBuffer(int bufferFd)
 void Intel3AClient::deregisterBuffer(int32_t bufferHandle)
 {
     LOG1("@%s, bufferHandle:%d, mInitialized:%d", __FUNCTION__, bufferHandle, mInitialized);
-    CheckError(!mInitialized, VOID_VALUE, "@%s, mInitialized is false", __FUNCTION__);
-    CheckError(!isIPCFine(), VOID_VALUE, "@%s, IPC error happens", __FUNCTION__);
+    CheckAndLogError(!mInitialized, VOID_VALUE, "@%s, mInitialized is false",
+                     __FUNCTION__);
+    CheckAndLogError(!isIPCFine(), VOID_VALUE, "@%s, IPC error happens",
+                     __FUNCTION__);
 
     std::vector<int32_t> handles({bufferHandle});
     mBridge->DeregisterBuffers(handles);
@@ -195,7 +208,8 @@ void Intel3AClient::returnCallback(const camera_algorithm_callback_ops_t* callba
                                    int32_t buffer_handle)
 {
     LOG2("@%s", __FUNCTION__);
-    CheckError(!callback_ops, VOID_VALUE, "@%s, callback_ops is nullptr", __FUNCTION__);
+    CheckAndLogError(!callback_ops, VOID_VALUE, "@%s, callback_ops is nullptr",
+                     __FUNCTION__);
 
     auto s = const_cast<Intel3AClient*>(static_cast<const Intel3AClient*>(callback_ops));
     s->mCallback.Run(req_id, status, buffer_handle);
@@ -205,7 +219,8 @@ void Intel3AClient::notifyCallback(const struct camera_algorithm_callback_ops* c
                                  camera_algorithm_error_msg_code_t msg)
 {
     LOG2("@%s", __FUNCTION__);
-    CheckError(!callback_ops, VOID_VALUE, "@%s, callback_ops is nullptr", __FUNCTION__);
+    CheckAndLogError(!callback_ops, VOID_VALUE, "@%s, callback_ops is nullptr",
+                     __FUNCTION__);
 
     auto s = const_cast<Intel3AClient*>(static_cast<const Intel3AClient*>(callback_ops));
     s->mNotifyCallback.Run((uint32_t)msg);
@@ -245,7 +260,9 @@ Intel3AClient::Runner::Runner(IPC_GROUP group, cros::CameraAlgorithmBridge* brid
     pthread_condattr_destroy(&attr);
 
     ret = pthread_mutex_init(&mCbLock, nullptr);
-    CheckError(ret != 0, VOID_VALUE, "@%s, call pthread_mutex_init fails, ret:%d", __FUNCTION__, ret);
+    CheckAndLogError(ret != 0, VOID_VALUE,
+                     "@%s, call pthread_mutex_init fails, ret:%d", __FUNCTION__,
+                     ret);
 
     mInitialized = true;
 }
@@ -269,7 +286,8 @@ int Intel3AClient::Runner::requestSync(IPC_CMD cmd, int32_t bufferHandle)
 {
     LOG1("@%s, cmd:%d:%s, group:%d, bufferHandle:%d, mInitialized:%d",
           __FUNCTION__, cmd, Intel3AIpcCmdToString(cmd), mGroup, bufferHandle, mInitialized);
-    CheckError(!mInitialized, UNKNOWN_ERROR, "@%s, mInitialized is false", __FUNCTION__);
+    CheckAndLogError(!mInitialized, UNKNOWN_ERROR, "@%s, mInitialized is false",
+                     __FUNCTION__);
 
     std::lock_guard<std::mutex> lck(mMutex);
 
@@ -279,13 +297,15 @@ int Intel3AClient::Runner::requestSync(IPC_CMD cmd, int32_t bufferHandle)
     // cmd is for request id, no duplicate command will be issued at any given time.
     mBridge->Request(cmd, reqHeader, bufferHandle);
     int ret = waitCallback();
-    CheckError((ret != OK), UNKNOWN_ERROR, "@%s, call waitCallback fail", __FUNCTION__);
+    CheckAndLogError((ret != OK), UNKNOWN_ERROR, "@%s, call waitCallback fail",
+                     __FUNCTION__);
 
     LOG2("@%s, cmd:%d:%s, group:%d, mCbResult:%d, done!",
           __FUNCTION__, cmd, Intel3AIpcCmdToString(cmd), mGroup, mCbResult);
 
     // check callback result
-    CheckError((mCbResult != true), UNKNOWN_ERROR, "@%s, callback fail", __FUNCTION__);
+    CheckAndLogError((mCbResult != true), UNKNOWN_ERROR, "@%s, callback fail",
+                     __FUNCTION__);
 
     return OK;
 }
@@ -303,7 +323,9 @@ void Intel3AClient::Runner::callbackHandler(uint32_t status, int32_t buffer_hand
     int ret = pthread_cond_signal(&mCbCond);
     pthread_mutex_unlock(&mCbLock);
 
-    CheckError(ret != 0, VOID_VALUE, "@%s, group:%d, call pthread_cond_signal fails, ret:%d", __FUNCTION__, mGroup, ret);
+    CheckAndLogError(ret != 0, VOID_VALUE,
+                     "@%s, group:%d, call pthread_cond_signal fails, ret:%d",
+                     __FUNCTION__, mGroup, ret);
 }
 
 int Intel3AClient::Runner::waitCallback()

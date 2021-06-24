@@ -314,12 +314,12 @@ ia_aiq_frame_use AiqUtils::convertFrameUsageToIaFrameUsage(int frameUsage)
 }
 
 void AiqUtils::applyTonemapGamma(float gamma, cca::cca_gbce_params* results) {
-    CheckError(gamma < EPSILON, VOID_VALUE, "Bad gamma %f", gamma);
-    CheckError(!results, VOID_VALUE, "gbce results nullptr");
+    CheckAndLogError(gamma < EPSILON, VOID_VALUE, "Bad gamma %f", gamma);
+    CheckAndLogError(!results, VOID_VALUE, "gbce results nullptr");
 
     int lutSize = results->gamma_lut_size;
-    CheckError(lutSize < MIN_TONEMAP_POINTS, VOID_VALUE,
-               "Bad gamma lut size (%d) in gbce results", lutSize);
+    CheckAndLogError(lutSize < MIN_TONEMAP_POINTS, VOID_VALUE,
+                     "Bad gamma lut size (%d) in gbce results", lutSize);
     for (int i = 0; i < lutSize; i++) {
         results->g_gamma_lut[i] = pow(i / static_cast<float>(lutSize), 1 / gamma);
     }
@@ -331,11 +331,11 @@ void AiqUtils::applyTonemapGamma(float gamma, cca::cca_gbce_params* results) {
 }
 
 void AiqUtils::applyTonemapSRGB(cca::cca_gbce_params* results) {
-    CheckError(!results, VOID_VALUE, "gbce results nullptr");
+    CheckAndLogError(!results, VOID_VALUE, "gbce results nullptr");
 
     int lutSize = results->gamma_lut_size;
-    CheckError(lutSize < MIN_TONEMAP_POINTS, VOID_VALUE,
-               "Bad gamma lut size (%d) in gbce results", lutSize);
+    CheckAndLogError(lutSize < MIN_TONEMAP_POINTS, VOID_VALUE,
+                     "Bad gamma lut size (%d) in gbce results", lutSize);
     for (int i = 0; i < lutSize; i++) {
         if (i / (lutSize - 1)  < 0.0031308)
             results->g_gamma_lut[i] = 12.92 * (i / (lutSize - 1));
@@ -351,11 +351,11 @@ void AiqUtils::applyTonemapSRGB(cca::cca_gbce_params* results) {
 }
 
 void AiqUtils::applyTonemapREC709(cca::cca_gbce_params* results) {
-    CheckError(!results, VOID_VALUE, "gbce results nullptr");
+    CheckAndLogError(!results, VOID_VALUE, "gbce results nullptr");
 
     int lutSize = results->gamma_lut_size;
-    CheckError(lutSize < MIN_TONEMAP_POINTS, VOID_VALUE,
-               "Bad gamma lut size (%d) in gbce results", lutSize);
+    CheckAndLogError(lutSize < MIN_TONEMAP_POINTS, VOID_VALUE,
+                     "Bad gamma lut size (%d) in gbce results", lutSize);
     for (int i = 0; i < lutSize; i++) {
         if (i / (lutSize - 1) < 0.018)
             results->g_gamma_lut[i] = 4.5 * (i / (lutSize - 1));
@@ -372,10 +372,11 @@ void AiqUtils::applyTonemapREC709(cca::cca_gbce_params* results) {
 
 void AiqUtils::applyTonemapCurve(const camera_tonemap_curves_t& curves,
                                  cca::cca_gbce_params* results) {
-    CheckError(!results, VOID_VALUE, "gbce result nullptr");
-    CheckError(results->gamma_lut_size <= 1, VOID_VALUE, "wrong gamma_lut_size");
-    CheckError(curves.rSize != curves.gSize, VOID_VALUE, "wrong rSize");
-    CheckError(curves.bSize != curves.gSize, VOID_VALUE, "wrong bSize");
+    CheckAndLogError(!results, VOID_VALUE, "gbce result nullptr");
+    CheckAndLogError(results->gamma_lut_size <= 1, VOID_VALUE,
+                     "wrong gamma_lut_size");
+    CheckAndLogError(curves.rSize != curves.gSize, VOID_VALUE, "wrong rSize");
+    CheckAndLogError(curves.bSize != curves.gSize, VOID_VALUE, "wrong bSize");
 
     LOG2("%s: input size %d, output size %d", __func__, curves.gSize, results->gamma_lut_size);
     // User's curve is 2-d array: (in, out)
@@ -402,9 +403,9 @@ void AiqUtils::applyTonemapCurve(const camera_tonemap_curves_t& curves,
 
 void AiqUtils::applyAwbGainForTonemapCurve(const camera_tonemap_curves_t& curves,
                                            cca::cca_awb_results* results) {
-    CheckError(!results, VOID_VALUE, "pa result nullptr");
-    CheckError(curves.rSize != curves.gSize, VOID_VALUE, "wrong rSize");
-    CheckError(curves.bSize != curves.gSize, VOID_VALUE, "wrong bSize");
+    CheckAndLogError(!results, VOID_VALUE, "pa result nullptr");
+    CheckAndLogError(curves.rSize != curves.gSize, VOID_VALUE, "wrong rSize");
+    CheckAndLogError(curves.bSize != curves.gSize, VOID_VALUE, "wrong bSize");
 
     // Use awb gains to implement different tone map curves
     float sumR = 0;

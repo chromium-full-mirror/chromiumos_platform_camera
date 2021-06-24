@@ -152,7 +152,8 @@ Camera3HAL::~Camera3HAL() {
  * ********************************************************************/
 int Camera3HAL::initialize(const camera3_callback_ops_t* callback_ops) {
     LOG1("@%s", __func__);
-    CheckError(!mInitialized, -ENODEV, "@%s, mInitialized is false", __func__);
+    CheckAndLogError(!mInitialized, -ENODEV, "@%s, mInitialized is false",
+                     __func__);
     int status = icamera::OK;
 
     if (callback_ops == nullptr) return -ENODEV;
@@ -167,8 +168,10 @@ int Camera3HAL::initialize(const camera3_callback_ops_t* callback_ops) {
 
 int Camera3HAL::configure_streams(camera3_stream_configuration_t* stream_list) {
     LOG1("@%s", __func__);
-    CheckError(!mInitialized, -EINVAL, "@%s, mInitialized is false", __func__);
-    CheckError(!stream_list, -EINVAL, "@%s, stream_list is nullptr", __func__);
+    CheckAndLogError(!mInitialized, -EINVAL, "@%s, mInitialized is false",
+                     __func__);
+    CheckAndLogError(!stream_list, -EINVAL, "@%s, stream_list is nullptr",
+                     __func__);
 
     if (!stream_list->streams || !stream_list->num_streams) {
         LOGE("%s: Bad input! streams list ptr: %p, num %d", __func__, stream_list->streams,
@@ -191,20 +194,23 @@ int Camera3HAL::configure_streams(camera3_stream_configuration_t* stream_list) {
 
 const camera_metadata_t* Camera3HAL::construct_default_request_settings(int type) {
     LOG1("@%s, type:%d", __func__, type);
-    CheckError(!mInitialized, nullptr, "@%s, mInitialized is false", __func__);
+    CheckAndLogError(!mInitialized, nullptr, "@%s, mInitialized is false",
+                     __func__);
 
     if (type < CAMERA3_TEMPLATE_PREVIEW || type >= CAMERA3_TEMPLATE_COUNT) return nullptr;
 
     const camera_metadata_t* meta = nullptr;
     int status = mRequestManager->constructDefaultRequestSettings(type, &meta);
-    CheckError(status != icamera::OK, nullptr, "construct default request setting error");
+    CheckAndLogError(status != icamera::OK, nullptr,
+                     "construct default request setting error");
 
     return meta;
 }
 
 int Camera3HAL::process_capture_request(camera3_capture_request_t* request) {
     LOG2("@%s", __func__);
-    CheckError(!mInitialized, -EINVAL, "@%s, mInitialized is false", __func__);
+    CheckAndLogError(!mInitialized, -EINVAL, "@%s, mInitialized is false",
+                     __func__);
 
     if (request == nullptr) {
         LOGE("%s: request is null!", __func__);
@@ -233,14 +239,16 @@ int Camera3HAL::process_capture_request(camera3_capture_request_t* request) {
 
 void Camera3HAL::dump(int fd) {
     LOG1("@%s", __func__);
-    CheckError(!mInitialized, VOID_VALUE, "@%s, mInitialized is false", __func__);
+    CheckAndLogError(!mInitialized, VOID_VALUE, "@%s, mInitialized is false",
+                     __func__);
 
     mRequestManager->dump(fd);
 }
 
 int Camera3HAL::flush() {
     LOG1("@%s", __func__);
-    CheckError(!mInitialized, icamera::UNKNOWN_ERROR, "@%s, mInitialized is false", __func__);
+    CheckAndLogError(!mInitialized, icamera::UNKNOWN_ERROR,
+                     "@%s, mInitialized is false", __func__);
 
     return mRequestManager->flush();
 }
