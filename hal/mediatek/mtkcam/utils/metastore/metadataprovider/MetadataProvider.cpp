@@ -136,7 +136,7 @@ uint32_t MetadataProvider::getDeviceVersion() const {
   pthread_rwlock_rdlock(&mRWLock);
   uint32_t ret = 0;
 #if 1
-  ret = CAMERA_DEVICE_API_VERSION_3_3;
+  ret = CAMERA_DEVICE_API_VERSION_3_5;
 #else
   ret = mpHALMetadata.entryFor(MTK_HAL_VERSION).itemAt(0, Type2Type<MINT32>());
 #endif

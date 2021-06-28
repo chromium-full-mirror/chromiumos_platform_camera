@@ -495,6 +495,9 @@ Cam3DeviceImp::flushRequest(camera3_capture_request_t* request) const {
         .output_buffers = output_buffers.data(),
         .input_buffer = input_buffers.size() ? input_buffers.data() : NULL,
         .partial_result = 0,
+        .num_physcam_metadata = 0,
+        .physcam_ids = NULL,
+        .physcam_metadata = NULL,
     };
     mpCallbackOps->process_capture_result(mpCallbackOps, &result);
   }

@@ -1089,6 +1089,9 @@ NSCam::v3::Imp::AppStreamMgr::performCallback(CallbackParcel const& cbParcel) {
         .output_buffers = NULL,
         .input_buffer = NULL,
         .partial_result = rCbMetaItem.bufferNo,
+        .num_physcam_metadata = 0,
+        .physcam_ids = NULL,
+        .physcam_metadata = NULL,
     };
     // to debug
     {
@@ -1223,6 +1226,9 @@ NSCam::v3::Imp::AppStreamMgr::performCallback(CallbackParcel const& cbParcel) {
         .output_buffers = vOutBuffers.data(),
         .input_buffer = vInpBuffers.size() ? vInpBuffers.data() : NULL,
         .partial_result = 0,
+        .num_physcam_metadata = 0,
+        .physcam_ids = NULL,
+        .physcam_metadata = NULL,
     };
     if (!s8Trace_HwComposer.empty()) {
       CAM_TRACE_BEGIN(s8Trace_HwComposer.c_str());

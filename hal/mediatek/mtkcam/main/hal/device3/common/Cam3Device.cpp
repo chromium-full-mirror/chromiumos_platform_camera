@@ -42,7 +42,7 @@ static hw_device_t const gHwDevice = {
     /** tag must be initialized to HARDWARE_DEVICE_TAG */
     .tag = HARDWARE_DEVICE_TAG,
     /** version number for hw_device_t */
-    .version = CAMERA_DEVICE_API_VERSION_3_3,  // chrom only support 3_3 now
+    .version = CAMERA_DEVICE_API_VERSION_3_5,  // chrome only support 3_5 now
     /** reference to the module this device belongs to */
     .module = NULL,
     /** padding reserved for future use */
