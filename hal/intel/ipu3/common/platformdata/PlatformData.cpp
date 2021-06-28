@@ -849,7 +849,7 @@ CameraHWInfo::CameraHWInfo() :
     mBoardName = "<not set>";
     mProductName = "<not_set>";
     mManufacturerName = "<not set>";
-    mCameraDeviceAPIVersion = CAMERA_DEVICE_API_VERSION_3_3;
+    mCameraDeviceAPIVersion = CAMERA_DEVICE_API_VERSION_3_5;
     mSupportDualVideo = false;
     mSupportExtendedMakernote = false;
     mSupportFullColorRange = true;

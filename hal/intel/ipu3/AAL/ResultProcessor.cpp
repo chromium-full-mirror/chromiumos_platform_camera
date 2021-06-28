@@ -499,6 +499,10 @@ void ResultProcessor::returnPendingPartials(RequestState_t* reqState)
     result.result = settings->getAndLock();
     result.num_output_buffers = 0;
 
+    result.num_physcam_metadata = 0;
+    result.physcam_ids = nullptr;
+    result.physcam_metadata = nullptr;
+
     mCallbackOps->process_capture_result(mCallbackOps, &result);
 
     settings->unlock(result.result);
@@ -541,6 +545,10 @@ status_t ResultProcessor::returnResult(RequestState_t* reqState, int returnIndex
     result.frame_number = reqState->reqId;
     result.result = resultMetadata->getAndLock();
     result.num_output_buffers = 0;
+
+    result.num_physcam_metadata = 0;
+    result.physcam_ids = nullptr;
+    result.physcam_metadata = nullptr;
 
     mCallbackOps->process_capture_result(mCallbackOps, &result);
 
