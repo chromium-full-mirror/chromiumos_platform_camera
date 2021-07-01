@@ -67,6 +67,8 @@ namespace icamera {
 #define CAMERA_GRAPH_DESCRIPTOR_FILE "gcss/graph_descriptor.xml"
 #define CAMERA_GRAPH_SETTINGS_DIR "gcss/"
 
+#define TNR7US_RESTART_THRESHOLD 5
+
 class GraphConfigNodes;
 class PlatformData {
 private:

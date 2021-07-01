@@ -48,7 +48,6 @@ namespace icamera {
 
 #define STILL_TNR_THRESHOLD_GAIN_ID 722
 #define DEFAULT_TNR_THRESHOLD_GAIN 2.0f
-#define TNR7US_RESTART_THRESHOLD 5
 
 std::mutex GPUExecutor::mGPULock;
 
