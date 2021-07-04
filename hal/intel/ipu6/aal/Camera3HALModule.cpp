@@ -115,7 +115,7 @@ static int hal_get_camera_info(int cameraId, struct camera_info* cameraInfo) {
     }
     memset(cameraInfo, 0, sizeof(camera_info));
     cameraInfo->facing = info.facing ? CAMERA_FACING_BACK : CAMERA_FACING_FRONT;
-    cameraInfo->device_version = CAMERA_DEVICE_API_VERSION_3_3;
+    cameraInfo->device_version = CAMERA_DEVICE_API_VERSION_3_5;
     cameraInfo->orientation = info.orientation;
     const camera_metadata_t* settings = sCameraMetadata[cameraId]->getAndLock();
     cameraInfo->static_camera_characteristics = settings;

@@ -221,6 +221,9 @@ int ResultProcessor::metadataDone(const MetadataEvent& event) {
 
         result.result = metaMem->getMemory();
         result.partial_result = 1;
+        result.num_physcam_metadata = 0;
+        result.physcam_ids = nullptr;
+        result.physcam_metadata = nullptr;
         mCallbackOps->process_capture_result(mCallbackOps, &result);
 
         LOG2("@%s frame_number:%u, metadataDone", __func__, event.frameNumber);
@@ -258,6 +261,9 @@ int ResultProcessor::bufferDone(const BufferEvent& event) {
     result.num_output_buffers = 1;
     result.result = nullptr;
     result.partial_result = 0;
+    result.num_physcam_metadata = 0;
+    result.physcam_ids = nullptr;
+    result.physcam_metadata = nullptr;
 
     mCallbackOps->process_capture_result(mCallbackOps, &result);
 
@@ -401,6 +407,9 @@ void ResultProcessor::returnInputBuffer(uint32_t frameNumber) {
     result.frame_number = frameNumber;
     result.result = nullptr;
     result.input_buffer = &buf;
+    result.num_physcam_metadata = 0;
+    result.physcam_ids = nullptr;
+    result.physcam_metadata = nullptr;
 
     LOG1("@%s, frame_number:%u, return the input buffer", __func__, frameNumber);
     mCallbackOps->process_capture_result(mCallbackOps, &result);

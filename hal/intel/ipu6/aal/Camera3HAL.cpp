@@ -114,7 +114,7 @@ Camera3HAL::Camera3HAL(int cameraId, const hw_module_t* module)
 
     mDevice = {};
     mDevice.common.tag = HARDWARE_DEVICE_TAG;
-    mDevice.common.version = CAMERA_DEVICE_API_VERSION_3_3;
+    mDevice.common.version = CAMERA_DEVICE_API_VERSION_3_5;
     mDevice.common.module = const_cast<hw_module_t*>(module);
     // hal_dev_close is kept in the module for symmetry with dev_open
     // it will be set there
