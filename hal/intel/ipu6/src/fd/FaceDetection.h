@@ -18,7 +18,7 @@
 
 #ifdef FACE_DETECTION
 #ifdef ENABLE_SANDBOXING
-#include "modules/sandboxing/client/IntelFaceDetection.h"
+#include "modules/sandboxing/client/IntelFaceDetectionClient.h"
 #else
 #include "modules/algowrapper/IntelFaceDetection.h"
 #endif

@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "ClientGraphConfigImpl"
+#define LOG_TAG "GraphConfigImplClient"
 
-#include "modules/sandboxing/client/GraphConfigImpl.h"
+#include "modules/sandboxing/client/GraphConfigImplClient.h"
 
 #include "iutils/CameraLog.h"
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Intel Corporation.
+ * Copyright (C) 2019-2021 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@
 #include <vector>
 
 #include "FaceBase.h"
-#include "IntelAlgoCommon.h"
+#include "IntelAlgoCommonClient.h"
 #include "iutils/Errors.h"
 #include "iutils/Utils.h"
 #include "modules/sandboxing/IPCIntelFD.h"

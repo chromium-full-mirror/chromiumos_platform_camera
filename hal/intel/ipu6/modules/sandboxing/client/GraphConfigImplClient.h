@@ -21,7 +21,7 @@
 #include <utility>
 #include <vector>
 
-#include "IntelAlgoCommon.h"
+#include "IntelAlgoCommonClient.h"
 #include "iutils/Errors.h"
 #include "iutils/Thread.h"
 #include "iutils/Utils.h"

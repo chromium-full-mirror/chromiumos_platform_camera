@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "IntelAlgoCommon"
+#define LOG_TAG "IntelAlgoCommonClient"
 
-#include "modules/sandboxing/client/IntelAlgoCommon.h"
+#include "modules/sandboxing/client/IntelAlgoCommonClient.h"
 
 #include <string>
 #include <vector>

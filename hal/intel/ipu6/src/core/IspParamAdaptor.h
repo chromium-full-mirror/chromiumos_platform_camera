@@ -37,7 +37,7 @@ extern "C" {
 }
 
 #ifdef ENABLE_SANDBOXING
-#include "modules/sandboxing/client/IntelCca.h"
+#include "modules/sandboxing/client/IntelCcaClient.h"
 #else
 #include "modules/algowrapper/IntelCca.h"
 #endif

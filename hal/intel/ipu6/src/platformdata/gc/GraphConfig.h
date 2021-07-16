@@ -24,7 +24,7 @@
 #include "iutils/Errors.h"
 
 #ifdef ENABLE_SANDBOXING
-#include "modules/sandboxing/client/GraphConfigImpl.h"
+#include "modules/sandboxing/client/GraphConfigImplClient.h"
 #else
 #include "modules/algowrapper/graph/GraphConfigImpl.h"
 #endif

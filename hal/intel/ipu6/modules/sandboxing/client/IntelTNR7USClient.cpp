@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "IntelTNRClient"
+#define LOG_TAG "IntelTNR7USClient"
 
-#include "modules/sandboxing/client/IntelTNR7US.h"
+#include "modules/sandboxing/client/IntelTNR7USClient.h"
 
 #include <string>
 

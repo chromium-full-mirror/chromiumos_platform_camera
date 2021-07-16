@@ -24,7 +24,7 @@
 #include <vector>
 
 #include "CameraTypes.h"
-#include "IntelAlgoCommon.h"
+#include "IntelAlgoCommonClient.h"
 #include "iutils/Thread.h"
 #include "modules/sandboxing/IPCIntelCca.h"
 

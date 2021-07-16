@@ -17,7 +17,7 @@
 #define LOG_TAG "IntelAlgoClient"
 
 #include "modules/sandboxing/client/IntelAlgoClient.h"
-#include "modules/sandboxing/client/IntelCca.h"
+#include "modules/sandboxing/client/IntelCcaClient.h"
 
 #include <fcntl.h>
 #include <sys/mman.h>

@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "IntelCca"
+#define LOG_TAG "IntelCcaClient"
 
-#include "modules/sandboxing/client/IntelCca.h"
+#include "modules/sandboxing/client/IntelCcaClient.h"
 
 #include <vector>
 

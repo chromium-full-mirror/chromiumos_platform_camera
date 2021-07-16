@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "ClientIntelFaceDetection"
+#define LOG_TAG "IntelFaceDetectionClient"
 
-#include "modules/sandboxing/client/IntelFaceDetection.h"
+#include "modules/sandboxing/client/IntelFaceDetectionClient.h"
 
 #include <algorithm>
 

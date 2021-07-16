@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Intel Corporation.
+ * Copyright (C) 2019-2021 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ extern "C" {
 #include <memory>
 
 #ifdef ENABLE_SANDBOXING
-#include "modules/sandboxing/client/IntelPGParam.h"
+#include "modules/sandboxing/client/IntelPGParamClient.h"
 #else
 #include "modules/algowrapper/IntelPGParam.h"
 #endif
