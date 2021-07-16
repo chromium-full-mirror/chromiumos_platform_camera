@@ -34,18 +34,11 @@
 using std::vector;
 
 namespace icamera {
-const int DVS_OXDIM_Y = 128;
-const int DVS_OYDIM_Y = 32;
-const int DVS_OXDIM_UV = 64;
-const int DVS_OYDIM_UV = 16;
-const int DVS_MIN_ENVELOPE = 12;
-
 CameraDevice::CameraDevice(int cameraId) :
     mState(DEVICE_UNINIT),
     mCameraId(cameraId),
     mStreamNum(0),
-    mCallback(nullptr),
-    mCcaInitialized(false)
+    mCallback(nullptr)
 {
     PERF_CAMERA_ATRACE();
     LOG1("@%s, cameraId:%d", __func__, mCameraId);
@@ -174,7 +167,6 @@ void CameraDevice::deinit()
 
     mProducer->deinit();
 
-    deinitIntelCcaHandle();
     mState = DEVICE_UNINIT;
 }
 
@@ -356,9 +348,6 @@ int CameraDevice::configureL(stream_config_t *streamList, bool clean)
     vector<ConfigMode> configModes;
     PlatformData::getConfigModesByOperationMode(mCameraId, streamList->operation_mode, configModes);
 
-    ret = initIntelCcaHandle(configModes);
-    CheckAndLogError(ret < 0, BAD_VALUE, "@%s failed to create intel cca handle", __func__);
-
     ret = mProducer->configure(producerConfigs, configModes);
     CheckAndLogError(ret < 0, BAD_VALUE, "@%s Device Configure failed", __func__);
 
@@ -384,286 +373,18 @@ int CameraDevice::configureL(stream_config_t *streamList, bool clean)
     return OK;
 }
 
-int CameraDevice::configCcaDvsData(int cameraId, ConfigMode configMode, cca::cca_init_params *params) {
-    LOG2("@%s", __func__);
-
-    // update GC
-    std::shared_ptr<IGraphConfig> gc = nullptr;
-
-    if (PlatformData::getGraphConfigNodes(cameraId)) {
-        IGraphConfigManager *GCM = IGraphConfigManager::getInstance(cameraId);
-        if (GCM) {
-            gc = GCM->getGraphConfig(configMode);
-        }
-    }
-
-    CheckWarning(gc == nullptr, BAD_VALUE, "Failed to get GC in DVS");
-    ia_isp_bxt_resolution_info_t resolution;
-    uint32_t gdcKernelId;
-    int status = gc->getGdcKernelSetting(&gdcKernelId, &resolution);
-    CheckWarning(status != OK, UNKNOWN_ERROR, "Failed to get GDC kernel setting, DVS disabled");
-    LOG2("%s, GDC kernel setting: id: %u, resolution:src: %dx%d, dst: %dx%d", __func__,
-         gdcKernelId, resolution.input_width, resolution.input_height, resolution.output_width,
-         resolution.output_height);
-
-    cca::cca_gdc_configuration *gdcConfig = &params->gdcConfig;
-    CLEAR(*gdcConfig);
-    gdcConfig->gdc_filter_width = DVS_MIN_ENVELOPE / 2;
-    gdcConfig->gdc_filter_height = DVS_MIN_ENVELOPE / 2;
-    MEMCPY_S(&gdcConfig->gdc_resolution_info, sizeof(ia_isp_bxt_resolution_info_t), &resolution,
-             sizeof(ia_isp_bxt_resolution_info_t));
-    gdcConfig->pre_gdc_top_padding = 0;
-    gdcConfig->pre_gdc_bottom_padding = 0;
-
-    if (gdcKernelId == ia_pal_uuid_isp_gdc3_1) {
-        gdcConfig->splitMetadata[0] = DVS_OYDIM_UV;
-        gdcConfig->splitMetadata[1] = DVS_OXDIM_UV;
-        gdcConfig->splitMetadata[2] = DVS_OYDIM_Y;
-        gdcConfig->splitMetadata[3] = DVS_OXDIM_Y;
-    } else {
-        gdcConfig->splitMetadata[0] = DVS_OYDIM_UV;
-        gdcConfig->splitMetadata[1] = DVS_OXDIM_UV;
-        gdcConfig->splitMetadata[2] = DVS_OYDIM_Y;
-        gdcConfig->splitMetadata[3] = DVS_OXDIM_Y/2;
-    }
-
-    camera_resolution_t envelopeResolution;
-    camera_resolution_t envelope_bq;
-    envelopeResolution.width = resolution.input_crop.left + resolution.input_crop.right;
-    envelopeResolution.height = resolution.input_crop.top + resolution.input_crop.bottom;
-    envelope_bq.width = envelopeResolution.width / 2 - gdcConfig->gdc_filter_width;
-    envelope_bq.height = envelopeResolution.height / 2 - gdcConfig->gdc_filter_height;
-    // envelope should be larger than 0
-    envelope_bq.width = std::max(0, envelope_bq.width);
-    envelope_bq.height = std::max(0, envelope_bq.height);
-
-    const float Max_Ratio = 1.45f;
-    int bq_max_width =
-                     static_cast<int>(Max_Ratio * static_cast<float>(resolution.output_width / 2));
-    int bq_max_height =
-                     static_cast<int>(Max_Ratio * static_cast<float>(resolution.output_height / 2));
-    if (resolution.input_width / 2 - envelope_bq.width -
-        gdcConfig->gdc_filter_width > bq_max_width)
-        envelope_bq.width = resolution.input_width / 2 - gdcConfig->gdc_filter_width - bq_max_width;
-
-    if (resolution.input_height / 2 - envelope_bq.height -
-        gdcConfig->gdc_filter_height > bq_max_height)
-        envelope_bq.height = resolution.input_height / 2 -
-                             gdcConfig->gdc_filter_height - bq_max_height;
-
-    float zoomHRatio = resolution.input_width / (resolution.input_width - envelope_bq.width * 2);
-    float zoomVRatio = resolution.input_height / (resolution.input_height - envelope_bq.height * 2);
-    params->dvsZoomRatio = (zoomHRatio > zoomVRatio) ? zoomHRatio : zoomVRatio;
-    params->enableVideoStablization = VIDEO_STABILIZATION_MODE_OFF;
-    int dvsType = PlatformData::getDVSType(cameraId);
-    if (dvsType == IMG_TRANS) {
-        params->dvsOutputType = cca::CCA_DVS_IMAGE_TRANSFORM;
-    } else {
-        params->dvsOutputType = cca::CCA_DVS_MORPH_TABLE;
-    }
-
-    dumpDvsConfiguration(*params);
-    return OK;
-}
-
-void CameraDevice::dumpDvsConfiguration(const cca::cca_init_params &config) {
-    LOG2("%s", __func__);
-
-    LOG2("config.dvsOutputType %d", config.dvsOutputType);
-    LOG2("config.enableVideoStablization %d", config.enableVideoStablization);
-    LOG2("config.dvsZoomRatio %f", config.dvsZoomRatio);
-    LOG2("config.gdcConfig.pre_gdc_top_padding %d", config.gdcConfig.pre_gdc_top_padding);
-    LOG2("config.gdcConfig.pre_gdc_bottom_padding %d", config.gdcConfig.pre_gdc_bottom_padding);
-    LOG2("config.gdcConfig.gdc_filter_width %d", config.gdcConfig.gdc_filter_width);
-    LOG2("config.gdcConfig.gdc_filter_height %d", config.gdcConfig.gdc_filter_height);
-    LOG2("config.gdcConfig.splitMetadata[0](oydim_uv) %d", config.gdcConfig.splitMetadata[0]);
-    LOG2("config.gdcConfig.splitMetadata[1](oxdim_uv) %d", config.gdcConfig.splitMetadata[1]);
-    LOG2("config.gdcConfig.splitMetadata[2](oydim_y) %d", config.gdcConfig.splitMetadata[2]);
-    LOG2("config.gdcConfig.splitMetadata[3](oxdim_y) %d", config.gdcConfig.splitMetadata[3]);
-    LOG2("config.gdcConfig.gdc_resolution_info.input_width %d, input_height %d",
-         config.gdcConfig.gdc_resolution_info.input_width,
-         config.gdcConfig.gdc_resolution_info.input_height);
-    LOG2("config.gdcConfig.gdc_resolution_info.output_width %d, output_height %d",
-         config.gdcConfig.gdc_resolution_info.output_width,
-         config.gdcConfig.gdc_resolution_info.output_height);
-    LOG2("config.gdcConfig.gdc_resolution_info.input_crop.left %d, top %d, right %d, bottom %d",
-         config.gdcConfig.gdc_resolution_info.input_crop.left,
-         config.gdcConfig.gdc_resolution_info.input_crop.top,
-         config.gdcConfig.gdc_resolution_info.input_crop.right,
-         config.gdcConfig.gdc_resolution_info.input_crop.bottom);
-    LOG2("config.gdcConfig.gdc_resolution_history.input_width %d, input_height %d",
-         config.gdcConfig.gdc_resolution_history.input_width,
-         config.gdcConfig.gdc_resolution_history.input_height);
-    LOG2("config.gdcConfig.gdc_resolution_history.output_width %d, output_height %d",
-         config.gdcConfig.gdc_resolution_history.output_width,
-         config.gdcConfig.gdc_resolution_history.output_height);
-    LOG2("config.gdcConfig.gdc_resolution_history.input_crop.left %d, top %d, right %d, bottom %d",
-         config.gdcConfig.gdc_resolution_history.input_crop.left,
-         config.gdcConfig.gdc_resolution_history.input_crop.top,
-         config.gdcConfig.gdc_resolution_history.input_crop.right,
-         config.gdcConfig.gdc_resolution_history.input_crop.bottom);
-}
-
-void CameraDevice::deinitIntelCcaHandle() {
-    LOG2("@%s", __func__);
-
-    if (!PlatformData::isEnableAIQ(mCameraId)) return;
-
-    for (auto &mode : mTuningModes) {
-        IntelCca *intelCca = IntelCca::getInstance(mCameraId, mode);
-        CheckAndLogError(!intelCca, VOID_VALUE, "%s, Failed to get cca: mode(%d), cameraId(%d)",
-                         __func__, mode, mCameraId);
-
-        if (PlatformData::isAiqdEnabled(mCameraId)) {
-            cca::cca_aiqd aiqd = {};
-            ia_err iaErr = intelCca->getAiqd(&aiqd);
-            if (AiqUtils::convertError(iaErr) == OK) {
-                ia_binary_data data = {aiqd.buf, static_cast<unsigned int>(aiqd.size)};
-                PlatformData::saveAiqd(mCameraId, mode, data);
-            } else {
-                LOGW("@%s, failed to get aiqd data, iaErr %d", __func__, iaErr);
-            }
-        }
-
-        int ret = PlatformData::deinitMakernote(mCameraId, mode);
-        if (ret != OK) {
-            LOGE("@%s, PlatformData::deinitMakernote fails", __func__);
-        }
-
-        intelCca->deinit();
-        IntelCca::releaseInstance(mCameraId, mode);
-        mCcaInitialized = false;
-    }
-}
-
-int CameraDevice::initIntelCcaHandle(const std::vector<ConfigMode> &configModes) {
-    LOG2("@%s", __func__);
-
-    if (mCcaInitialized || !PlatformData::isEnableAIQ(mCameraId)) return OK;
-
-    mTuningModes.clear();
-
-    for (auto &cfg : configModes) {
-        TuningMode tuningMode;
-        int ret = PlatformData::getTuningModeByConfigMode(mCameraId, cfg, tuningMode);
-        CheckAndLogError(ret != OK, ret, "%s: Failed to get tuningMode, cfg: %d", __func__, cfg);
-
-        PERF_CAMERA_ATRACE_PARAM1_IMAGING("intelCca->init", 1);
-
-        // Initialize cca_cpf data
-        ia_binary_data cpfData;
-        cca::cca_init_params params = {};
-        ret = PlatformData::getCpf(mCameraId, tuningMode, &cpfData);
-        if (ret == OK && cpfData.data) {
-            CheckAndLogError(cpfData.size > cca::MAX_CPF_LEN, UNKNOWN_ERROR,
-                             "%s, AIQB buffer is too small cpfData:%d > MAX_CPF_LEN:%d",
-                             __func__, cpfData.size, cca::MAX_CPF_LEN);
-            MEMCPY_S(params.aiq_cpf.buf, cca::MAX_CPF_LEN, cpfData.data, cpfData.size);
-            params.aiq_cpf.size = cpfData.size;
-        }
-
-        // Initialize cca_nvm data
-        ia_binary_data* nvmData = PlatformData::getNvm(mCameraId);
-        if (nvmData) {
-            CheckAndLogError(nvmData->size > cca::MAX_NVM_LEN,  UNKNOWN_ERROR,
-                             "%s, NVM buffer is too small: nvmData:%d  MAX_NVM_LEN:%d",
-                             __func__, nvmData->size, cca::MAX_NVM_LEN);
-            MEMCPY_S(params.aiq_nvm.buf, cca::MAX_NVM_LEN, nvmData->data, nvmData->size);
-            params.aiq_nvm.size = nvmData->size;
-        }
-
-        // Initialize cca_aiqd data
-        ia_binary_data* aiqdData = PlatformData::getAiqd(mCameraId, tuningMode);
-        if (aiqdData) {
-            CheckAndLogError(aiqdData->size > cca::MAX_AIQD_LEN,  UNKNOWN_ERROR,
-                             "%s, AIQD buffer is too small aiqdData:%d > MAX_AIQD_LEN:%d",
-                             __func__, aiqdData->size, cca::MAX_AIQD_LEN);
-            MEMCPY_S(params.aiq_aiqd.buf, cca::MAX_AIQD_LEN, aiqdData->data, aiqdData->size);
-            params.aiq_aiqd.size = aiqdData->size;
-        }
-
-        SensorFrameParams sensorParam = {};
-        ret = PlatformData::calculateFrameParams(mCameraId, sensorParam);
-        CheckAndLogError(ret != OK, ret, "%s: Failed to calculate frame params", __func__);
-        AiqUtils::convertToAiqFrameParam(sensorParam, params.frameParams);
-
-        params.frameUse = ia_aiq_frame_use_video;
-
-        params.aiqStorageLen = MAX_SETTING_COUNT;
-        // handle AE delay in AiqEngine
-        params.aecFrameDelay = 0;
-
-        LOG1("aiqStorageLen:%d", params.aiqStorageLen);
-        LOG1("aecFrameDelay:%d", params.aecFrameDelay);
-        LOG1("horizontal_crop_offset:%d", params.frameParams.horizontal_crop_offset);
-        LOG1("vertical_crop_offset:%d", params.frameParams.vertical_crop_offset);
-        LOG1("cropped_image_width:%d", params.frameParams.cropped_image_width);
-        LOG1("cropped_image_height:%d", params.frameParams.cropped_image_height);
-        LOG1("horizontal_scaling_numerator:%d", params.frameParams.horizontal_scaling_numerator);
-        LOG1("horizontal_scaling_denominator:%d", params.frameParams.horizontal_scaling_denominator);
-        LOG1("vertical_scaling_numerator:%d", params.frameParams.vertical_scaling_numerator);
-        LOG1("vertical_scaling_denominator:%d", params.frameParams.vertical_scaling_denominator);
-
-        // Initialize functions which need to be started
-        params.bitmap = cca::CCA_MODULE_AE | cca::CCA_MODULE_AWB |
-                        cca::CCA_MODULE_PA | cca::CCA_MODULE_SA | cca::CCA_MODULE_GBCE |
-                        cca::CCA_MODULE_LARD;
-        if (PlatformData::getLensHwType(mCameraId) == LENS_VCM_HW) {
-            params.bitmap |= cca::CCA_MODULE_AF;
-        }
-
-        // LOCAL_TONEMAP_S
-        bool hasLtm = PlatformData::isLtmEnabled(mCameraId);
-
-        if (hasLtm) {
-            params.bitmap |= cca::CCA_MODULE_LTM;
-        }
-        // LOCAL_TONEMAP_E
-
-        // INTEL_DVS_S
-        if (PlatformData::isDvsSupported(mCameraId)) {
-            ret = configCcaDvsData(mCameraId, cfg, &params);
-            CheckAndLogError(ret != OK, UNKNOWN_ERROR, "%s, Failed to configCcaDvsData", __func__);
-            params.bitmap |= cca::CCA_MODULE_DVS;
-        }
-        // INTEL_DVS_E
-
-        IntelCca *intelCca = IntelCca::getInstance(mCameraId, tuningMode);
-        CheckAndLogError(!intelCca, UNKNOWN_ERROR, "%s, Failed to get cca: mode(%d), cameraId(%d)",
-                         __func__, tuningMode, mCameraId);
-        ia_err iaErr = intelCca->init(params);
-        if (iaErr == ia_err_none) {
-            mTuningModes.push_back(tuningMode);
-        } else {
-            LOGE("%s, init IntelCca fails mode: %d, cameraId: %d", __func__, tuningMode, mCameraId);
-            IntelCca::releaseInstance(mCameraId, tuningMode);
-            return UNKNOWN_ERROR;
-        }
-
-        ret = PlatformData::initMakernote(mCameraId, tuningMode);
-        CheckAndLogError(ret != OK, UNKNOWN_ERROR, "%s, PlatformData::initMakernote fails", __func__);
-    }
-
-    mCcaInitialized = true;
-    return OK;
-}
-
 /**
  * Select the producer's config from the supported list.
  *
  * How to decide the producer's config?
- * 1. The producer's config can only be one of the combination from ISYS supported format and
- *    resolution list.
- * 2. Try to use the same config as user's required.
- * 3. If the ISYS supported format and resolution cannot satisfy user's requirement, then use
- *    the closest one, and let post processor do the conversion.
+ * 1. Select the input stream if it's provided
+ * 2. Use user's cropRegion or CSI output in graph to select the MC and producerConfigs
+ * 3. Try to use the same config as user's required.
+ * 4. Select the producerConfigs of SECOND_PORT if DOL enabled
  */
 std::map<Port, stream_t> CameraDevice::selectProducerConfig(const stream_config_t *streamList, int mcId)
 {
-    // Use the biggest stream to configure the producer.
-    stream_t biggestStream = streamList->streams[mSortedStreamIds[0]];
     std::map<Port, stream_t> producerConfigs;
-
     if (!PlatformData::isIsysEnabled(mCameraId)) {
         // Input stream id is the last one of mSortedStreamIds
         const stream_t& tmp = streamList->streams[mSortedStreamIds.back()];
@@ -673,47 +394,44 @@ std::map<Port, stream_t> CameraDevice::selectProducerConfig(const stream_config_
         }
     }
 
-    /*
-     * According to the stream info and operation mode to select MediaCtlConf.
-     * and isys output format. If inputFmt is given and supported, we use it as isys output format.
-     */
-    int inputFmt = mInputConfig.format;
-    int iSysFmt = biggestStream.format;
-    if (inputFmt != -1) {
-        if (!PlatformData::isISysSupportedFormat(mCameraId, inputFmt)) {
-            LOGE("The given ISYS format %s is unsupported.", CameraUtils::pixelCode2String(inputFmt));
-            return producerConfigs;
-        }
-        iSysFmt = inputFmt;
-    }
-
-    // Use CSI output to select MC config
-    vector <ConfigMode> configModes;
-    PlatformData::getConfigModesByOperationMode(mCameraId, streamList->operation_mode,
-                                             configModes);
-    stream_t matchedStream = biggestStream;
-    if (!configModes.empty() && mGCM != nullptr) {
-        std::shared_ptr<IGraphConfig> gc = mGCM->getGraphConfig(configModes[0]);
-        if (gc) {
-            camera_resolution_t csiOutput = {0, 0};
-            gc->getCSIOutputResolution(csiOutput);
-            if (csiOutput.width > 0 && csiOutput.height > 0) {
-                matchedStream.width = csiOutput.width;
-                matchedStream.height = csiOutput.height;
-            }
-        }
-    }
-
+    stream_t biggestStream = streamList->streams[mSortedStreamIds[0]];
     camera_crop_region_t cropRegion;
     int ret = mParameter.getCropRegion(cropRegion);
     if ((ret == OK) && (cropRegion.flag == 1)) {
+        // Use crop region to select MC config
         PlatformData::selectMcConf(mCameraId, mInputConfig,
                                   (ConfigMode)streamList->operation_mode, mcId);
     } else {
+        // Use CSI output to select MC config
+        vector <ConfigMode> configModes;
+        PlatformData::getConfigModesByOperationMode(mCameraId, streamList->operation_mode,
+                                                    configModes);
+        stream_t matchedStream = biggestStream;
+        if (!configModes.empty() && mGCM != nullptr) {
+            std::shared_ptr<IGraphConfig> gc = mGCM->getGraphConfig(configModes[0]);
+            if (gc) {
+                camera_resolution_t csiOutput = {0, 0};
+                gc->getCSIOutputResolution(csiOutput);
+                if (csiOutput.width > 0 && csiOutput.height > 0) {
+                    matchedStream.width = csiOutput.width;
+                    matchedStream.height = csiOutput.height;
+                }
+            }
+        }
         PlatformData::selectMcConf(mCameraId, matchedStream,
-                                  (ConfigMode)streamList->operation_mode, mcId);
+                                   (ConfigMode)streamList->operation_mode, mcId);
     }
 
+    // Select the output format.
+    int iSysFmt = biggestStream.format;
+    if (mInputConfig.format != -1) {
+        if (!PlatformData::isISysSupportedFormat(mCameraId, mInputConfig.format)) {
+            LOGE("The given ISYS format %s is unsupported.",
+                 CameraUtils::pixelCode2String(mInputConfig.format));
+            return producerConfigs;
+        }
+        iSysFmt = mInputConfig.format;
+    }
     PlatformData::selectISysFormat(mCameraId, iSysFmt);
 
     // Use the ISYS output if it's provided in media config section of config file.
@@ -723,13 +441,12 @@ std::map<Port, stream_t> CameraDevice::selectProducerConfig(const stream_config_
 
     if (mainConfig.width != 0 && mainConfig.height != 0) {
         producerConfigs[MAIN_PORT] = mainConfig;
-
         return producerConfigs;
     }
 
+    // Filter the ISYS best resolution with input stream
     int inputWidth = mInputConfig.width;
     int inputHeight = mInputConfig.height;
-
     camera_resolution_t producerRes = {inputWidth, inputHeight};
     if (inputWidth == 0 && inputHeight == 0) {
         // Only get the ISYS resolution when input config is not specified.
@@ -740,9 +457,9 @@ std::map<Port, stream_t> CameraDevice::selectProducerConfig(const stream_config_
         return producerConfigs;
     }
 
+    // Update the height according to the field(interlaced).
     mainConfig.format = PlatformData::getISysFormat(mCameraId);
     mainConfig.width = producerRes.width;
-    // Update the height according to the field.
     mainConfig.height = CameraUtils::getInterlaceHeight(mainConfig.field, producerRes.height);
 
     // configuration with main port

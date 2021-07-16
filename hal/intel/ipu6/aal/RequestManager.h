@@ -30,11 +30,6 @@
 
 namespace camera3 {
 
-struct Camera3Request {
-    uint32_t frameNumber;
-    android::CameraMetadata settings;
-};
-
 /**
  * \class RequestManager
  *

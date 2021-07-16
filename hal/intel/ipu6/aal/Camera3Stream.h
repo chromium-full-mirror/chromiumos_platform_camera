@@ -47,31 +47,6 @@ struct StreamComInfo {
 };
 
 /**
- * \class InternalBufferPool
- *
- * This class is used to manage a local memory pool for still and post
- * processing stream It needs to follow the calling sequence: allocBuffers ->
- * acquireBuffer -> findBuffer -> returnBuffer
- */
-class InternalBufferPool {
- public:
-    InternalBufferPool();
-    ~InternalBufferPool();
-
-    icamera::status_t allocBuffers(const icamera::stream_t& stream, uint32_t numBuffers,
-                                   int cameraId);
-    void destroyBuffers();
-    std::shared_ptr<Camera3Buffer> acquireBuffer();
-    void returnBuffer(std::shared_ptr<Camera3Buffer> buffer);
-    std::shared_ptr<Camera3Buffer> findBuffer(void* memAddr);
-
- private:
-    std::unordered_map<std::shared_ptr<Camera3Buffer>, bool>
-        mInterBuf;  // first: camera3Buffer, second: busy
-    std::mutex mLock;
-};
-
-/**
  * \class Camera3Stream
  *
  * This class is used to handle requests. It has the following
