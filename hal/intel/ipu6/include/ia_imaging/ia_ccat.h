@@ -38,11 +38,11 @@ extern "C" {
 #define IA_CCAT_ACM_SECTORS_MAX_NUM 36
 #define PERCENTAGE_2_DECIMAL 0.01F
 
-typedef struct _ia_ccat_t ia_ccat;
-typedef struct _frame_info_t ia_ccat_frame_info;
+typedef struct ia_ccat_t ia_ccat;
+typedef struct frame_info_t ia_ccat_frame_info;
 
 LIBEXPORT ia_ccat*
-ia_ccat_init();
+ia_ccat_init(void);
 
 /*!
  * \brief (Re)allocates memory for CMC/tunings used inside CCAT.
@@ -310,12 +310,12 @@ ia_ccat_get_frame_color_correction_matrix(
 LIBEXPORT ia_err
 ia_ccat_get_frame_timestamp(
     ia_ccat_frame_info *a_frame_info_ptr,
-    unsigned long long *a_frame_timestamp_ptr);
+    uint64_t *a_frame_timestamp_ptr);
 
 LIBEXPORT ia_err
 ia_ccat_get_frame_id(
     ia_ccat_frame_info *a_frame_info_ptr,
-    unsigned long long *frame_id_ptr);
+    uint64_t *frame_id_ptr);
 
 /*!
  * \brief Get information about number of exposures and which of them is the center (in case of multi exposure frame) exposure index.
@@ -472,6 +472,12 @@ ia_ccat_get_frame_motion_level_estimate(
     ia_ccat_frame_info *a_frame_info_ptr,
     uint32_t a_exposure_index,
     float32_t *a_motion_estimate_ptr);
+
+LIBEXPORT ia_err
+ia_ccat_get_frame_luminance_average(
+    ia_ccat_frame_info *a_frame_info_ptr,
+    uint32_t a_exposure_index,
+    float32_t *luminance_average);
 #endif
 #endif
 
@@ -535,6 +541,19 @@ ia_ccat_get_frame_faces(
     ia_ccat_frame_info *a_frame_info_ptr,
     uint32_t *a_num_faces_ptr,
     const ia_face_roi **a_faces_ptr);
+
+LIBEXPORT ia_err
+ia_ccat_get_frame_face_states(
+    ia_ccat_frame_info *a_frame_info_ptr,
+    bool *updated,
+    bool *is_video_conf);
+
+LIBEXPORT ia_err
+ia_ccat_get_analyzed_face_area(
+    ia_ccat_frame_info* a_frame_info_ptr,
+    uint32_t a_exposure_index,
+    const ia_face_roi *a_face_ptr,
+    const ia_rectangle **area);
 
 LIBEXPORT ia_err
 ia_ccat_get_face_coverage(
@@ -616,8 +635,8 @@ ia_ccat_set_sensor_events_accelerometer(
 LIBEXPORT ia_err
 ia_ccat_get_sensor_events_accelerometer(
     const ia_ccat *a_ccat_ptr,                               /*!< [in] Analysistoolbox internal data structures. */
-    unsigned long long a_start_timestamp,                /*!< [in]  Start time for events to be copied. 0 if all data (max_num_events) must be copied. */
-    unsigned long long a_end_timestamp,                  /*!< [in]  End time for events to be copied. 0 if all data (max_num_events) must be copied. */
+    uint64_t a_start_timestamp,                /*!< [in]  Start time for events to be copied. 0 if all data (max_num_events) must be copied. */
+    uint64_t a_end_timestamp,                  /*!< [in]  End time for events to be copied. 0 if all data (max_num_events) must be copied. */
     uint32_t *a_num_events_ptr,                          /*!< [in]  Number of events allowed to be copied (maximum amount of available memory in sensor_events).
                                                        [out] How many events were copied to the sensor_events structure. */
     ia_ccat_motion_sensor_event *a_sensor_events_ptr);       /*!< [out] Copied accelerometer events. */
@@ -638,8 +657,8 @@ ia_ccat_set_sensor_events_gyroscope(
 LIBEXPORT ia_err
 ia_ccat_get_sensor_events_gyroscope(
     const ia_ccat *a_ccat_ptr,                               /*!< [in]  Analysistoolbox internal data structures. */
-    unsigned long long a_start_timestamp,                /*!< [in]  Start time for events to be copied. 0 if all data (max_num_events) must be copied. */
-    unsigned long long a_end_timestamp,                  /*!< [in]  End time for events to be copied. 0 if all data (max_num_events) must be copied. */
+    uint64_t a_start_timestamp,                /*!< [in]  Start time for events to be copied. 0 if all data (max_num_events) must be copied. */
+    uint64_t a_end_timestamp,                  /*!< [in]  End time for events to be copied. 0 if all data (max_num_events) must be copied. */
     uint32_t *a_num_events_ptr,                          /*!< [in]  Number of events allowed to be copied (maximum amount of available memory in sensor_events).
                                                        [out] How many events were copied to the sensor_events structure. */
     ia_ccat_motion_sensor_event *a_sensor_events_ptr);       /*!< [out] Copied gyroscope events. */
@@ -660,8 +679,8 @@ ia_ccat_set_sensor_events_gravity(
 LIBEXPORT ia_err
 ia_ccat_get_sensor_events_gravity(
     const ia_ccat *a_ccat_ptr,                               /*!< [in]  Analysistoolbox internal data structures. */
-    unsigned long long a_start_timestamp,                /*!< [in]  Start time for events to be copied. 0 if all data (max_num_events) must be copied. */
-    unsigned long long a_end_timestamp,                  /*!< [in]  End time for events to be copied. 0 if all data (max_num_events) must be copied. */
+    uint64_t a_start_timestamp,                /*!< [in]  Start time for events to be copied. 0 if all data (max_num_events) must be copied. */
+    uint64_t a_end_timestamp,                  /*!< [in]  End time for events to be copied. 0 if all data (max_num_events) must be copied. */
     uint32_t *a_num_events_ptr,                          /*!< [in]  Number of events allowed to be copied (maximum amount of available memory in sensor_events).
                                                        [out] How many events were copied to the sensor_events structure. */
     ia_ccat_motion_sensor_event* a_sensor_events_ptr);       /*!< [out] Copied gravity events. */
@@ -682,8 +701,8 @@ ia_ccat_set_sensor_events_ambient_light(
 LIBEXPORT ia_err
 ia_ccat_get_sensor_events_ambient_light(
     const ia_ccat *a_ccat_ptr,                               /*!< [in]  Analysistoolbox internal data structures. */
-    unsigned long long a_start_timestamp,                /*!< [in]  Start time for events to be copied. 0 if all data (max_num_events) must be copied. */
-    unsigned long long a_end_timestamp,                  /*!< [in]  End time for events to be copied. 0 if all data (max_num_events) must be copied. */
+    uint64_t a_start_timestamp,                /*!< [in]  Start time for events to be copied. 0 if all data (max_num_events) must be copied. */
+    uint64_t a_end_timestamp,                  /*!< [in]  End time for events to be copied. 0 if all data (max_num_events) must be copied. */
     uint32_t *a_num_events_ptr,                          /*!< [in]  Number of events allowed to be copied (maximum amount of available memory in sensor_events).
                                                             [out] How many events were copied to the sensor_events structure. */
     ia_ccat_ambient_light_event *a_sensor_events_ptr);       /*!< [out] Copied ambient light events. */

@@ -28,7 +28,9 @@
 extern "C" {
 #endif
 
+/*LDRA_INSPECTED 612 s */
 typedef void(*finalizer_function)(void *ptr);
+/*LDRA_INSPECTED 67 x */
 typedef struct ia_alloc_t ia_alloc;
 
 /*!
@@ -63,6 +65,7 @@ LIBEXPORT ia_alloc* ia_alloc_init_from_memory(void* buffer, size_t size);
  *          ia_err_nomemory, if out of memory.
  *          ia_err_argument, if invalid allocator or the allocator used pre-allocated memory.
  */
+/*LDRA_INSPECTED 25 x */
 LIBEXPORT ia_err ia_alloc_reserve(ia_alloc* alloc, size_t size);
 
 /*!
@@ -84,6 +87,7 @@ LIBEXPORT void* ia_alloc_allocate(ia_alloc* alloc, size_t size);
  *
  *  \return A pointer to the allocation, or NULL, if ran out of allocator memory space.
  */
+/*LDRA_INSPECTED 67 x */
 LIBEXPORT void* ia_alloc_allocate_with_finalizer(ia_alloc* alloc, size_t size, finalizer_function func);
 
 /*!

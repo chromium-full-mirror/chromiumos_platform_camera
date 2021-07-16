@@ -187,9 +187,13 @@ public:
      *                                       parameters for statistis.
      * \param[in] aiqResults                 Mandatory.\n
      *                                       last AIQ results for reference.
+     * \param[out] outStats                  Optional.\n
+     *                                       Output the AIQ statistics data.
      * \return                               Error code.
      */
-    virtual ia_err setStatsParams(ia_aiq* aiqHandle, const cca_stats_params &params, const cca_aiq_results_storage &aiqResults) = 0;
+    virtual ia_err setStatsParams(ia_aiq* aiqHandle, const cca_stats_params &params,
+                                  const cca_aiq_results_storage &aiqResults,
+                                  cca_out_stats *outStats = nullptr) = 0;
 
 #ifdef PAC_ENABLE
     /*!

@@ -61,6 +61,7 @@ ia_exc_exposure_time_to_sensor_units(
  * \param[out] a_gain_code         Calculated gain code.
  * \return                       Error code.
  */
+/*LDRA_INSPECTED 67 x */
 LIBEXPORT ia_err
 ia_exc_gain_to_sensor_units(
     const cmc_gain_conversion_t *a_gain_conversion,

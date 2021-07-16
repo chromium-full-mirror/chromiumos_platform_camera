@@ -151,9 +151,11 @@ public:
      *
      * \param[in] params                Mandatory.\n
      *                                  Input parameters containing statistics information about a frame.
+     * \param[out] outStats             Optional.\n
+     *                                  Output the aiq statistics data.
      * \return                          Error code for status. zero on success, non-zero on failure
      */
-    ia_err setStatsParams(const cca_stats_params& params);
+    ia_err setStatsParams(const cca_stats_params& params, cca_out_stats *outStats = nullptr);
 
     /*!
      * \brief AEC calculation based on input parameters and frame statistics.

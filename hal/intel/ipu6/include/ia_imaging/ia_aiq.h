@@ -529,7 +529,7 @@ typedef struct
  */
 LIBEXPORT ia_err
 ia_aiq_statistics_set_v4(ia_aiq *ia_aiq_ptr,
-    ia_aiq_statistics_input_params_v4 *statistics_input_params);
+    const ia_aiq_statistics_input_params_v4 *statistics_input_params);
 
 /*!
  * \brief Focus bracketing parameters.

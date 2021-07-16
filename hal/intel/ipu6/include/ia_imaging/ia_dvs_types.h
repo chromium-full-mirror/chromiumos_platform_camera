@@ -299,6 +299,8 @@ typedef struct
                                                                             transformation. Can be used e.g.
                                                                             for image alignment or
                                                                             video stabilization. */
+    bool matrices_changed;
+
 } ia_dvs_image_transformation;
 
 #endif /* _IA_DVS_TYPES_H_ */

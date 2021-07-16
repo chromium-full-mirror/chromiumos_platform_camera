@@ -368,6 +368,13 @@ typedef struct
     ia_rectangle statistics_crop_area;  /*!< Mandatory for IPU7. RGBS and AF grid area crop with respect to full field of view of sensor output using (relative)ranges from ia_coordinate.h. */
 } cca_stats_params;
 
+typedef struct
+{
+    bool get_rgbs_stats;                /*!< If get rgbs statistics back. */
+    ia_aiq_rgbs_grid rgbs_grid;
+    rgbs_grid_block rgbs_blocks[BXT_RGBS_GRID_MAX_NUM_ELEMENTS];
+} cca_out_stats;
+
 /*!
 *  \brief Input parameter structure for Parameter adaptor.
 */
