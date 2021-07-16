@@ -305,8 +305,9 @@ int IspParamAdaptor::configure(const stream_t &stream, ConfigMode configMode,
         AutoMutex l(mIpuParamLock);
         updateIspParameterMap(&(ispParamIt.second), -1, -1, binaryData);
         ispParamIt.second.mSequenceToDataMap.erase(ispParamIt.second.mSequenceToDataMap.begin());
+
+        dumpIspParameter(ispParamIt.first, 0, binaryData);
     }
-    dumpIspParameter(0, binaryData);
 
     return postConfigure(stream.width, stream.height, &binaryData);
 }
@@ -851,12 +852,12 @@ int IspParamAdaptor::runIspAdaptL(ia_isp_bxt_program_group *pgPtr, ia_isp_bxt_gd
     CheckAndLogError(iaErr != ia_err_none && iaErr != ia_err_not_run, UNKNOWN_ERROR,
                      "ISP parameter adaptation has failed %d", iaErr);
 
-    dumpIspParameter(settingSequence, *binaryData);
+    dumpIspParameter(streamId, settingSequence, *binaryData);
 
     return OK;
 }
 
-void IspParamAdaptor::dumpIspParameter(long sequence, ia_binary_data binaryData) {
+void IspParamAdaptor::dumpIspParameter(int streamId, long sequence, ia_binary_data binaryData) {
     if (mPgParamType == PG_PARAM_PSYS_ISA && !CameraDump::isDumpTypeEnable(DUMP_PSYS_PAL)) return;
     if (mPgParamType == PG_PARAM_ISYS && !CameraDump::isDumpTypeEnable(DUMP_ISYS_PAL)) return;
 
@@ -864,7 +865,7 @@ void IspParamAdaptor::dumpIspParameter(long sequence, ia_binary_data binaryData)
     bParam.bType    = BIN_TYPE_GENERAL;
     bParam.mType    = mPgParamType == PG_PARAM_PSYS_ISA ? M_PSYS : M_ISYS;
     bParam.sequence = sequence;
-    bParam.gParam.appendix = "pal";
+    bParam.gParam.appendix = ("pal_" + std::to_string(streamId)).c_str();;
     CameraDump::dumpBinary(mCameraId, binaryData.data, binaryData.size, &bParam);
 }
 

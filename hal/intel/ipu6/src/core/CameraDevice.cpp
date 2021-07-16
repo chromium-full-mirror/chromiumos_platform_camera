@@ -1030,10 +1030,10 @@ int CameraDevice::dqbuf(int streamId, camera_buffer_t **ubuffer, Parameters* set
     CheckAndLogError(!*ubuffer || ret != OK, ret, "failed to get ubuffer from stream %d", streamId);
 
     // Update and keep latest result, copy to settings when needed.
-    ret = mParamGenerator->getParameters((*ubuffer)->sequence, &mResultParameter);
+    ret = mParamGenerator->getParameters((*ubuffer)->sequence, &mResultParameter, false, true);
 
     if (settings) {
-        ret = mParamGenerator->getParameters((*ubuffer)->sequence, settings, false);
+        ret = mParamGenerator->getParameters((*ubuffer)->sequence, settings);
     }
 
     return ret;
@@ -1143,7 +1143,7 @@ int CameraDevice::getParameters(Parameters& param, long sequence)
 
     if (sequence >= 0 && mState != DEVICE_STOP) {
         // fetch target parameter and results
-        return mParamGenerator->getParameters(sequence, &param, false);
+        return mParamGenerator->getParameters(sequence, &param);
     }
 
     param = mParameter;

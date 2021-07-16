@@ -132,6 +132,7 @@ shared_library("libcamhal") {
     "src/v4l2/V4l2DeviceFactory.cpp",
     "src/v4l2/NodeInfo.cpp",
   ]
+
   cflags_cc = [
     "-fvisibility=default",
   ]

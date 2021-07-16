@@ -119,7 +119,7 @@ int AiqEngine::run3A(long requestId, long applyingSeq, long* effectSeq)
     // Run 3A in call thread
     AutoMutex l(mEngineLock);
 
-    AiqStatistics *aiqStats =
+    AiqStatistics *aiqStats = mFirstAiqRunning ? nullptr :
         const_cast<AiqStatistics*>(mAiqResultStorage->getAndLockAiqStatistics());
     AiqResult *aiqResult = mAiqResultStorage->acquireAiqResult();
     AiqState state = AIQ_STATE_IDLE;

@@ -176,22 +176,33 @@ void ParameterGenerator::updateParameters(long sequence, const Parameters *param
     mRequestParamMap[sequence] = requestParam;
 }
 
-int ParameterGenerator::getParameters(long sequence, Parameters *param, bool resultOnly)
+int ParameterGenerator::getParameters(long sequence, Parameters *param, bool setting, bool result)
 {
     CheckAndLogError((param == nullptr), UNKNOWN_ERROR, "nullptr to get param!");
 
-    if (!resultOnly) {
+    if (setting) {
         AutoMutex l(mParamsLock);
         if (sequence < 0) {
             *param = mLastParam;
         } else if (mRequestParamMap.find(sequence) != mRequestParamMap.end()) {
             *param = mRequestParamMap[sequence]->param;
         } else {
-            LOGE("Can't find settings for seq %ld", sequence);
+            // Find nearest parameter
+            bool found = false;
+            for (auto it = mRequestParamMap.crbegin(); it != mRequestParamMap.crend(); ++it) {
+                if (it->first <= sequence) {
+                    *param = mRequestParamMap[it->first]->param;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) LOGE("Can't find settings for seq %ld", sequence);
         }
     }
 
-    generateParametersL(sequence, param);
+    if (result) {
+        generateParametersL(sequence, param);
+    }
     return OK;
 }
 
@@ -217,6 +228,14 @@ int ParameterGenerator::getRequestId(long sequence, long& requestId)
     if (mRequestParamMap.find(sequence) != mRequestParamMap.end()) {
         requestId = mRequestParamMap[sequence]->requestId;
         return OK;
+    }
+
+    // Find nearest request id
+    for (auto it = mRequestParamMap.crbegin(); it != mRequestParamMap.crend(); ++it) {
+        if (it->first <= sequence) {
+            requestId = mRequestParamMap[it->first]->requestId;
+            return OK;
+        }
     }
 
     LOGE("Can't find requestId for seq %ld", sequence);

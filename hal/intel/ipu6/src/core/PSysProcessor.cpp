@@ -882,7 +882,7 @@ void PSysProcessor::dispatchTask(CameraBufferPortMap &inBuf, CameraBufferPortMap
     // Handle per-frame settings if output buffer requires
     if (settingSequence > -1 && mParameterGenerator) {
         Parameters params;
-        if (mParameterGenerator->getParameters(currentSequence, &params, false) == OK) {
+        if (mParameterGenerator->getParameters(currentSequence, &params, true, false) == OK) {
             setParameters(params);
 
             // Dump raw image if makernote mode is MAKERNOTE_MODE_JPEG or fake task for IQ tune

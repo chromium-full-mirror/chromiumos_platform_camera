@@ -121,7 +121,7 @@ private:
     void releaseIspParamBuffers();
 
     // Dumping methods for debugging purposes.
-    void dumpIspParameter(long sequence, ia_binary_data binaryData);
+    void dumpIspParameter(int streamId, long sequence, ia_binary_data binaryData);
 
     // Enable or disable kernels according to environment variables for debug purpose.
     void updateKernelToggles(cca::cca_program_group *programGroup);
