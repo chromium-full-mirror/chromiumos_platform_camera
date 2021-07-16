@@ -61,6 +61,7 @@ class FaceDetection : public Thread {
 
  private:
     bool faceRunningByCondition();
+    void printfFDRunRate();
     int getFaceDetectionResult(FaceDetectionResult *mResult, bool resetRes = false);
     FaceDetectionRunParams *acquireRunBuf();
     void returnRunBuf(FaceDetectionRunParams *memRunBuf);
@@ -100,6 +101,9 @@ class FaceDetection : public Thread {
     unsigned int mFDRunIntervalNoFace;   // FD running's interval frames without face.
     unsigned int mFDRunInterval;         // run 1 frame every mFDRunInterval frames.
     unsigned int mFrameCnt;              // from 0 to (mFDRunInterval - 1).
+
+    unsigned int mRunCount;
+    timeval mRequestRunTime;
 
     DISALLOW_COPY_AND_ASSIGN(FaceDetection);
 };

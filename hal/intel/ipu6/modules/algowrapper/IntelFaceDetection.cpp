@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Intel Corporation
+ * Copyright (C) 2019-2021 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,13 +50,18 @@ status_t IntelFaceDetection::init(FaceDetectionInitParams* pData, int dataSize) 
     pvl_face_detection_parameters params = {};
     pvl_face_detection_default_parameters(normal, &params);
     params.max_num_faces = mMaxFacesNum;
+    // The mode of searching face. If search_mode=1, then it will only search the face bigger
+    // than the one tracked, and the defualt value is 0
+    if (mMaxFacesNum == 1) {
+        params.search_mode = 1;
+    }
     faceRet = pvl_face_detection_set_parameters(mFDHandle, &params);
     CheckAndLogError(faceRet != pvl_success, UNKNOWN_ERROR,
                      "@%s, Failed to pvl_face_detection_set_paramters,faceRet:%d", __func__,
                      faceRet);
 
-    LOG2("@%s, max_num_faces:%d, rip_range:%d, num_rollover_frames:%d", __func__,
-         params.max_num_faces, params.rip_range, params.num_rollover_frames);
+    LOG2("@%s, max_num_faces:%d, rip_range:%d, num_rollover_frames:%d, search_mode:%d", __func__,
+         params.max_num_faces, params.rip_range, params.num_rollover_frames, params.search_mode);
 
     return OK;
 }

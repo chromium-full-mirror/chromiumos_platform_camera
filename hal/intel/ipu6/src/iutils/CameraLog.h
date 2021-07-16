@@ -73,17 +73,18 @@ enum  {
 
     CAMERA_DEBUG_LOG_KERNEL_TOGGLE = 1 << 8,
     CAMERA_DEBUG_LOG_SANDBOXING = 1 << 9,
+    CAMERA_DEBUG_LOG_FACE_DETECTION_FPS = 1 << 10,
 
     /* Make logs persistent, retrying if logcat is busy */
     CAMERA_DEBUG_LOG_PERSISTENT = 1 << 12, /* 4096 */
     /* reserved for any components */
     CAMERA_DEBUG_LOG_GRAPH = 1 << 13,
 
-    CAMERA_DEBUG_LOG_DBG = 1 <<16,
-    CAMERA_DEBUG_LOG_INFO = 1 <<17,
-    CAMERA_DEBUG_LOG_ERR = 1 <<18,
-    CAMERA_DEBUG_LOG_WARNING = 1 <<19,
-    CAMERA_DEBUG_LOG_VERBOSE = 1 <<20
+    CAMERA_DEBUG_LOG_DBG = 1 << 16,
+    CAMERA_DEBUG_LOG_INFO = 1 << 17,
+    CAMERA_DEBUG_LOG_ERR = 1 << 18,
+    CAMERA_DEBUG_LOG_WARNING = 1 << 19,
+    CAMERA_DEBUG_LOG_VERBOSE = 1 << 20,
 };
 
 enum  {
@@ -159,8 +160,11 @@ void ccaPrintDebug(const char *fmt, va_list ap);
     icamera::Log::print_log(icamera::gLogLevel & icamera::CAMERA_DEBUG_LOG_SANDBOXING, LOG_TAG, \
                             icamera::CAMERA_DEBUG_LOG_SANDBOXING, format, ##args)
 #define LOGFPS(format, args...) \
-    icamera::Log::print_log(icamera::gLogLevel& icamera::CAMERA_DEBUG_LOG_FPS, LOG_TAG, \
+    icamera::Log::print_log(icamera::gLogLevel & icamera::CAMERA_DEBUG_LOG_FPS, LOG_TAG, \
                             icamera::CAMERA_DEBUG_LOG_FPS, format, ##args)
+#define LOGFDFPS(format, args...) \
+    icamera::Log::print_log(icamera::gLogLevel & icamera::CAMERA_DEBUG_LOG_FACE_DETECTION_FPS, \
+                            LOG_TAG, icamera::CAMERA_DEBUG_LOG_FACE_DETECTION_FPS, format, ##args)
 
 #define LOGD(format, args...) \
     icamera::Log::print_log(true, LOG_TAG, icamera::CAMERA_DEBUG_LOG_DBG, format, ##args)
@@ -213,6 +217,9 @@ void __camera_hal_log(bool condition, int prio, const char *tag, const char *fmt
 #define LOGFPS(format, args...) \
     icamera::__camera_hal_log(icamera::gLogLevel & icamera::CAMERA_DEBUG_LOG_FPS, \
                               ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
+#define LOGFDFPS(format, args...) \
+    icamera::Log::print_log(icamera::gLogLevel & icamera::CAMERA_DEBUG_LOG_FACE_DETECTION_FPS, \
+                            LOG_TAG, icamera::CAMERA_DEBUG_LOG_FACE_DETECTION_FPS, format, ##args)
 
 #define LOGE(...) icamera::__camera_hal_log(true, ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 #define LOGI(...) icamera::__camera_hal_log(true, ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)

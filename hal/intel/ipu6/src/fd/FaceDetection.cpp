@@ -26,6 +26,8 @@
 #include "PlatformData.h"
 
 namespace icamera {
+#define FPS_FD_COUNT 60  // the face detection interval to print fps
+
 std::unordered_map<int, FaceDetection*> FaceDetection::sInstances;
 Mutex FaceDetection::sLock;
 FaceDetection *FaceDetection::getInstance(int cameraId) {
@@ -81,7 +83,8 @@ FaceDetection::FaceDetection(int cameraId, unsigned int maxFaceNum, int32_t halS
     mFDRunDefaultInterval(icamera::PlatformData::faceEngineRunningInterval(cameraId)),
     mFDRunIntervalNoFace(icamera::PlatformData::faceEngineRunningIntervalNoFace(cameraId)),
     mFDRunInterval(icamera::PlatformData::faceEngineRunningInterval(cameraId)),
-    mFrameCnt(0) {
+    mFrameCnt(0),
+    mRunCount(0) {
     LOG1("@%s, cameraId:%d, maxFaceNum:%d,", __func__, cameraId, maxFaceNum);
     LOG1("@%s, mFDRunDefaultInterval:%d, mFDRunIntervalNoFace:%d, mFDRunInterval:%d",
          __func__, mFDRunDefaultInterval, mFDRunIntervalNoFace, mFDRunInterval);
@@ -109,6 +112,8 @@ FaceDetection::FaceDetection(int cameraId, unsigned int maxFaceNum, int32_t halS
         CheckAndLogError(!memRunBuf, VOID_VALUE, "prepareRunBuffer fails");
         mMemRunPool.push(memRunBuf);
     }
+
+    gettimeofday(&mRequestRunTime, nullptr);
 
     mInitialized = true;
 }
@@ -194,6 +199,22 @@ bool FaceDetection::faceRunningByCondition() {
     return false;
 }
 
+void FaceDetection::printfFDRunRate() {
+    if (!Log::isDebugLevelEnable(CAMERA_DEBUG_LOG_FACE_DETECTION_FPS)) return;
+
+    mRunCount++;
+    if (mRunCount % FPS_FD_COUNT != 0) return;
+
+    struct timeval curTime;
+    gettimeofday(&curTime, nullptr);
+    int duration = static_cast<int>(curTime.tv_usec - mRequestRunTime.tv_usec +
+                                    ((curTime.tv_sec - mRequestRunTime.tv_sec) * 1000000));
+    float curFps =
+        static_cast<float>(1000000) / static_cast<float>(duration / FPS_FD_COUNT);
+    LOGFDFPS("@%s, face detection fps: %02f", __func__, curFps);
+    mRequestRunTime = curTime;
+}
+
 void FaceDetection::runFaceDetection(const camera_buffer_t &buffer) {
     LOG1("@%s", __func__);
     CheckAndLogError(mInitialized == false, VOID_VALUE, "mInitialized is false");
@@ -237,6 +258,7 @@ void FaceDetection::runFaceDetectionBySync(const camera_buffer_t &buffer) {
     int ret = mFace->run(params, sizeof(FaceDetectionRunParams), buffer.addr);
 #endif
 
+    printfFDRunRate();
     LOG2("@%s: ret:%d, it takes need %ums", __func__, ret,
          (unsigned)((CameraUtils::systemTime() - startTime) / 1000000));
 
@@ -307,6 +329,8 @@ bool FaceDetection::threadLoop() {
     nsecs_t startTime = CameraUtils::systemTime();
 
     int ret = mFace->run(faceParams, sizeof(FaceDetectionRunParams));
+
+    printfFDRunRate();
     LOG2("@%s: ret:%d, it takes need %ums", __func__, ret,
          (unsigned)((CameraUtils::systemTime() - startTime) / 1000000));
 
