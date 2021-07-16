@@ -26,6 +26,8 @@
 namespace camera3 {
 
 #define IS_ZSL_USAGE(usage) (((usage)&GRALLOC_USAGE_HW_CAMERA_ZSL) == GRALLOC_USAGE_HW_CAMERA_ZSL)
+#define IS_HW_USAGE(usage) (((usage)&GRALLOC_USAGE_HW_VIDEO_ENCODER) \
+                            || ((usage)&GRALLOC_USAGE_HW_COMPOSER))
 
 namespace HalV3Utils {
 

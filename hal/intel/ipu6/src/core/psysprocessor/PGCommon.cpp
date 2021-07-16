@@ -1067,7 +1067,8 @@ int PGCommon::prepareTerminalBuffers(const ia_binary_data *ipuParameters,
         if (buffer) {
             bool flush = buffer->getUsage() == BUFFER_USAGE_GENERAL ? true : false;
 #ifdef IPU_SYSVER_ipu6v5
-            if (buffer->getMemory() == V4L2_MEMORY_DMABUF) {
+            if (buffer->getMemory() == V4L2_MEMORY_DMABUF
+                && !buffer->isFlagsSet(BUFFER_FLAG_SW_READ)) {
                 flush = false;
             }
 #endif

@@ -129,12 +129,12 @@ int IntelAFStateMachine::updateDefaults(android::CameraMetadata* result, bool fi
  * AF MODE   -  BASE
  ******************************************************************************/
 IntelAfModeBase::IntelAfModeBase()
-        : mCurrentAfState(ANDROID_CONTROL_AF_STATE_INACTIVE),
+        : mLastAfControls {ANDROID_CONTROL_AF_MODE_AUTO, ANDROID_CONTROL_AF_TRIGGER_IDLE},
+          mCurrentAfState(ANDROID_CONTROL_AF_STATE_INACTIVE),
           mLensState(ANDROID_LENS_STATE_STATIONARY),
           mLastActiveTriggerTime(0),
           mFramesSinceTrigger(0) {
     LOG1("%s", __func__);
-    mLastAfControls = {ANDROID_CONTROL_AF_MODE_AUTO, ANDROID_CONTROL_AF_TRIGGER_IDLE};
 }
 
 /**

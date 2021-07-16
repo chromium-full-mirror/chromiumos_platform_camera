@@ -92,7 +92,8 @@ Camera3Buffer::Camera3Buffer(int w, int h, int stride, int v4l2fmt, void* usrPtr
     mHalBuffer.s.height = h;
     mHalBuffer.s.stride = stride;
     mHalBuffer.s.memType = V4L2_MEMORY_USERPTR;
-    mHalBuffer.flags = camera_buffer_flags_t::BUFFER_FLAG_SW_WRITE;
+    mHalBuffer.flags = camera_buffer_flags_t::BUFFER_FLAG_SW_WRITE
+                       | camera_buffer_flags_t::BUFFER_FLAG_SW_READ;
     mHalBuffer.dmafd = -1;
 
     if (usrPtr != nullptr) {
@@ -158,9 +159,10 @@ icamera::status_t Camera3Buffer::init(const camera3_stream_buffer* aBuffer, int 
     mHalBuffer.s.stride = mGbmBufferManager->GetPlaneStride(*aBuffer->buffer, 0);
     mHalBuffer.s.size = CameraUtils::getFrameSize(mHalBuffer.s.format, mHalBuffer.s.width,
                                                   mHalBuffer.s.height, false, false, false);
-    mHalBuffer.flags = camera_buffer_flags_t::BUFFER_FLAG_SW_WRITE;
     mLocked = false;
     mUsage = aBuffer->stream->usage;
+    mHalBuffer.flags = IS_HW_USAGE(mUsage) ? 0 : camera_buffer_flags_t::BUFFER_FLAG_SW_WRITE
+                                                 | camera_buffer_flags_t::BUFFER_FLAG_SW_READ;
     mInit = true;
     mHalBuffer.addr = nullptr;
     mUserBuffer = *aBuffer;
@@ -200,7 +202,8 @@ icamera::status_t Camera3Buffer::init(const camera3_stream_t* stream, buffer_han
     // Use actual width from platform native handle for stride
     mHalBuffer.s.stride = mGbmBufferManager->GetPlaneStride(handle, 0);
     mHalBuffer.s.size = 0;
-    mHalBuffer.flags = camera_buffer_flags_t::BUFFER_FLAG_SW_WRITE;
+    mHalBuffer.flags = camera_buffer_flags_t::BUFFER_FLAG_SW_WRITE
+                       | camera_buffer_flags_t::BUFFER_FLAG_SW_READ;
     mLocked = false;
     mUsage = (stream->usage | GRALLOC_USAGE_SW_READ_MASK | GRALLOC_USAGE_SW_WRITE_MASK);
     mInit = true;
