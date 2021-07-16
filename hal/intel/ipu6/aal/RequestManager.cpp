@@ -760,7 +760,7 @@ int RequestManager::chooseHALStreams(const uint32_t requestStreamNum, int* halSt
         requestStreams.push_back(std::make_pair(&halStreamList[i], i));
     }
 
-    // sort stream by resolution, easy to find largest resolution stream
+    // sort stream by resolution from high to low, easy to find largest resolution stream
     std::sort(requestStreams.begin(), requestStreams.end(),
               [](std::pair<icamera::stream_t*, int>& s1, std::pair<icamera::stream_t*, int>& s2) {
                   if (s1.first->width * s1.first->height > s2.first->width * s2.first->height)
@@ -771,7 +771,7 @@ int RequestManager::chooseHALStreams(const uint32_t requestStreamNum, int* halSt
 
     int activeHALNum = 0;
     bool perfStillIndex = false;
-    int selectedVideoNum = 0, videoMaxResStreamIndex = -1, previewStreamIndex = -1;
+    int selectedVideoNum = 0, videoMaxResStreamIndex = -1;
 
     // Save the video stream with different resolution
     std::vector<icamera::stream_t*> videoHALStream;
@@ -794,16 +794,13 @@ int RequestManager::chooseHALStreams(const uint32_t requestStreamNum, int* halSt
                 stillHALStreamOrder.push_front(std::make_pair(s, index));
             }
         } else {
-            // Mark the user preview stream
-            if (s->usage == icamera::CAMERA_STREAM_PREVIEW) {
-                previewStreamIndex = i;
-            }
             /*
-             * Make the stream priority list: low to high
+             * videoHALStreamOrder store the stream by priority: from low to high
              * {[same resolution], [others(ascending)], [biggest resolution], [same ratio]}
              */
-            // The max stream is the base node
+            // iterator video streams in requestStreams by resolution from high to low.
             if (videoMaxResStreamIndex == -1) {
+                // insert max resolution stream to end as the first HAL stream candidate
                 anchor = videoHALStreamOrder.insert(anchor, std::make_pair(s, index));
                 videoMaxResStreamIndex = index;
                 videoHALStream.push_back(s);
@@ -840,34 +837,18 @@ int RequestManager::chooseHALStreams(const uint32_t requestStreamNum, int* halSt
     }
 
     /* Re-process the videoHALStreamOrder, then configure all items to HAL
-     * 1. Remove the extra items
+     * 1. videoHALStreamOrder stores HAL stream candidate with priority
+     * from low to high, Remove the extra items in the front of this list
      */
-    bool hasPreviewStream = false;
-    for (auto it = videoHALStreamOrder.begin(); it != videoHALStreamOrder.end(); ) {
-        if (videoHALStreamOrder.size() > avaVideoSlot) {
-            it = videoHALStreamOrder.erase(it);
-            continue;
-        }
-
-        if (it->first->usage == icamera::CAMERA_STREAM_PREVIEW) {
-            hasPreviewStream = true;;
-        }
-        ++it;
+    while (videoHALStreamOrder.size() > avaVideoSlot) {
+        videoHALStreamOrder.erase(videoHALStreamOrder.begin());
     }
+
     LOG2("%s, videoHALStreamOrder size: %zu, stillHALStreamOrder: %zu", __func__,
          videoHALStreamOrder.size(), stillHALStreamOrder.size());
 
     // 2: set the flags to itself
-    bool needReplace = (!hasPreviewStream && previewStreamIndex != -1) ? true : false;
     for (auto it = videoHALStreamOrder.begin(); it != videoHALStreamOrder.end(); ++it) {
-        // Possiblely put preview stream to HAL
-        if (needReplace && (requestStreams[previewStreamIndex].first->width * it->first->height ==
-            requestStreams[previewStreamIndex].first->height * it->first->width)) {
-            it->first = requestStreams[previewStreamIndex].first;
-            it->second = requestStreams[previewStreamIndex].second;
-            needReplace = false;
-        }
-
         LOG2("%s, bind itself for video stream index: %d", __func__, it->second);
         halStreamFlag[it->second] = it->second;
         activeHALNum++;
