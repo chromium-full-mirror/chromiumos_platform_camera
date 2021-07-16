@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2020 Intel Corporation.
+ * Copyright (C) 2015-2021 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -102,7 +102,7 @@ int CameraHal::deviceOpen(int cameraId)
     PERF_CAMERA_ATRACE();
 
     AutoMutex l(mLock);
-    CheckAndLogError(mState == HAL_UNINIT, NO_INIT, "HAL is not initialized");
+    CheckAndLogError(mState == HAL_UNINIT, NO_INIT,"HAL is not initialized");
 
     //Create the camera device that will be freed in close
     if (mCameraDevices[cameraId]) {

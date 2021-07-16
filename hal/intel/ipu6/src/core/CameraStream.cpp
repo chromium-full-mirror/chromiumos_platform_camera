@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2020 Intel Corporation.
+ * Copyright (C) 2015-2021 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,8 +81,7 @@ int CameraStream::allocateMemory(camera_buffer_t *ubuffer)
 
     int ret = BAD_VALUE;
     shared_ptr<CameraBuffer> camBuffer = userBufferToCameraBuffer(ubuffer);
-    CheckAndLogError(!camBuffer, ret, "@%s: fail to alloc CameraBuffer",
-                     __func__);
+    CheckAndLogError(!camBuffer, ret, "@%s: fail to alloc CameraBuffer", __func__);
 
     // mBufferProducer will not change after start
     if (mBufferProducer)
@@ -118,8 +117,7 @@ shared_ptr<CameraBuffer> CameraStream::userBufferToCameraBuffer(camera_buffer_t 
         ubuffer->index = mUserBuffersPool.size();
         camBuffer = std::make_shared<CameraBuffer>(mCameraId, BUFFER_USAGE_GENERAL,
                 ubuffer->s.memType, ubuffer->s.size, ubuffer->index, ubuffer->s.format);
-        CheckAndLogError(!camBuffer, nullptr, "@%s: fail to alloc CameraBuffer",
-                         __func__);
+        CheckAndLogError(!camBuffer, nullptr, "@%s: fail to alloc CameraBuffer", __func__);
         mUserBuffersPool.push_back(camBuffer);
     }
     camBuffer->setUserBufferInfo(ubuffer);

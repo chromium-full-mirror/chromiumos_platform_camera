@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2020 Intel Corporation.
+ * Copyright (C) 2017-2021 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -112,8 +112,7 @@ int ProcessorManager::configureProcessors(const std::vector<ConfigMode>& configM
         processor->setFrameInfo(item.mInputConfigs, item.mOutputConfigs);
         processor->setParameters(param);
         int ret = processor->configure(configModes);
-        CheckAndLogError(ret < 0, ret, "Configure processor failed with:%d",
-                         ret);
+        CheckAndLogError(ret < 0, ret, "Configure processor failed with:%d", ret);
 
         processor->setBufferProducer(preProcess ? preProcess : producer);
         preProcess = processor;

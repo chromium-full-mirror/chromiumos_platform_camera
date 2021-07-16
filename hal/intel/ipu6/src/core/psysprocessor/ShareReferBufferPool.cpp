@@ -45,8 +45,8 @@ ShareReferBufferPool::~ShareReferBufferPool() {
 
 int32_t ShareReferBufferPool::setReferPair(const std::string& producerPgName, int64_t producerId,
                                            const std::string& consumerPgName, int64_t consumerId) {
-    CheckAndLogError(producerId == consumerId, BAD_VALUE,
-                     "same pair for producer/consumer %lx", producerId);
+    CheckAndLogError(producerId == consumerId, BAD_VALUE, "same pair for producer/consumer %lx",
+                     producerId);
 
     UserPair* pair = new UserPair;
     pair->producerPgName = producerPgName;
@@ -133,8 +133,7 @@ int32_t ShareReferBufferPool::registerReferBuffers(int64_t id, CIPR::Buffer* buf
  */
 int32_t ShareReferBufferPool::acquireBuffer(int64_t id, CIPR::Buffer** referIn,
                                             CIPR::Buffer** referOut, long outSequence) {
-    CheckAndLogError(!referIn || !referOut, BAD_VALUE,
-                     "nullptr input for refer buf pair");
+    CheckAndLogError(!referIn || !referOut, BAD_VALUE, "nullptr input for refer buf pair");
 
     long inSequence = outSequence - 1;
     UserPair* pair = nullptr;
@@ -146,8 +145,7 @@ int32_t ShareReferBufferPool::acquireBuffer(int64_t id, CIPR::Buffer** referIn,
         AutoMutex m(pair->bufferLock);
         std::vector<ReferBuffer>& bufV =
             (id == pair->producerId) ? pair->mProducerBuffers : pair->mConsumerBuffers;
-        CheckAndLogError(bufV.empty(), BAD_VALUE, "no refer buffer for id %lx",
-                         id);
+        CheckAndLogError(bufV.empty(), BAD_VALUE, "no refer buffer for id %lx", id);
 
         *referOut = bufV.front().buffer;
         bufV.erase(bufV.begin());  // pop front (the oldest one) as new output
@@ -212,8 +210,7 @@ int32_t ShareReferBufferPool::acquireBuffer(int64_t id, CIPR::Buffer** referIn,
 
 int32_t ShareReferBufferPool::releaseBuffer(int64_t id, CIPR::Buffer* referIn,
                                             CIPR::Buffer* referOut, long outSequence) {
-    CheckAndLogError(!referIn || !referOut, BAD_VALUE,
-                     "nullptr for refer buf pair for release");
+    CheckAndLogError(!referIn || !referOut, BAD_VALUE, "nullptr for refer buf pair for release");
 
     AutoMutex l(mPairLock);
     UserPair* pair = findUserPair(id);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2020 Intel Corporation.
+ * Copyright (C) 2015-2021 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1104,8 +1104,7 @@ int Parameters::getAwbConvergeSpeedMode(camera_converge_speed_mode_t& mode) cons
 
 int Parameters::setMakernoteData(const void* data, unsigned int size)
 {
-    CheckAndLogError(!data || size == 0, BAD_VALUE, "%s, invalid parameters",
-                     __func__);
+    CheckAndLogError(!data || size == 0, BAD_VALUE, "%s, invalid parameters", __func__);
     ParameterHelper::AutoWLock wl(mData);
 
     return ParameterHelper::getMetadata(mData).update(INTEL_CONTROL_MAKERNOTE_DATA, (uint8_t*)data, size);
@@ -1113,8 +1112,7 @@ int Parameters::setMakernoteData(const void* data, unsigned int size)
 
 int Parameters::getMakernoteData(void* data, unsigned int* size) const
 {
-    CheckAndLogError(!data || !size, BAD_VALUE, "%s, invalid parameters",
-                     __func__);
+    CheckAndLogError(!data || !size, BAD_VALUE, "%s, invalid parameters", __func__);
     ParameterHelper::AutoRLock rl(mData);
 
     auto entry = ParameterHelper::getMetadataEntry(mData, INTEL_CONTROL_MAKERNOTE_DATA);
@@ -1138,8 +1136,7 @@ int Parameters::setCustomAicParam(const void* data, unsigned int length)
 
 int Parameters::getCustomAicParam(void* data, unsigned int* length) const
 {
-    CheckAndLogError(!data || !length, BAD_VALUE, "%s, invalid parameters",
-                     __func__);
+    CheckAndLogError(!data || !length, BAD_VALUE, "%s, invalid parameters", __func__);
     ParameterHelper::AutoRLock rl(mData);
 
     auto entry = ParameterHelper::getMetadataEntry(mData, INTEL_CONTROL_CUSTOM_AIC_PARAM);

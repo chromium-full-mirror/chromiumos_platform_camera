@@ -544,8 +544,7 @@ int GraphConfigPipe::getProgramGroup(string pgName, ia_isp_bxt_program_group* pr
             break;
         }
     }
-    CheckAndLogError(pg == nullptr, UNKNOWN_ERROR,
-                     "Failed to get program groups, BUG");
+    CheckAndLogError(pg == nullptr, UNKNOWN_ERROR, "Failed to get program groups, BUG");
 
     mGCSSAicUtil.getProgramGroup(pg, *programGroupForPG);
 
@@ -562,14 +561,13 @@ status_t GraphConfigPipe::getPgRbmValue(string pgName, IGraphType::StageAttr* st
 
     for (; pg != nullptr; pg = iter.iterateByType(GCSS_KEY_PROGRAM_GROUP)) {
         css_err_t ret = pg->getValue(GCSS_KEY_NAME, name);
-        CheckAndLogError(ret != css_err_none, BAD_VALUE,
-                         "Failed to get the name of PG node");
+        CheckAndLogError(ret != css_err_none, BAD_VALUE, "Failed to get the name of PG node");
         if (name == pgName) {
             break;
         }
     }
-    CheckAndLogError(pg == nullptr, UNKNOWN_ERROR,
-                     "Failed to get program groups for PG: %s", pgName.c_str());
+    CheckAndLogError(pg == nullptr, UNKNOWN_ERROR, "Failed to get program groups for PG: %s",
+                     pgName.c_str());
 
     pg = pg->getDescendant(GCSS_KEY_CIPF);
     if (pg == nullptr) return NAME_NOT_FOUND;
@@ -596,8 +594,7 @@ status_t GraphConfigPipe::getPgRbmValue(string pgName, IGraphType::StageAttr* st
 
 status_t GraphConfigPipe::getScalerKernelResolutionRatio(uint32_t* kenerArray, uint32_t sizeArray,
                                                          float* widthRatio, float* heightRatio) {
-    CheckAndLogError(!kenerArray, UNKNOWN_ERROR, "%s the array is null",
-                     __func__);
+    CheckAndLogError(!kenerArray, UNKNOWN_ERROR, "%s the array is null", __func__);
     CheckAndLogError(!widthRatio || !heightRatio, UNKNOWN_ERROR,
                      "%s widthRatio or heightRatio is null", __func__);
 
@@ -659,8 +656,7 @@ const ia_isp_bxt_resolution_info_t* GraphConfigPipe::getScalerKernelResolutionIn
 
 const ia_isp_bxt_resolution_info_t* GraphConfigPipe::getGdcKernelResolutionInfo(
     uint32_t* kernelId) {
-    CheckAndLogError(!kernelId, nullptr, "%s the kernelId is nullptr",
-                     __func__);
+    CheckAndLogError(!kernelId, nullptr, "%s the kernelId is nullptr", __func__);
 
     std::vector<int32_t> streamIds;
     // Get all stream IDs
@@ -978,8 +974,7 @@ int GraphConfigPipe::getStreamIdByPgName(string pgName) {
 
     int streamId = -1;
     ret = programGroup->getValue(GCSS_KEY_STREAM_ID, streamId);
-    CheckAndLogError(ret != ia_err_none, -1,
-                     "Get streamId failed by name:%s, pipeUseCase: %d",
+    CheckAndLogError(ret != ia_err_none, -1, "Get streamId failed by name:%s, pipeUseCase: %d",
                      pgName.c_str(), mPipeUseCase);
 
     LOGG("%s: streamId %d", __func__, streamId);
@@ -1054,8 +1049,7 @@ int GraphConfigPipe::getPgIdByPgName(string pgName) {
     }
 
     const GCSS::IGraphConfig* gc = getInterface(programGroup);
-    CheckAndLogError(gc == nullptr, -1,
-                     "%s, Failed to get graph config interface", __func__);
+    CheckAndLogError(gc == nullptr, -1, "%s, Failed to get graph config interface", __func__);
 
     int pgId = -1;
     ret = gc->getValue(GCSS_KEY_PG_ID, pgId);
@@ -1067,8 +1061,7 @@ int GraphConfigPipe::getPgIdByPgName(string pgName) {
 
 status_t GraphConfigPipe::getProgramGroupsByName(const std::vector<std::string>& pgNames,
                                                  NodesPtrVector* programGroups) {
-    CheckAndLogError(!programGroups, UNKNOWN_ERROR,
-                     "%s, The programGroups is nullptr", __func__);
+    CheckAndLogError(!programGroups, UNKNOWN_ERROR, "%s, The programGroups is nullptr", __func__);
     css_err_t ret = css_err_none;
     GraphConfigNode* result;
     NodesPtrVector allProgramGroups;
@@ -1082,8 +1075,7 @@ status_t GraphConfigPipe::getProgramGroupsByName(const std::vector<std::string>&
     }
 
     CheckAndLogError(allProgramGroups.empty(), UNKNOWN_ERROR,
-                     "%s, doesn't find any PG in current pipe: %d", __func__,
-                     mPipeUseCase);
+                     "%s, doesn't find any PG in current pipe: %d", __func__, mPipeUseCase);
     for (auto& ndVec : allProgramGroups) {
         ret = ndVec->getValue(GCSS_KEY_NAME, foundPgName);
         if (ret != css_err_none) {
@@ -1107,8 +1099,7 @@ status_t GraphConfigPipe::getProgramGroupsByName(const std::vector<std::string>&
 status_t GraphConfigPipe::pipelineGetConnections(
     const std::vector<std::string>& pgList, std::vector<IGraphType::ScalerInfo>* scalerInfo,
     std::vector<IGraphType::PipelineConnection>* confVector) {
-    CheckAndLogError(!confVector, UNKNOWN_ERROR,
-                     "%s, the confVector is nullptr", __func__);
+    CheckAndLogError(!confVector, UNKNOWN_ERROR, "%s, the confVector is nullptr", __func__);
 
     NodesPtrVector programGroups;
     NodesPtrVector alreadyConnectedPorts;
@@ -1118,8 +1109,7 @@ status_t GraphConfigPipe::pipelineGetConnections(
     std::map<Node*, IGraphType::PipelineConnection> edgePort2Connection;
 
     status_t status = getProgramGroupsByName(pgList, &programGroups);
-    CheckAndLogError(status != OK, status,
-                     "%s, failed to get program groups, BUG", __func__);
+    CheckAndLogError(status != OK, status, "%s, failed to get program groups, BUG", __func__);
 
     for (size_t i = 0; i < programGroups.size(); i++) {
         Node::const_iterator it = programGroups[i]->begin();
@@ -1216,8 +1206,7 @@ status_t GraphConfigPipe::getScalerByStreamId(
     if (edgePort2Connection.empty()) {
         return OK;
     }
-    CheckAndLogError(!scalerInfo, UNKNOWN_ERROR, "%s, scalerInfo is nullptr",
-                     __func__);
+    CheckAndLogError(!scalerInfo, UNKNOWN_ERROR, "%s, scalerInfo is nullptr", __func__);
 
     for (auto it = edgePort2Connection.begin(); it != edgePort2Connection.end(); ++it) {
         const char* portName;
@@ -1229,8 +1218,8 @@ status_t GraphConfigPipe::getScalerByStreamId(
 
         IGraphType::PipelineConnection connection = it->second;
         portName = NODE_NAME(it->first);
-        CheckAndLogError(!connection.stream, UNKNOWN_ERROR,
-                         "%s, connection.stream is null.", __func__);
+        CheckAndLogError(!connection.stream, UNKNOWN_ERROR, "%s, connection.stream is null.",
+                         __func__);
         int32_t streamId = connection.stream->streamId();
         LOG2("%s, streamId:%d, portName:%s", __func__, streamId, portName);
 
@@ -1291,8 +1280,7 @@ status_t GraphConfigPipe::getScalerByStreamId(
 status_t GraphConfigPipe::portGetOwner(Node* port, IGraphType::ConnectionConfig* connectionInfo) {
     int32_t direction = PORT_DIRECTION_INPUT;
     css_err_t ret = port->getValue(GCSS_KEY_DIRECTION, direction);
-    CheckAndLogError((ret != css_err_none), BAD_VALUE,
-                     "Failed to get port direction");
+    CheckAndLogError((ret != css_err_none), BAD_VALUE, "Failed to get port direction");
 
     /*
      * Default to pull, it will be amended later,
@@ -1307,14 +1295,12 @@ status_t GraphConfigPipe::portGetOwner(Node* port, IGraphType::ConnectionConfig*
         // input port is the sink in a connection
         status = GCSS::GraphCameraUtil::portGetFourCCInfo(*port, connectionInfo->mSinkStage,
                                                           connectionInfo->mSinkTerminal);
-        CheckAndLogError((status != OK), BAD_VALUE,
-                         "Failed to create fourcc info for sink port");
+        CheckAndLogError((status != OK), BAD_VALUE, "Failed to create fourcc info for sink port");
     } else {
         // output port is the source in a connection
         status = GCSS::GraphCameraUtil::portGetFourCCInfo(*port, connectionInfo->mSourceStage,
                                                           connectionInfo->mSourceTerminal);
-        CheckAndLogError((status != OK), BAD_VALUE,
-                         "Failed to create fourcc info for source port");
+        CheckAndLogError((status != OK), BAD_VALUE, "Failed to create fourcc info for source port");
     }
     return status;
 }
@@ -1463,8 +1449,7 @@ status_t GraphConfigPipe::pipelineGetConnections(
  * \param streamIds Vector to be populated with stream ids.
  */
 status_t GraphConfigPipe::graphGetStreamIds(StreamsVector* streamIds) {
-    CheckAndLogError(!streamIds, UNKNOWN_ERROR, "%s, The streamIds is nullptr",
-                     __func__);
+    CheckAndLogError(!streamIds, UNKNOWN_ERROR, "%s, The streamIds is nullptr", __func__);
     GraphConfigNode* result;
     int32_t streamId = -1;
     css_err_t ret;
@@ -1528,8 +1513,7 @@ int32_t GraphConfigPipe::portGetStreamId(Node* port) {
  * \param[out] programGroups Vector with the nodes that match the criteria.
  */
 status_t GraphConfigPipe::streamGetProgramGroups(int32_t streamId, NodesPtrVector* programGroups) {
-    CheckAndLogError(!programGroups, UNKNOWN_ERROR,
-                     "%s, The programGroups is nullptr", __func__);
+    CheckAndLogError(!programGroups, UNKNOWN_ERROR, "%s, The programGroups is nullptr", __func__);
     css_err_t ret = css_err_none;
     GraphConfigNode* result;
     NodesPtrVector allProgramGroups;
@@ -1832,8 +1816,7 @@ int32_t GraphConfigPipe::portGetDirection(Node* port) {
  * \return BAD_VALUE if any of the graph queries failed.
  */
 status_t GraphConfigPipe::portGetFullName(Node* port, string* fullName) {
-    CheckAndLogError(!fullName, UNKNOWN_ERROR, "%s, the fullName is nullptr",
-                     __func__);
+    CheckAndLogError(!fullName, UNKNOWN_ERROR, "%s, the fullName is nullptr", __func__);
     string portName, ancestorName;
     Node* ancestor;
     css_err_t ret = css_err_none;

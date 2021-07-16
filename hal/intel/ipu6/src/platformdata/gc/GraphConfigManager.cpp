@@ -127,7 +127,7 @@ status_t GraphConfigManager::queryGraphSettings(const stream_config_t *streamLis
              streamList->operation_mode, mode);
 
         std::shared_ptr<GraphConfig> graphConfig = std::make_shared<GraphConfig>(mCameraId, mode);
-        CheckAndLogError(!graphConfig, UNKNOWN_ERROR, "%s, Create graphConfig failed", __func__);
+        CheckAndLogError(!graphConfig, UNKNOWN_ERROR, "%s, Failed to create graphConfig", __func__);
         ret = graphConfig->queryGraphSettings(halStreamVec);
         if (ret != OK) {
             LOG2("%s, There is no graph settings for real ConfigMode %x", __func__, mode);
@@ -173,13 +173,11 @@ status_t GraphConfigManager::configStreams(const stream_config_t *streamList)
         std::shared_ptr<GraphConfig> graphConfig = std::make_shared<GraphConfig>(mCameraId, mode);
         CheckAndLogError(!graphConfig, UNKNOWN_ERROR, "%s, Failed to create graphConfig", __func__);
         ret = graphConfig->configStreams(mHalStreamVec);
-        CheckAndLogError(ret != OK, ret,
-                         "%s, Failed to configure graph: real ConfigMode %x", __func__, mode);
+        CheckWarning(ret != OK, ret, "%s, Failed to configure graph: real ConfigMode %x", __func__, mode);
 
         int id = graphConfig->getSelectedMcId();
-        CheckAndLogError(
-            (id != -1 && mMcId != -1 && mMcId != id), UNKNOWN_ERROR,
-            "Not support two different MC ID at same time:(%d/%d)", mMcId, id);
+        CheckAndLogError((id != -1 && mMcId != -1 && mMcId != id), UNKNOWN_ERROR,
+                         "Not support two different MC ID at same time:(%d/%d)", mMcId, id);
         mMcId = id;
         LOGG("%s: Add graph setting for op_mode %d", __func__, mode);
         mGraphConfigMap[mode] = graphConfig;

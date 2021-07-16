@@ -90,12 +90,10 @@ int IspParamAdaptor::deinit() {
 
 int IspParamAdaptor::deepCopyProgramGroup(const ia_isp_bxt_program_group *pgPtr,
                                           cca::cca_program_group *programGroup) {
-    CheckAndLogError(!programGroup, UNKNOWN_ERROR,
-                     "%s, the programGroup is nullptr", __func__);
-    CheckAndLogError(
-        pgPtr->kernel_count > cca::MAX_KERNEL_NUMBERS_IN_PIPE, NO_MEMORY,
-        "%s, memory for program group is too small, kernel count: %d", __func__,
-        pgPtr->kernel_count);
+    CheckAndLogError(!programGroup, UNKNOWN_ERROR, "%s, the programGroup is nullptr", __func__);
+    CheckAndLogError(pgPtr->kernel_count > cca::MAX_KERNEL_NUMBERS_IN_PIPE, NO_MEMORY,
+                     "%s, memory for program group is too small, kernel count: %d", __func__,
+                     pgPtr->kernel_count);
 
     programGroup->base = *pgPtr;
     uint32_t &kernelCnt = programGroup->base.kernel_count;
@@ -155,20 +153,17 @@ int IspParamAdaptor::getDataFromProgramGroup() {
         streamIds.push_back(streamId);
     } else {
         ret = mGraphConfig->graphGetStreamIds(streamIds);
-        CheckAndLogError(ret != OK, UNKNOWN_ERROR,
-                         "Failed to get the PG streamIds");
+        CheckAndLogError(ret != OK, UNKNOWN_ERROR, "Failed to get the PG streamIds");
     }
 
     for (auto id : streamIds) {
         ia_isp_bxt_program_group *pgPtr = mGraphConfig->getProgramGroup(id);
-        CheckAndLogError(!pgPtr, UNKNOWN_ERROR,
-                         "%s, Failed to get the programGroup for streamId: %d",
+        CheckAndLogError(!pgPtr, UNKNOWN_ERROR, "%s, Failed to get the programGroup for streamId: %d",
                          __func__, id);
 
         cca::cca_program_group programGroup = {};
         ret = deepCopyProgramGroup(pgPtr, &programGroup);
-        CheckAndLogError(ret != OK, UNKNOWN_ERROR,
-                         "%s, Failed to convert cca programGroup. streamId",
+        CheckAndLogError(ret != OK, UNKNOWN_ERROR, "%s, Failed to convert cca programGroup. streamId %d",
                          __func__, id);
         mStreamIdToPGOutSizeMap[id] = mIntelCca->getPalDataSize(programGroup);
 
@@ -249,21 +244,17 @@ int IspParamAdaptor::configure(const stream_t &stream, ConfigMode configMode,
     }
 
     mIntelCca = IntelCca::getInstance(mCameraId, tuningMode);
-    CheckAndLogError(!mIntelCca, UNKNOWN_ERROR,
-                     "%s, mIntelCca is nullptr, tuningMode:%d", __func__,
-                     mTuningMode);
+    CheckAndLogError(!mIntelCca, UNKNOWN_ERROR, "%s, mIntelCca is nullptr, tuningMode:%d",
+                __func__, mTuningMode);
 
     IGraphConfigManager *gcm = IGraphConfigManager::getInstance(mCameraId);
-    CheckAndLogError(!gcm, UNKNOWN_ERROR,
-                     "%s, Failed to get graph config manager for cameraId: %d",
+    CheckAndLogError(!gcm, UNKNOWN_ERROR, "%s, Failed to get graph config manager for cameraId: %d",
                      __func__, mCameraId);
-    CheckAndLogError(!gcm->isGcConfigured(), UNKNOWN_ERROR,
-                     "%s, graph isn't configured", __func__);
+    CheckAndLogError(!gcm->isGcConfigured(), UNKNOWN_ERROR, "%s, graph isn't configured", __func__);
 
     mGraphConfig = gcm->getGraphConfig(configMode);
-    CheckAndLogError(!mGraphConfig, UNKNOWN_ERROR,
-                     "%s, There isn't GraphConfig for configMode: %d", __func__,
-                     configMode);
+    CheckAndLogError(!mGraphConfig, UNKNOWN_ERROR, "%s, There isn't GraphConfig for configMode: %d",
+                     __func__, configMode);
 
     {
         /*
@@ -273,13 +264,10 @@ int IspParamAdaptor::configure(const stream_t &stream, ConfigMode configMode,
         AutoMutex l(mIpuParamLock);
 
         ret = getDataFromProgramGroup();
-        CheckAndLogError(ret != OK, ret,
-                         "%s, Failed to init programGroup for all streams",
+        CheckAndLogError(ret != OK, ret, "%s, Failed to init programGroup for all streams",
                          __func__);
         ret = allocateIspParamBuffers();
-        CheckAndLogError(ret != OK, ret,
-                         "%s, Failed to allocate isp parameter buffers",
-                         __func__);
+        CheckAndLogError(ret != OK, ret, "%s, Failed to allocate isp parameter buffers", __func__);
     }
 
     /*
@@ -299,8 +287,7 @@ int IspParamAdaptor::configure(const stream_t &stream, ConfigMode configMode,
                          __func__, ispParamIt.first);
 
         ret = deepCopyProgramGroup(pgPtr, &(inputParams->program_group));
-        CheckAndLogError(ret != OK, UNKNOWN_ERROR,
-                         "%s, Failed to convert cca programGroup. streamId",
+        CheckAndLogError(ret != OK, UNKNOWN_ERROR, "%s, Failed to convert cca programGroup. streamId %d",
                          __func__, ispParamIt.first);
         dumpProgramGroup(&inputParams->program_group.base);
 
@@ -312,8 +299,7 @@ int IspParamAdaptor::configure(const stream_t &stream, ConfigMode configMode,
 
         PERF_CAMERA_ATRACE_PARAM1_IMAGING("ia_isp_bxt_run", 1);
         ia_err iaErr = mIntelCca->runAIC(-1, inputParams, &binaryData);
-        CheckAndLogError(iaErr != ia_err_none && iaErr != ia_err_not_run,
-                         UNKNOWN_ERROR,
+        CheckAndLogError(iaErr != ia_err_none && iaErr != ia_err_not_run, UNKNOWN_ERROR,
                          "ISP parameter adaptation has failed %d", iaErr);
 
         AutoMutex l(mIpuParamLock);
@@ -333,10 +319,8 @@ int IspParamAdaptor::decodeStatsData(TuningMode tuningMode,
                                      std::shared_ptr<CameraBuffer> statsBuffer,
                                      std::shared_ptr<IGraphConfig> graphConfig) {
     CheckAndLogError(mIspAdaptorState != ISP_ADAPTOR_CONFIGURED,
-                     INVALID_OPERATION, "%s, wrong state %d", __func__,
-                     mIspAdaptorState);
-    CheckAndLogError(!mIntelCca, UNKNOWN_ERROR, "%s, mIntelCca is nullptr",
-                     __func__);
+                     INVALID_OPERATION, "%s, wrong state %d", __func__, mIspAdaptorState);
+    CheckAndLogError(!mIntelCca, UNKNOWN_ERROR, "%s, mIntelCca is nullptr", __func__);
 
     long sequence = statsBuffer->getSequence();
     AiqResultStorage *aiqResultStorage = AiqResultStorage::getInstance(mCameraId);
@@ -356,13 +340,12 @@ int IspParamAdaptor::decodeStatsData(TuningMode tuningMode,
         CameraDump::dumpBinary(mCameraId, hwStatsData->data, hwStatsData->size, &bParam);
     }
 
-    CheckAndLogError(hwStatsData == nullptr, UNKNOWN_ERROR,
-                     "%s, hwStatsData is nullptr", __func__);
+    CheckAndLogError(hwStatsData == nullptr, UNKNOWN_ERROR, "%s, hwStatsData is nullptr", __func__);
     ia_isp_bxt_statistics_query_results_t queryResults = {};
     ia_err iaErr = mIntelCca->decodeStats(reinterpret_cast<uint64_t>(hwStatsData->data),
                                           hwStatsData->size, &queryResults);
-    CheckAndLogError(iaErr != ia_err_none, UNKNOWN_ERROR,
-                     "%s, Faield convert statistics", __func__);
+    CheckAndLogError(iaErr != ia_err_none, UNKNOWN_ERROR, "%s, Faield convert statistics",
+                     __func__);
     LOG2("%s, query results: rgbs_grid(%d), af_grid(%d), dvs_stats(%d)", __func__,
          queryResults.rgbs_grid, queryResults.af_grid, queryResults.dvs_stats);
 
@@ -490,11 +473,9 @@ int IspParamAdaptor::runIspAdapt(const IspSettings* ispSettings, long requestId,
     PERF_CAMERA_ATRACE();
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL2);
     AutoMutex l(mIspAdaptorLock);
-    CheckAndLogError(mIspAdaptorState != ISP_ADAPTOR_CONFIGURED,
-                     INVALID_OPERATION, "%s, wrong state %d", __func__,
-                     mIspAdaptorState);
-    CheckAndLogError(!mGraphConfig, UNKNOWN_ERROR,
-                     "%s, mGraphConfig is nullptr", __func__);
+    CheckAndLogError(mIspAdaptorState != ISP_ADAPTOR_CONFIGURED, INVALID_OPERATION,
+                     "%s, wrong state %d", __func__, mIspAdaptorState);
+    CheckAndLogError(!mGraphConfig, UNKNOWN_ERROR, "%s, mGraphConfig is nullptr", __func__);
 
     for (auto& it : mStreamIdToIspParameterMap) {
         if (streamId != -1 && it.first != streamId) continue;
@@ -513,8 +494,8 @@ int IspParamAdaptor::runIspAdapt(const IspSettings* ispSettings, long requestId,
             if (dataIt == ispParam->mSequenceToDataMap.end()) {
                 dataIt = ispParam->mSequenceToDataMap.begin();
             }
-            CheckAndLogError(dataIt == ispParam->mSequenceToDataMap.end(),
-                             UNKNOWN_ERROR, "No PAL buf!");
+            CheckAndLogError(dataIt == ispParam->mSequenceToDataMap.end(), UNKNOWN_ERROR,
+                             "No PAL buf!");
             binaryData = dataIt->second;
 
             LOG2("%s, PAL data buffer seq:%ld, for sequence: %ld, stream %d",
@@ -533,12 +514,10 @@ int IspParamAdaptor::runIspAdapt(const IspSettings* ispSettings, long requestId,
 
         ia_isp_bxt_program_group *pgPtr = mGraphConfig->getProgramGroup(it.first);
         CheckAndLogError(!pgPtr, UNKNOWN_ERROR,
-                         "%s, Failed to get the programGroup for streamId: %d",
-                         __func__, it.first);
+                         "%s, Failed to get the programGroup for streamId: %d", __func__, it.first);
 
         int ret = runIspAdaptL(pgPtr, mbrData, ispSettings, requestId, settingSequence, &binaryData, it.first);
-        CheckAndLogError(ret != OK, ret,
-                         "run isp adaptor error for streamId %d, sequence: %ld",
+        CheckAndLogError(ret != OK, ret, "run isp adaptor error for streamId %d, sequence: %ld",
                          it.first, settingSequence);
         {
             AutoMutex l(mIpuParamLock);
@@ -567,8 +546,7 @@ ia_binary_data* IspParamAdaptor::getIpuParameter(long sequence, int streamId) {
     if (sequence == -1 && streamId == -1) {
         return &(mStreamIdToIspParameterMap.begin()->second.mSequenceToDataMap.begin()->second);
     }
-    CheckAndLogError(streamId == -1, nullptr,
-                     "stream id is -1, but seq isn't -1");
+    CheckAndLogError(streamId == -1, nullptr, "stream id is -1, but seq isn't -1");
 
     IspParameter& ispParam = mStreamIdToIspParameterMap[streamId];
     ia_binary_data* binaryData = nullptr;
@@ -599,10 +577,8 @@ ia_binary_data* IspParamAdaptor::getIpuParameter(long sequence, int streamId) {
 }
 
 int IspParamAdaptor::getPalOutputDataSize(const ia_isp_bxt_program_group *programGroup) {
-    CheckAndLogError(programGroup == nullptr, 0,
-                     "Request programGroup is nullptr");
-    CheckAndLogError(!mIntelCca, UNKNOWN_ERROR, "%s, mIntelCca is nullptr",
-                     __func__);
+    CheckAndLogError(programGroup == nullptr, 0, "Request programGroup is nullptr");
+    CheckAndLogError(!mIntelCca, UNKNOWN_ERROR, "%s, mIntelCca is nullptr", __func__);
 
     cca::cca_program_group pg = {};
     deepCopyProgramGroup(programGroup, &pg);
@@ -613,8 +589,7 @@ int IspParamAdaptor::getPalOutputDataSize(const ia_isp_bxt_program_group *progra
  * Allocate memory for mIspParameters
  */
 int IspParamAdaptor::allocateIspParamBuffers() {
-    CheckAndLogError(!mIntelCca, UNKNOWN_ERROR, "%s, mIntelCca is nullptr",
-                     __func__);
+    CheckAndLogError(!mIntelCca, UNKNOWN_ERROR, "%s, mIntelCca is nullptr", __func__);
 
     releaseIspParamBuffers();
     for (int i = 0; i < ISP_PARAM_QUEUE_SIZE; i++) {
@@ -623,8 +598,7 @@ int IspParamAdaptor::allocateIspParamBuffers() {
             int size = pgMap.second;
             binaryData.size = size;
             binaryData.data = mIntelCca->allocMem(pgMap.first, "palData", i, size);
-            CheckAndLogError(binaryData.data == nullptr, NO_MEMORY,
-                             "Faile to calloc PAL data");
+            CheckAndLogError(binaryData.data == nullptr, NO_MEMORY, "Faile to calloc PAL data");
             int64_t index = i * (-1) - 2; // default index list: -2, -3, -4, ...
             std::pair<int64_t, ia_binary_data> p(index, binaryData);
             mStreamIdToIspParameterMap[pgMap.first].mSequenceToDataMap.insert(p);
@@ -635,8 +609,7 @@ int IspParamAdaptor::allocateIspParamBuffers() {
         cca::cca_pal_input_params* p = static_cast<cca::cca_pal_input_params*>(
             mIntelCca->allocMem(pgMap.first, "palData", ISP_PARAM_QUEUE_SIZE,
                                 sizeof(cca::cca_pal_input_params)));
-        CheckAndLogError(p == nullptr, NO_MEMORY,
-                         "Cannot alloc memory for cca_pal_input_params!");
+        CheckAndLogError(p == nullptr, NO_MEMORY, "Cannot alloc memory for cca_pal_input_params!");
         CLEAR(*p);
         mStreamIdToPalInputParamsMap[pgMap.first] = p;
     }
@@ -664,8 +637,7 @@ void IspParamAdaptor::releaseIspParamBuffers() {
 
 void IspParamAdaptor::applyMediaFormat(const AiqResult* aiqResult,
                                        ia_media_format* mediaFormat, bool* useLinearGamma) {
-    CheckAndLogError(!mediaFormat || !aiqResult, VOID_VALUE,
-                     "mediaFormat or aiqResult is nullptr");
+    CheckAndLogError(!mediaFormat || !aiqResult, VOID_VALUE, "mediaFormat or aiqResult is nullptr");
 
     *mediaFormat = media_format_legacy;
     if (aiqResult->mAiqParam.tonemapMode == TONEMAP_MODE_GAMMA_VALUE) {
@@ -679,9 +651,8 @@ void IspParamAdaptor::applyMediaFormat(const AiqResult* aiqResult,
         }
     } else if (aiqResult->mAiqParam.tonemapMode == TONEMAP_MODE_CONTRAST_CURVE) {
         const camera_tonemap_curves_t* curves = &aiqResult->mAiqParam.tonemapCurves;
-        CheckAndLogError(
-            (curves->rSize != curves->gSize || curves->bSize != curves->gSize),
-            VOID_VALUE, "%s, the size of rgb channels must be same", __func__);
+        CheckAndLogError((curves->rSize != curves->gSize || curves->bSize != curves->gSize),
+                         VOID_VALUE, "%s, the size of rgb channels must be same", __func__);
 
         // User's curve is 2-d array: (in, out)
         // Use the gamma curve to select the media format
@@ -707,9 +678,8 @@ void IspParamAdaptor::applyCscMatrix(ia_isp_bxt_csc* cscMatrix) {
     size_t matrixCount = sizeof(cscMatrix->rgb2yuv_coef) / sizeof(int32_t);
     // This is one standard RGB2YUV matrix reverse from YUV2RGB matrix in ITS
     const float oriMatrix[] = {0.299, 0.587, 0.114, -0.169, -0.331, 0.5, 0.5, -0.419, -0.081};
-    CheckAndLogError(matrixCount != (sizeof(oriMatrix) / sizeof(float)),
-                     VOID_VALUE, "Matrix count mismatching with algo: %zu",
-                     matrixCount);
+    CheckAndLogError(matrixCount != (sizeof(oriMatrix) / sizeof(float)), VOID_VALUE,
+                     "Matrix count mismatching with algo: %zu", matrixCount);
 
     const int cscNorm = 1000;  // this value need to align with algo
     for (size_t i = 0; i < matrixCount; i++) {
@@ -753,8 +723,7 @@ int IspParamAdaptor::runIspAdaptL(ia_isp_bxt_program_group *pgPtr, ia_isp_bxt_gd
     }
 
     int ret = deepCopyProgramGroup(pgPtr, &(inputParams->program_group));
-    CheckAndLogError(ret != OK, UNKNOWN_ERROR,
-                     "%s, Failed to convert cca programGroup", __func__);
+    CheckAndLogError(ret != OK, UNKNOWN_ERROR, "%s, Failed to convert cca programGroup", __func__);
     dumpProgramGroup(&(inputParams->program_group.base));
 
     // update metadata of runnning kernels
@@ -821,12 +790,9 @@ int IspParamAdaptor::runIspAdaptL(ia_isp_bxt_program_group *pgPtr, ia_isp_bxt_gd
              ispSettings->eeSetting.feature_level, ispSettings->eeSetting.strength);
 
         if (ispSettings->palOverride) {
-            CheckAndLogError(
-                ispSettings->palOverride->size > cca::MAX_PAL_TUNING_SIZE,
-                NO_MEMORY,
-                "buffer for pal override is too small, MAX_PAL_TUNING_SIZE: "
-                "%d, size: %d",
-                cca::MAX_PAL_TUNING_SIZE, ispSettings->palOverride->size);
+            CheckAndLogError(ispSettings->palOverride->size > cca::MAX_PAL_TUNING_SIZE, NO_MEMORY,
+                             "buffer for pal override is too small, MAX_PAL_TUNING_SIZE:%d,size:%d",
+                             cca::MAX_PAL_TUNING_SIZE, ispSettings->palOverride->size);
 
             LOG2("%s, palOverride size:%d", __func__, ispSettings->palOverride->size);
             MEMCPY_S(inputParams->pal_override.data, cca::MAX_PAL_TUNING_SIZE,
@@ -838,9 +804,9 @@ int IspParamAdaptor::runIspAdaptL(ia_isp_bxt_program_group *pgPtr, ia_isp_bxt_gd
     inputParams->custom_controls.count = aiqResults->mCustomControls.count;
     uint32_t cnt = static_cast<uint32_t>(inputParams->custom_controls.count);
     if (cnt > 0) {
-        CheckAndLogError(
-            cnt > cca::MAX_CUSTOM_CONTROLS_PARAM_SIZE, UNKNOWN_ERROR,
-            "%s, buffer for custom control[%d] is too small", __func__, cnt);
+        CheckAndLogError(cnt > cca::MAX_CUSTOM_CONTROLS_PARAM_SIZE,
+                         UNKNOWN_ERROR, "%s, buffer for custom control[%d] is too small",
+                         __func__, cnt);
 
         MEMCPY_S(inputParams->custom_controls.parameters, cnt,
                  aiqResults->mCustomControls.parameters, cca::MAX_CUSTOM_CONTROLS_PARAM_SIZE);
@@ -882,9 +848,8 @@ int IspParamAdaptor::runIspAdaptL(ia_isp_bxt_program_group *pgPtr, ia_isp_bxt_gd
         PERF_CAMERA_ATRACE_PARAM1_IMAGING("ia_isp_bxt_run", 1);
         iaErr = mIntelCca->runAIC(requestId, inputParams, binaryData);
     }
-    CheckAndLogError(iaErr != ia_err_none && iaErr != ia_err_not_run,
-                     UNKNOWN_ERROR, "ISP parameter adaptation has failed %d",
-                     iaErr);
+    CheckAndLogError(iaErr != ia_err_none && iaErr != ia_err_not_run, UNKNOWN_ERROR,
+                     "ISP parameter adaptation has failed %d", iaErr);
 
     dumpIspParameter(settingSequence, *binaryData);
 

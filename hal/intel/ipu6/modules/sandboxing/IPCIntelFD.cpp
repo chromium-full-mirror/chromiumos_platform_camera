@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Intel Corporation
+ * Copyright (C) 2019-2021 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,8 +34,7 @@ IPCIntelFD::~IPCIntelFD() {
 bool IPCIntelFD::clientFlattenInit(unsigned int max_face_num, int cameraId,
                                    FaceDetectionInitParams* params) {
     LOG1("@%s, params:%p", __func__, params);
-    CheckAndLogError(params == nullptr, false, "@%s, params is nullptr",
-                     __func__);
+    CheckAndLogError(params == nullptr, false, "@%s, params is nullptr", __func__);
 
     params->max_face_num = max_face_num;
     params->cameraId = cameraId;

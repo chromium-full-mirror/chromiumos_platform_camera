@@ -63,8 +63,7 @@ int LensHw::init()
  */
 int LensHw::setFocusPosition(int position)
 {
-    CheckAndLogError(!mLensSubdev, NO_INIT, "%s: No Lens device inited.",
-                     __func__);
+    CheckAndLogError(!mLensSubdev, NO_INIT, "%s: No Lens device inited.", __func__);
     mLastLensPosition = position;
 
     struct timespec t = {};
@@ -81,16 +80,14 @@ int LensHw::setFocusPosition(int position)
  */
 int LensHw::setFocusStep(int steps)
 {
-    CheckAndLogError(!mLensSubdev, NO_INIT, "%s: No Lens device inited.",
-                     __func__);
+    CheckAndLogError(!mLensSubdev, NO_INIT, "%s: No Lens device inited.", __func__);
     LOG2("@%s", __func__);
     return mLensSubdev->SetControl(V4L2_CID_FOCUS_RELATIVE, steps);
 }
 
 int LensHw::getFocusPosition(int &position)
 {
-    CheckAndLogError(!mLensSubdev, NO_INIT, "%s: No Lens device inited.",
-                     __func__);
+    CheckAndLogError(!mLensSubdev, NO_INIT, "%s: No Lens device inited.", __func__);
     LOG2("@%s", __func__);
     return mLensSubdev->GetControl(V4L2_CID_FOCUS_ABSOLUTE, &position);
 }
@@ -103,24 +100,21 @@ int LensHw::getFocusStatus(int & /*status*/)
 
 int LensHw::startAutoFocus(void)
 {
-    CheckAndLogError(!mLensSubdev, NO_INIT, "%s: No Lens device inited.",
-                     __func__);
+    CheckAndLogError(!mLensSubdev, NO_INIT, "%s: No Lens device inited.", __func__);
     LOG2("@%s", __func__);
     return mLensSubdev->SetControl(V4L2_CID_AUTO_FOCUS_START, 1);
 }
 
 int LensHw::stopAutoFocus(void)
 {
-    CheckAndLogError(!mLensSubdev, NO_INIT, "%s: No Lens device inited.",
-                     __func__);
+    CheckAndLogError(!mLensSubdev, NO_INIT, "%s: No Lens device inited.", __func__);
     LOG2("@%s", __func__);
     return mLensSubdev->SetControl(V4L2_CID_AUTO_FOCUS_STOP, 0);
 }
 
 int LensHw::getAutoFocusStatus(int &status)
 {
-    CheckAndLogError(!mLensSubdev, NO_INIT, "%s: No Lens device inited.",
-                     __func__);
+    CheckAndLogError(!mLensSubdev, NO_INIT, "%s: No Lens device inited.", __func__);
     LOG2("@%s", __func__);
     return mLensSubdev->GetControl(V4L2_CID_AUTO_FOCUS_STATUS,
                                     reinterpret_cast<int*>(&status));
@@ -128,16 +122,14 @@ int LensHw::getAutoFocusStatus(int &status)
 
 int LensHw::setAutoFocusRange(int value)
 {
-    CheckAndLogError(!mLensSubdev, NO_INIT, "%s: No Lens device inited.",
-                     __func__);
+    CheckAndLogError(!mLensSubdev, NO_INIT, "%s: No Lens device inited.", __func__);
     LOG2("@%s", __func__);
     return mLensSubdev->SetControl(V4L2_CID_AUTO_FOCUS_RANGE, value);
 }
 
 int LensHw::getAutoFocusRange(int &value)
 {
-    CheckAndLogError(!mLensSubdev, NO_INIT, "%s: No Lens device inited.",
-                     __func__);
+    CheckAndLogError(!mLensSubdev, NO_INIT, "%s: No Lens device inited.", __func__);
     LOG2("@%s", __func__);
     return mLensSubdev->GetControl(V4L2_CID_AUTO_FOCUS_RANGE, &value);
 }

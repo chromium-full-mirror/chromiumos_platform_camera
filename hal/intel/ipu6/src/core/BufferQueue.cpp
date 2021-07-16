@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2020 Intel Corporation.
+ * Copyright (C) 2015-2021 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -234,8 +234,7 @@ int BufferQueue::allocProducerBuffers(int camId, int bufNum)
 
     mInternalBuffers.clear();
 
-    CheckAndLogError(!mBufferProducer, BAD_VALUE,
-                     "@%s: Buffer Producer is nullptr", __func__);
+    CheckAndLogError(!mBufferProducer, BAD_VALUE ,"@%s: Buffer Producer is nullptr", __func__);
 
     for (const auto& item : mInputFrameInfo) {
         Port port = item.first;
@@ -260,15 +259,13 @@ int BufferQueue::allocProducerBuffers(int camId, int bufNum)
             case V4L2_MEMORY_USERPTR:
                 camBuffer = CameraBuffer::create(camId, BUFFER_USAGE_PSYS_INPUT, V4L2_MEMORY_USERPTR,
                                                  size, i, srcFmt, srcWidth, srcHeight);
-                CheckAndLogError(!camBuffer, NO_MEMORY,
-                                 "Allocate producer userptr buffer failed");
+                CheckAndLogError(!camBuffer, NO_MEMORY, "Allocate producer userptr buffer failed");
                 break;
 
             case V4L2_MEMORY_MMAP:
                 camBuffer = std::make_shared<CameraBuffer>(camId, BUFFER_USAGE_PSYS_INPUT,
                                                       V4L2_MEMORY_MMAP, size, i, srcFmt);
-                CheckAndLogError(!camBuffer, NO_MEMORY,
-                                 "Allocate producer mmap buffer failed");
+                CheckAndLogError(!camBuffer, NO_MEMORY, "Allocate producer mmap buffer failed");
                 camBuffer->setUserBufferInfo(srcFmt, srcWidth, srcHeight);
                 mBufferProducer->allocateMemory(port, camBuffer);
                 break;

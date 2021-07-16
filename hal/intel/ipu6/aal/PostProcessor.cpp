@@ -44,8 +44,7 @@ icamera::status_t PostProcessor::configure(const camera3_stream_t& stream,
     int ret = camera3::HalV3Utils::fillHALStreams(mCameraId, srcStream, &halStream);
     LOG1("@%s, halStream: w:%d, h:%d, f:%d, size:%d, stride:%d, ret:%d", __func__, halStream.width,
          halStream.height, halStream.format, halStream.size, halStream.stride, ret);
-    CheckAndLogError(ret != icamera::OK, ret, "fillHALStreams fails, ret %d",
-                     ret);
+    CheckAndLogError(ret != icamera::OK, ret, "fillHALStreams fails, ret %d", ret);
 
     return configure(stream, halStream);
 }

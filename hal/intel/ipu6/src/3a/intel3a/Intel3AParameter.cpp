@@ -179,6 +179,7 @@ int Intel3AParameter::updateParameter(aiq_parameter_t param)
 void Intel3AParameter::updateAeResult(cca::cca_ae_results* aeResult)
 {
     CheckAndLogError(!aeResult, VOID_VALUE, "Invalid aeResult");
+
 }
 
 float Intel3AParameter::convertdBGainToISO(float sensitivityGain, int baseIso)
@@ -236,8 +237,7 @@ void Intel3AParameter::setAeManualLimits(const aiq_parameter_t& param)
 
     if (gainRange.min >= 0 && gainRange.max >= gainRange.min) {
         IntelCca* intelCca = IntelCca::getInstance(mCameraId, param.tuningMode);
-        CheckAndLogError(!intelCca, VOID_VALUE, "%s, cca is nullptr, mode:%d",
-                         __func__, param.tuningMode);
+        CheckAndLogError(!intelCca, VOID_VALUE, "%s, cca is nullptr, mode:%d", __func__, param.tuningMode);
 
         cca::cca_cmc cmc;
         int ret = intelCca->getCMC(&cmc);
@@ -411,8 +411,7 @@ void Intel3AParameter::updateAeParameter(const aiq_parameter_t& param)
 }
 
 void Intel3AParameter::updatePaResult(cca::cca_pa_params* paResult) {
-    CheckAndLogError((paResult == nullptr), VOID_VALUE,
-                     "No Pa result provided.");
+    CheckAndLogError((paResult == nullptr), VOID_VALUE, "No Pa result provided.");
 
     paResult->enable_manual_settings = false;
     if (!mUseManualColorMatrix) return;
@@ -437,8 +436,7 @@ void Intel3AParameter::updatePaResult(cca::cca_pa_params* paResult) {
  */
 void Intel3AParameter::updateAwbResult(cca::cca_awb_results* awbResult)
 {
-    CheckAndLogError((awbResult == nullptr), VOID_VALUE,
-                     "No Awb result provided.");
+    CheckAndLogError((awbResult == nullptr), VOID_VALUE, "No Awb result provided.");
 
     camera_awb_gains_t gains = {};
     if (mUseManualColorMatrix && VALID_COLOR_GAINS(mColorGains.color_gains_rggb)) {

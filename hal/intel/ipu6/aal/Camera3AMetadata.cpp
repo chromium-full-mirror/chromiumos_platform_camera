@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2020 Intel Corporation
+ * Copyright (C) 2018-2021 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,8 +43,7 @@ Camera3AMetadata::~Camera3AMetadata() {
 void Camera3AMetadata::process3Astate(const icamera::Parameters& parameter,
                                       android::CameraMetadata* metadata) {
     LOG2("@%s", __func__);
-    CheckAndLogError(!metadata, VOID_VALUE, "%s, metadata is nullptr",
-                     __func__);
+    CheckAndLogError(!metadata, VOID_VALUE, "%s, metadata is nullptr", __func__);
 
     // get 3a info from metadata
     uint8_t afTrigger = ANDROID_CONTROL_AF_TRIGGER_IDLE;

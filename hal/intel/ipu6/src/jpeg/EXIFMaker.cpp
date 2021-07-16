@@ -558,8 +558,7 @@ bool EXIFMaker::isThumbnailSet() const {
 
 size_t EXIFMaker::makeExif(unsigned char* data) {
     LOG1("@%s", __func__);
-    CheckAndLogError(!data, 0,
-                     "nullptr passed for EXIF. Cannot generate EXIF!");
+    CheckAndLogError(!data, 0, "nullptr passed for EXIF. Cannot generate EXIF!");
 
     if (mEncoder.makeExif(data, &mExifAttributes, &mExifSize) == EXIF_SUCCESS) {
         LOG1("Generated EXIF (@%p) of size: %zu", data, mExifSize);

@@ -69,23 +69,20 @@ GPUExecutor::~GPUExecutor() {
 
 int GPUExecutor::initPipe() {
     LOG1("@%s:%s", __func__, getName());
-    CheckAndLogError(mGraphConfig == nullptr, BAD_VALUE,
-                     "%s, the graph config is NULL, BUG!", __func__);
+    CheckAndLogError(mGraphConfig == nullptr, BAD_VALUE, "%s, the graph config is NULL, BUG!",
+                     __func__);
 
     vector<IGraphType::PipelineConnection> connVector;
 
     int ret = mGraphConfig->pipelineGetConnections(mPGNames, &connVector);
     CheckAndLogError(ret != OK || connVector.empty(), ret,
-                     "Failed to get connections for executor:%s",
-                     mName.c_str());
+                     "Failed to get connections for executor:%s", mName.c_str());
 
     ret = createPGs();
-    CheckAndLogError(ret != OK, ret, "Failed to create PGs for executor: %s",
-                     mName.c_str());
+    CheckAndLogError(ret != OK, ret, "Failed to create PGs for executor: %s", mName.c_str());
 
     ret = analyzeConnections(connVector);
-    CheckAndLogError(ret != OK, ret,
-                     "Failed to analyze connections for executor: %s",
+    CheckAndLogError(ret != OK, ret, "Failed to analyze connections for executor: %s",
                      mName.c_str());
 
     assignDefaultPortsForTerminals();
@@ -98,8 +95,7 @@ int GPUExecutor::createPGs() {
 
     for (auto const& pgName : mPGNames) {
         int pgId = mGraphConfig->getPgIdByPgName(pgName);
-        CheckAndLogError(pgId == -1, BAD_VALUE, "Cannot get PG ID for %s",
-                         pgName.c_str());
+        CheckAndLogError(pgId == -1, BAD_VALUE, "Cannot get PG ID for %s", pgName.c_str());
         ExecutorUnit pgUnit;
         pgUnit.pgId = pgId;
         // GPU Executor doesn't have pg
@@ -119,14 +115,13 @@ int GPUExecutor::start() {
 
     mProcessThread = new ProcessThread(this);
 
-    CheckAndLogError(mPGExecutors.empty(), UNKNOWN_ERROR,
-                     "PGExecutors couldn't be empty");
+    CheckAndLogError(mPGExecutors.empty(), UNKNOWN_ERROR, "PGExecutors couldn't be empty");
     ExecutorUnit* tnrUnit = &mPGExecutors[0];
     int ret = OK;
     if (!tnrUnit->inputTerminals.empty()) {
         ia_uid term = tnrUnit->inputTerminals.at(0);
-        CheckAndLogError(mTerminalsDesc.find(term) == mTerminalsDesc.end(),
-                         NO_INIT, "Can't find TerminalDescriptor");
+        CheckAndLogError(mTerminalsDesc.find(term) == mTerminalsDesc.end(), NO_INIT,
+                         "Can't find TerminalDescriptor");
 
         const FrameInfo& frameInfo = mTerminalsDesc[term].frameDesc;
         mIntelTNR = std::unique_ptr<IntelTNR7US>(new IntelTNR7US(mCameraId));
@@ -182,11 +177,9 @@ int GPUExecutor::allocBuffers() {
         if (mIntelTNR) {
             buf = std::make_shared<CameraBuffer>(mCameraId, BUFFER_USAGE_PSYS_INPUT,
                                                  V4L2_MEMORY_USERPTR, size, i, srcFmt);
-            CheckAndLogError(!buf, NO_MEMORY, "@%s: fail to alloc CameraBuffer",
-                             __func__);
+            CheckAndLogError(!buf, NO_MEMORY, "@%s: fail to alloc CameraBuffer", __func__);
             void* buffer = mIntelTNR->allocCamBuf(size, i);
-            CheckAndLogError(!buffer, NO_MEMORY,
-                             "@%s: fail to alloc shared memory", __func__);
+            CheckAndLogError(!buffer, NO_MEMORY, "@%s: fail to alloc shared memory", __func__);
             buf->setUserBufferInfo(srcFmt, srcWidth, srcHeight, buffer);
         } else {
             buf = CameraBuffer::create(mCameraId, BUFFER_USAGE_PSYS_INPUT, V4L2_MEMORY_USERPTR,
@@ -199,12 +192,10 @@ int GPUExecutor::allocBuffers() {
 
     if (mIntelTNR) {
         int ret = allocTnrOutBufs(size);
-        CheckAndLogError(ret, UNKNOWN_ERROR,
-                         "@%s: alloc tnr reference buffer failed", __func__);
+        CheckAndLogError(ret, UNKNOWN_ERROR, "@%s: alloc tnr reference buffer failed", __func__);
 
         mTnr7usParam = mIntelTNR->allocTnr7ParamBuf();
-        CheckAndLogError(!mTnr7usParam, NO_MEMORY,
-                         "@%s: Allocate Param buffer failed", __func__);
+        CheckAndLogError(!mTnr7usParam, NO_MEMORY, "@%s: Allocate Param buffer failed", __func__);
         CLEAR(*mTnr7usParam);
     }
 
@@ -216,9 +207,7 @@ int GPUExecutor::allocBuffers() {
         int size = CameraUtils::getFrameSize(fmt, width, height, true);
         shared_ptr<CameraBuffer> buf = CameraBuffer::create(
             mCameraId, BUFFER_USAGE_PSYS_INPUT, V4L2_MEMORY_USERPTR, size, 0, fmt, width, height);
-        CheckAndLogError(!buf, NO_MEMORY,
-                         "@%s: Allocate internal output buffer failed",
-                         __func__);
+        CheckAndLogError(!buf, NO_MEMORY, "@%s: Allocate internal output buffer failed", __func__);
         mInternalOutputBuffers[item.first] = buf;
     }
 
@@ -248,14 +237,12 @@ bool GPUExecutor::fetchTnrOutBuffer(int64_t seq, std::shared_ptr<CameraBuffer> b
 
 int GPUExecutor::getStillTnrTriggerInfo(TuningMode mode) {
     IntelCca* intelCca = IntelCca::getInstance(mCameraId, mode);
-    CheckAndLogError(!intelCca, UNKNOWN_ERROR, "%s, cca is nullptr, mode:%d",
-                     __func__, mode);
+    CheckAndLogError(!intelCca, UNKNOWN_ERROR, "%s, cca is nullptr, mode:%d", __func__, mode);
     cca::cca_cmc cmc;
     ia_err ret = intelCca->getCMC(&cmc);
     CheckAndLogError(ret != OK, BAD_VALUE, "@%s get cmc data failed", __func__);
     mStillTnrTriggerInfo = cmc.tnr7us_trigger_info;
-    LOG2("%s still tnr trigger gain num: %d threshold: %f", mName.c_str(),
-         mStillTnrTriggerInfo.num_gains, mStillTnrTriggerInfo.tnr7us_threshold_gain);
+    LOG2("%s still tnr trigger gain num: %d", mName.c_str(), mStillTnrTriggerInfo.num_gains);
     return OK;
 }
 
@@ -272,7 +259,6 @@ int GPUExecutor::getTotalGain(int64_t seq, float* totalGain) {
     }
     *totalGain = (aiqResults->mAeResults.exposures[0].exposure->analog_gain *
                   aiqResults->mAeResults.exposures[0].exposure->digital_gain);
-    LOG2("%s totalGain: %f", mName.c_str(), *totalGain);
     return OK;
 }
 
@@ -292,7 +278,8 @@ int GPUExecutor::getTnrExtraFrameCount(int64_t seq) {
     int ret = getTotalGain(seq, &totalGain);
     CheckAndLogError(ret, 0, "@%s, Failed to get total gain", __func__);
 
-    if (!mStillTnrTriggerInfo.num_gains) return PlatformData::getTnrExtraFrameCount(mCameraId);
+    if (!mStillTnrTriggerInfo.num_gains)
+        return PlatformData::getTnrExtraFrameCount(mCameraId);
 
     int index = 0;
     for (int i = 1; i < mStillTnrTriggerInfo.num_gains; i++) {
@@ -317,8 +304,7 @@ int GPUExecutor::allocTnrOutBufs(uint32_t bufSize) {
     for (int i = 0; i < maxTnrOutBufCount; i++) {
         void* buffer = mIntelTNR->allocCamBuf(bufSize, MAX_BUFFER_COUNT + i);
         // will release all buffer in freeAllBufs
-        CheckAndLogError(!buffer, UNKNOWN_ERROR,
-                         "@%s, alloc reference buffer fails", __func__);
+        CheckAndLogError(!buffer, UNKNOWN_ERROR, "@%s, alloc reference buffer fails", __func__);
         int index = i * (-1) - 1;  // initialize index as -1, -2, ...
         mTnrOutBufMap[index] = buffer;
     }
@@ -373,8 +359,7 @@ int GPUExecutor::processNewFrame() {
 
     // Should find first not none input buffer instead of always use the first one.
     shared_ptr<CameraBuffer> inBuf = inBuffers.begin()->second;
-    CheckAndLogError(!inBuf, UNKNOWN_ERROR, "@%s: no valid input buffer",
-                     __func__);
+    CheckAndLogError(!inBuf, UNKNOWN_ERROR, "@%s: no valid input buffer", __func__);
     v4l2_buffer_t inV4l2Buf = *inBuf->getV4L2Buffer().Get();
 
     // Fill real buffer to run pipe
@@ -385,8 +370,7 @@ int GPUExecutor::processNewFrame() {
     }
 
     std::shared_ptr<CameraBuffer> outBuf = outBuffers.begin()->second;
-    CheckAndLogError(!outBuf, UNKNOWN_ERROR, "@%s: no valid output buffer",
-                     __func__);
+    CheckAndLogError(!outBuf, UNKNOWN_ERROR, "@%s: no valid output buffer", __func__);
 
     ret = runTnrFrame(inBuf, outBuf);
     CheckAndLogError(ret != OK, ret, "@%s: run tnr failed", __func__);
@@ -424,15 +408,13 @@ int GPUExecutor::updateTnrISPConfig(Tnr7Param* pbuffer, uint32_t sequence) {
         CLEAR(*pbuffer);
         // only video stream pipe has tnr tuning data, still pipe use same tnr tuning data as video
         ia_isp_bxt_program_group* pg = mGraphConfig->getProgramGroup(mStreamId);
-        CheckAndLogError(pg == nullptr, UNKNOWN_ERROR,
-                         "Can't get IPU program group");
+        CheckAndLogError(pg == nullptr, UNKNOWN_ERROR, "Can't get IPU program group");
 
         // Get ISP parameters
         LOG1(" %s update tnr parameters for sequence %d", __func__, sequence);
 
         ia_binary_data* ipuParameters = mAdaptor->getIpuParameter(sequence, mStreamId);
-        CheckAndLogError(ipuParameters == nullptr, UNKNOWN_ERROR,
-                         "Failed to find ISP parameter");
+        CheckAndLogError(ipuParameters == nullptr, UNKNOWN_ERROR, "Failed to find ISP parameter");
 
         ia_isp_bxt_program_group tmpPg = *pg;
         tmpPg.kernel_count = 0;
@@ -450,8 +432,7 @@ int GPUExecutor::updateTnrISPConfig(Tnr7Param* pbuffer, uint32_t sequence) {
         ret |= PalOutput.getKernelPublicOutput(ia_pal_uuid_isp_tnr7_bc_1_0, (void*&)pBc);
         ret |= PalOutput.getKernelPublicOutput(ia_pal_uuid_isp_tnr7_blend_1_0, (void*&)pBlend);
         ret |= PalOutput.getKernelPublicOutput(ia_pal_uuid_isp_tnr7_ims_1_0, (void*&)pIms);
-        CheckAndLogError(ret != ia_err_none, UNKNOWN_ERROR,
-                         "Can't read isp tnr7 parameters");
+        CheckAndLogError(ret != ia_err_none, UNKNOWN_ERROR, "Can't read isp tnr7 parameters");
 
         tnr7_bc_1_0_t* tnr7_bc = &(pbuffer->bc);
         tnr7_blend_1_0_t* tnr7_blend = &(pbuffer->blend);
@@ -524,8 +505,7 @@ int GPUExecutor::updateTnrISPConfig(Tnr7Param* pbuffer, uint32_t sequence) {
 int GPUExecutor::runTnrFrame(const std::shared_ptr<CameraBuffer>& inBuf,
                              std::shared_ptr<CameraBuffer> outBuf) {
     PERF_CAMERA_ATRACE();
-    CheckAndLogError(!inBuf->getBufferAddr(), UNKNOWN_ERROR,
-                     "%s invalid input buffer", __func__);
+    CheckAndLogError(!inBuf->getBufferAddr(), UNKNOWN_ERROR, "%s invalid input buffer", __func__);
 
     if (mPolicyManager) {
         // Check if need to wait other executors.
@@ -539,8 +519,7 @@ int GPUExecutor::runTnrFrame(const std::shared_ptr<CameraBuffer>& inBuf,
     int ret = OK;
     if (mIntelTNR) {
         ret = updateTnrISPConfig(mTnr7usParam, sequence);
-        CheckAndLogError(ret != OK, UNKNOWN_ERROR,
-                         " %s Failed to update TNR parameters", __func__);
+        CheckAndLogError(ret != OK, UNKNOWN_ERROR, " %s Failed to update TNR parameters", __func__);
     }
 
     int fd = outBuf->getFd();
@@ -621,15 +600,13 @@ int GPUExecutor::runTnrFrame(const std::shared_ptr<CameraBuffer>& inBuf,
     if (memoryType == V4L2_MEMORY_DMABUF) {
         CameraBuffer::unmapDmaBufferAddr(outPtr, bufferSize);
     }
-    CheckAndLogError(ret != OK, UNKNOWN_ERROR, " %s tnr7us run frame failed",
-                     __func__);
+    CheckAndLogError(ret != OK, UNKNOWN_ERROR, " %s tnr7us run frame failed", __func__);
     mLastSequence = sequence;
 
     // update tnr parameters after GPU thread finished
     float totalGain = 0.0f;
     ret = getTotalGain(sequence, &totalGain);
-    CheckAndLogError(ret, UNKNOWN_ERROR, "@%s, Failed to get total gain",
-                     __func__);
+    CheckAndLogError(ret, UNKNOWN_ERROR, "@%s, Failed to get total gain", __func__);
     // update tnr param when total gain changes
     bool isTnrParamForceUpdate = icamera::PlatformData::isTnrParamForceUpdate();
     // multiply totalGain by 100, to avoid lose accuracy
@@ -649,8 +626,7 @@ int GPUExecutor::dumpTnrParameters(uint32_t sequence) {
     tnr7_blend_1_0_t* tnr7_blend = &(mTnr7usParam->blend);
     tnr7_ims_1_0_t* tnr7_ims = &(mTnr7usParam->ims);
     char* dumpData = reinterpret_cast<char*>(malloc(DUMP_FILE_SIZE));
-    CheckAndLogError(dumpData == nullptr, NO_MEMORY,
-                     "failed to allocate memory for dump tnr7");
+    CheckAndLogError(dumpData == nullptr, NO_MEMORY, "failed to allocate memory for dump tnr7");
 
     FILE* parFile = fopen(dumpFileName.c_str(), "wb");
     if (parFile) {

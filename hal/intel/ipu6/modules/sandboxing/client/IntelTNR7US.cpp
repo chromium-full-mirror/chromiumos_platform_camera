@@ -89,10 +89,9 @@ int IntelTNR7US::runTnrFrame(const void* inBufAddr, void* outBufAddr, uint32_t i
     CheckAndLogError(!inBufAddr || !outBufAddr || !tnrParam, UNKNOWN_ERROR,
                      "@%s, invalid data buffer or parameter buffer", __func__);
     int32_t inHandle = mCommon.getShmMemHandle(const_cast<void*>(inBufAddr), GPU_ALGO_SHM);
-    CheckAndLogError(inHandle < 0, UNKNOWN_ERROR,
-                     "@%s, can't find inBuf handle", __func__);
-    CheckAndLogError(mParamMems.mAddr != tnrParam, UNKNOWN_ERROR,
-                     "@%s, invalid tnr parameter", __func__);
+    CheckAndLogError(inHandle < 0, UNKNOWN_ERROR, "@%s, can't find inBuf handle", __func__);
+    CheckAndLogError(mParamMems.mAddr != tnrParam, UNKNOWN_ERROR, "@%s, invalid tnr parameter",
+                     __func__);
 
     if (fd >= 0) {
         LOG1("%s type:%d using usr buffer fd: %d", __func__, mTnrType, fd);
@@ -101,8 +100,8 @@ int IntelTNR7US::runTnrFrame(const void* inBufAddr, void* outBufAddr, uint32_t i
         mTnrRequestInfo->outHandle =
             mCommon.getShmMemHandle(static_cast<void*>(outBufAddr), GPU_ALGO_SHM);
     }
-    CheckAndLogError(mTnrRequestInfo->outHandle < 0, UNKNOWN_ERROR,
-                     "@%s, can't init outBuf handle", __func__);
+    CheckAndLogError(mTnrRequestInfo->outHandle < 0, UNKNOWN_ERROR, "@%s, can't init outBuf handle",
+                     __func__);
 
     mTnrRequestInfo->inHandle = inHandle;
     mTnrRequestInfo->paramHandle = mParamMems.mHandle;
@@ -191,8 +190,7 @@ int IntelTNR7US::asyncParamUpdate(int gain, bool forceUpdate) {
     IPC_CMD cmd = mTnrType > 0 ? IPC_GPU_TNR_THREAD2_PARAM_UPDATE : IPC_GPU_TNR_PARAM_UPDATE;
     bool ret = mCommon.requestSync(cmd, requestHandle);
 
-    CheckAndLogError(!ret, UNKNOWN_ERROR,
-                     "@%s, IPC_GPU_TNR_PARAM_UPDATE requestSync fails",
+    CheckAndLogError(!ret, UNKNOWN_ERROR, "@%s, IPC_GPU_TNR_PARAM_UPDATE requestSync fails",
                      __func__);
     return OK;
 }

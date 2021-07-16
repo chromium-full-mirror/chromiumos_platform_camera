@@ -119,8 +119,7 @@ int AiqCore::init() {
     mAiqState = AIQ_INIT;
 
     int ret = mIntel3AParameter->init();
-    CheckAndLogError(ret != OK, ret, "@%s, Init 3a parameter failed ret: %d",
-                     __func__, ret);
+    CheckAndLogError(ret != OK, ret, "@%s, Init 3a parameter failed ret: %d", __func__, ret);
 
     CLEAR(mLastAeResult),
     CLEAR(mLastAwbResult),
@@ -193,13 +192,11 @@ int AiqCore::calculateHyperfocalDistance(TuningMode mode) {
     LOG3A("@%s, tuning mode: %d", __func__, mode);
 
     IntelCca* intelCca = getIntelCca(mode);
-    CheckAndLogError(!intelCca, BAD_VALUE, "%s, cca is nullptr, mode:%d",
-                     __func__, mode);
+    CheckAndLogError(!intelCca, BAD_VALUE, "%s, cca is nullptr, mode:%d", __func__, mode);
 
     cca::cca_cmc cmc;
     ia_err ret = intelCca->getCMC(&cmc);
-    CheckAndLogError(ret != ia_err_none, BAD_VALUE, "@%s get cmc data failed",
-                     __func__);
+    CheckAndLogError(ret != ia_err_none, BAD_VALUE, "@%s get cmc data failed", __func__);
 
     mHyperFocalDistance = AiqUtils::calculateHyperfocalDistance(cmc);
 
@@ -243,8 +240,8 @@ int AiqCore::calculateDepthOfField(const cca::cca_af_results &afResults,
     }
 
     IntelCca* intelCca = getIntelCca(mTuningMode);
-    CheckAndLogError(!intelCca, BAD_VALUE, "%s, cca is nullptr, mTuningMode:%d",
-                     __func__, mTuningMode);
+    CheckAndLogError(!intelCca, BAD_VALUE, "%s, cca is nullptr, mTuningMode:%d", __func__,
+                     mTuningMode);
 
     cca::cca_cmc cmc;
     int ret = intelCca->getCMC(&cmc);
@@ -275,8 +272,7 @@ int AiqCore::updateParameter(const aiq_parameter_t &param) {
 
     if (mTuningMode != param.tuningMode) {
         int ret = calculateHyperfocalDistance(param.tuningMode);
-        CheckAndLogError(ret != OK, ret, "%s calculateHyperfocalDistance fails",
-                         __func__);
+        CheckAndLogError(ret != OK, ret, "%s calculateHyperfocalDistance fails", __func__);
         mTuningMode = param.tuningMode;
     }
     mShadingMode = param.shadingMode;
@@ -305,8 +301,8 @@ int AiqCore::setStatsParams(const cca::cca_stats_params &statsParams) {
     int ret = OK;
 
     IntelCca* intelCca = getIntelCca(mTuningMode);
-    CheckAndLogError(!intelCca, UNKNOWN_ERROR,
-                     "%s, intelCca is nullptr, mode:%d", __func__, mTuningMode);
+    CheckAndLogError(!intelCca, UNKNOWN_ERROR, "%s, intelCca is nullptr, mode:%d", __func__,
+                     mTuningMode);
     {
         PERF_CAMERA_ATRACE_PARAM1_IMAGING("intelCca->setStatsParams", 1);
         ia_err iaErr = intelCca->setStatsParams(statsParams);
@@ -330,8 +326,7 @@ int AiqCore::runAe(long requestId, AiqResult* aiqResult) {
 int AiqCore::runAiq(long requestId, AiqResult *aiqResult) {
     LOG3A("@%s, aiqResult:%p, requestId:%ld, mTonemapMode:%d", __func__,
           aiqResult, requestId, mTonemapMode);
-    CheckAndLogError(!aiqResult, BAD_VALUE, "@%s, aiqResult is nullptr",
-                     __func__);
+    CheckAndLogError(!aiqResult, BAD_VALUE, "@%s, aiqResult is nullptr", __func__);
 
     int aaaRunType = IMAGING_ALGO_AWB | IMAGING_ALGO_GBCE | IMAGING_ALGO_PA;
     if (PlatformData::getLensHwType(mCameraId) == LENS_VCM_HW) {
@@ -343,8 +338,8 @@ int AiqCore::runAiq(long requestId, AiqResult *aiqResult) {
 
     // get the IntelCca instance
     IntelCca* intelCca = getIntelCca(mTuningMode);
-    CheckAndLogError(!intelCca, UNKNOWN_ERROR, "%s, intelCca is null, mode:%d",
-                     __func__, mTuningMode);
+    CheckAndLogError(!intelCca, UNKNOWN_ERROR, "%s, intelCca is null, mode:%d", __func__,
+                     mTuningMode);
 
     mAiqParams->bitmap = 0;
 
@@ -469,8 +464,7 @@ int AiqCore::runAiq(long requestId, AiqResult *aiqResult) {
 
 int AiqCore::runAEC(long requestId, cca::cca_ae_results* aeResults) {
     LOG3A("@%s, aeResults:%p", __func__, aeResults);
-    CheckAndLogError(!aeResults, BAD_VALUE, "@%s, aeResults is nullptr",
-                     __func__);
+    CheckAndLogError(!aeResults, BAD_VALUE, "@%s, aeResults is nullptr", __func__);
     PERF_CAMERA_ATRACE();
 
     int ret = OK;
@@ -487,8 +481,7 @@ int AiqCore::runAEC(long requestId, cca::cca_ae_results* aeResults) {
     LOG3A("AEC frame_use: %d, bypass: %d", mIntel3AParameter->mAeParams.frame_use,
           mIntel3AParameter->mAeParams.is_bypass);
     IntelCca* intelCca = getIntelCca(mTuningMode);
-    CheckAndLogError(!intelCca, UNKNOWN_ERROR, "%s, intelCca is null, m:%d",
-                     __func__, mTuningMode);
+    CheckAndLogError(!intelCca, UNKNOWN_ERROR, "%s, intelCca is null, m:%d", __func__, mTuningMode);
     {
         PERF_CAMERA_ATRACE_PARAM1_IMAGING("intelCca->runAEC", 1);
         ia_err iaErr = intelCca->runAEC(requestId, mIntel3AParameter->mAeParams, newAeResults);
@@ -509,8 +502,8 @@ void AiqCore::focusDistanceResult(const cca::cca_af_results *afResults,
                                   camera_range_t *focusRange) {
     LOG3A("@%s, afResults:%p, afDistanceDiopters:%p, focusRange:%p", __func__,
           afResults, afDistanceDiopters, focusRange);
-    CheckAndLogError(!afResults || !afDistanceDiopters || !focusRange,
-                     VOID_VALUE, "@%s, Bad input values", __func__);
+    CheckAndLogError(!afResults || !afDistanceDiopters || !focusRange, VOID_VALUE,
+                     "@%s, Bad input values", __func__);
 
     *afDistanceDiopters = 1.2f;
     if (mIntel3AParameter->mAfParams.focus_mode == ia_aiq_af_operation_mode_infinity) {
@@ -540,8 +533,7 @@ void AiqCore::focusDistanceResult(const cca::cca_af_results *afResults,
 
 int AiqCore::checkColorOrder(cmc_bayer_order bayerOrder, ColorOrder *colorOrder) {
     LOG3A("@%s, bayerOrder = %d, colorOrder:%p", __func__, bayerOrder, colorOrder);
-    CheckAndLogError(!colorOrder, BAD_VALUE, "@%s, colorOrder is nullptr",
-                     __func__);
+    CheckAndLogError(!colorOrder, BAD_VALUE, "@%s, colorOrder is nullptr", __func__);
 
     int ret = OK;
     switch (bayerOrder) {
@@ -602,8 +594,7 @@ int AiqCore::reFormatLensShadingMap(const LSCGrid &inputLscGrid, float *dstLscGr
     LOG3A("@%s, width %d, height %d", __func__, inputLscGrid.width, inputLscGrid.height);
 
     CheckAndLogError(inputLscGrid.isBad() || !dstLscGridRGGB, BAD_VALUE,
-                     "@%s, Bad input values for lens shading map reformatting",
-                     __func__);
+                     "@%s, Bad input values for lens shading map reformatting", __func__);
 
     // Metadata spec request order [R, Geven, Godd, B]
     // the lensShading from ISP is 4 width * height block,
@@ -622,10 +613,8 @@ int AiqCore::reFormatLensShadingMap(const LSCGrid &inputLscGrid, float *dstLscGr
 int AiqCore::storeLensShadingMap(const LSCGrid &inputLscGrid,
                                  const LSCGrid &resizeLscGrid, float *dstLscGridRGGB) {
     LOG3A("@%s", __func__);
-    CheckAndLogError(
-        inputLscGrid.isBad() || resizeLscGrid.isBad() || !dstLscGridRGGB,
-        BAD_VALUE, "@%s, Bad input values for lens shading map storing",
-        __func__);
+    CheckAndLogError(inputLscGrid.isBad() || resizeLscGrid.isBad() || !dstLscGridRGGB, BAD_VALUE,
+                     "@%s, Bad input values for lens shading map storing", __func__);
 
     int destWidth = resizeLscGrid.width;
     int destHeight = resizeLscGrid.height;
@@ -662,16 +651,14 @@ int AiqCore::storeLensShadingMap(const LSCGrid &inputLscGrid,
 
 int AiqCore::processSAResults(cca::cca_sa_results *saResults, float *lensShadingMap) {
     LOG3A("@%s, saResults:%p, lensShadingMap:%p", __func__, saResults, lensShadingMap);
-    CheckAndLogError(!saResults || !lensShadingMap, BAD_VALUE,
-                     "@%s, Bad input values", __func__);
+    CheckAndLogError(!saResults || !lensShadingMap, BAD_VALUE, "@%s, Bad input values", __func__);
 
     if (mLensShadingMapMode == LENS_SHADING_MAP_MODE_OFF) return OK;
 
     if (saResults->lsc_update) {
         ColorOrder co_ind = {};
         int ret = checkColorOrder(saResults->color_order, &co_ind);
-        CheckAndLogError(ret != OK, BAD_VALUE,
-                         "Failed to checkColorOrder, ret: %d", ret);
+        CheckAndLogError(ret != OK, BAD_VALUE, "Failed to checkColorOrder, ret: %d", ret);
 
         LSCGrid inputGrid;
         inputGrid.gridB = saResults->lsc_grid[co_ind.b[0]][co_ind.b[1]];

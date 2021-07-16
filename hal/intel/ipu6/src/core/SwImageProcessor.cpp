@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2020 Intel Corporation.
+ * Copyright (C) 2015-2021 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,8 +52,7 @@ int SwImageProcessor::start()
 
     int memType = mOutputFrameInfo.begin()->second.memType;
     CheckAndLogError(memType == V4L2_MEMORY_DMABUF, BAD_VALUE,
-                     "@%s: DMABUF is not supported in SwProcessor as output",
-                     __func__);
+                     "@%s: DMABUF is not supported in SwProcessor as output", __func__);
 
     int ret = allocProducerBuffers(mCameraId, MAX_BUFFER_COUNT);
     CheckAndLogError(ret != OK, ret, "@%s: Allocate Buffer failed", __func__);
@@ -99,9 +98,7 @@ int SwImageProcessor::processNewFrame()
 
     if (!mThreadRunning) return -1;
 
-    CheckAndLogError((ret < 0), -1,
-                     "@%s: wake up from the wait abnomal such as stop",
-                     __func__);
+    CheckAndLogError((ret < 0), -1, "@%s: wake up from the wait abnomal such as stop", __func__);
 
     inputPort = srcBuffers.begin()->first;
     cInBuffer = srcBuffers[inputPort];
@@ -130,8 +127,7 @@ int SwImageProcessor::processNewFrame()
         ret = SwImageConverter::convertFormat(cInBuffer->getWidth(), cInBuffer->getHeight(),
                 (unsigned char *)cInBuffer->getBufferAddr(), cInBuffer->getBufferSize(), cInBuffer->getFormat(),
                 (unsigned char *)cOutBuffer->getBufferAddr(), cOutBuffer->getBufferSize(), cOutBuffer->getFormat());
-        CheckAndLogError((ret < 0), ret, "format convertion failed with %d",
-                         ret);
+        CheckAndLogError((ret < 0), ret, "format convertion failed with %d", ret);
 
         if (CameraDump::isDumpTypeEnable(DUMP_SW_IMG_PROC_OUTPUT)) {
             CameraDump::dumpImage(mCameraId, cOutBuffer, M_SWIPOP);

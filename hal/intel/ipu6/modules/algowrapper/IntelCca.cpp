@@ -119,8 +119,7 @@ ia_err IntelCca::setStatsParams(const cca::cca_stats_params& params) {
 ia_err IntelCca::runAEC(uint64_t frameId, const cca::cca_ae_input_params& params,
                         cca::cca_ae_results* results) {
     LOG2("@%s", __func__);
-    CheckAndLogError(!results, ia_err_argument, "@%s, results is nullptr",
-                     __func__);
+    CheckAndLogError(!results, ia_err_argument, "@%s, results is nullptr", __func__);
 
     ia_err ret = getIntelCCA()->runAEC(frameId, params, results);
     LOG2("@%s, ret:%d", __func__, ret);
@@ -131,8 +130,7 @@ ia_err IntelCca::runAEC(uint64_t frameId, const cca::cca_ae_input_params& params
 ia_err IntelCca::runAIQ(uint64_t frameId, const cca::cca_aiq_params& params,
                         cca::cca_aiq_results* results) {
     LOG2("@%s", __func__);
-    CheckAndLogError(!results, ia_err_argument, "@%s, results is nullptr",
-                     __func__);
+    CheckAndLogError(!results, ia_err_argument, "@%s, results is nullptr", __func__);
 
     ia_err ret = getIntelCCA()->runAIQ(frameId, params, results);
     LOG2("@%s, ret:%d", __func__, ret);
@@ -170,8 +168,7 @@ ia_err IntelCca::runDVS(uint64_t frameId) {
 ia_err IntelCca::runAIC(uint64_t frameId, const cca::cca_pal_input_params* params,
                         ia_binary_data* pal) {
     LOG2("@%s", __func__);
-    CheckAndLogError(!params, ia_err_argument, "@%s, params is nullptr",
-                     __func__);
+    CheckAndLogError(!params, ia_err_argument, "@%s, params is nullptr", __func__);
     CheckAndLogError(!pal, ia_err_argument, "@%s, pal is nullptr", __func__);
 
     ia_err ret = getIntelCCA()->runAIC(frameId, *params, pal);
@@ -234,8 +231,7 @@ void IntelCca::deinit() {
 ia_err IntelCca::decodeStats(uint64_t statsPointer, uint32_t statsSize,
                              ia_isp_bxt_statistics_query_results_t* results) {
     LOG2("@%s, statsPointer: 0x%lu, statsSize:%d", __func__, statsPointer, statsSize);
-    CheckAndLogError(!results, ia_err_argument, "@%s, results is nullptr",
-                     __func__);
+    CheckAndLogError(!results, ia_err_argument, "@%s, results is nullptr", __func__);
 
     ia_err ret = getIntelCCA()->decodeStats(statsPointer, statsSize, results);
     LOG2("@%s, ret:%d", __func__, ret);

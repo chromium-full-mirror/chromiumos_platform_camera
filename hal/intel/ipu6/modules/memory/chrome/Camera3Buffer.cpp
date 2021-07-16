@@ -308,8 +308,7 @@ icamera::status_t Camera3Buffer::lock(int flags) {
         return UNKNOWN_ERROR;
     }
 
-    CheckAndLogError(ret, UNKNOWN_ERROR,
-                     "@%s: Failed to lock buffer, mHandle:%p planeNum: %d",
+    CheckAndLogError(ret, UNKNOWN_ERROR, "@%s: Failed to lock buffer, mHandle:%p planeNum: %d",
                      __func__, mHandle, planeNum);
 
     for (uint32_t i = 0; i < planeNum; i++) {
@@ -317,8 +316,8 @@ icamera::status_t Camera3Buffer::lock(int flags) {
     }
 
     LOG2("@%s, addr:%p, size:%d", __func__, mHalBuffer.addr, mHalBuffer.s.size);
-    CheckAndLogError(!mHalBuffer.s.size, UNKNOWN_ERROR,
-                     "ERROR @%s: Failed to GetPlaneSize, it's 0", __func__);
+    CheckAndLogError(!mHalBuffer.s.size, UNKNOWN_ERROR, "ERROR @%s: Failed to GetPlaneSize, it's 0",
+                     __func__);
 
     mLocked = true;
 

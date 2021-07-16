@@ -32,17 +32,14 @@ namespace CIPR {
 Result Buffer::allocateCommon() {
     if (mMemoryDesc.flags & MemoryFlag::DeviceMask) {
         CheckAndLogError(mContext == nullptr, Result::InvaildArg,
-                         "%s: device memory flags specified, migrate first!",
-                         __func__);
+                         "%s: device memory flags specified, migrate first!", __func__);
     }
 
-    CheckAndLogError(
-        mMemoryDesc.cpuPtr && !(mMemoryDesc.flags & MemoryFlag::CopyFromUser),
-        Result::InvaildArg, "%s: already allocated", __func__);
+    CheckAndLogError(mMemoryDesc.cpuPtr && !(mMemoryDesc.flags & MemoryFlag::CopyFromUser),
+                     Result::InvaildArg, "%s: already allocated", __func__);
 
     void* cpuPtr = CIPR::mallocMemory(mMemoryDesc.size);
-    CheckAndLogError(!cpuPtr, Result::NoMemory, "@%s, cpuPtr is nullptr",
-                     __func__);
+    CheckAndLogError(!cpuPtr, Result::NoMemory, "@%s, cpuPtr is nullptr", __func__);
 
     if (mMemoryDesc.flags & MemoryFlag::CopyFromUser) {
         if (mMemoryDesc.cpuPtr) {
@@ -72,12 +69,10 @@ void Buffer::destroy() {
 Result Buffer::getMemoryCommon(MemoryDesc* out) {
     if (mMemoryDesc.flags & MemoryFlag::AllocateCpuPtr) {
         CheckAndLogError(mMemoryDesc.cpuPtr, Result::InternalError,
-                         "%s: ALLOCATE_CPU_PTR not handled but pointer exists!",
-                         __func__);
+                         "%s: ALLOCATE_CPU_PTR not handled but pointer exists!", __func__);
 
         Result ret = allocate();
-        CheckAndLogError(ret != Result::OK, ret, "@%s allocate failed.",
-                         __func__);
+        CheckAndLogError(ret != Result::OK, ret, "@%s allocate failed.", __func__);
     }
 
     *out = mMemoryDesc;
@@ -131,15 +126,14 @@ Result Buffer::validateBuffer(const MemoryDesc* memory) {
 }
 
 Result Buffer::allocate() {
-    CheckAndLogError(!mInitialized, Result::InternalError,
-                     "@%s, mInitialized is false", __func__);
+    CheckAndLogError(!mInitialized, Result::InternalError, "@%s, mInitialized is false", __func__);
 
     Result ret = mContext ? mContext->allocate(&mMemoryDesc) : allocateCommon();
     CheckAndLogError(ret != Result::OK, ret, "%s: allocation failed", __func__);
 
     ret = validateBuffer(nullptr);
-    CheckAndLogError(ret != Result::OK, ret,
-                     "%s: bitfield validation after allocate failed", __func__);
+    CheckAndLogError(ret != Result::OK, ret, "%s: bitfield validation after allocate failed",
+                     __func__);
 
     return Result::OK;
 }
@@ -153,8 +147,7 @@ Result Buffer::createWithUserMemory(uint32_t size, MemoryFlag flags, const Memor
     }
 
     CheckAndLogError(userMemory->size < size, Result::InternalError,
-                     "@%s: requested bytes to allocate more than provided user "
-                     "memory in argument",
+                     "@%s: requested bytes to allocate more than provided user memory in argument",
                      __func__);
 
     if (userMemory->flags & MemoryFlag::CpuPtr) {
@@ -168,12 +161,11 @@ Result Buffer::createWithUserMemory(uint32_t size, MemoryFlag flags, const Memor
     }
 
     CheckAndLogError(userMemory->anchor, Result::InternalError,
-                     "@%s: inheriting object from another not supported!",
-                     __func__);
+                     "@%s: inheriting object from another not supported!", __func__);
 
     CheckAndLogError(mMemoryDesc.cpuPtr == nullptr && mMemoryDesc.handle == 0,
-                     Result::InternalError,
-                     "@%s: Invalid user memory given as argument!", __func__);
+                     Result::InternalError, "@%s: Invalid user memory given as argument!",
+                     __func__);
 
     return Result::OK;
 }
@@ -184,14 +176,12 @@ Result Buffer::createWithUserMemoryWithCpuPtr(MemoryFlag flags, const MemoryDesc
                      "IA_CIPR_MEMORY_CPU_PTR",
                      __func__);
 
-    CheckAndLogError(userMemory->flags & MemoryFlag::MemoryHandle,
-                     Result::InternalError,
+    CheckAndLogError(userMemory->flags & MemoryFlag::MemoryHandle, Result::InternalError,
                      "@%s: IA_CIPR_MEMORY_CPU_PTR conflict with "
                      "IA_CIPR_MEMORY_HANDLE",
                      __func__);
 
-    CheckAndLogError(flags & MemoryFlag::AllocateCpuPtr &&
-                         !(flags & MemoryFlag::CopyFromUser),
+    CheckAndLogError(flags & MemoryFlag::AllocateCpuPtr && !(flags & MemoryFlag::CopyFromUser),
                      Result::InternalError,
                      "@%s: IA_CIPR_MEMORY_CPU_PTR conflict with "
                      "IA_CIPR_MEMORY_ALLOCATE_CPU_PTR",
@@ -209,8 +199,7 @@ Result Buffer::createWithUserMemoryCommon(MemoryFlag flags, const MemoryDesc* us
                      "MemoryFlag::MemoryHandle",
                      __func__);
 
-    CheckAndLogError(userMemory->flags & MemoryFlag::CpuPtr,
-                     Result::InternalError,
+    CheckAndLogError(userMemory->flags & MemoryFlag::CpuPtr, Result::InternalError,
                      "@%s: MemoryFlag::MemoryHandle conflict with "
                      "MemoryFlag::cpuPtr",
                      __func__);
@@ -218,8 +207,7 @@ Result Buffer::createWithUserMemoryCommon(MemoryFlag flags, const MemoryDesc* us
     CheckAndLogError(flags & MemoryFlag::CopyFromUser, Result::InternalError,
                      "@%s: MemoryFlag::CopyFromUser conflict! ", __func__);
 
-    CheckAndLogError(flags & MemoryFlag::AllocateCpuPtr &&
-                         !(flags & MemoryFlag::MemoryHandle),
+    CheckAndLogError(flags & MemoryFlag::AllocateCpuPtr && !(flags & MemoryFlag::MemoryHandle),
                      Result::InternalError,
                      "@%s: MemoryFlag::MemoryHandle conflict with "
                      "MemoryFlag::AllocateCpuPtr",
@@ -246,7 +234,7 @@ Buffer::Buffer(uint32_t size, MemoryFlag flags, const MemoryDesc* userMemory) {
 
     if (userMemory) {
         ret = createWithUserMemory(size, flags, userMemory);
-        CheckAndLogError(ret != Result::OK, VOID_VALUE, "@s: Buffer::Buffer Error", __func__);
+        CheckAndLogError(ret != Result::OK, VOID_VALUE, "@%s: Buffer::Buffer Error", __func__);
         mMemoryDesc.flags |= userMemory->flags;
     }
 
@@ -269,12 +257,10 @@ Buffer::Buffer(Buffer* parent, uint32_t offset, uint32_t size) {
     }
 
     CheckAndLogError(parent->mMemoryDesc.size < offset + size, VOID_VALUE,
-                     "%s: parent buffer size %d not enough for region "
-                     "requested (offset %d, size %d)",
+                   "%s: parent buffer size %d not enough for region requested (offset %d, size %d)",
                      __func__, parent->mMemoryDesc.size, offset, size);
 
-    CheckAndLogError(parent->isRegion(), VOID_VALUE,
-                     "%s: Nested regions are illecal", __func__);
+    CheckAndLogError(parent->isRegion(), VOID_VALUE, "%s: Nested regions are illecal", __func__);
 
     memset(&mMemoryDesc, 0, sizeof(MemoryDesc));
     mMemoryDesc.size = size;
@@ -327,8 +313,7 @@ Result Buffer::getMemory(MemoryDesc* out) {
     Buffer* buffer = this;
     Result ret;
 
-    CheckAndLogError(!mInitialized, Result::InternalError,
-                     "@%s, mInitialized is false", __func__);
+    CheckAndLogError(!mInitialized, Result::InternalError, "@%s, mInitialized is false", __func__);
     CheckAndLogError(!out, Result::InvaildArg, "@%s, out is nullptr", __func__);
 
     if (isRegion()) {
@@ -341,17 +326,14 @@ Result Buffer::getMemory(MemoryDesc* out) {
     } else {
         ret = buffer->getMemoryCommon(out);
     }
-    CheckAndLogError(ret != Result::OK, ret, "@%s: getMemory() failed",
-                     __func__);
+    CheckAndLogError(ret != Result::OK, ret, "@%s: getMemory() failed", __func__);
 
     ret = buffer->validateBuffer(out);
-    CheckAndLogError(ret != Result::OK, ret, "@%s: bitfield validation failed",
-                     __func__);
+    CheckAndLogError(ret != Result::OK, ret, "@%s: bitfield validation failed", __func__);
 
     if (region) {
         CheckAndLogError(region->mOffset + region->mMemoryDesc.size > out->size,
-                         Result::InternalError,
-                         "@%s: memory region doesn't fit in parent store!",
+                         Result::InternalError, "@%s: memory region doesn't fit in parent store!",
                          __func__);
 
         if (out->cpuPtr) {
@@ -371,8 +353,7 @@ Result Buffer::getMemoryCpuPtr(void** ptr) {
     CheckAndLogError(!ptr, Result::InvaildArg, "@%s: ptr == null", __func__);
 
     auto ret = getMemory(&memory);
-    CheckAndLogError(ret != Result::OK, ret, "@%s: getMemory failed.",
-                     __func__);
+    CheckAndLogError(ret != Result::OK, ret, "@%s: getMemory failed.", __func__);
 
     *ptr = memory.cpuPtr;
 
@@ -399,12 +380,10 @@ Buffer* Buffer::getParent() {
 }
 
 Result Buffer::attatchDevice(Context* ctx) {
-    CheckAndLogError(!mInitialized, Result::InternalError,
-                     "@%s, mInitialized is false", __func__);
+    CheckAndLogError(!mInitialized, Result::InternalError, "@%s, mInitialized is false", __func__);
     CheckAndLogError(!ctx, Result::InvaildArg, "@%s, ctx is nullptr", __func__);
     CheckAndLogError(mMemoryDesc.anchor != this, Result::InvaildArg,
-                     "%s: buffer regions cannot be independently migrated",
-                     __func__);
+                     "%s: buffer regions cannot be independently migrated", __func__);
 
     mContext = ctx;
     return mContext->migrate(&mMemoryDesc);

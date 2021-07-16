@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Intel Corporation
+ * Copyright (C) 2019-2021 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -91,10 +91,8 @@ int ParserBase::parseXmlFile(const std::string &xmlFile)
     LOGXML("@%s, parsing profile: %s", __func__, xmlFile.c_str());
 
     fp = ::fopen(xmlFile.c_str(), "r");
-    CheckAndLogError(nullptr == fp, UNKNOWN_ERROR,
-                     "@%s, line:%d, Can not open profile file %s in read mode, "
-                     "fp is nullptr",
-                     __func__, __LINE__, xmlFile.c_str());
+    CheckAndLogError(nullptr == fp, UNKNOWN_ERROR, "@%s, line:%d, Can not open profile file %s in read mode, fp is nullptr",
+          __func__, __LINE__, xmlFile.c_str());
 
     std::unique_ptr<char[]>pBuf(new char[bufSize]);
     XML_Parser parser = ::XML_ParserCreate(nullptr);
@@ -158,9 +156,8 @@ int ParserBase::getDataFromXmlFile(std::string fileName)
 
     std::string chosenXmlFile;
     getAvaliableXmlFile(profiles, chosenXmlFile);
-    CheckAndLogError(chosenXmlFile.empty(), UNKNOWN_ERROR,
-                     "%s is not found in: %s or %s", fileName.c_str(),
-                     curFolderFileName.c_str(), sysFolderFileName.c_str());
+    CheckAndLogError(chosenXmlFile.empty(), UNKNOWN_ERROR, "%s is not found in: %s or %s",
+                     fileName.c_str(), curFolderFileName.c_str(), sysFolderFileName.c_str());
 
     return parseXmlFile(chosenXmlFile);
 }

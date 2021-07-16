@@ -43,12 +43,10 @@ namespace icamera {
 namespace CIPR {
 Result Context::allocate(MemoryDesc* mem) {
     CheckAndLogError(!mem, Result::InvaildArg, "@%s, mem is nullptr", __func__);
-    CheckAndLogError(mem->cpuPtr, Result::InvaildArg,
-                     "%s: already has an address!", __func__);
+    CheckAndLogError(mem->cpuPtr, Result::InvaildArg, "%s: already has an address!", __func__);
 
     mem->cpuPtr = CIPR::mallocAlignedMemory(mem->size, CIPR::getPageSize());
-    CheckAndLogError(!mem->cpuPtr, Result::NoMemory, "@%s, mem is out",
-                     __func__);
+    CheckAndLogError(!mem->cpuPtr, Result::NoMemory, "@%s, mem is out", __func__);
 
     if (!(mem->flags & MemoryFlag::Uninitialized)) {
         memset(mem->cpuPtr, 0, mem->size);
@@ -65,8 +63,7 @@ Result Context::migrate(MemoryDesc* mem) {
 
     if (mem->flags & MemoryFlag::AllocateCpuPtr) {
         Result ret = allocate(mem);
-        CheckAndLogError(ret != Result::OK, ret, "@%s: allocate failed.",
-                         __func__);
+        CheckAndLogError(ret != Result::OK, ret, "@%s: allocate failed.", __func__);
     }
 
     if (mem->flags & MemoryFlag::PSysAPI) {
@@ -103,9 +100,8 @@ Context::Context() {
     mFd = open(DRIVER_NAME, 0, O_RDWR | O_NONBLOCK);
     int errnoCopy = errno;
 
-    CheckAndLogError(mFd < 0, VOID_VALUE,
-                     "%s: Failed to open PSYS device! open returned error: %s",
-                     __func__, strerror(errnoCopy));
+    CheckAndLogError(mFd < 0, VOID_VALUE, "%s: Failed to open PSYS device! open returned error: %s",
+               __func__, strerror(errnoCopy));
 
     mInitFlag = Context::Flags::NONE;
     mInitialized = true;
@@ -121,20 +117,17 @@ Context::~Context() {
     int rv = ::close(mFd);
     int errnoCopy = errno;
 
-    CheckAndLogError(rv < 0, VOID_VALUE, "Close returned error: %s",
-                     strerror(errnoCopy));
+    CheckAndLogError(rv < 0, VOID_VALUE, "Close returned error: %s", strerror(errnoCopy));
 }
 
 Result Context::getCapabilities(PSYSCapability* cap) {
     struct ipu_psys_capability psys_capability = {};
 
-    CheckAndLogError(!mInitialized, Result::InternalError,
-                     "@%s, mInitialized is false", __func__);
+    CheckAndLogError(!mInitialized, Result::InternalError, "@%s, mInitialized is false", __func__);
     CheckAndLogError(!cap, Result::InvaildArg, "@%s, cap is nullptr", __func__);
 
     Result ret = doIoctl(static_cast<int>(IPU_IOC_QUERYCAP), &psys_capability);
-    CheckAndLogError(ret != Result::OK, ret,
-                     "%s: failed to retrieve capabilities", __func__);
+    CheckAndLogError(ret != Result::OK, ret, "%s: failed to retrieve capabilities", __func__);
 
     cap->version = psys_capability.version;
     CIPR::memoryCopy(cap->driver, sizeof(cap->driver), psys_capability.driver,
@@ -151,10 +144,8 @@ Result Context::getCapabilities(PSYSCapability* cap) {
 Result Context::getManifest(uint32_t index, uint32_t* mainfestSize, void* manifest) {
     struct ipu_psys_manifest pg_manifest = {};
 
-    CheckAndLogError(!mInitialized, Result::InternalError,
-                     "@%s, mInitialized is false", __func__);
-    CheckAndLogError(!mainfestSize, Result::InvaildArg,
-                     "@%s, mainfestSize is nullptr", __func__);
+    CheckAndLogError(!mInitialized, Result::InternalError, "@%s, mInitialized is false", __func__);
+    CheckAndLogError(!mainfestSize, Result::InvaildArg, "@%s, mainfestSize is nullptr", __func__);
 
     pg_manifest.index = index;
     pg_manifest.size = 0;
@@ -168,8 +159,7 @@ Result Context::getManifest(uint32_t index, uint32_t* mainfestSize, void* manife
 }
 
 Result Context::doIoctl(int request, void* ptr) {
-    CheckAndLogError(!mInitialized, Result::InternalError,
-                     "@%s, mInitialized is false", __func__);
+    CheckAndLogError(!mInitialized, Result::InternalError, "@%s, mInitialized is false", __func__);
 
 #ifdef ANDROID
     int res = ::ioctl(mFd, request, ptr);
@@ -199,16 +189,14 @@ Result Context::doIoctl(int request, void* ptr) {
 Result Context::registerBuffer(MemoryDesc* mem) {
     Result res;
 
-    CheckAndLogError(!mInitialized, Result::InternalError,
-                     "@%s, mInitialized is false", __func__);
+    CheckAndLogError(!mInitialized, Result::InternalError, "@%s, mInitialized is false", __func__);
     CheckAndLogError(!mem, Result::InvaildArg, "@%s, mem is nullptr", __func__);
     CheckAndLogError(mem->flags & MemoryFlag::Migrated, Result::InvaildArg,
                      "Buffer already migrated with device.");
 
     struct ipu_psys_buffer* ioc_buffer =
         reinterpret_cast<ipu_psys_buffer*>(callocMemory(1, sizeof(*ioc_buffer)));
-    CheckAndLogError(!ioc_buffer, Result::NoMemory,
-                     "Could not create psys buffer");
+    CheckAndLogError(!ioc_buffer, Result::NoMemory, "Could not create psys buffer");
 
     ioc_buffer->len = mem->size;
     if (mem->flags & MemoryFlag::CpuPtr) {
@@ -262,8 +250,7 @@ Result Context::registerBuffer(MemoryDesc* mem) {
 }
 
 Result Context::unregisterBuffer(MemoryDesc* mem) {
-    CheckAndLogError(!mInitialized, Result::InternalError,
-                     "@%s, mInitialized == false", __func__);
+    CheckAndLogError(!mInitialized, Result::InternalError, "@%s, mInitialized == false", __func__);
     CheckAndLogError(!mem, Result::InvaildArg, "@%s, mem is nullptr", __func__);
 
     if (mem->sysBuff == nullptr) {
@@ -271,8 +258,8 @@ Result Context::unregisterBuffer(MemoryDesc* mem) {
     }
 
     struct ipu_psys_buffer* ioc_buffer = mem->sysBuff;
-    CheckAndLogError(!(ioc_buffer->flags & IPU_BUFFER_FLAG_DMA_HANDLE),
-                     Result::GeneralError, "Wrong flag!", __func__);
+    CheckAndLogError(!(ioc_buffer->flags & IPU_BUFFER_FLAG_DMA_HANDLE), Result::GeneralError,
+                     "%s: Wrong flag!", __func__);
 
     Result res = doIoctl(static_cast<int>(IPU_IOC_UNMAPBUF),
                          reinterpret_cast<void*>((intptr_t)ioc_buffer->base.fd));
@@ -283,8 +270,7 @@ Result Context::unregisterBuffer(MemoryDesc* mem) {
 
     if (mem->flags & MemoryFlag::CpuPtr) {
         res = psysClose(ioc_buffer->base.fd);
-        CheckAndLogError(res != Result::OK, res, "@%s: pSysClose failed",
-                         __func__);
+        CheckAndLogError(res != Result::OK, res, "@%s: pSysClose failed", __func__);
     }
 
     CIPR::freeMemory(ioc_buffer);

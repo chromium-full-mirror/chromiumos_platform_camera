@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2020 Intel Corporation
+ * Copyright (C) 2015-2021 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,10 +68,8 @@ int IntelAWBStateMachine::processState(uint8_t controlMode, uint8_t sceneMode,
 }
 
 int IntelAWBStateMachine::processResult(bool converged, android::CameraMetadata* result) {
-    CheckAndLogError(!mCurrentAwbMode, icamera::UNKNOWN_ERROR,
-                     "Invalid AWB mode");
-    CheckAndLogError(!result, icamera::UNKNOWN_ERROR, "%s, result is nullptr",
-                     __func__);
+    CheckAndLogError(!mCurrentAwbMode, icamera::UNKNOWN_ERROR, "Invalid AWB mode");
+    CheckAndLogError(!result, icamera::UNKNOWN_ERROR, "%s, result is nullptr", __func__);
 
     return mCurrentAwbMode->processResult(converged, result);
 }
@@ -137,8 +135,7 @@ int IntelAWBModeOff::processState(uint8_t controlMode, uint8_t sceneMode,
 
 int IntelAWBModeOff::processResult(bool converged, android::CameraMetadata* result) {
     UNUSED(converged);
-    CheckAndLogError(!result, icamera::UNKNOWN_ERROR, "%s, result is nullptr",
-                     __func__);
+    CheckAndLogError(!result, icamera::UNKNOWN_ERROR, "%s, result is nullptr", __func__);
     LOG2("%s", __func__);
 
     mCurrentAwbState = ANDROID_CONTROL_AWB_STATE_INACTIVE;
@@ -191,8 +188,7 @@ int IntelAWBModeAuto::processState(uint8_t controlMode, uint8_t sceneMode,
 }
 
 int IntelAWBModeAuto::processResult(bool converged, android::CameraMetadata* result) {
-    CheckAndLogError(!result, icamera::UNKNOWN_ERROR, "%s, result is nullptr",
-                     __func__);
+    CheckAndLogError(!result, icamera::UNKNOWN_ERROR, "%s, result is nullptr", __func__);
     switch (mCurrentAwbState) {
         case ANDROID_CONTROL_AWB_STATE_LOCKED:
             // do nothing

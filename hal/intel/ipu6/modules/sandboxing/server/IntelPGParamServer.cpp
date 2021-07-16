@@ -35,8 +35,7 @@ int IntelPGParamServer::init(void* pData, int dataSize) {
     PgConfiguration pgConfig;
 
     bool ret = mIpc.serverUnflattenInit(pData, dataSize, &pgId, &client, &platform, &pgConfig);
-    CheckAndLogError(ret == false, UNKNOWN_ERROR,
-                     "@%s, serverUnflattenInit fails", __func__);
+    CheckAndLogError(ret == false, UNKNOWN_ERROR, "@%s, serverUnflattenInit fails", __func__);
 
     PGParamPackage package;
     package.pgId = pgId;
@@ -59,12 +58,10 @@ int IntelPGParamServer::prepare(void* pData, int dataSize, void* palDataAddr) {
     uint32_t* maxStatsSize = nullptr;
     bool ret = mIpc.serverUnflattenPrepare(pData, dataSize, &client, palDataAddr, &ipuParameters,
                                            &rbm, &bitmap, &maxStatsSize);
-    CheckAndLogError(ret == false, UNKNOWN_ERROR,
-                     "@%s, serverUnflattenPrepare fails", __func__);
+    CheckAndLogError(ret == false, UNKNOWN_ERROR, "@%s, serverUnflattenPrepare fails", __func__);
 
-    CheckAndLogError((mPGParamPackages.find(client) == mPGParamPackages.end()),
-                     UNKNOWN_ERROR, "%s, the pg doesn't exist in the table",
-                     __func__);
+    CheckAndLogError((mPGParamPackages.find(client) == mPGParamPackages.end()), UNKNOWN_ERROR,
+                     "%s, the pg doesn't exist in the table", __func__);
 
     int result =
         mPGParamPackages[client].mPGParamAdapt->prepare(&ipuParameters, rbm, bitmap, maxStatsSize);
@@ -77,18 +74,16 @@ int IntelPGParamServer::allocatePGBuffer(void* pData, int dataSize) {
     uintptr_t client = 0;
     int pgSize = 0;
     bool ret = mIpc.serverUnflattenAllocatePGBuffer(pData, dataSize, &client, &pgSize);
-    CheckAndLogError(ret == false, UNKNOWN_ERROR,
-                     "@%s, serverUnflattenAllocatePGBuffer fails", __func__);
-
-    CheckAndLogError((mPGParamPackages.find(client) == mPGParamPackages.end()),
-                     UNKNOWN_ERROR, "%s, the pg doesn't exist in the table",
+    CheckAndLogError(ret == false, UNKNOWN_ERROR, "@%s, serverUnflattenAllocatePGBuffer fails",
                      __func__);
+
+    CheckAndLogError((mPGParamPackages.find(client) == mPGParamPackages.end()), UNKNOWN_ERROR,
+                     "%s, the pg doesn't exist in the table", __func__);
 
     // Get server data pointer of PGBuffer
     void* pgBuffer = nullptr;
     ret = mIpc.assignPGBuffer(pData, dataSize, pgSize, &pgBuffer);
-    CheckAndLogError(ret == false, UNKNOWN_ERROR, "@%s, assignPGBuffer fails",
-                     __func__);
+    CheckAndLogError(ret == false, UNKNOWN_ERROR, "@%s, assignPGBuffer fails", __func__);
 
     mPGParamPackages[client].mPGBuffer = reinterpret_cast<ia_css_process_group_t*>(pgBuffer);
     return OK;
@@ -99,20 +94,17 @@ int IntelPGParamServer::getFragmentDescriptors(void* pData, int dataSize) {
     int descCount = 0;
     ia_p2p_fragment_desc* descs = nullptr;
     bool ret = mIpc.serverUnflattenGetFragDescs(pData, dataSize, &client, &descCount, &descs);
-    CheckAndLogError(ret == false, UNKNOWN_ERROR,
-                     "@%s, serverUnflattenGetFragDescs fails", __func__);
-
-    CheckAndLogError((mPGParamPackages.find(client) == mPGParamPackages.end()),
-                     UNKNOWN_ERROR, "%s, the pg doesn't exist in the table",
+    CheckAndLogError(ret == false, UNKNOWN_ERROR, "@%s, serverUnflattenGetFragDescs fails",
                      __func__);
+
+    CheckAndLogError((mPGParamPackages.find(client) == mPGParamPackages.end()), UNKNOWN_ERROR,
+                     "%s, the pg doesn't exist in the table", __func__);
 
     int count = mPGParamPackages[client].mPGParamAdapt->getFragmentDescriptors(descCount, descs);
-    CheckAndLogError(count <= 0, count, "@%s, getFragmentDescriptors fails",
-                     __func__);
+    CheckAndLogError(count <= 0, count, "@%s, getFragmentDescriptors fails", __func__);
 
     ret = mIpc.serverFlattenGetFragDescs(pData, dataSize, count);
-    CheckAndLogError(ret == false, UNKNOWN_ERROR,
-                     "@%s, serverFlattenGetFragDescs fails", __func__);
+    CheckAndLogError(ret == false, UNKNOWN_ERROR, "@%s, serverFlattenGetFragDescs fails", __func__);
 
     return OK;
 }
@@ -120,28 +112,25 @@ int IntelPGParamServer::getFragmentDescriptors(void* pData, int dataSize) {
 int IntelPGParamServer::setPGAndPrepareProgram(void* pData, int dataSize) {
     uintptr_t client = 0;
     bool ret = mIpc.serverUnflattenPrepareProgram(pData, dataSize, &client);
-    CheckAndLogError(ret == false, UNKNOWN_ERROR,
-                     "@%s, serverUnflattenPrepareProgram fails", __func__);
-
-    CheckAndLogError((mPGParamPackages.find(client) == mPGParamPackages.end()),
-                     UNKNOWN_ERROR, "%s, the pg doesn't exist in the table",
+    CheckAndLogError(ret == false, UNKNOWN_ERROR, "@%s, serverUnflattenPrepareProgram fails",
                      __func__);
+
+    CheckAndLogError((mPGParamPackages.find(client) == mPGParamPackages.end()), UNKNOWN_ERROR,
+                     "%s, the pg doesn't exist in the table", __func__);
     PGParamPackage& package = mPGParamPackages[client];
 
     int result = package.mPGParamAdapt->setPGAndPrepareProgram(package.mPGBuffer);
-    CheckAndLogError(result != OK, result, "@%s, setPGAndPrepareProgram fails",
-                     __func__);
+    CheckAndLogError(result != OK, result, "@%s, setPGAndPrepareProgram fails", __func__);
 
     // Get payload size here
     package.mPayloadCount =
         package.mPGParamAdapt->getPayloadSizes(ARRAY_SIZE(package.mPayloads), package.mPayloads);
-    CheckAndLogError(!package.mPayloadCount, UNKNOWN_ERROR,
-                     "@%s, getPayloadSizes fails", __func__);
+    CheckAndLogError(!package.mPayloadCount, UNKNOWN_ERROR, "@%s, getPayloadSizes fails", __func__);
 
     ret =
         mIpc.serverFlattenPrepareProgram(pData, dataSize, package.mPayloadCount, package.mPayloads);
-    CheckAndLogError(ret == false, UNKNOWN_ERROR,
-                     "@%s, serverFlattenPrepareProgram fails", __func__);
+    CheckAndLogError(ret == false, UNKNOWN_ERROR, "@%s, serverFlattenPrepareProgram fails",
+                     __func__);
 
     return OK;
 }
@@ -153,12 +142,11 @@ int IntelPGParamServer::registerPayloads(void* pData, int dataSize) {
     ia_binary_data* sPayloads = nullptr;
     bool ret = mIpc.serverUnflattenRegisterPayloads(pData, dataSize, &client, &payloadCount,
                                                     &cPayloads, &sPayloads);
-    CheckAndLogError(ret == false, UNKNOWN_ERROR,
-                     "@%s, serverUnflattenRegisterPayloads fails", __func__);
-
-    CheckAndLogError((mPGParamPackages.find(client) == mPGParamPackages.end()),
-                     UNKNOWN_ERROR, "%s, the pg doesn't exist in the table",
+    CheckAndLogError(ret == false, UNKNOWN_ERROR, "@%s, serverUnflattenRegisterPayloads fails",
                      __func__);
+
+    CheckAndLogError((mPGParamPackages.find(client) == mPGParamPackages.end()), UNKNOWN_ERROR,
+                     "%s, the pg doesn't exist in the table", __func__);
     PGParamPackage& package = mPGParamPackages[client];
 
     // Save <client addr, server addr>
@@ -181,12 +169,10 @@ int IntelPGParamServer::updatePALAndEncode(void* pData, int dataSize, void* palD
 
     bool ret = mIpc.serverUnflattenEncode(pData, dataSize, &client, palDataAddr, &ipuParameters,
                                           &payloadCount, &payloads);
-    CheckAndLogError(ret == false, UNKNOWN_ERROR,
-                     "@%s, serverUnflattenEncode fails", __func__);
+    CheckAndLogError(ret == false, UNKNOWN_ERROR, "@%s, serverUnflattenEncode fails", __func__);
 
-    CheckAndLogError((mPGParamPackages.find(client) == mPGParamPackages.end()),
-                     UNKNOWN_ERROR, "%s, the pg doesn't exist in the table",
-                     __func__);
+    CheckAndLogError((mPGParamPackages.find(client) == mPGParamPackages.end()), UNKNOWN_ERROR,
+                     "%s, the pg doesn't exist in the table", __func__);
     PGParamPackage& package = mPGParamPackages[client];
     CheckAndLogError(payloadCount != package.mPayloadCount, UNKNOWN_ERROR,
                      "@%s, wrong payloadCount", __func__);
@@ -198,8 +184,7 @@ int IntelPGParamServer::updatePALAndEncode(void* pData, int dataSize, void* palD
     result = package.mPGParamAdapt->updatePALAndEncode(&ipuParameters,
                                                        package.mPayloadCount,
                                                        package.mPayloads);
-    CheckAndLogError(result != OK, result, "@%s, updatePALAndEncode fails",
-                     __func__);
+    CheckAndLogError(result != OK, result, "@%s, updatePALAndEncode fails", __func__);
 
     return OK;
 }
@@ -213,12 +198,10 @@ int IntelPGParamServer::decode(void* pData, int dataSize, void* statsAddr) {
     int32_t payloadCount = 0;
 
     bool ret = mIpc.serverUnflattenDecode(pData, dataSize, &client, &payloadCount, &payloads);
-    CheckAndLogError(ret == false, UNKNOWN_ERROR,
-                     "@%s, serverUnflattenDecode fails", __func__);
+    CheckAndLogError(ret == false, UNKNOWN_ERROR, "@%s, serverUnflattenDecode fails", __func__);
 
-    CheckAndLogError((mPGParamPackages.find(client) == mPGParamPackages.end()),
-                     UNKNOWN_ERROR, "%s, the pg doesn't exist in the table",
-                     __func__);
+    CheckAndLogError((mPGParamPackages.find(client) == mPGParamPackages.end()), UNKNOWN_ERROR,
+                     "%s, the pg doesn't exist in the table", __func__);
     PGParamPackage& package = mPGParamPackages[client];
     CheckAndLogError(payloadCount != package.mPayloadCount, UNKNOWN_ERROR,
                      "@%s, wrong payloadCount", __func__);
@@ -231,8 +214,7 @@ int IntelPGParamServer::decode(void* pData, int dataSize, void* statsAddr) {
     CheckAndLogError(result != OK, result, "@%s, decode fails", __func__);
 
     ret = mIpc.serverFlattenDecode(pData, dataSize, statistics);
-    CheckAndLogError(ret == false, UNKNOWN_ERROR,
-                     "@%s, serverFlattenDecode fails", __func__);
+    CheckAndLogError(ret == false, UNKNOWN_ERROR, "@%s, serverFlattenDecode fails", __func__);
 
     return OK;
 }
@@ -241,12 +223,10 @@ void IntelPGParamServer::deinit(void* pData, int dataSize) {
     uintptr_t client = 0;
 
     bool ret = mIpc.serverUnflattenDeinit(pData, dataSize, &client);
-    CheckAndLogError(ret == false, VOID_VALUE,
-                     "@%s, serverUnflattenDeinit fails", __func__);
+    CheckAndLogError(ret == false, VOID_VALUE, "@%s, serverUnflattenDeinit fails", __func__);
 
-    CheckAndLogError((mPGParamPackages.find(client) == mPGParamPackages.end()),
-                     VOID_VALUE, "%s, the pg doesn't exist in the table",
-                     __func__);
+    CheckAndLogError((mPGParamPackages.find(client) == mPGParamPackages.end()), VOID_VALUE,
+                     "%s, the pg doesn't exist in the table", __func__);
 
     mPGParamPackages[client].mPGParamAdapt->deinit();
     mPGParamPackages.erase(client);
@@ -255,16 +235,14 @@ void IntelPGParamServer::deinit(void* pData, int dataSize) {
 int IntelPGParamServer::findPayloads(int32_t payloadCount, ia_binary_data* clientPayloads,
                                      std::unordered_map<void*, ia_binary_data>* allocated,
                                      ia_binary_data* serverPayloads) {
-    CheckAndLogError(!clientPayloads, BAD_VALUE, "@%s, payloads is nullptr",
-                     __func__);
+    CheckAndLogError(!clientPayloads, BAD_VALUE, "@%s, payloads is nullptr", __func__);
     CLEAR(*serverPayloads);
     for (size_t i = 0; i < payloadCount; i++) {
         if (!clientPayloads[i].size) continue;
 
-        CheckAndLogError(
-            allocated->find(clientPayloads[i].data) == allocated->end(),
-            UNKNOWN_ERROR, "%s: can't find client payload %p for term %d",
-            __func__, clientPayloads[i].data, i);
+        CheckAndLogError(allocated->find(clientPayloads[i].data) == allocated->end(), UNKNOWN_ERROR,
+                         "%s: can't find client payload %p for term %zu", __func__,
+                         clientPayloads[i].data, i);
         ia_binary_data& alloc = allocated->at(clientPayloads[i].data);
         CheckAndLogError(alloc.size != clientPayloads[i].size, UNKNOWN_ERROR,
                          "%s: payload size mismatch for term %zu", __func__, i);

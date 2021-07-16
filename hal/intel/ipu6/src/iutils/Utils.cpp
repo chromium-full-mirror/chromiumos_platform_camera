@@ -286,8 +286,7 @@ std::string CameraUtils::format2string(int format)
 unsigned int CameraUtils::fourcc2UL(char *str4cc)
 {
     CheckAndLogError(str4cc == nullptr, 0, "Invalid null string.");
-    CheckAndLogError(strlen(str4cc) != 4, 0,
-                     "Invalid string %s, should be 4cc.", str4cc);
+    CheckAndLogError(strlen(str4cc) != 4, 0, "Invalid string %s, should be 4cc.", str4cc);
 
     return FOURCC_TO_UL(str4cc[0], str4cc[1], str4cc[2], str4cc[3]);
 }
@@ -594,8 +593,7 @@ void CameraUtils::getDeviceName(const char* entityName, string& deviceNodeName, 
         filePrefix = "v4l-subdev";
 
     DIR *dp = opendir(dirPath);
-    CheckAndLogError((dp == nullptr), VOID_VALUE, "@%s, Fail open : %s",
-                     __func__, dirPath);
+    CheckAndLogError((dp == nullptr), VOID_VALUE, "@%s, Fail open : %s", __func__, dirPath);
 
     struct dirent *dirp = nullptr;
     while ((dirp = readdir(dp)) != nullptr) {
@@ -604,9 +602,8 @@ void CameraUtils::getDeviceName(const char* entityName, string& deviceNodeName, 
             subDeviceName += dirp->d_name;
             subDeviceName += "/name";
             int fd = open(subDeviceName.c_str(), O_RDONLY);
-            CheckAndLogError((fd < 0), VOID_VALUE,
-                             "@%s, open file %s failed. err: %s", __func__,
-                             subDeviceName.c_str(), strerror(errno));
+            CheckAndLogError((fd < 0), VOID_VALUE, "@%s, open file %s failed. err: %s",
+                  __func__, subDeviceName.c_str(), strerror(errno));
 
             char buf[128] = {'\0'};
             int len = read(fd, buf, sizeof(buf));
@@ -788,8 +785,7 @@ unsigned int CameraUtils::getMBusFormat(int cameraId, unsigned int isysFmt)
 
 void* CameraUtils::dlopenLibrary(const char* name, int flags)
 {
-    CheckAndLogError((name == nullptr), nullptr, "%s, invalid parameters",
-                     __func__);
+    CheckAndLogError((name == nullptr), nullptr, "%s, invalid parameters", __func__);
 
     void* handle = dlopen(name, flags);
 
@@ -808,8 +804,7 @@ void* CameraUtils::dlopenLibrary(const char* name, int flags)
 
 void* CameraUtils::dlsymLibrary(void* handle, const char* str)
 {
-    CheckAndLogError((handle == nullptr || str == nullptr), nullptr,
-                     "%s, invalid parameters", __func__);
+    CheckAndLogError((handle == nullptr || str == nullptr), nullptr, "%s, invalid parameters", __func__);
 
     void* sym = dlsym(handle, str);
 
@@ -828,8 +823,7 @@ void* CameraUtils::dlsymLibrary(void* handle, const char* str)
 
 int CameraUtils::dlcloseLibrary(void* handle)
 {
-    CheckAndLogError((handle == nullptr), BAD_VALUE, "%s, invalid parameters",
-                     __func__);
+    CheckAndLogError((handle == nullptr), BAD_VALUE, "%s, invalid parameters", __func__);
 
     dlclose(handle);
     LOG1("%s, handle %p has been closed", __func__, handle);

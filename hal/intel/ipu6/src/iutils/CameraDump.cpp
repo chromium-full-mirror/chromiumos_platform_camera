@@ -176,8 +176,7 @@ void CameraDump::writeData(const void* data, int size, const char* fileName) {
                      VOID_VALUE, "Nothing needs to be dumped");
 
     FILE *fp = fopen (fileName, "w+");
-    CheckAndLogError(fp == nullptr, VOID_VALUE, "open dump file %s failed",
-                     fileName);
+    CheckAndLogError(fp == nullptr, VOID_VALUE, "open dump file %s failed", fileName);
 
     LOG1("Write data to file:%s", fileName);
     if ((fwrite(data, size, 1, fp)) != 1)
@@ -227,8 +226,8 @@ static string getAiqSettingAppendix(int cameraId, long sequence)
     ia_aiq_exposure_parameters *exposure =
                                        aiqResults->mAeResults.exposures[0].exposure;
 
-    CheckAndLogError((sensorExposure == nullptr || exposure == nullptr),
-                     string(settingAppendix), "Cannot find aiq exposures");
+    CheckAndLogError((sensorExposure == nullptr || exposure == nullptr), string(settingAppendix),
+                     "Cannot find aiq exposures");
 
     double ag = sensorExposure->analog_gain_code_global;
     double dg = sensorExposure->digital_gain_global;

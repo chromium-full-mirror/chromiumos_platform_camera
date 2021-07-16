@@ -76,7 +76,8 @@ class RequestManager : public RequestManagerCallback, public icamera::camera_cal
     void handleCallbackEvent(const icamera::camera_msg_data_t& data);
 
  private:
-    static const int kMaxStreamNum = 6;        // OPAQUE RAW, PREVIEW, VIDEO, STILL, POSTVIEW and FD
+    // OPAQUE RAW, PREVIEW, VIDEO, STILL, POSTVIEW and FD
+    static const int kMaxStreamNum = 6;
     const uint64_t kMaxDuration = 2000000000;  // 2000ms
 
     static const int kMaxProcessRequestNum = 10;

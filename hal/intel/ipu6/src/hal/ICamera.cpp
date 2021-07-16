@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2020 Intel Corporation.
+ * Copyright (C) 2015-2021 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -220,7 +220,7 @@ int camera_device_start(int camera_id)
 {
     PERF_CAMERA_ATRACE();
     HAL_TRACE_CALL(1);
-    CheckAndLogError(!gCameraHal, INVALID_OPERATION, "camera hal is NULL.");
+    CheckAndLogError(!gCameraHal, INVALID_OPERATION ,"camera hal is NULL.");
     CheckCameraId(camera_id, BAD_VALUE);
 
     return gCameraHal->deviceStart(camera_id);
@@ -260,8 +260,7 @@ int camera_device_allocate_memory(int camera_id, camera_buffer_t *buffer)
     CheckAndLogError(!gCameraHal, INVALID_OPERATION, "camera hal is NULL.");
     CheckCameraId(camera_id, BAD_VALUE);
     CheckAndLogError(!buffer, BAD_VALUE, "buffer is NULL.");
-    CheckAndLogError(buffer->s.memType != V4L2_MEMORY_MMAP, BAD_VALUE,
-                     "memory type %d is not supported.", buffer->s.memType);
+    CheckAndLogError(buffer->s.memType != V4L2_MEMORY_MMAP, BAD_VALUE, "memory type %d is not supported.", buffer->s.memType);
 
     return gCameraHal->deviceAllocateMemory(camera_id, buffer);
 }
@@ -334,8 +333,7 @@ int camera_set_parameters(int camera_id, const Parameters& param)
 {
     HAL_TRACE_CALL(2);
     CheckCameraId(camera_id, BAD_VALUE);
-    CheckAndLogError(!gCameraHal, INVALID_OPERATION,
-                     "camera device is not open before setting parameters.");
+    CheckAndLogError(!gCameraHal, INVALID_OPERATION, "camera device is not open before setting parameters.");
 
     return gCameraHal->setParameters(camera_id, param);
 }
@@ -344,8 +342,7 @@ int camera_get_parameters(int camera_id, Parameters& param, long sequence)
 {
     HAL_TRACE_CALL(2);
     CheckCameraId(camera_id, BAD_VALUE);
-    CheckAndLogError(!gCameraHal, INVALID_OPERATION,
-                     "camera device is not open before getting parameters.");
+    CheckAndLogError(!gCameraHal, INVALID_OPERATION, "camera device is not open before getting parameters.");
 
     return gCameraHal->getParameters(camera_id, param, sequence);
 }

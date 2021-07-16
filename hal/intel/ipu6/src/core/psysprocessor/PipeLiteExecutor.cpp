@@ -85,15 +85,14 @@ PipeLiteExecutor::~PipeLiteExecutor()
 int PipeLiteExecutor::initPipe()
 {
     LOG1("@%s:%s", __func__, getName());
-    CheckAndLogError(mGraphConfig == nullptr, BAD_VALUE,
-                     "%s, the graph config is NULL, BUG!", __func__);
+    CheckAndLogError(mGraphConfig == nullptr, BAD_VALUE, "%s, the graph config is NULL, BUG!",
+                     __func__);
 
     NodesPtrVector programGroups;
     vector<IGraphType::PipelineConnection> connVector;
 
     int ret = mGraphConfig->pipelineGetConnections(mPGNames, &connVector);
-    CheckAndLogError(connVector.empty(), ret,
-                     "Failed to get connections for executor:%s",
+    CheckAndLogError(connVector.empty(), ret, "Failed to get connections for executor:%s",
                      mName.c_str());
 
     ret = createPGs();
@@ -218,8 +217,7 @@ int PipeLiteExecutor::createPGs()
 {
     for (auto const& pgName : mPGNames) {
         int pgId = mGraphConfig->getPgIdByPgName(pgName);
-        CheckAndLogError(pgId == -1, BAD_VALUE, "Cannot get PG ID for %s",
-                         pgName.c_str());
+        CheckAndLogError(pgId == -1, BAD_VALUE, "Cannot get PG ID for %s", pgName.c_str());
 
         ExecutorUnit pgUnit;
         pgUnit.pgId = pgId;
@@ -281,10 +279,8 @@ int PipeLiteExecutor::assignDefaultPortsForTerminals()
         for (auto terminal : unit.outputTerminals) {
             TerminalDescriptor& termDesc = mTerminalsDesc[terminal];
             if (termDesc.enabled && termDesc.hasConnection) {
-                CheckAndLogError(portTable[outPortIndex] == INVALID_PORT,
-                                 BAD_VALUE,
-                                 "Port unavailable for output term %d:%d",
-                                 unit.pgId, terminal);
+                CheckAndLogError(portTable[outPortIndex] == INVALID_PORT, BAD_VALUE,
+                                 "Port unavailable for output term %d:%d", unit.pgId, terminal);
                 termDesc.assignedPort = portTable[outPortIndex];
                 outPortIndex++;
             }
@@ -294,9 +290,8 @@ int PipeLiteExecutor::assignDefaultPortsForTerminals()
         for (auto terminal : unit.inputTerminals) {
             TerminalDescriptor& termDesc = mTerminalsDesc[terminal];
             if (termDesc.enabled && termDesc.hasConnection) {
-                CheckAndLogError(
-                    portTable[inPortIndex] == INVALID_PORT, BAD_VALUE,
-                    "Port unavailable for input term %d", terminal);
+                CheckAndLogError(portTable[inPortIndex] == INVALID_PORT, BAD_VALUE,
+                                 "Port unavailable for input term %d", terminal);
                 termDesc.assignedPort = portTable[inPortIndex];
                 inPortIndex++;
             }
@@ -552,8 +547,8 @@ int PipeLiteExecutor::processNewFrame()
 
         if (ret != OK) return OK; // Wait frame buffer error should not involve thread exit.
 
-        CheckAndLogError(inBuffers.empty() || outBuffers.empty(), UNKNOWN_ERROR,
-                         "Failed to get input or output buffers.");
+        CheckAndLogError(inBuffers.empty() || outBuffers.empty(),
+                         UNKNOWN_ERROR, "Failed to get input or output buffers.");
 
         for (auto& output: mOutputQueue) {
             output.second.pop();
@@ -587,8 +582,7 @@ int PipeLiteExecutor::processNewFrame()
     vector<EventType> eventType;
     // Should find first not none input buffer instead of always use the first one.
     shared_ptr<CameraBuffer> inBuf = inBuffers.begin()->second;
-    CheckAndLogError(!inBuf, UNKNOWN_ERROR, "@%s: no valid input buffer",
-                     __func__);
+    CheckAndLogError(!inBuf, UNKNOWN_ERROR, "@%s: no valid input buffer", __func__);
     long inBufSequence = inBuf->getSequence();
     v4l2_buffer_t inV4l2Buf = *inBuf->getV4L2Buffer().Get();
     TuningMode tuningMode = mPSysDag->getTuningMode(inBufSequence);
@@ -625,8 +619,7 @@ int PipeLiteExecutor::processNewFrame()
         // Run pipe with buffers
         ret = runPipe(inBuffers, outBuffers, outStatsBuffers, eventType);
     }
-    CheckAndLogError((ret != OK), UNKNOWN_ERROR, "@%s: failed to run pipe",
-                     __func__);
+    CheckAndLogError((ret != OK), UNKNOWN_ERROR, "@%s: failed to run pipe", __func__);
     LOG2("%s:Id:%d run pipe end for buffer:%ld", mName.c_str(), mCameraId, inBufSequence);
 
     // Remove internal output buffers
@@ -732,8 +725,7 @@ int PipeLiteExecutor::runPipe(map<Port, shared_ptr<CameraBuffer> > &inBuffers,
             outStatsBuffers.push_back(mStatsBuffers.front());
             eventType.push_back(EVENT_PSYS_STATS_BUF_READY);
             ia_binary_data* buffer = (ia_binary_data*)mStatsBuffers.front()->getBufferAddr();
-            CheckAndLogError(buffer == nullptr, BAD_VALUE,
-                             "buffer is null pointer.");
+            CheckAndLogError(buffer == nullptr, BAD_VALUE, "buffer is null pointer.");
             buffer->size = 0; // Clear it, then the stats memory is from p2p
             buffer->data = 0;
             pgStatsDatas.push_back(buffer);
@@ -759,9 +751,7 @@ int PipeLiteExecutor::runPipe(map<Port, shared_ptr<CameraBuffer> > &inBuffers,
                                unit.outputBuffers,
                                (statsCount > 0) ? pgStatsDatas[0] : nullptr, // Currently PG handles one stats buffer only
                                ipuParameters);
-        CheckAndLogError((ret != OK), ret,
-                         "%s: error in pipe iteration with %d", mName.c_str(),
-                         ret);
+        CheckAndLogError((ret != OK), ret, "%s: error in pipe iteration with %d", mName.c_str(), ret);
 
         if (CameraDump::isDumpTypeEnable(DUMP_PSYS_INTERM_BUFFER)) {
             for (auto &item : unit.outputBuffers) {
@@ -785,8 +775,7 @@ int PipeLiteExecutor::handleSisStats(map<ia_uid, shared_ptr<CameraBuffer>>& fram
 {
     LOG2("%s:", __func__);
     ia_binary_data* statBuf = (ia_binary_data*)outStatsBuffers->getBufferAddr();
-    CheckAndLogError((statBuf == nullptr), BAD_VALUE,
-                     "Error getting buffer for sis a stats");
+    CheckAndLogError((statBuf == nullptr), BAD_VALUE, "Error getting buffer for sis a stats");
     statBuf->data = nullptr;
     statBuf->size = 0;
 
@@ -948,8 +937,7 @@ int PipeLiteExecutor::allocBuffers()
 
         shared_ptr<CameraBuffer> buf = CameraBuffer::create(mCameraId,
                      BUFFER_USAGE_PSYS_INPUT, V4L2_MEMORY_USERPTR, size, 0, srcFmt, srcWidth, srcHeight);
-        CheckAndLogError(!buf, NO_MEMORY,
-                         "@%s: Allocate producer buffer failed", __func__);
+        CheckAndLogError(!buf, NO_MEMORY, "@%s: Allocate producer buffer failed", __func__);
         mPGBuffers[termDesc.sinkTerminal] = buf;
         mPGBuffers[termDesc.sourceTerminal] = buf;
     }
@@ -975,9 +963,7 @@ int PipeLiteExecutor::allocBuffers()
         for (unsigned int i = 0; i < MAX_BUFFER_COUNT * statsBufferCount; i++) {
             shared_ptr<CameraBuffer> statsBuf = CameraBuffer::create(mCameraId,
                          BUFFER_USAGE_PSYS_STATS, V4L2_MEMORY_USERPTR, sizeof(ia_binary_data), i);
-            CheckAndLogError(!statsBuf, NO_MEMORY,
-                             "Executor %s: Allocate stats buffer failed",
-                             mName.c_str());
+            CheckAndLogError(!statsBuf, NO_MEMORY, "Executor %s: Allocate stats buffer failed", mName.c_str());
 
             AutoMutex lock(mStatsBuffersLock);
             mStatsBuffers.push(statsBuf);
@@ -1006,9 +992,7 @@ int PipeLiteExecutor::allocBuffers()
                 // Prepare internal frame buffer for its producer.
                 shared_ptr<CameraBuffer> buf = CameraBuffer::create(mCameraId,
                              BUFFER_USAGE_PSYS_INPUT, V4L2_MEMORY_USERPTR, size, i, srcFmt, srcWidth, srcHeight);
-                CheckAndLogError(!buf, NO_MEMORY,
-                                 "@%s: Allocate producer buffer failed",
-                                 __func__);
+                CheckAndLogError(!buf, NO_MEMORY, "@%s: Allocate producer buffer failed", __func__);
                 mInternalBuffers[inputPort].push_back(buf);
 
                 mBufferProducer->qbuf(inputPort, buf);
@@ -1024,9 +1008,7 @@ int PipeLiteExecutor::allocBuffers()
         int size = CameraUtils::getFrameSize(fmt, width, height, true);
         shared_ptr<CameraBuffer> buf = CameraBuffer::create(mCameraId,
                      BUFFER_USAGE_PSYS_INPUT, V4L2_MEMORY_USERPTR, size, 0, fmt, width, height);
-        CheckAndLogError(!buf, NO_MEMORY,
-                         "@%s: Allocate internal output buffer failed",
-                         __func__);
+        CheckAndLogError(!buf, NO_MEMORY, "@%s: Allocate internal output buffer failed", __func__);
         mInternalOutputBuffers[item.first]= buf;
     }
 

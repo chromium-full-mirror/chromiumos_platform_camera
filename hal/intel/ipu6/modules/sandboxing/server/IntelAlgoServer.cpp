@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Intel Corporation.
+ * Copyright (C) 2019-2021 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,8 +82,7 @@ IntelAlgoServer::~IntelAlgoServer() {
 int32_t IntelAlgoServer::initialize(const camera_algorithm_callback_ops_t* callback_ops) {
     LOGIPC("@%s, callback_ops:%p", __func__, callback_ops);
 
-    CheckAndLogError((!callback_ops), -EINVAL,
-                     "@%s, the callback_ops is nullptr", __func__);
+    CheckAndLogError((!callback_ops), -EINVAL, "@%s, the callback_ops is nullptr", __func__);
 
     mCallback = callback_ops;
 
@@ -96,13 +95,12 @@ int32_t IntelAlgoServer::registerBuffer(int buffer_fd) {
     std::lock_guard<std::mutex> l(mRegisterBufMutex);
     CheckAndLogError((mHandles.find(buffer_fd) != mHandles.end()), -EINVAL,
                      "@%s, Buffer already registered", __func__);
-    CheckAndLogError(mHandlesQueue.empty(), -EBADFD,
-                     "@%s, Failed to get buffer handle index", __func__);
+    CheckAndLogError(mHandlesQueue.empty(), -EBADFD, "@%s, Failed to get buffer handle index",
+                     __func__);
 
     struct stat sb;
     int ret = fstat(buffer_fd, &sb);
-    CheckAndLogError((ret == -1), -EBADFD, "@%s, Failed to get buffer status",
-                     __func__);
+    CheckAndLogError((ret == -1), -EBADFD, "@%s, Failed to get buffer status", __func__);
 
     void* addr = mmap(0, sb.st_size, PROT_WRITE, MAP_SHARED, buffer_fd, 0);
     CheckAndLogError((!addr), -EBADFD, "@%s, Failed to map buffer", __func__);
@@ -121,10 +119,8 @@ int32_t IntelAlgoServer::registerBuffer(int buffer_fd) {
 int IntelAlgoServer::parseReqHeader(const uint8_t req_header[], uint32_t size) {
     LOGIPC("@%s, size:%d", __func__, size);
 
-    CheckAndLogError(
-        size < IPC_REQUEST_HEADER_USED_NUM || req_header[0] != IPC_MATCHING_KEY,
-        -1, "@%s, fails, req_header[0]:%d, size:%d", __func__, req_header[0],
-        size);
+    CheckAndLogError(size < IPC_REQUEST_HEADER_USED_NUM || req_header[0] != IPC_MATCHING_KEY, -1,
+                     "@%s, fails, req_header[0]:%d, size:%d", __func__, req_header[0], size);
 
     return 0;
 }
@@ -136,12 +132,11 @@ void IntelAlgoServer::returnCallback(uint32_t req_id, status_t status, int32_t b
 }
 
 status_t IntelAlgoServer::getShmInfo(const int32_t buffer_handle, ShmInfo* memInfo) {
-    CheckAndLogError(!memInfo, UNKNOWN_ERROR, "%s, memInfo is nullptr",
-                     __func__);
+    CheckAndLogError(!memInfo, UNKNOWN_ERROR, "%s, memInfo is nullptr", __func__);
     if (buffer_handle == -1) return OK;
 
-    CheckAndLogError(mShmInfoMap.find(buffer_handle) == mShmInfoMap.end(),
-                     UNKNOWN_ERROR, "%s, Invalid buffer handle", __func__);
+    CheckAndLogError(mShmInfoMap.find(buffer_handle) == mShmInfoMap.end(), UNKNOWN_ERROR,
+                     "%s, Invalid buffer handle", __func__);
     *memInfo = mShmInfoMap[buffer_handle];
 
     LOGIPC("@%s, fd:%d, size:%zu, addr: %p", __func__, memInfo->fd, memInfo->size, memInfo->addr);
@@ -151,8 +146,7 @@ status_t IntelAlgoServer::getShmInfo(const int32_t buffer_handle, ShmInfo* memIn
 
 void IntelAlgoServer::handleRequest(const MsgReq& msg) {
     LOGIPC("@%s", __func__);
-    CheckAndLogError(!mRequestHandler, VOID_VALUE, "@%s, handler is null",
-                     __func__);
+    CheckAndLogError(!mRequestHandler, VOID_VALUE, "@%s, handler is null", __func__);
     mRequestHandler->handleRequest(msg);
 }
 

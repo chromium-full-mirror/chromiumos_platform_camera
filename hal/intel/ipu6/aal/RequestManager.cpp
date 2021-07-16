@@ -78,8 +78,7 @@ int RequestManager::init(const camera3_callback_ops_t* callback_ops) {
     // Update the default settings from camera HAL
     icamera::Parameters parameter;
     int ret = icamera::camera_get_parameters(mCameraId, parameter);
-    CheckAndLogError(ret != icamera::OK, ret,
-                     "failed to get parameters, ret %d", ret);
+    CheckAndLogError(ret != icamera::OK, ret, "failed to get parameters, ret %d", ret);
     StaticCapability::getInstance(mCameraId);
 
     android::CameraMetadata defaultRequestSettings;
@@ -113,8 +112,7 @@ int RequestManager::deinit() {
 
     if (mCameraDeviceStarted) {
         int ret = icamera::camera_device_stop(mCameraId);
-        CheckAndLogError(ret != icamera::OK, ret,
-                         "failed to stop camera device, ret %d", ret);
+        CheckAndLogError(ret != icamera::OK, ret, "failed to stop camera device, ret %d", ret);
         mCameraDeviceStarted = false;
     }
 
@@ -159,13 +157,11 @@ int RequestManager::configureStreams(camera3_stream_configuration_t* stream_list
 
     int ret = checkStreamRotation(stream_list);
 
-    CheckAndLogError(ret != icamera::OK, icamera::BAD_VALUE,
-                     "Unsupport rotation degree!");
+    CheckAndLogError(ret != icamera::OK, icamera::BAD_VALUE, "Unsupport rotation degree!");
 
     if (mCameraDeviceStarted) {
         ret = icamera::camera_device_stop(mCameraId);
-        CheckAndLogError(ret != icamera::OK, ret,
-                         "failed to stop camera device, ret %d", ret);
+        CheckAndLogError(ret != icamera::OK, ret, "failed to stop camera device, ret %d", ret);
         mCameraDeviceStarted = false;
     }
 
@@ -173,11 +169,9 @@ int RequestManager::configureStreams(camera3_stream_configuration_t* stream_list
     uint32_t streamsNum = stream_list->num_streams;
     uint32_t operationMode = stream_list->operation_mode;
     LOG1("@%s, streamsNum:%d, operationMode:%d", __func__, streamsNum, operationMode);
-    CheckAndLogError(
-        (operationMode != CAMERA3_STREAM_CONFIGURATION_NORMAL_MODE &&
-         operationMode !=
-             CAMERA3_STREAM_CONFIGURATION_CONSTRAINED_HIGH_SPEED_MODE),
-        icamera::BAD_VALUE, "Unknown operation mode %d!", operationMode);
+    CheckAndLogError((operationMode != CAMERA3_STREAM_CONFIGURATION_NORMAL_MODE &&
+                     operationMode != CAMERA3_STREAM_CONFIGURATION_CONSTRAINED_HIGH_SPEED_MODE),
+                     icamera::BAD_VALUE, "Unknown operation mode %d!", operationMode);
 
     int inputStreamNum = 0;
     int outStreamNum = 0;
@@ -201,11 +195,10 @@ int RequestManager::configureStreams(camera3_stream_configuration_t* stream_list
             return icamera::BAD_VALUE;
         }
         // In ZSL case, RAW input and YUV input will be configured together.
-        CheckAndLogError(inputStreamNum > 2, icamera::BAD_VALUE,
-                         "Too many input streams : %d !", inputStreamNum);
+        CheckAndLogError(inputStreamNum > 2, icamera::BAD_VALUE, "Too many input streams : %d !",
+                         inputStreamNum);
     }
-    CheckAndLogError(outStreamNum == 0, icamera::BAD_VALUE,
-                     "No output streams!");
+    CheckAndLogError(outStreamNum == 0, icamera::BAD_VALUE, "No output streams!");
 
     /*
      * Configure stream
@@ -252,8 +245,7 @@ int RequestManager::configureStreams(camera3_stream_configuration_t* stream_list
 
         ret = HalV3Utils::fillHALStreams(mCameraId, *stream_list->streams[i],
                                          &requestStreams[requestStreamNum]);
-        CheckAndLogError(ret != icamera::OK, ret,
-                         "failed to fill requestStreams[%d], ret:%d", ret,
+        CheckAndLogError(ret != icamera::OK, ret, "failed to fill requestStreams[%d], ret:%d", ret,
                          requestStreamNum);
 
         if (!yuvStream && stream_list->streams[i]->format != HAL_PIXEL_FORMAT_BLOB &&
@@ -276,8 +268,8 @@ int RequestManager::configureStreams(camera3_stream_configuration_t* stream_list
     int halStreamNum = chooseHALStreams(requestStreamNum, halStreamFlag, requestStreams);
     // halStreamNum should not exceed videoNum + 2 (1 opaque raw and 1 still)
     int maxSupportStreamNum = icamera::PlatformData::getVideoStreamNum(mCameraId) + 2;
-    CheckAndLogError(halStreamNum > maxSupportStreamNum || halStreamNum <= 0,
-                     icamera::BAD_VALUE, "failed to find HAL stream");
+    CheckAndLogError(halStreamNum > maxSupportStreamNum || halStreamNum <= 0, icamera::BAD_VALUE,
+                     "failed to find HAL stream");
 
     // index of stream in mHALStream
     int halStreamIndex = 0;
@@ -309,8 +301,8 @@ int RequestManager::configureStreams(camera3_stream_configuration_t* stream_list
             mFDStreamsInfo.usage = fdChooseStream->usage;
             mFDStreamsInfo.format = fdChooseStream->format;
             ret = HalV3Utils::fillHALStreams(mCameraId, mFDStreamsInfo, &requestStreamForFD);
-            CheckAndLogError(ret != icamera::OK, ret,
-                             "failed to fill requestStreamForFD ret:%d", ret);
+            CheckAndLogError(ret != icamera::OK, ret, "failed to fill requestStreamForFD ret:%d",
+                             ret);
             mHALStream[halStreamNum] = requestStreamForFD;
             halStreamNum++;
             LOG1("@%s, mStreamsVGA: w:%d, h:%d, f:%d, u:%d", __func__, mFDStreamsInfo.width,
@@ -366,9 +358,8 @@ int RequestManager::configureStreams(camera3_stream_configuration_t* stream_list
         ** streamToHALIndex to find it's HAL Stream index in mHALStream[]*/
         int halStreamIndex = streamToHALIndex[halStreamFlag[requestStreamNum]];
         bool isHALStream = halStreamFlag[requestStreamNum] == requestStreamNum;
-        CheckAndLogError(halStreamIndex < 0 || halStreamIndex >= halStreamNum,
-                         icamera::BAD_VALUE, "failed to find hal stream %d",
-                         halStreamIndex);
+        CheckAndLogError(halStreamIndex < 0 || halStreamIndex >= halStreamNum, icamera::BAD_VALUE,
+                         "failed to find hal stream %d", halStreamIndex);
         Camera3Stream* s =
             new Camera3Stream(mCameraId, mResultProcessor, mHALStream[halStreamIndex].max_buffers,
                               mHALStream[halStreamIndex], *stream, inputStream, isHALStream);
@@ -476,8 +467,7 @@ int RequestManager::constructDefaultRequestSettings(int type, const camera_metad
 }
 
 int RequestManager::processCaptureRequest(camera3_capture_request_t* request) {
-    CheckAndLogError(!request, icamera::UNKNOWN_ERROR,
-                     "@%s, request is nullptr", __func__);
+    CheckAndLogError(!request, icamera::UNKNOWN_ERROR, "@%s, request is nullptr", __func__);
     LOG1("@%s, frame_number:%d, input_buffer:%d, num_output_buffers:%d", __func__,
          request->frame_number, request->input_buffer ? 1 : 0, request->num_output_buffers);
 
@@ -485,9 +475,8 @@ int RequestManager::processCaptureRequest(camera3_capture_request_t* request) {
                     request->frame_number);
 
     // Valid buffer and request
-    CheckAndLogError(request->num_output_buffers > kMaxStreamNum,
-                     icamera::BAD_VALUE, "@%s, num_output_buffers:%d", __func__,
-                     request->num_output_buffers);
+    CheckAndLogError(request->num_output_buffers > kMaxStreamNum, icamera::BAD_VALUE,
+                     "@%s, num_output_buffers:%d", __func__, request->num_output_buffers);
 
     int ret = icamera::OK;
 
@@ -500,8 +489,7 @@ int RequestManager::processCaptureRequest(camera3_capture_request_t* request) {
             break;
         }
     }
-    CheckAndLogError(index < 0, icamera::UNKNOWN_ERROR,
-                     "no empty CameraBufferInfo!");
+    CheckAndLogError(index < 0, icamera::UNKNOWN_ERROR, "no empty CameraBufferInfo!");
     CLEAR(mCameraBufferInfo[index]);
 
     if (request->settings) {
@@ -517,14 +505,11 @@ int RequestManager::processCaptureRequest(camera3_capture_request_t* request) {
     if (request->input_buffer) {
         inputCam3Buf = std::make_shared<Camera3Buffer>();
         icamera::status_t status = inputCam3Buf->init(request->input_buffer, mCameraId);
-        CheckAndLogError(status != icamera::OK, icamera::BAD_VALUE,
-                         "Failed to init CameraBuffer");
+        CheckAndLogError(status != icamera::OK, icamera::BAD_VALUE, "Failed to init CameraBuffer");
         status = inputCam3Buf->waitOnAcquireFence();
-        CheckAndLogError(status != icamera::OK, icamera::BAD_VALUE,
-                         "Failed to sync CameraBuffer");
+        CheckAndLogError(status != icamera::OK, icamera::BAD_VALUE, "Failed to sync CameraBuffer");
         status = inputCam3Buf->lock();
-        CheckAndLogError(status != icamera::OK, icamera::BAD_VALUE,
-                         "Failed to lock buffer");
+        CheckAndLogError(status != icamera::OK, icamera::BAD_VALUE, "Failed to lock buffer");
 
         camera_metadata_entry entry = mLastSettings.find(ANDROID_SENSOR_TIMESTAMP);
         if (entry.count == 1) {
@@ -555,8 +540,7 @@ int RequestManager::processCaptureRequest(camera3_capture_request_t* request) {
 
         ret = lStream->processRequest(opaqueRawInfo.sequence >= 0 ? nullptr : inputCam3Buf,
                                       request->output_buffers[i], request->frame_number);
-        CheckAndLogError(ret != icamera::OK, ret,
-                         "Failed to process request, ret:%d", ret);
+        CheckAndLogError(ret != icamera::OK, ret, "Failed to process request, ret:%d", ret);
     }
 
     // Convert metadata to Parameters
@@ -591,16 +575,15 @@ int RequestManager::processCaptureRequest(camera3_capture_request_t* request) {
         }
 
         ret = icamera::camera_stream_qbuf(mCameraId, buffer, numBuffers, &param);
-        CheckAndLogError(ret != icamera::OK, ret,
-                         "@%s, camera_stream_qbuf fails,ret:%d", __func__, ret);
+        CheckAndLogError(ret != icamera::OK, ret, "@%s, camera_stream_qbuf fails,ret:%d",
+                         __func__, ret);
     }
 
     increaseRequestCount();
 
     if (!mCameraDeviceStarted) {
         ret = icamera::camera_device_start(mCameraId);
-        CheckAndLogError(ret != icamera::OK, ret,
-                         "failed to start device, ret %d", ret);
+        CheckAndLogError(ret != icamera::OK, ret, "failed to start device, ret %d", ret);
 
         mCameraDeviceStarted = true;
     }
@@ -644,8 +627,8 @@ int RequestManager::flush() {
     LOG2("@%s, line:%d, time spend:%ld us", __func__, __LINE__, interval / 1000);
 
     // based on API, -ENODEV (NO_INIT) error should be returned.
-    CheckAndLogError(interval > ONE_SECOND, icamera::NO_INIT,
-                     "flush() > 1s, timeout:%ld us", interval / 1000);
+    CheckAndLogError(interval > ONE_SECOND, icamera::NO_INIT, "flush() > 1s, timeout:%ld us",
+                     interval / 1000);
 
     return icamera::OK;
 }
@@ -727,16 +710,13 @@ int RequestManager::checkStreamRotation(camera3_stream_configuration_t* stream_l
         countOutputStream++;
 
         int rotationDegree = HalV3Utils::getRotationDegrees(*(stream_list->streams[i]));
-        CheckAndLogError(rotationDegree < 0, icamera::BAD_VALUE,
-                         "Unsupport rotation degree!");
+        CheckAndLogError(rotationDegree < 0, icamera::BAD_VALUE, "Unsupport rotation degree!");
 
         if (countOutputStream == 1) {
             rotationDegree0 = rotationDegree;
         } else {
-            CheckAndLogError(rotationDegree0 != rotationDegree,
-                             icamera::BAD_VALUE,
-                             "rotationDegree0:%d, stream[%lu] "
-                             "rotationDegree:%d, not the same",
+            CheckAndLogError(rotationDegree0 != rotationDegree, icamera::BAD_VALUE,
+                             "rotationDegree0:%d, stream[%lu] rotationDegree:%d, not the same",
                              rotationDegree0, i, rotationDegree);
         }
     }

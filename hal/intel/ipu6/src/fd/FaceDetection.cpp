@@ -30,9 +30,8 @@ std::unordered_map<int, FaceDetection*> FaceDetection::sInstances;
 Mutex FaceDetection::sLock;
 FaceDetection *FaceDetection::getInstance(int cameraId) {
     LOG1("@%s, cameraId:%d", __func__, cameraId);
-    CheckAndLogError(
-        cameraId < 0 || cameraId >= PlatformData::numberOfCameras(), nullptr,
-        "cameraId %d is error", cameraId);
+    CheckAndLogError(cameraId < 0 || cameraId >= PlatformData::numberOfCameras(),
+                     nullptr, "cameraId %d is error", cameraId);
 
     if (sInstances.find(cameraId) == sInstances.end()) {
         return nullptr;
@@ -48,9 +47,8 @@ FaceDetection *FaceDetection::createInstance(int cameraId,
          __func__, cameraId, maxFaceNum, halStreamId, width, height);
     CheckAndLogError(maxFaceNum > MAX_FACES_DETECTABLE, nullptr,
                      "maxFaceNum %d is error", maxFaceNum);
-    CheckAndLogError(
-        cameraId < 0 || cameraId >= PlatformData::numberOfCameras(), nullptr,
-        "cameraId %d is error", cameraId);
+    CheckAndLogError(cameraId < 0 || cameraId >= PlatformData::numberOfCameras(),
+                     nullptr, "cameraId %d is error", cameraId);
 
     AutoMutex lock(sLock);
     if (sInstances.find(cameraId) == sInstances.end()) {
@@ -63,9 +61,8 @@ FaceDetection *FaceDetection::createInstance(int cameraId,
 
 void FaceDetection::destoryInstance(int cameraId) {
     LOG1("@%s, cameraId:%d", __func__, cameraId);
-    CheckAndLogError(
-        cameraId < 0 || cameraId >= PlatformData::numberOfCameras(), VOID_VALUE,
-        "cameraId is error");
+    CheckAndLogError(cameraId < 0 || cameraId >= PlatformData::numberOfCameras(),
+                     VOID_VALUE, "cameraId is error");
 
     AutoMutex lock(sLock);
     if (sInstances.find(cameraId) != sInstances.end()) {
@@ -97,8 +94,7 @@ FaceDetection::FaceDetection(int cameraId, unsigned int maxFaceNum, int32_t halS
 
     /* start face engine pthread */
     int ret = run("FaceDetection" + std::to_string(cameraId), PRIORITY_NORMAL);
-    CheckAndLogError(ret != OK, VOID_VALUE,
-                     "Camera thread failed to start, ret %d", ret);
+    CheckAndLogError(ret != OK, VOID_VALUE, "Camera thread failed to start, ret %d", ret);
 
     /* init IntelFaceDetection */
     FaceDetectionInitParams params;
@@ -200,8 +196,7 @@ bool FaceDetection::faceRunningByCondition() {
 
 void FaceDetection::runFaceDetection(const camera_buffer_t &buffer) {
     LOG1("@%s", __func__);
-    CheckAndLogError(mInitialized == false, VOID_VALUE,
-                     "mInitialized is false");
+    CheckAndLogError(mInitialized == false, VOID_VALUE, "mInitialized is false");
 
     if (PlatformData::isFaceEngineSyncRunning(mCameraId)) {
         runFaceDetectionBySync(buffer);
@@ -212,8 +207,7 @@ void FaceDetection::runFaceDetection(const camera_buffer_t &buffer) {
 
 void FaceDetection::runFaceDetectionBySync(const camera_buffer_t &buffer) {
     LOG1("@%s", __func__);
-    CheckAndLogError(mInitialized == false, VOID_VALUE,
-                     "mInitialized is false");
+    CheckAndLogError(mInitialized == false, VOID_VALUE, "mInitialized is false");
 
     if (!faceRunningByCondition()) return;
 
@@ -261,8 +255,7 @@ void FaceDetection::runFaceDetectionBySync(const camera_buffer_t &buffer) {
 
 void FaceDetection::runFaceDetectionByAsync(const camera_buffer_t &buffer) {
     LOG1("@%s", __func__);
-    CheckAndLogError(mInitialized == false, VOID_VALUE,
-                     "mInitialized is false");
+    CheckAndLogError(mInitialized == false, VOID_VALUE, "mInitialized is false");
 
     if (!faceRunningByCondition()) return;
 
@@ -342,8 +335,7 @@ int FaceDetection::getFaceNum() {
 /* The result is pvl's original reuslt */
 int FaceDetection::getFaceDetectionResult(FaceDetectionResult *result, bool resetRes) {
     LOG1("@%s", __func__);
-    CheckAndLogError(mInitialized == false, UNKNOWN_ERROR,
-                     "mInitialized is false");
+    CheckAndLogError(mInitialized == false, UNKNOWN_ERROR, "mInitialized is false");
     CheckAndLogError(!result, UNKNOWN_ERROR, "mResult is nullptr");
 
     AutoMutex l(mFaceResultLock);
@@ -359,10 +351,8 @@ int FaceDetection::getFaceDetectionResult(FaceDetectionResult *result, bool rese
 /* Get current frame width and hight */
 void FaceDetection::getCurrentFrameWidthAndHight(int *frameWidth, int *frameHigth) {
     LOG2("@%s", __func__);
-    CheckAndLogError(mInitialized == false, VOID_VALUE,
-                     "mInitialized is false");
-    CheckAndLogError(!frameWidth || !frameHigth, VOID_VALUE,
-                     "input paramter is error");
+    CheckAndLogError(mInitialized == false, VOID_VALUE, "mInitialized is false");
+    CheckAndLogError(!frameWidth || !frameHigth, VOID_VALUE, "input paramter is error");
 
     *frameWidth = mWidth;
     *frameHigth = mHeight;
@@ -371,8 +361,7 @@ void FaceDetection::getCurrentFrameWidthAndHight(int *frameWidth, int *frameHigt
 /* Get current hal stream id */
 void FaceDetection::getHalStreamId(int32_t *halStreamId) {
     LOG2("@%s", __func__);
-    CheckAndLogError(mInitialized == false, VOID_VALUE,
-                     "mInitialized is false");
+    CheckAndLogError(mInitialized == false, VOID_VALUE, "mInitialized is false");
     CheckAndLogError(!halStreamId, VOID_VALUE, "halStreamId is nullptr");
 
     *halStreamId = mHalStreamId;
@@ -382,9 +371,8 @@ void FaceDetection::getHalStreamId(int32_t *halStreamId) {
 int FaceDetection::getResult(int cameraId, cca::cca_face_state *faceState) {
     LOG1("@%s", __func__);
     CheckAndLogError(!faceState, UNKNOWN_ERROR, "faceState is nullptr");
-    CheckAndLogError(
-        cameraId < 0 || cameraId >= PlatformData::numberOfCameras(),
-        UNKNOWN_ERROR, "cameraId %d is error", cameraId);
+    CheckAndLogError(cameraId < 0 || cameraId >= PlatformData::numberOfCameras(),
+                     UNKNOWN_ERROR, "cameraId %d is error", cameraId);
 
     int width = 0;
     int height = 0;
@@ -474,9 +462,8 @@ int FaceDetection::getResult(int cameraId, cca::cca_face_state *faceState) {
 int FaceDetection::getResult(int cameraId, CVFaceDetectionAbstractResult *result) {
     LOG1("@%s", __func__);
     CheckAndLogError(!result, UNKNOWN_ERROR, "result is nullptr");
-    CheckAndLogError(
-        cameraId < 0 || cameraId >= PlatformData::numberOfCameras(),
-        UNKNOWN_ERROR, "cameraId %d is error", cameraId);
+    CheckAndLogError(cameraId < 0 || cameraId >= PlatformData::numberOfCameras(),
+                     UNKNOWN_ERROR, "cameraId %d is error", cameraId);
 
     int width = 0;
     int height = 0;

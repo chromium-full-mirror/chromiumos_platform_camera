@@ -109,8 +109,7 @@ int PGCommon::init()
     if (ret != OK) return ret;
 
     mTerminalBuffers = (CIPR::Buffer**)CIPR::callocMemory(mTerminalCount, sizeof(CIPR::Buffer*));
-    CheckAndLogError(!mTerminalBuffers, NO_MEMORY,
-                     "Allocate terminal buffers fail");
+    CheckAndLogError(!mTerminalBuffers, NO_MEMORY, "Allocate terminal buffers fail");
     memset(mTerminalBuffers, 0, (mTerminalCount * sizeof(CIPR::Buffer*)));
 
     mFrameFormatType = std::unique_ptr<ia_css_frame_format_type[]>(new ia_css_frame_format_type[mTerminalCount]);
@@ -178,8 +177,7 @@ void PGCommon::setInputInfo(const TerminalFrameInfoMap& inputInfos)
     int maxFrameSize = 0;
     for (const auto& item : inputInfos) {
         int terminal = item.first - mTerminalBaseUid;
-        CheckAndLogError(!IS_VALID_TERMINAL(terminal), VOID_VALUE,
-                         "error input terminal %d", item.first);
+        CheckAndLogError(!IS_VALID_TERMINAL(terminal), VOID_VALUE, "error input terminal %d", item.first);
 
         FrameInfo frameInfo;
         frameInfo.mWidth = item.second.mWidth;
@@ -223,8 +221,7 @@ void PGCommon::setOutputInfo(const TerminalFrameInfoMap& outputInfos)
     int maxFrameSize = 0;
     for (const auto& item : outputInfos) {
         int terminal = item.first - mTerminalBaseUid;
-        CheckAndLogError(!IS_VALID_TERMINAL(terminal), VOID_VALUE,
-                         "error output terminal %d", item.first);
+        CheckAndLogError(!IS_VALID_TERMINAL(terminal), VOID_VALUE, "error output terminal %d", item.first);
 
         FrameInfo frameInfo;
         frameInfo.mWidth = item.second.mWidth;
@@ -245,8 +242,7 @@ void PGCommon::setDisabledTerminals(const std::vector<ia_uid>& disabledTerminals
 {
     for (auto const terminalUid : disabledTerminals) {
         int terminal = terminalUid - mTerminalBaseUid;
-        CheckAndLogError(!IS_VALID_TERMINAL(terminal), VOID_VALUE,
-                         "error disabled terminal %d", terminalUid);
+        CheckAndLogError(!IS_VALID_TERMINAL(terminal), VOID_VALUE, "error disabled terminal %d", terminalUid);
         mDisableDataTermials.push_back(terminal);
     }
 }
@@ -276,8 +272,7 @@ int PGCommon::prepare(IspParamAdaptor* adaptor, int streamId)
     mStreamId = streamId;
     // Set the data terminal frame format
     int ret = configTerminalFormat();
-    CheckAndLogError((ret != OK), ret, "%s, call configTerminal fail",
-                     __func__);
+    CheckAndLogError((ret != OK), ret, "%s, call configTerminal fail", __func__);
 
     // Init and config p2p handle
     ret = initParamAdapt();
@@ -289,42 +284,34 @@ int PGCommon::prepare(IspParamAdaptor* adaptor, int streamId)
 
     // Init PG parameters
     ret = handlePGParams(mFrameFormatType.get());
-    CheckAndLogError((ret != OK), ret, "%s, call handlePGParams fail",
-                     __func__);
+    CheckAndLogError((ret != OK), ret, "%s, call handlePGParams fail", __func__);
 
     ret = setKernelBitMap();
-    CheckAndLogError((ret != OK), ret, "%s, call setKernelBitMap fail",
-                     __func__);
+    CheckAndLogError((ret != OK), ret, "%s, call setKernelBitMap fail", __func__);
 
     ret = setTerminalParams(mFrameFormatType.get());
-    CheckAndLogError((ret != OK), ret, "%s, call setTerminalParams fail",
-                     __func__);
+    CheckAndLogError((ret != OK), ret, "%s, call setTerminalParams fail", __func__);
 
-    // Create process group
+   // Create process group
     mProcessGroup = createPG(&mPGBuffer);
-    CheckAndLogError(!mProcessGroup, UNKNOWN_ERROR, "%s, create pg fail",
-                     __func__);
+    CheckAndLogError(!mProcessGroup, UNKNOWN_ERROR, "%s, create pg fail", __func__);
     uint8_t pgTerminalCount = ia_css_process_group_get_terminal_count(mProcessGroup);
     for (uint8_t termNum = 0 ; termNum < pgTerminalCount; termNum++) {
         ia_css_terminal_t* terminal = ia_css_process_group_get_terminal(mProcessGroup, termNum);
         CheckAndLogError(!terminal, UNKNOWN_ERROR, "failed to get terminal");
         uint16_t termIdx = ia_css_terminal_get_terminal_manifest_index(terminal);
-        CheckAndLogError((termIdx >= IPU_MAX_TERMINAL_COUNT), UNKNOWN_ERROR,
-                         "wrong term index for terminal num %d", termNum);
+        CheckAndLogError((termIdx >= IPU_MAX_TERMINAL_COUNT), UNKNOWN_ERROR, "wrong term index for terminal num %d", termNum);
         mPgTerminals[termIdx] = termNum;
     }
 
     mPGParamAdapt->setPGAndPrepareProgram(mProcessGroup);
     ret = configureFragmentDesc();
-    CheckAndLogError((ret != OK), ret, "%s, call configureFragmentDesc fail",
-                     __func__);
+    CheckAndLogError((ret != OK), ret, "%s, call configureFragmentDesc fail", __func__);
 
     ret = allocateTnrDataBuffers();
-    CheckAndLogError((ret != OK), ret, "%s, call allocateTnrDataBuffers fail",
-                     __func__);
+    CheckAndLogError((ret != OK), ret, "%s, call allocateTnrDataBuffers fail", __func__);
     ret = preparePayloadBuffers();
-    CheckAndLogError((ret != OK), NO_MEMORY, "%s, preparePayloadBuffers fails",
-                     __func__);
+    CheckAndLogError((ret != OK), NO_MEMORY, "%s, preparePayloadBuffers fails", __func__);
 
     configureFrameDesc();
 
@@ -335,7 +322,7 @@ ia_css_process_group_t* PGCommon::createPG(CIPR::Buffer** pgBuffer)
 {
     CheckAndLogError(*pgBuffer, nullptr, "pg has already created");
 
-    // Create process group
+   // Create process group
     ia_css_program_group_param_t* pgParamsBuf =
         (ia_css_program_group_param_t*)getCiprBufferPtr(mPGParamsBuffer);
     ia_css_program_group_manifest_t* manifestBuf =
@@ -347,8 +334,7 @@ ia_css_process_group_t* PGCommon::createPG(CIPR::Buffer** pgBuffer)
     void* pgMemory = mPGParamAdapt->allocatePGBuffer(pgSize);
     CheckAndLogError(!pgMemory, nullptr, "allocate PG error");
     *pgBuffer = createUserPtrCiprBuffer(pgSize, pgMemory);
-    CheckAndLogError(!*pgBuffer, nullptr,
-                     "%s, call createUserPtrCiprBuffer fail", __func__);
+    CheckAndLogError(!*pgBuffer, nullptr, "%s, call createUserPtrCiprBuffer fail", __func__);
 
     ia_css_process_group_t* pg = ia_css_process_group_create(getCiprBufferPtr(*pgBuffer),
                    (ia_css_program_group_manifest_t*)getCiprBufferPtr(mManifestBuffer),
@@ -396,8 +382,7 @@ int PGCommon::createCommand(CIPR::Buffer* pg, CIPR::Command** cmd, CIPR::Buffer*
 
     *cmd = new CIPR::Command(cmdCfg);
     ret = (*cmd)->getConfig(&cmdCfg);
-    CheckAndLogError(ret != CIPR::Result::OK, UNKNOWN_ERROR,
-                     "%s, call get_command_config fail", __func__);
+    CheckAndLogError(ret != CIPR::Result::OK, UNKNOWN_ERROR, "%s, call get_command_config fail", __func__);
 
     // Create ext buffer
     *extBuffer = new CIPR::Buffer(sizeof(CIPR::ProcessGroupCommand),
@@ -406,13 +391,11 @@ int PGCommon::createCommand(CIPR::Buffer* pg, CIPR::Command** cmd, CIPR::Buffer*
                                   nullptr);
 
     ret = (*extBuffer)->attatchDevice(mCtx);
-    CheckAndLogError(ret != CIPR::Result::OK, NO_MEMORY,
-                     "unable to access extBuffer");
+    CheckAndLogError(ret != CIPR::Result::OK, NO_MEMORY, "unable to access extBuffer");
 
     void* p = nullptr;
     ret = (*extBuffer)->getMemoryCpuPtr(&p);
-    CheckAndLogError(ret != CIPR::Result::OK, NO_MEMORY,
-                     "unable to access extBuffer memory");
+    CheckAndLogError(ret != CIPR::Result::OK, NO_MEMORY, "unable to access extBuffer memory");
     pgCommand = reinterpret_cast<CIPR::ProcessGroupCommand*>(p);
     CheckAndLogError(!pgCommand, NO_MEMORY, "unable to access memory.cpu_ptr");
 
@@ -432,8 +415,7 @@ int PGCommon::createCommand(CIPR::Buffer* pg, CIPR::Command** cmd, CIPR::Buffer*
     cmdCfg.pg = pg;
     cmdCfg.extBuf = *extBuffer;
     ret = (*cmd)->setConfig(cmdCfg);
-    CheckAndLogError(ret != CIPR::Result::OK, UNKNOWN_ERROR,
-                     "%s, call set_command_config fail", __func__);
+    CheckAndLogError(ret != CIPR::Result::OK, UNKNOWN_ERROR, "%s, call set_command_config fail", __func__);
 
     return OK;
 }
@@ -521,15 +503,11 @@ int PGCommon::calcFragmentCount(int overlap)
         }
 
         data_terminal_manifest = ia_css_program_group_manifest_get_data_terminal_manifest(manifest, termIdx);
-        CheckAndLogError(!data_terminal_manifest, -1,
-                         "%s, can't get data terminal manifest for term %d",
-                         __func__, termIdx);
+        CheckAndLogError(!data_terminal_manifest, -1, "%s, can't get data terminal manifest for term %d", __func__, termIdx);
 
         uint16_t size[IA_CSS_N_DATA_DIMENSION] = {0};
         int ret = ia_css_data_terminal_manifest_get_max_size(data_terminal_manifest, size);
-        CheckAndLogError(ret < 0, 1,
-                         "%s: get max fragment size error for term %d",
-                         __func__, termIdx);
+        CheckAndLogError(ret < 0, 1, "%s: get max fragment size error for term %d", __func__, termIdx);
 
         size[IA_CSS_COL_DIMENSION] = ALIGN_64(size[IA_CSS_COL_DIMENSION]);
         // Overwrite the max value if need
@@ -571,22 +549,17 @@ int PGCommon::handlePGParams(const ia_css_frame_format_type* frameFormatTypes)
     int pgParamsSize = ia_css_sizeof_program_group_param(mProgramCount, mTerminalCount, mFragmentCount);
 
     mPGParamsBuffer = createUserPtrCiprBuffer(pgParamsSize);
-    CheckAndLogError(!mPGParamsBuffer, NO_MEMORY,
-                     "%s, call createUserPtrCiprBuffer fail", __func__);
+    CheckAndLogError(!mPGParamsBuffer, NO_MEMORY, "%s, call createUserPtrCiprBuffer fail", __func__);
 
     ia_css_program_group_param_t* pgParamsBuf = (ia_css_program_group_param_t*)getCiprBufferPtr(mPGParamsBuffer);
     int ret = ia_css_program_group_param_init(pgParamsBuf, mProgramCount, mTerminalCount, mFragmentCount, frameFormatTypes);
-    CheckAndLogError((ret != OK), ret,
-                     "%s, call ia_css_program_group_param_init fail", __func__);
+    CheckAndLogError((ret != OK), ret, "%s, call ia_css_program_group_param_init fail", __func__);
 
     if (mPPG) {
         ret = ia_css_program_group_param_set_protocol_version(
                 pgParamsBuf,
                 IA_CSS_PROCESS_GROUP_PROTOCOL_PPG);
-        CheckAndLogError(
-            (ret != OK), ret,
-            "%s, call ia_css_program_group_param_set_protocol_version fail",
-            __func__);
+        CheckAndLogError((ret != OK), ret, "%s, call ia_css_program_group_param_set_protocol_version fail", __func__);
     }
     return ret;
 }
@@ -598,10 +571,7 @@ int PGCommon::setKernelBitMap()
     LOG1("%s: mKernelBitmap:(Not use elems) %#018lx", __func__, mKernelBitmap);
 #endif
     int ret = ia_css_program_group_param_set_kernel_enable_bitmap(pgParamsBuf, mKernelBitmap);
-    CheckAndLogError(
-        (ret != OK), ret,
-        "%s, call ia_css_program_group_param_set_kernel_enable_bitmap fail",
-        __func__);
+    CheckAndLogError((ret != OK), ret, "%s, call ia_css_program_group_param_set_kernel_enable_bitmap fail", __func__);
 
     return ret;
 }
@@ -616,10 +586,7 @@ int PGCommon::setTerminalParams(const ia_css_frame_format_type* frameFormatTypes
     for (int i = 0; i < mTerminalCount; i++) {
         ia_css_terminal_param_t *terminalParam =
             ia_css_program_group_param_get_terminal_param(pgParamsBuf, i);
-        CheckAndLogError(
-            !terminalParam, UNKNOWN_ERROR,
-            "%s, call ia_css_program_group_param_get_terminal_param fail",
-            __func__);
+        CheckAndLogError(!terminalParam, UNKNOWN_ERROR, "%s, call ia_css_program_group_param_get_terminal_param fail", __func__);
         ia_css_terminal_manifest_t *terminal_manifest = ia_css_program_group_manifest_get_term_mnfst(pg_manifest, i);
         ia_css_terminal_type_t  terminal_type = ia_css_terminal_manifest_get_type(terminal_manifest);
         if (!((terminal_type == IA_CSS_TERMINAL_TYPE_DATA_OUT) || (terminal_type == IA_CSS_TERMINAL_TYPE_DATA_IN))) {
@@ -724,8 +691,7 @@ int PGCommon::configureTerminalFragmentDesc(int termIdx, const ia_p2p_fragment_d
     for (int fragIdx = 0; fragIdx < mFragmentCount; fragIdx++) {
         ia_css_fragment_descriptor_t* dstFragDesc =
                 ia_css_data_terminal_get_fragment_descriptor((ia_css_data_terminal_t*)terminal, fragIdx);
-        CheckAndLogError(!dstFragDesc, -1,
-                         "%s: Can't get frag desc from terminal", __func__);
+        CheckAndLogError(!dstFragDesc, -1, "%s: Can't get frag desc from terminal", __func__);
 
         dstFragDesc->dimension[IA_CSS_COL_DIMENSION] = srcDesc[fragIdx].fragment_width;
         dstFragDesc->dimension[IA_CSS_ROW_DIMENSION] = srcDesc[fragIdx].fragment_height;
@@ -905,8 +871,7 @@ int PGCommon::iterate(CameraBufferMap &inBufs, CameraBufferMap &outBufs,
     }
 
     int ret = prepareTerminalBuffers(ipuParameters, inBufs, outBufs, sequence);
-    CheckAndLogError((ret != OK), ret,
-                     "%s, prepareTerminalBuffers fail with %d", getName(), ret);
+    CheckAndLogError((ret != OK), ret, "%s, prepareTerminalBuffers fail with %d", getName(), ret);
 
     // Create PPG & PPG start/stop commands at the beginning
     if (mPPG && !mPPGBuffer) {
@@ -918,16 +883,14 @@ int PGCommon::iterate(CameraBufferMap &inBufs, CameraBufferMap &outBufs,
         size_t pgSize = ia_css_sizeof_process_group(manifestBuf, pgParamsBuf);
 
         mPPGBuffer = createUserPtrCiprBuffer(pgSize);
-        CheckAndLogError(!mPPGBuffer, NO_MEMORY,
-                         "%s, call createUserPtrCiprBuffer fail", __func__);
+        CheckAndLogError(!mPPGBuffer, NO_MEMORY, "%s, call createUserPtrCiprBuffer fail", __func__);
         mPPGProcessGroup = (ia_css_process_group_t*)getCiprBufferPtr(mPPGBuffer);
         MEMCPY_S(mPPGProcessGroup, pgSize, mProcessGroup, ia_css_process_group_get_size(mProcessGroup));
 
     }
     if (!mCmd) {
         ret = createCommands();
-        CheckAndLogError((ret != OK), ret, "%s, call createCommands fail",
-                         __func__);
+       CheckAndLogError((ret != OK), ret, "%s, call createCommands fail", __func__);
     }
 
     if (mPPG && !mPPGStarted) {
@@ -951,13 +914,11 @@ int PGCommon::iterate(CameraBufferMap &inBufs, CameraBufferMap &outBufs,
 
 int PGCommon::preparePayloadBuffers() {
     int count = mPGParamAdapt->getPayloadSizes(mTerminalCount, mParamPayload);
-    CheckAndLogError((count != mTerminalCount), NO_MEMORY,
-                     "%s, getPayloadSize fails", __func__);
+    CheckAndLogError((count != mTerminalCount), NO_MEMORY, "%s, getPayloadSize fails", __func__);
 
     // For TNR parameter refer terminals
     int ret = allocateTnrSimBuffers();
-    CheckAndLogError((ret != OK), NO_MEMORY, "%s, allocateTnrSimBuffers fails",
-                     __func__);
+    CheckAndLogError((ret != OK), NO_MEMORY, "%s, allocateTnrSimBuffers fails", __func__);
 
     // For other normal terminals
     std::vector<ia_binary_data> payloads;
@@ -971,14 +932,12 @@ int PGCommon::preparePayloadBuffers() {
         payloads.push_back(payload);
     }
     ret = mPGParamAdapt->allocatePayloads(payloads.size(), payloads.data());
-    CheckAndLogError(ret != OK, NO_MEMORY, "%s, allocate payloads fail",
-                     __func__);
+    CheckAndLogError(ret != OK, NO_MEMORY, "%s, allocate payloads fail", __func__);
     for (int i = 0; i < mTerminalCount; i++) {
         if (payloads[i].data) {
             CIPR::Buffer* ciprBuf = registerUserBuffer(payloads[i].size, payloads[i].data);
-            CheckAndLogError(!ciprBuf, NO_MEMORY,
-                             "%s, register payload buffer %p for term %d fail",
-                             __func__, payloads[i].data, i);
+            CheckAndLogError(!ciprBuf, NO_MEMORY, "%s, register payload buffer %p for term %d fail",
+                       __func__, payloads[i].data, i);
             memset(payloads[i].data, 0, PAGE_ALIGN(payloads[i].size));
             mParamPayload[i].data = payloads[i].data;
             mTerminalBuffers[i] = ciprBuf;
@@ -1019,8 +978,7 @@ int PGCommon::allocateTnrDataBuffers() {
     for (int32_t i = 0; i < bufferCount; i++) {
         uint8_t* buffer = nullptr;
         int ret = posix_memalign((void**)&buffer, PAGE_SIZE_U, PAGE_ALIGN(size));
-        CheckAndLogError(ret, NO_MEMORY, "%s, alloc %d tnr data buf fails",
-                         __func__, i);
+        CheckAndLogError(ret, NO_MEMORY, "%s, alloc %d tnr data buf fails", __func__, i);
         memset(buffer, 0, PAGE_ALIGN(size));
         mTnrDataBuffers.push_back(buffer);
 
@@ -1032,9 +990,7 @@ int PGCommon::allocateTnrDataBuffers() {
             ciprBuf = registerUserBuffer(size, buffer, true);
         else
             ciprBuf = registerUserBuffer(size, buffer);
-        CheckAndLogError(!ciprBuf, NO_MEMORY,
-                         "%s, register %d tnr buf %p fails", __func__, i,
-                         buffer);
+        CheckAndLogError(!ciprBuf, NO_MEMORY, "%s, register %d tnr buf %p fails", __func__, i, buffer);
 
         if (i == PAIR_BUFFER_IN_INDEX) mTerminalBuffers[mTnrTerminalPair.inId] = ciprBuf;
         else if (i == PAIR_BUFFER_OUT_INDEX) mTerminalBuffers[mTnrTerminalPair.outId] = ciprBuf;
@@ -1067,15 +1023,13 @@ int PGCommon::allocateTnrSimBuffers() {
             payloads.push_back(payload);
         }
         int ret = mPGParamAdapt->allocatePayloads(payloads.size(), payloads.data());
-        CheckAndLogError(ret != OK, NO_MEMORY,
-                         "%s, allocate for term pair %d fail", __func__, inId);
+        CheckAndLogError(ret != OK, NO_MEMORY, "%s, allocate for term pair %d fail", __func__, inId);
 
         // Register all buffers and clear
         for (int32_t i = 0; i < bufferCount; i++) {
             CIPR::Buffer* ciprBuf = registerUserBuffer(payloads[i].size, payloads[i].data);
-            CheckAndLogError(!ciprBuf, NO_MEMORY,
-                             "%s, register %d:%p for term pair %d fails",
-                             __func__, i, payloads[i].data, inId);
+            CheckAndLogError(!ciprBuf, NO_MEMORY, "%s, register %d:%p for term pair %d fails",
+                       __func__, i, payloads[i].data, inId);
             memset(payloads[i].data, 0, PAGE_ALIGN(payloads[i].size));
 
             if (mShareReferIds[inId])
@@ -1120,9 +1074,8 @@ int PGCommon::prepareTerminalBuffers(const ia_binary_data *ipuParameters,
             ciprBuf = (buffer->getMemory() == V4L2_MEMORY_DMABUF) \
                      ? registerUserBuffer(buffer->getBufferSize(), buffer->getFd(), flush) \
                      : registerUserBuffer(buffer->getBufferSize(), buffer->getBufferAddr(), flush);
-            CheckAndLogError(!ciprBuf, NO_MEMORY,
-                             "%s, register buffer size %d for terminal %d fail",
-                             __func__, buffer->getBufferSize(), termIdx);
+            CheckAndLogError(!ciprBuf, NO_MEMORY, "%s, register buffer size %d for terminal %d fail",
+                       __func__, buffer->getBufferSize(), termIdx);
             mTerminalBuffers[termIdx] = ciprBuf;
         }
     }
@@ -1181,10 +1134,8 @@ void PGCommon::postTerminalBuffersDone(long sequence) {
 int PGCommon::executePG()
 {
     TRACE_LOG_PROCESS(mName.c_str(), __func__);
-    CheckAndLogError((!mCmd), INVALID_OPERATION, "%s, Command is invalid.",
-                     __func__);
-    CheckAndLogError((!mProcessGroup), INVALID_OPERATION,
-                     "%s, process group is invalid.", __func__);
+    CheckAndLogError((!mCmd), INVALID_OPERATION, "%s, Command is invalid.", __func__);
+    CheckAndLogError((!mProcessGroup), INVALID_OPERATION, "%s, process group is invalid.", __func__);
 
     mCmd->getConfig(&mCmdCfg);
     int bufferCount = ia_css_process_group_get_terminal_count(mProcessGroup);
@@ -1207,15 +1158,12 @@ int PGCommon::executePG()
 
     for (int fragIdx = 0; fragIdx < mFragmentCount; fragIdx++) {
         int ret = ia_css_process_group_set_fragment_state(mProcessGroup, (uint16_t)fragIdx);
-        CheckAndLogError((ret != OK), ret, "%s, set fragment count %d fail %p",
-                         getName(), fragIdx, mProcessGroup);
+        CheckAndLogError((ret != OK), ret, "%s, set fragment count %d fail %p", getName(), fragIdx, mProcessGroup);
         ret = ia_css_process_group_set_fragment_limit(mProcessGroup, (uint16_t)(fragIdx + 1));
-        CheckAndLogError((ret != OK), ret, "%s, set fragment limit %d fail",
-                         getName(), fragIdx);
+        CheckAndLogError((ret != OK), ret, "%s, set fragment limit %d fail", getName(), fragIdx);
 
         ret = handleCmd(&mCmd, &mCmdCfg);
-        CheckAndLogError((ret != OK), ret, "%s, call handleCmd fail",
-                         getName());
+        CheckAndLogError((ret != OK), ret, "%s, call handleCmd fail", getName());
     }
 
     return OK;
@@ -1272,28 +1220,20 @@ int PGCommon::handleCmd(CIPR::Command** cmd, CIPR::PSysCommandConfig* cmdCfg)
     eventCfg.commandIssueID = cmdCfg->issueID;
 
     CIPR::Result ret = (*cmd)->setConfig(*cmdCfg);
-    CheckAndLogError((ret != CIPR::Result::OK), UNKNOWN_ERROR,
-                     "%s, call CIPR::Command::setConfig fail", __func__);
+    CheckAndLogError((ret != CIPR::Result::OK), UNKNOWN_ERROR, "%s, call CIPR::Command::setConfig fail", __func__);
 
     ret = (*cmd)->getConfig(cmdCfg);
-    CheckAndLogError((ret != CIPR::Result::OK), UNKNOWN_ERROR,
-                     "%s, call CIPR::Command::getConfig fail", __func__);
+    CheckAndLogError((ret != CIPR::Result::OK), UNKNOWN_ERROR, "%s, call CIPR::Command::getConfig fail", __func__);
 
     ret = (*cmd)->enqueue(mCtx);
-    CheckAndLogError((ret != CIPR::Result::OK), UNKNOWN_ERROR,
-                     "%s, call Context::enqueueCommand() fail %d", __func__,
-                     ret);
+    CheckAndLogError((ret != CIPR::Result::OK), UNKNOWN_ERROR, "%s, call Context::enqueueCommand() fail %d", __func__, ret);
 
     // Wait event
     ret = mEvent->wait(mCtx);
-    CheckAndLogError((ret != CIPR::Result::OK), UNKNOWN_ERROR,
-                     "%s, call Context::waitForEvent fail, ret: %d", __func__,
-                     ret);
+    CheckAndLogError((ret != CIPR::Result::OK), UNKNOWN_ERROR, "%s, call Context::waitForEvent fail, ret: %d", __func__, ret);
 
     ret = mEvent->getConfig(&eventCfg);
-    CheckAndLogError((ret != CIPR::Result::OK), UNKNOWN_ERROR,
-                     "%s, call Event::getConfig() fail, ret: %d", __func__,
-                     ret);
+    CheckAndLogError((ret != CIPR::Result::OK), UNKNOWN_ERROR, "%s, call Event::getConfig() fail, ret: %d", __func__, ret);
     // Ignore the error in event config since it's not a fatal error.
     if (eventCfg.error) {
         LOGW("%s, event config error: %d", __func__, eventCfg.error);
@@ -1307,8 +1247,7 @@ int PGCommon::getCapability()
     CIPR::PSYSCapability cap;
     int ret = OK;
     CIPR::Result err = mCtx->getCapabilities(&cap);
-    CheckAndLogError((err != CIPR::Result::OK), UNKNOWN_ERROR,
-                     "Call Context::getCapabilities() fail, ret:%d", ret);
+    CheckAndLogError((err != CIPR::Result::OK), UNKNOWN_ERROR, "Call Context::getCapabilities() fail, ret:%d", ret);
 
     LOG1("%s: capability.version:%d", __func__, cap.version);
     LOG1("%s: capability.driver:%s", __func__, cap.driver);
@@ -1355,12 +1294,10 @@ int PGCommon::getManifest(int pgId)
 
         CIPR::Result ret = mCtx->getManifest(i, &size, nullptr);
         if (ret != CIPR::Result::OK) continue;
-        CheckAndLogError((size == 0), UNKNOWN_ERROR,
-                         "%s, the manifest size is 0", __func__);
+        CheckAndLogError((size == 0), UNKNOWN_ERROR, "%s, the manifest size is 0", __func__);
 
         manifestBuffer = createUserPtrCiprBuffer(size);
-        CheckAndLogError(!manifestBuffer, NO_MEMORY,
-                         "%s, call createUserPtrCiprBuffer fail", __func__);
+        CheckAndLogError(!manifestBuffer, NO_MEMORY, "%s, call createUserPtrCiprBuffer fail", __func__);
 
         void* manifest = getCiprBufferPtr(manifestBuffer);
 
@@ -1394,8 +1331,7 @@ int PGCommon::getManifest(int pgId)
         delete manifestBuffer;
     }
 
-    CheckAndLogError((i == mPGCount), BAD_VALUE,
-                     "%s, Can't found available pg: %d", __func__, pgId);
+    CheckAndLogError((i == mPGCount), BAD_VALUE, "%s, Can't found available pg: %d", __func__, pgId);
 
     return OK;
 }
@@ -1457,8 +1393,7 @@ void* PGCommon::getCiprBufferPtr(CIPR::Buffer* buffer)
 
     void* ptr = nullptr;
     CIPR::Result ret = buffer->getMemoryCpuPtr(&ptr);
-    CheckAndLogError((ret != CIPR::Result::OK), nullptr,
-                     "%s, call Buffer::getMemoryCpuPtr() fail", __func__);
+    CheckAndLogError((ret != CIPR::Result::OK), nullptr, "%s, call Buffer::getMemoryCpuPtr() fail", __func__);
 
     return ptr;
 }
@@ -1469,16 +1404,14 @@ int PGCommon::getCiprBufferSize(CIPR::Buffer* buffer)
 
     int size = 0;
     CIPR::Result ret = buffer->getMemorySize(&size);
-    CheckAndLogError((ret != CIPR::Result::OK), NO_MEMORY,
-                     "%s, call Buffer::getMemorySize() fail", __func__);
+    CheckAndLogError((ret != CIPR::Result::OK), NO_MEMORY, "%s, call Buffer::getMemorySize() fail", __func__);
 
     return size;
 }
 
 CIPR::Buffer* PGCommon::registerUserBuffer(int size, void* ptr, bool flush)
 {
-    CheckAndLogError((size <= 0 || ptr == nullptr), nullptr,
-                     "Invalid parameter: size=%d, ptr=%p", size, ptr);
+    CheckAndLogError((size <= 0 || ptr == nullptr), nullptr, "Invalid parameter: size=%d, ptr=%p", size, ptr);
 
     for (auto it = mBuffers.begin(); it != mBuffers.end(); ++it) {
         if (ptr == it->userPtr) {
@@ -1497,8 +1430,7 @@ CIPR::Buffer* PGCommon::registerUserBuffer(int size, void* ptr, bool flush)
     }
 
     CIPR::Buffer* ciprBuf = createUserPtrCiprBuffer(size, ptr, flush);
-    CheckAndLogError(!ciprBuf, nullptr, "Create cipr buffer for %p failed",
-                     ptr);
+    CheckAndLogError(!ciprBuf, nullptr, "Create cipr buffer for %p failed", ptr);
 
     CiprBufferMapping bufMap;
     bufMap.userPtr = ptr;
@@ -1510,8 +1442,7 @@ CIPR::Buffer* PGCommon::registerUserBuffer(int size, void* ptr, bool flush)
 
 CIPR::Buffer* PGCommon::registerUserBuffer(int size, int fd, bool flush)
 {
-    CheckAndLogError((size <= 0 || fd < 0), nullptr,
-                     "Invalid parameter: size: %d, fd: %d", size, fd);
+    CheckAndLogError((size <= 0 || fd < 0), nullptr, "Invalid parameter: size: %d, fd: %d", size, fd);
 
     for (auto it = mBuffers.begin(); it != mBuffers.end(); ++it) {
         if (fd == it->userFd) {
@@ -1530,8 +1461,7 @@ CIPR::Buffer* PGCommon::registerUserBuffer(int size, int fd, bool flush)
     }
 
     CIPR::Buffer* ciprBuf = createDMACiprBuffer(size, fd, flush);
-    CheckAndLogError(!ciprBuf, nullptr, "Create cipr buffer for fd %d failed",
-                     fd);
+    CheckAndLogError(!ciprBuf, nullptr, "Create cipr buffer for fd %d failed", fd);
 
     CiprBufferMapping bufMap;
     bufMap.userFd = fd;
@@ -1550,8 +1480,7 @@ void PGCommon::dumpTerminalPyldAndDesc(int pgId, long sequence, ia_css_process_g
     snprintf(fileName, (MAX_NAME_LEN - 1), "hal_pg_%d_%ld.bin", pgId, sequence);
 
     FILE *fp = fopen (fileName, "w+");
-    CheckAndLogError(fp == nullptr, VOID_VALUE, "open dump file %s failed",
-                     fileName);
+    CheckAndLogError(fp == nullptr, VOID_VALUE, "open dump file %s failed", fileName);
     const unsigned int* printPtr = (const unsigned int*)pgGroup;
     fprintf(fp, "::pg dump size %d(0x%x)\n", pgSize, pgSize);
     for (unsigned int i = 0; i < pgSize / sizeof(*printPtr); i++) {

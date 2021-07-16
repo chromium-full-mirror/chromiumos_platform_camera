@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2020 Intel Corporation.
+ * Copyright (C) 2018-2021 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -149,8 +149,7 @@ void SyncManager::updateSyncCamNum()
 
 bool SyncManager::vcSynced(int vc)
 {
-    CheckAndLogError(vc >= MAX_CAMERA_NUMBER, false, "%s: vc %d error!",
-                     __func__, vc);
+    CheckAndLogError(vc >= MAX_CAMERA_NUMBER, false, "%s: vc %d error!", __func__, vc);
 
     AutoMutex l(mVcSyncLock);
     int count = mVcSyncCount[vc];
@@ -184,8 +183,7 @@ bool SyncManager::vcSynced(int vc)
 
 void SyncManager::updateVcSyncCount(int vc)
 {
-    CheckAndLogError(vc >= MAX_CAMERA_NUMBER, VOID_VALUE, "%s: vc %d error!",
-                     __func__, vc);
+    CheckAndLogError(vc >= MAX_CAMERA_NUMBER, VOID_VALUE, "%s: vc %d error!", __func__, vc);
     AutoMutex l(mVcSyncLock);
     mVcSyncCount[vc] = (mVcSyncCount[vc] + 1) % (max_vc_sync_count + 1);
 };

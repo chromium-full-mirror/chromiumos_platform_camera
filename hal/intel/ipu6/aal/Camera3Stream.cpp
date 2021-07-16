@@ -128,8 +128,7 @@ void Camera3Stream::drainRequest() {
     std::shared_ptr<CaptureResult> result = captureResult->second;
     uint32_t frameNumber = captureResult->first;
 
-    CheckAndLogError(result == nullptr, VOID_VALUE,
-                     "%s, capture result is nullptr", __func__);
+    CheckAndLogError(result == nullptr, VOID_VALUE, "%s, capture result is nullptr", __func__);
     buffer_handle_t handle = result->handle;
     if (mBuffers.find(handle) != mBuffers.end() && mBuffers[handle] != nullptr) {
         std::shared_ptr<Camera3Buffer> ccBuf = mBuffers[handle];
@@ -246,8 +245,7 @@ bool Camera3Stream::threadLoop() {
                 }
             }
 
-            CheckAndLogError(!halOutput->cam3Buf, true,
-                             "can't identify the buffer source");
+            CheckAndLogError(!halOutput->cam3Buf, true, "can't identify the buffer source");
             halOutput->parameter = parameter;
             halOutput->cam3Buf->setTimeStamp(buffer->timestamp);
         }
@@ -326,8 +324,8 @@ bool Camera3Stream::threadLoop() {
             icamera::status_t status =
                 mPostProcessor->doPostProcessing(outCam3Buf, parameter, ccBuf);
             CheckAndLogError(status != icamera::OK, true,
-                             "@%s, doPostProcessing fails, mPostProcessType:%d",
-                             __func__, mPostProcessType);
+                             "@%s, doPostProcessing fails, mPostProcessType:%d", __func__,
+                             mPostProcessType);
         } else if (outCam3Buf && outCam3Buf->data() != ccBuf->data()) {
             MEMCPY_S(ccBuf->data(), ccBuf->size(), outCam3Buf->data(), outCam3Buf->size());
         }
@@ -344,10 +342,9 @@ bool Camera3Stream::threadLoop() {
         if (mInputPostProcessType != icamera::POST_PROCESS_NONE) {
             icamera::status_t status =
                 mInputPostProcessor->doPostProcessing(inputCam3Buf, parameter, ccBuf);
-            CheckAndLogError(
-                status != icamera::OK, true,
-                "@%s, doPostProcessing fails, mInputPostProcessType:%d",
-                __func__, mInputPostProcessType);
+            CheckAndLogError(status != icamera::OK, true,
+                             "@%s, doPostProcessing fails, mInputPostProcessType:%d", __func__,
+                             mInputPostProcessType);
         } else {
             MEMCPY_S(ccBuf->data(), ccBuf->size(), inputCam3Buf->data(), inputCam3Buf->size());
         }
@@ -418,16 +415,14 @@ int Camera3Stream::processRequest(const std::shared_ptr<Camera3Buffer>& inputCam
 
     {
         std::unique_lock<std::mutex> lock(mLock);
-        CheckAndLogError(mBuffers.find(handle) != mBuffers.end(),
-                         icamera::BAD_VALUE, "handle %p is duplicated!",
-                         handle);
+        CheckAndLogError(mBuffers.find(handle) != mBuffers.end(), icamera::BAD_VALUE,
+                         "handle %p is duplicated!", handle);
 
         mBuffers[handle] = ccBuf;
     }
 
     icamera::status_t status = ccBuf->init(&outputBuffer, mCameraId);
-    CheckAndLogError(status != icamera::OK, icamera::BAD_VALUE,
-                     "Failed to init CameraBuffer");
+    CheckAndLogError(status != icamera::OK, icamera::BAD_VALUE, "Failed to init CameraBuffer");
     status = ccBuf->waitOnAcquireFence();
     CheckAndLogError(status != icamera::OK, icamera::BAD_VALUE, "Failed to sync CameraBuffer");
     if (isLockUserBufferNeeded(inputCam3Buf)) {
@@ -576,8 +571,7 @@ bool Camera3Stream::fetchRequestBuffers(icamera::camera_buffer_t* buffer, uint32
         LOG1("[%p]@%s get buffer from pool", this, __func__);
         if (mBufferPool) {
             buf = mBufferPool->acquireBuffer();
-            CheckAndLogError(buf == nullptr, false,
-                             "no available internal buffer");
+            CheckAndLogError(buf == nullptr, false, "no available internal buffer");
             // using buffer pool, store the buffer, then can return it when frame done
             mQueuedBuffer[frameNumber] = buf;
         } else {

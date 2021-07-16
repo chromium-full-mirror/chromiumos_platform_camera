@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2020 Intel Corporation
+ * Copyright (C) 2015-2021 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,10 +80,8 @@ int IntelAEStateMachine::processState(uint8_t controlMode, uint8_t sceneMode,
  * \param[IN] results: cameraMetadata to write dynamic tags.
  */
 int IntelAEStateMachine::processResult(bool aeConverged, android::CameraMetadata* result) {
-    CheckAndLogError(!mCurrentAeMode, icamera::UNKNOWN_ERROR,
-                     "Invalid AE mode");
-    CheckAndLogError(!result, icamera::UNKNOWN_ERROR, "%s, result is nullptr",
-                     __func__);
+    CheckAndLogError(!mCurrentAeMode, icamera::UNKNOWN_ERROR, "Invalid AE mode");
+    CheckAndLogError(!result, icamera::UNKNOWN_ERROR, "%s, result is nullptr", __func__);
 
     return mCurrentAeMode->processResult(aeConverged, result);
 }
@@ -155,8 +153,7 @@ int IntelAEModeOff::processState(uint8_t controlMode, uint8_t sceneMode,
 
 int IntelAEModeOff::processResult(bool aeConverged, android::CameraMetadata* result) {
     UNUSED(aeConverged);
-    CheckAndLogError(!result, icamera::UNKNOWN_ERROR, "%s, result is nullptr",
-                     __func__);
+    CheckAndLogError(!result, icamera::UNKNOWN_ERROR, "%s, result is nullptr", __func__);
     LOG2("%s", __func__);
 
     mCurrentAeState = ANDROID_CONTROL_AE_STATE_INACTIVE;
@@ -223,8 +220,7 @@ int IntelAEModeAuto::processState(uint8_t controlMode, uint8_t sceneMode,
 }
 
 int IntelAEModeAuto::processResult(bool aeConverged, android::CameraMetadata* result) {
-    CheckAndLogError(!result, icamera::UNKNOWN_ERROR, "%s, result is nullptr",
-                     __func__);
+    CheckAndLogError(!result, icamera::UNKNOWN_ERROR, "%s, result is nullptr", __func__);
     switch (mCurrentAeState) {
         case ANDROID_CONTROL_AE_STATE_LOCKED:
             // do nothing

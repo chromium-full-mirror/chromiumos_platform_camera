@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2020 Intel Corporation
+ * Copyright (C) 2016-2021 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,8 +39,7 @@ status_t JpegMaker::setupExifWithMetaData(int bufWidth, int bufHeight, const Par
     status_t status = OK;
 
     status = processJpegSettings(parameter, metaData);
-    CheckAndLogError(status != OK, status,
-                     "@%s: Process settngs for JPEG failed!", __func__);
+    CheckAndLogError(status != OK, status, "@%s: Process settngs for JPEG failed!", __func__);
 
     mExifMaker->initialize(bufWidth, bufHeight);
     mExifMaker->pictureTaken(metaData);
@@ -87,15 +86,12 @@ status_t JpegMaker::processExifSettings(const Parameters& params, ExifMetaData* 
 
 /* copy exif data into output buffer */
 void JpegMaker::writeExifData(EncodePackage* package) {
-    CheckAndLogError(package == nullptr, VOID_VALUE, "@%s, package is nullptr",
-                     __func__);
+    CheckAndLogError(package == nullptr, VOID_VALUE, "@%s, package is nullptr", __func__);
 
     if (package->exifDataSize == 0) return;
 
-    CheckAndLogError(!package->outputData, VOID_VALUE,
-                     "@%s, outputData is nullptr", __func__);
-    CheckAndLogError(!package->exifData, VOID_VALUE, "@%s, exifData is nullptr",
-                     __func__);
+    CheckAndLogError(!package->outputData, VOID_VALUE, "@%s, outputData is nullptr", __func__);
+    CheckAndLogError(!package->exifData, VOID_VALUE, "@%s, exifData is nullptr", __func__);
 
     unsigned int jSOISize = sizeof(mJpegMarkerSOI);
     unsigned char* jpegOut = reinterpret_cast<unsigned char*>(package->outputData);
@@ -119,8 +115,7 @@ status_t JpegMaker::processJpegSettings(const Parameters& params, ExifMetaData* 
     LOG2("@%s:", __func__);
     status_t status = OK;
 
-    CheckAndLogError(!metaData, UNKNOWN_ERROR,
-                     "MetaData struct not intialized");
+    CheckAndLogError(!metaData, UNKNOWN_ERROR, "MetaData struct not intialized");
 
     // make jpeg with thumbnail or not
     camera_resolution_t thumbSize = {0};

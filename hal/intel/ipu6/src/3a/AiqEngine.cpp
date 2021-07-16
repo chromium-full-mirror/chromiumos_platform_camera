@@ -297,8 +297,7 @@ AiqEngine::AiqState AiqEngine::prepareInputParam(AiqStatistics* aiqStats)
         ia_aiq_exposure_sensor_descriptor sensorDescriptor = {};
         ia_aiq_frame_params frameParams = {};
         ret = mSensorManager->getSensorInfo(frameParams, sensorDescriptor);
-        CheckAndLogError((ret != OK), AIQ_STATE_ERROR,
-                         "Get sensor info failed:%d", ret);
+        CheckAndLogError((ret != OK), AIQ_STATE_ERROR, "Get sensor info failed:%d", ret);
         mAiqCore->setSensorInfo(frameParams, sensorDescriptor);
     }
 

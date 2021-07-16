@@ -319,8 +319,7 @@ void ResultProcessor::clearRawBufferInfoMap() {
 }
 
 void ResultProcessor::checkAndChangeRawbufferInfo(long* sequence, uint64_t* timestamp) {
-    CheckAndLogError(!sequence || !timestamp, VOID_VALUE,
-                     "invilid input parameter!");
+    CheckAndLogError(!sequence || !timestamp, VOID_VALUE, "invilid input parameter!");
 
     std::lock_guard<std::mutex> lock(mmOpaqueRawInfoMapLock);
     if (mOpaqueRawInfoMap.empty()) return;
@@ -462,8 +461,7 @@ MetadataMemory* ResultProcessor::acquireMetadataMemory() {
 }
 
 void ResultProcessor::releaseMetadataMemory(MetadataMemory* metaMem) {
-    CheckAndLogError(metaMem == nullptr, VOID_VALUE, "%s: null metaMem!",
-                     __func__);
+    CheckAndLogError(metaMem == nullptr, VOID_VALUE, "%s: null metaMem!", __func__);
     mMetadataVector.push_back(metaMem);
 }
 

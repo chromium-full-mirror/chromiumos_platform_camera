@@ -53,8 +53,8 @@ PrivateStream::PrivateStream(int cameraId, const icamera::stream_t& halStream,
     // Create the buffer pool with DMA handle buffer
     ret = mBufferPool->createBufferPool(mCameraId, MAX_PRIVATE_STREAM_BUF_NUM, stream.width,
                                         stream.height, stream.format, stream.usage);
-    CheckAndLogError(ret != icamera::OK, VOID_VALUE, "[%p]@%s Failed to createBufferPool.",
-                     this, __func__);
+    CheckAndLogError(ret != icamera::OK, VOID_VALUE, "[%p]@%s Failed to createBufferPool.", this,
+                     __func__);
 
     mInitialized = true;
 }

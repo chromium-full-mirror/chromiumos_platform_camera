@@ -53,10 +53,9 @@ DeviceBase::DeviceBase(int cameraId, VideoNodeType nodeType, VideoNodeDirection 
 
     std::string devName;
     int ret = PlatformData::getDevNameByType(cameraId, nodeType, devName);
-    CheckAndLogError(
-        ret != OK, VOID_VALUE,
-        "Failed to get video device name for cameraId: %d, node type: %d",
-        cameraId, nodeType);
+    CheckAndLogError(ret != OK, VOID_VALUE,
+                     "Failed to get video device name for cameraId: %d, node type: %d",
+                     cameraId, nodeType);
 
     mDevice = new V4L2VideoNode(devName);
 }
@@ -103,8 +102,7 @@ int DeviceBase::configure(Port port, const stream_t& config, uint32_t bufferNum)
     mMaxBufferNumber = bufferNum;
 
     int ret = createBufferPool(config);
-    CheckAndLogError(ret != OK, NO_MEMORY, "Failed to create buffer pool:%d",
-                     ret);
+    CheckAndLogError(ret != OK, NO_MEMORY, "Failed to create buffer pool:%d", ret);
 
     resetBuffers();
 
@@ -142,9 +140,7 @@ int DeviceBase::queueBuffer(long sequence)
     buffer = mPendingBuffers.front();
 
     int ret = onQueueBuffer(sequence, buffer);
-    CheckAndLogError(ret != OK, ret,
-                     "Device:%s failed to preprocess the buffer with ret=%d",
-                     mName, ret);
+    CheckAndLogError(ret != OK, ret, "Device:%s failed to preprocess the buffer with ret=%d", mName, ret);
 
     ret = mDevice->PutFrame(&buffer->getV4L2Buffer());
 
@@ -161,8 +157,7 @@ int DeviceBase::dequeueBuffer()
     LOG2("%s, camera id:%d device:%s", __func__, mCameraId, mName);
 
     shared_ptr<CameraBuffer> camBuffer = getFirstDeviceBuffer();
-    CheckAndLogError(!camBuffer, UNKNOWN_ERROR, "No buffer in device:%s.",
-                     mName);
+    CheckAndLogError(!camBuffer, UNKNOWN_ERROR, "No buffer in device:%s.", mName);
 
     int ret = OK;
     int targetIndex = camBuffer->getIndex();
@@ -170,8 +165,7 @@ int DeviceBase::dequeueBuffer()
     V4L2Buffer &vbuf = camBuffer->getV4L2Buffer();
     int actualIndex = mDevice->GrabFrame(&vbuf);
 
-    CheckAndLogError(actualIndex < 0, BAD_VALUE, "Device grabFrame failed:%d",
-                     actualIndex);
+    CheckAndLogError(actualIndex < 0, BAD_VALUE, "Device grabFrame failed:%d", actualIndex);
     if (actualIndex != targetIndex) {
         LOGE("%s, CamBuf index isn't same with index used by kernel", __func__);
         ret = BAD_VALUE;
@@ -304,8 +298,7 @@ int MainDevice::createBufferPool(const stream_t& config)
     if (PlatformData::isCSIBackEndCapture(mCameraId)) {
         std::string csiBEDeviceNodeName;
         int ret = PlatformData::getDevNameByType(mCameraId, VIDEO_GENERIC, csiBEDeviceNodeName);
-        CheckAndLogError(ret != OK, ret,
-                         "failed to get CSI-BE device node name, ret=%d", ret);
+        CheckAndLogError(ret != OK, ret, "failed to get CSI-BE device node name, ret=%d", ret);
         LOG1("csiBEDeviceNodeName is %s", csiBEDeviceNodeName.c_str());
 
         V4L2Subdevice* csiBESubDev = V4l2DeviceFactory::getSubDev(mCameraId, csiBEDeviceNodeName);
@@ -361,8 +354,7 @@ int MainDevice::createBufferPool(const stream_t& config)
     if (setWithHeaderCtl) {
         V4L2Subdevice* receiverSubDev = V4l2DeviceFactory::getSubDev(mCameraId, subDeviceNodeName);
         int ret = receiverSubDev->SetControl(V4L2_CID_IPU_STORE_CSI2_HEADER, withHeader);
-        CheckAndLogError(ret != OK, ret,
-                         "set v4l2 store csi2 header failed, ret=%d", ret);
+        CheckAndLogError(ret != OK, ret, "set v4l2 store csi2 header failed, ret=%d", ret);
     }
 
     v4l2fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
@@ -380,8 +372,7 @@ int MainDevice::createBufferPool(const stream_t& config)
     }
 
     CheckAndLogError(calcBufferSize < realBufferSize, BAD_VALUE,
-                     "realBufferSize %d is larger than calcBufferSize %d.",
-                     realBufferSize, calcBufferSize);
+        "realBufferSize %d is larger than calcBufferSize %d.", realBufferSize, calcBufferSize);
 
     LOG2("@%s: compression:%d, realBufSize:%d, calcBufSize:%d",
                 __func__, isISYSCompression, realBufferSize, calcBufferSize);
@@ -390,8 +381,7 @@ int MainDevice::createBufferPool(const stream_t& config)
     int bufNum = mDevice->SetupBuffers(mMaxBufferNumber, true,
                                        static_cast<enum v4l2_memory>(config.memType), &bufs);
 
-    CheckAndLogError(bufNum < 0, BAD_VALUE, "request buffers failed return=%d",
-                     bufNum);
+    CheckAndLogError(bufNum < 0, BAD_VALUE, "request buffers failed return=%d", bufNum);
 
     return OK;
 }

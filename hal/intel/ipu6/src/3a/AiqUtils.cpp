@@ -375,8 +375,7 @@ void AiqUtils::applyTonemapREC709(cca::cca_gbce_params* results) {
 void AiqUtils::applyTonemapCurve(const camera_tonemap_curves_t& curves,
                                  cca::cca_gbce_params* results) {
     CheckAndLogError(!results, VOID_VALUE, "gbce result nullptr");
-    CheckAndLogError(results->gamma_lut_size <= 1, VOID_VALUE,
-                     "wrong gamma_lut_size");
+    CheckAndLogError(results->gamma_lut_size <= 1, VOID_VALUE, "wrong gamma_lut_size");
     CheckAndLogError(curves.rSize != curves.gSize, VOID_VALUE, "wrong rSize");
     CheckAndLogError(curves.bSize != curves.gSize, VOID_VALUE, "wrong bSize");
 

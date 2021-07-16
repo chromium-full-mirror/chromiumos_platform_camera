@@ -92,8 +92,7 @@ SensorHwCtrl* SensorHwCtrl::createSensorCtrl(int cameraId)
 int SensorHwCtrl::getActivePixelArraySize(int &width, int &height, int &pixelCode)
 {
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL2);
-    CheckAndLogError(!mPixelArraySubdev, NO_INIT,
-                     "pixel array sub device is not set");
+    CheckAndLogError(!mPixelArraySubdev, NO_INIT, "pixel array sub device is not set");
 
     int status = mPixelArraySubdev->GetPadFormat(0, &width, &height, &pixelCode);
     mCropWidth = width;
@@ -106,8 +105,7 @@ int SensorHwCtrl::getActivePixelArraySize(int &width, int &height, int &pixelCod
 int SensorHwCtrl::getPixelRate(int &pixelRate)
 {
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL2);
-    CheckAndLogError(!mPixelArraySubdev, NO_INIT,
-                     "pixel array sub device is not set");
+    CheckAndLogError(!mPixelArraySubdev, NO_INIT, "pixel array sub device is not set");
 
     int ret = mPixelArraySubdev->GetControl(V4L2_CID_PIXEL_RATE, &pixelRate);
 
@@ -119,8 +117,7 @@ int SensorHwCtrl::getPixelRate(int &pixelRate)
 int SensorHwCtrl::setTestPatternMode(int32_t testPatternMode)
 {
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL2);
-    CheckAndLogError(!mPixelArraySubdev, NO_INIT,
-                     "pixel array sub device is not set");
+    CheckAndLogError(!mPixelArraySubdev, NO_INIT, "pixel array sub device is not set");
 
     LOG2("@%s, testPatternMode: %d", __func__, testPatternMode);
     return mPixelArraySubdev->SetControl(V4L2_CID_TEST_PATTERN, testPatternMode);
@@ -129,10 +126,9 @@ int SensorHwCtrl::setTestPatternMode(int32_t testPatternMode)
 int SensorHwCtrl::setExposure(const vector<int>& coarseExposures, const vector<int>& fineExposures)
 {
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL2);
-    CheckAndLogError(!mPixelArraySubdev, NO_INIT,
-                     "pixel array sub device is not set");
-    CheckAndLogError((coarseExposures.empty() || fineExposures.empty()),
-                     BAD_VALUE, "No exposure data!");
+    CheckAndLogError(!mPixelArraySubdev, NO_INIT, "pixel array sub device is not set");
+    CheckAndLogError((coarseExposures.empty() || fineExposures.empty()), BAD_VALUE,
+                     "No exposure data!");
 
     LOG2("%s coarseExposure=%d fineExposure=%d", __func__, coarseExposures[0], fineExposures[0]);
     LOG2("SENSORCTRLINFO: exposure_value=%d", coarseExposures[0]);
@@ -142,8 +138,7 @@ int SensorHwCtrl::setExposure(const vector<int>& coarseExposures, const vector<i
 int SensorHwCtrl::setAnalogGains(const vector<int>& analogGains)
 {
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL2);
-    CheckAndLogError(!mPixelArraySubdev, NO_INIT,
-                     "pixel array sub device is not set");
+    CheckAndLogError(!mPixelArraySubdev, NO_INIT, "pixel array sub device is not set");
     CheckAndLogError(analogGains.empty(), BAD_VALUE, "No analog gain data!");
 
     LOG2("%s analogGain=%d", __func__, analogGains[0]);
@@ -153,8 +148,7 @@ int SensorHwCtrl::setAnalogGains(const vector<int>& analogGains)
 int SensorHwCtrl::setDigitalGains(const vector<int>& digitalGains)
 {
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL2);
-    CheckAndLogError(!mPixelArraySubdev, NO_INIT,
-                     "pixel array sub device is not set");
+    CheckAndLogError(!mPixelArraySubdev, NO_INIT, "pixel array sub device is not set");
     CheckAndLogError(digitalGains.empty(), BAD_VALUE, "No digital gain data!");
 
     LOG2("%s digitalGain=%d", __func__, digitalGains[0]);
@@ -202,8 +196,7 @@ int SensorHwCtrl::setFrameLengthLines(int fll)
 int SensorHwCtrl::setFrameDuration(int llp, int fll)
 {
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL2);
-    CheckAndLogError(!mPixelArraySubdev, NO_INIT,
-                     "pixel array sub device is not set");
+    CheckAndLogError(!mPixelArraySubdev, NO_INIT, "pixel array sub device is not set");
 
     int status = OK;
     LOG2("@%s, llp:%d, fll:%d", __func__, llp, fll);
@@ -261,8 +254,7 @@ int SensorHwCtrl::getFrameLengthLines(int &fll)
 int SensorHwCtrl::getFrameDuration(int &llp, int &fll)
 {
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL2);
-    CheckAndLogError(!mPixelArraySubdev, NO_INIT,
-                     "pixel array sub device is not set");
+    CheckAndLogError(!mPixelArraySubdev, NO_INIT, "pixel array sub device is not set");
 
     int status = getLineLengthPixels(llp);
 
@@ -294,14 +286,12 @@ int SensorHwCtrl::getVBlank(int &vblank)
 int SensorHwCtrl::getExposureRange(int &exposureMin, int &exposureMax, int &exposureStep)
 {
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL2);
-    CheckAndLogError(!mPixelArraySubdev, NO_INIT,
-                     "pixel array sub device is not set");
+    CheckAndLogError(!mPixelArraySubdev, NO_INIT, "pixel array sub device is not set");
 
     v4l2_queryctrl exposure = {};
     exposure.id = V4L2_CID_EXPOSURE;
     int status = mPixelArraySubdev->QueryControl(&exposure);
-    CheckAndLogError(status != OK, status,
-                     "Couldn't get exposure Range status:%d", status);
+    CheckAndLogError(status != OK, status, "Couldn't get exposure Range status:%d", status);
 
     exposureMin = exposure.minimum;
     exposureMax = exposure.maximum;

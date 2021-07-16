@@ -210,8 +210,8 @@ int AiqInitData::getCameraModuleFromEEPROM(const std::string& nvmPath, std::stri
     struct CameraModuleInfo cameraModuleInfo;
     CLEAR(cameraModuleInfo);
     FILE* eepromFile = fopen(nvmPath.c_str(), "rb");
-    CheckAndLogError(!eepromFile, UNKNOWN_ERROR,
-                     "Failed to open EEPROM file in %s", nvmPath.c_str());
+    CheckAndLogError(!eepromFile, UNKNOWN_ERROR, "Failed to open EEPROM file in %s",
+                     nvmPath.c_str());
 
     // file size should be larger than CAMERA_MODULE_INFO_OFFSET
     fseek(eepromFile, 0, SEEK_END);
@@ -249,8 +249,7 @@ int AiqInitData::getCameraModuleFromEEPROM(const std::string& nvmPath, std::stri
  */
 int AiqInitData::findConfigFile(const std::string& camCfgDir, std::string* cpfPathName) {
     LOG1("@%s, cpfPathName:%p", __func__, cpfPathName);
-    CheckAndLogError(!cpfPathName, BAD_VALUE, "@%s, cpfPathName is nullptr",
-                     __func__);
+    CheckAndLogError(!cpfPathName, BAD_VALUE, "@%s, cpfPathName is nullptr", __func__);
 
     std::vector<string> configFilePath;
     configFilePath.push_back("./");
@@ -278,18 +277,16 @@ int AiqInitData::findConfigFile(const std::string& camCfgDir, std::string* cpfPa
 
 int AiqInitData::getCpf(TuningMode mode, ia_binary_data* cpfData) {
     LOG1("@%s mode = %d", __func__, mode);
-    CheckAndLogError(cpfData == nullptr, BAD_VALUE, "@%s, cpfData is nullptr",
-                     __func__);
+    CheckAndLogError(cpfData == nullptr, BAD_VALUE, "@%s, cpfData is nullptr", __func__);
 
-    CheckAndLogError(mCpf.find(mode) == mCpf.end(), NO_INIT,
-                     "@%s, no aiqb, mode = %d", __func__, mode);
+    CheckAndLogError(mCpf.find(mode) == mCpf.end(), NO_INIT, "@%s, no aiqb, mode = %d", __func__,
+                     mode);
 
     AiqData* cpf = mCpf[mode];
     CheckAndLogError(cpf == nullptr, NO_INIT, "@%s, cpf is nullptr", __func__);
 
     auto dataPtr = cpf->getData();
-    CheckAndLogError(dataPtr == nullptr, BAD_VALUE,
-                     "@%s, cpf->getData() is nullptr", __func__);
+    CheckAndLogError(dataPtr == nullptr, BAD_VALUE, "@%s, cpf->getData() is nullptr", __func__);
 
     *cpfData = *dataPtr;
 

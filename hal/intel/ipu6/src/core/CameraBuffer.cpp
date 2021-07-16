@@ -119,8 +119,7 @@ std::shared_ptr<CameraBuffer> CameraBuffer::create(int cameraId, int usage, int 
 {
     std::shared_ptr<CameraBuffer> camBuffer = std::make_shared<CameraBuffer>(cameraId, usage, memory, size, index, srcFmt);
 
-    CheckAndLogError(!camBuffer, nullptr, "@%s: fail to alloc CameraBuffer",
-                     __func__);
+    CheckAndLogError(!camBuffer, nullptr, "@%s: fail to alloc CameraBuffer", __func__);
 
     camBuffer->setUserBufferInfo(srcFmt, srcWidth, srcHeight);
 
@@ -152,8 +151,7 @@ void CameraBuffer::setUserBufferInfo(int format, int width, int height, void *us
 //Called when a buffer is from the application
 void CameraBuffer::setUserBufferInfo(camera_buffer_t *ubuffer)
 {
-    CheckAndLogError(ubuffer == nullptr, VOID_VALUE, "%s: ubuffer is nullptr",
-                     __func__);
+    CheckAndLogError(ubuffer == nullptr, VOID_VALUE, "%s: ubuffer is nullptr", __func__);
 
     if (mU->flags & BUFFER_FLAG_INTERNAL) delete mU;
     mU = ubuffer;
@@ -248,8 +246,7 @@ int CameraBuffer::allocateUserPtr()
     void* buffer = nullptr;
     for (int i = 0; i < mNumPlanes; ++i) {
         int ret = posix_memalign(&buffer, getpagesize(), mV.Length(i));
-        CheckAndLogError(ret != 0, -1, "%s, posix_memalign fails, ret:%d",
-                         __func__, ret);
+        CheckAndLogError(ret != 0, -1, "%s, posix_memalign fails, ret:%d", __func__, ret);
         mV.SetUserptr(reinterpret_cast<uintptr_t>(buffer), i);
         mMmapAddrs[i] = buffer;
     }
@@ -287,8 +284,7 @@ int CameraBuffer::allocateMmap(V4L2VideoNode* dev)
 
 void* CameraBuffer::getAddr(int plane)
 {
-    CheckAndLogError(plane < 0 || plane >= mNumPlanes, nullptr,
-                     "Wrong plane number %d", plane);
+    CheckAndLogError(plane < 0 || plane >= mNumPlanes, nullptr, "Wrong plane number %d", plane);
 
     switch (mV.Memory()) {
         case V4L2_MEMORY_MMAP:
@@ -304,7 +300,7 @@ void* CameraBuffer::getAddr(int plane)
 void CameraBuffer::setAddr(void *addr, int plane)
 {
     CheckAndLogError(plane < 0 || plane >= mNumPlanes, VOID_VALUE,
-                     "Wrong plane number %d", plane);
+               "Wrong plane number %d", plane);
 
     switch (mV.Memory()) {
         case V4L2_MEMORY_MMAP:
@@ -330,8 +326,7 @@ void CameraBuffer::freeMmap()
         }
         if (mMmapAddrs[i]) {
             ret = ::munmap(mMmapAddrs[i], mV.Length(i));
-            CheckAndLogError(ret != 0, VOID_VALUE, "failed to munmap buffer %d",
-                             i);
+            CheckAndLogError(ret != 0, VOID_VALUE, "failed to munmap buffer %d", i);
             mMmapAddrs[i] = nullptr;
         }
     }

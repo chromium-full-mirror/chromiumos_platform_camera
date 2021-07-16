@@ -82,12 +82,12 @@ typedef ::cros::V4L2Format V4L2Format;
  */
 #define VOID_VALUE
 #define CheckAndLogError(condition, err_code, err_msg, args...) \
-    do {                                                        \
-        if (condition) {                                        \
-            LOGE(err_msg, ##args);                              \
-            return err_code;                                    \
-        }                                                       \
-    } while (0)
+            do { \
+                if (condition) { \
+                    LOGE(err_msg, ##args);\
+                    return err_code;\
+                }\
+            } while (0)
 
 #define CheckAndClean(condition, err_code, clean, err_msg, args...) \
             do { \

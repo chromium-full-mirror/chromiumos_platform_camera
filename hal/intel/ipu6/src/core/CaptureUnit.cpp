@@ -123,15 +123,13 @@ int CaptureUnit::createDevices()
     // Open and configure the device. The stream and port that are used by the device is
     // decided by whether consumer has provided such info, use the default one if not.
     int ret = mDevice->openDevice();
-    CheckAndLogError(ret != OK, ret, "Open device(%s) failed:%d",
-                     mDevice->getName(), ret);
+    CheckAndLogError(ret != OK, ret, "Open device(%s) failed:%d", mDevice->getName(), ret);
 
     bool hasPort = mOutputFrameInfo.find(portOfMainDevice) != mOutputFrameInfo.end();
     const stream_t& stream = hasPort ? mOutputFrameInfo.at(portOfMainDevice) : kDefaultStream;
 
     ret = mDevice->configure(hasPort ? portOfMainDevice : kDefaultPort, stream, mMaxBufferNum);
-    CheckAndLogError(ret != OK, ret, "Configure device(%s) failed:%d",
-                     mDevice->getName(), ret);
+    CheckAndLogError(ret != OK, ret, "Configure device(%s) failed:%d", mDevice->getName(), ret);
 
     return OK;
 }
@@ -168,8 +166,8 @@ int CaptureUnit::streamOn()
 
     if (mDevice) {
         int ret = mDevice->streamOn();
-        CheckAndLogError(ret < 0, INVALID_OPERATION,
-                         "Device:%s stream on failed.", mDevice->getName());
+        CheckAndLogError(ret < 0, INVALID_OPERATION, "Device:%s stream on failed.",
+                         mDevice->getName());
     }
 
     return OK;
@@ -278,12 +276,9 @@ int CaptureUnit::configure(const map<Port, stream_t>& outputFrames,
 {
     PERF_CAMERA_ATRACE();
 
-    CheckAndLogError(outputFrames.empty(), BAD_VALUE,
-                     "No frame info configured.");
-    CheckAndLogError(mState != CAPTURE_CONFIGURE && mState != CAPTURE_INIT &&
-                         mState != CAPTURE_STOP,
-                     INVALID_OPERATION, "@%s: Configure in wrong state %d",
-                     __func__, mState);
+    CheckAndLogError(outputFrames.empty(), BAD_VALUE, "No frame info configured.");
+    CheckAndLogError(mState != CAPTURE_CONFIGURE && mState != CAPTURE_INIT && mState != CAPTURE_STOP,
+          INVALID_OPERATION, "@%s: Configure in wrong state %d", __func__, mState);
 
     Port port = findDefaultPort(outputFrames);
     const stream_t& mainStream = outputFrames.at(port);
@@ -336,21 +331,16 @@ Port CaptureUnit::findDefaultPort(const map<Port, stream_t>& frames) const
 int CaptureUnit::allocateMemory(Port port, const std::shared_ptr<CameraBuffer> &camBuffer)
 {
     const struct v4l2_buffer* v = camBuffer->getV4L2Buffer().Get();
-    CheckAndLogError(v->index >= mMaxBufferNum, -1,
-                     "index %d is larger than max count %d", v->index,
-                     mMaxBufferNum);
-    CheckAndLogError(
-        v->memory != V4L2_MEMORY_MMAP, -1,
-        "Allocating Memory Capture device only supports MMAP mode.");
+    CheckAndLogError(v->index >= mMaxBufferNum, -1, "index %d is larger than max count %d",
+                     v->index, mMaxBufferNum);
+    CheckAndLogError(v->memory != V4L2_MEMORY_MMAP, -1,
+                     "Allocating Memory Capture device only supports MMAP mode.");
 
     DeviceBase* device = findDeviceByPort(port);
-    CheckAndLogError(!device, BAD_VALUE, "No device available for port:%d",
-                     port);
+    CheckAndLogError(!device, BAD_VALUE, "No device available for port:%d", port);
 
     int ret = camBuffer->allocateMemory(device->getV4l2Device());
-    CheckAndLogError(ret < 0, ret,
-                     "Failed to allocate memory ret(%d) for port:%d", ret,
-                     port);
+    CheckAndLogError(ret < 0, ret, "Failed to allocate memory ret(%d) for port:%d", ret, port);
 
     return OK;
 }
@@ -358,13 +348,11 @@ int CaptureUnit::allocateMemory(Port port, const std::shared_ptr<CameraBuffer> &
 int CaptureUnit::qbuf(Port port, const std::shared_ptr<CameraBuffer> &camBuffer)
 {
     CheckAndLogError(camBuffer == nullptr, BAD_VALUE, "Camera buffer is null");
-    CheckAndLogError((mState == CAPTURE_INIT || mState == CAPTURE_UNINIT),
-                     INVALID_OPERATION, "@%s: qbuf in wrong state %d", __func__,
-                     mState);
+    CheckAndLogError((mState == CAPTURE_INIT || mState == CAPTURE_UNINIT), INVALID_OPERATION,
+                     "@%s: qbuf in wrong state %d", __func__, mState);
 
     DeviceBase* device = findDeviceByPort(port);
-    CheckAndLogError(!device, BAD_VALUE, "No device available for port:%d",
-                     port);
+    CheckAndLogError(!device, BAD_VALUE, "No device available for port:%d", port);
 
     LOG2("@%s, mCameraId:%d, queue CameraBuffer: %p to port:%d",
          __func__, mCameraId, camBuffer.get(), port);
@@ -383,8 +371,7 @@ int CaptureUnit::queueAllBuffers()
     if (mDevice) {
         int ret = mDevice->queueBuffer(-1);
         if (mExitPending) return OK;
-        CheckAndLogError(ret != OK, ret, "queueBuffer fails, dev:%s, ret:%d",
-                         mDevice->getName(), ret);
+        CheckAndLogError(ret != OK, ret, "queueBuffer fails, dev:%s, ret:%d", mDevice->getName(), ret);
         mDevice->getPredictSequence();
     }
 
@@ -407,8 +394,7 @@ int CaptureUnit::processPendingBuffers()
 
         int ret = queueAllBuffers();
         if (mExitPending) return OK;
-        CheckAndLogError(ret != OK, ret, "Failed to queue buffers, ret=%d",
-                         ret);
+        CheckAndLogError(ret != OK, ret, "Failed to queue buffers, ret=%d", ret);
     }
 
     return OK;
@@ -423,9 +409,8 @@ int CaptureUnit::poll()
 
     LOG2("@%s, mCameraId:%d", __func__, mCameraId);
 
-    CheckAndLogError((mState != CAPTURE_CONFIGURE && mState != CAPTURE_START),
-                     INVALID_OPERATION, "@%s: poll buffer in wrong state %d",
-                     __func__, mState);
+    CheckAndLogError((mState != CAPTURE_CONFIGURE && mState != CAPTURE_START), INVALID_OPERATION,
+                     "@%s: poll buffer in wrong state %d", __func__, mState);
 
     int timeOutCount = poll_timeout_count;
 
@@ -457,8 +442,7 @@ int CaptureUnit::poll()
         return -1;
     }
 
-    CheckAndLogError(ret < 0, UNKNOWN_ERROR, "%s: Poll error, ret:%d", __func__,
-                     ret);
+    CheckAndLogError(ret < 0, UNKNOWN_ERROR, "%s: Poll error, ret:%d", __func__, ret);
 
     if (ret == 0) {
         LOG1("%s, cameraId: %d: timeout happens, wait recovery", __func__, mCameraId);
