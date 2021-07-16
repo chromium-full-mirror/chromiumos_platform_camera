@@ -107,10 +107,12 @@ ia_err IntelCca::init(const cca::cca_init_params& initParams) {
     return ret;
 }
 
-ia_err IntelCca::setStatsParams(const cca::cca_stats_params& params) {
+ia_err IntelCca::setStatsParams(const cca::cca_stats_params& params,
+                                cca::cca_out_stats* outStats) {
     LOG2("@%s", __func__);
+    CheckAndLogError(!outStats, ia_err_argument, "@%s, outStats is nullptr", __func__);
 
-    ia_err ret = getIntelCCA()->setStatsParams(params);
+    ia_err ret = getIntelCCA()->setStatsParams(params, outStats);
     LOG2("@%s, ret:%d", __func__, ret);
 
     return ret;

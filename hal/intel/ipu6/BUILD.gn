@@ -28,6 +28,7 @@ group("all") {
 
 shared_library("libcamhal") {
   sources = [
+    "aal/VendorTags.cpp",
     "aal/Camera3AMetadata.cpp",
     "aal/Camera3HAL.cpp",
     "aal/Camera3HALModule.cpp",

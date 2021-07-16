@@ -40,7 +40,7 @@ class IntelCca {
 
     ia_err init(const cca::cca_init_params& initParams);
 
-    ia_err setStatsParams(const cca::cca_stats_params& params);
+    ia_err setStatsParams(const cca::cca_stats_params& params, cca::cca_out_stats* outStats);
 
     ia_err runAEC(uint64_t frameId, const cca::cca_ae_input_params& params,
                   cca::cca_ae_results* results);

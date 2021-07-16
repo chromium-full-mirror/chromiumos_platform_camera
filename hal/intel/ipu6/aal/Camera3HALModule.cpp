@@ -24,6 +24,7 @@
 
 #include "Camera3HAL.h"
 #include "HALv3Utils.h"
+#include "VendorTags.h"
 #include "ICamera.h"
 #include "MetadataConvert.h"
 #include "PlatformData.h"
@@ -299,7 +300,7 @@ camera_module_t VISIBILITY_PUBLIC HAL_MODULE_INFO_SYM = {
     .get_number_of_cameras = hal_get_number_of_cameras,
     .get_camera_info = hal_get_camera_info,
     .set_callbacks = hal_set_callbacks,
-    .get_vendor_tag_ops = nullptr,
+    .get_vendor_tag_ops = VendorTags::getVendorTagOps,
     .open_legacy = nullptr,
     .set_torch_mode = hal_set_torch_mode,
     .init = hal_init,

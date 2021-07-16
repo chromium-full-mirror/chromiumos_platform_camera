@@ -64,6 +64,8 @@
  *     Version        0.76       Remove the marco for lsc grid size
  *     Version        0.77       Add API to support capture intent
  *     Version        0.78       Add API to support edge enhancement
+ *     Version        0.79       Add API to support set flags to callback rgbs statistics
+ *     Version        0.80       Add API to support set flags to callback tone map curve
  *
  *
  * ------------------------------------------------------------------------------
@@ -2650,6 +2652,42 @@ public:
      * \return 0 if successfully, otherwise non-0 value is returned.
      */
     int getCaptureIntent(uint8_t& captureIntent) const;
+
+    /**
+     * \brief Set callback rgbs statistics flags
+     *
+     * \param[in] bool enabled
+     *
+     * \return 0 if set successfully, otherwise non-0 value is returned.
+     */
+    int setCallbackRgbs(bool enabled);
+
+    /**
+     * \brief Get callback rgbs statistics flags
+     *
+     * \param[out] bool enabled
+     *
+     * \return 0 if flag was set, otherwise non-0 value is returned.
+     */
+    int getCallbackRgbs(bool *enabled) const;
+
+    /**
+     * \brief Set callback tonemap curve flags
+     *
+     * \param[in] bool enabled
+     *
+     * \return 0 if set successfully, otherwise non-0 value is returned.
+     */
+    int setCallbackTmCurve(bool enabled);
+
+    /**
+     * \brief Get callback tonemap curve flags
+     *
+     * \param[out] bool enabled
+     *
+     * \return 0 if flag was set, otherwise non-0 value is returned.
+     */
+    int getCallbackTmCurve(bool *enabled) const;
 
 private:
     friend class ParameterHelper;

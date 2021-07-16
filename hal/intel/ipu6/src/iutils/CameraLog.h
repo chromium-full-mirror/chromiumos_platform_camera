@@ -79,6 +79,7 @@ enum  {
     CAMERA_DEBUG_LOG_PERSISTENT = 1 << 12, /* 4096 */
     /* reserved for any components */
     CAMERA_DEBUG_LOG_GRAPH = 1 << 13,
+    CAMERA_DEBUG_LOG_METADATA = 1 << 14, /* 16384 */
 
     CAMERA_DEBUG_LOG_DBG = 1 << 16,
     CAMERA_DEBUG_LOG_INFO = 1 << 17,

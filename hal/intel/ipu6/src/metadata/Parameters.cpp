@@ -2038,4 +2038,42 @@ int Parameters::getCaptureIntent(uint8_t& captureIntent) const
     return OK;
 }
 
+int Parameters::setCallbackRgbs(bool enabled)
+{
+    uint8_t lockValue = enabled ? 1 : 0;
+    ParameterHelper::AutoWLock wl(mData);
+    return ParameterHelper::getMetadata(mData).update(INTEL_VENDOR_CAMERA_CALLBACK_RGBS,
+                                                      &lockValue, 1);
+}
+
+int Parameters::getCallbackRgbs(bool *enabled) const
+{
+    ParameterHelper::AutoRLock rl(mData);
+    auto entry = ParameterHelper::getMetadataEntry(mData, INTEL_VENDOR_CAMERA_CALLBACK_RGBS);
+    if (entry.count != 1) {
+        return NAME_NOT_FOUND;
+    }
+    *enabled = entry.data.u8[0];
+    return OK;
+}
+
+int Parameters::setCallbackTmCurve(bool enabled)
+{
+    uint8_t value = enabled ? 1 : 0;
+    ParameterHelper::AutoWLock wl(mData);
+    return ParameterHelper::getMetadata(mData).update(INTEL_VENDOR_CAMERA_CALLBACK_TM_CURVE,
+                                                      &value, 1);
+}
+
+int Parameters::getCallbackTmCurve(bool *enabled) const
+{
+    ParameterHelper::AutoRLock rl(mData);
+    auto entry = ParameterHelper::getMetadataEntry(mData, INTEL_VENDOR_CAMERA_CALLBACK_TM_CURVE);
+    if (entry.count != 1) {
+        return NAME_NOT_FOUND;
+    }
+    *enabled = entry.data.u8[0];
+    return OK;
+}
+
 } // end of namespace icamera

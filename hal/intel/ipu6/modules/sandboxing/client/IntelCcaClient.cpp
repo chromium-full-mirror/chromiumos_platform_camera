@@ -169,20 +169,25 @@ ia_err IntelCca::init(const cca::cca_init_params& initParams) {
     return ret;
 }
 
-ia_err IntelCca::setStatsParams(const cca::cca_stats_params& params) {
+ia_err IntelCca::setStatsParams(const cca::cca_stats_params& params,
+                                cca::cca_out_stats* outStats) {
     LOGIPC("@%s, mCameraId:%d, tuningMode:%d, in params size:%zu", __func__,
            mCameraId, mTuningMode, sizeof(cca::cca_stats_params));
 
     CheckAndLogError(!mInitialized, ia_err_general, "@%s, mInitialized is false", __func__);
+    CheckAndLogError(!outStats, ia_err_general, "@%s, outStats is nullptr", __func__);
 
     intel_cca_set_stats_data* statsParams =
         static_cast<intel_cca_set_stats_data*>(mMemStats.mAddr);
     statsParams->cameraId = mCameraId;
     statsParams->tuningMode = mTuningMode;
     statsParams->inParams = params;
+    statsParams->outStats.get_rgbs_stats = outStats->get_rgbs_stats;
 
     ia_err ret = mCommon.requestSyncCca(IPC_CCA_SET_STATS, mMemStats.mHandle);
     CheckAndLogError(ret != ia_err_none, ia_err_general, "@%s, requestSyncCca fails", __func__);
+
+    *outStats = statsParams->outStats;
 
     return ret;
 }

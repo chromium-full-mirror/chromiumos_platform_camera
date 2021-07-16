@@ -351,6 +351,12 @@ int MetadataConvert::constructDefaultMetadata(int cameraId, android::CameraMetad
     mode = ANDROID_COLOR_CORRECTION_ABERRATION_MODE_OFF;
     settings->update(ANDROID_COLOR_CORRECTION_ABERRATION_MODE, &mode, 1);
 
+    mode = INTEL_VENDOR_CAMERA_CALLBACK_RGBS_FALSE;
+    settings->update(INTEL_VENDOR_CAMERA_CALLBACK_RGBS, &mode, 1);
+
+    mode = INTEL_VENDOR_CAMERA_CALLBACK_TM_CURVE_FALSE;
+    settings->update(INTEL_VENDOR_CAMERA_CALLBACK_TM_CURVE, &mode, 1);
+
     return icamera::OK;
 }
 
@@ -514,6 +520,8 @@ int MetadataConvert::requestMetadataToHALMetadata(const android::CameraMetadata&
 
     // ANDROID_REPROCESS
 
+    // VENDOR_TAG
+    convertVendorControlMetadata(settings, parameter);
     return icamera::OK;
 }
 
@@ -537,7 +545,9 @@ int MetadataConvert::HALMetadataToRequestMetadata(const icamera::Parameters& par
 
     // ANDROID_LENS
     // ANDROID_LENS_INFO
-    convertLensParameter(parameter, settings);
+    icamera::CameraMetadata meta;
+    icamera::ParameterHelper::copyMetadata(parameter, &meta);
+    convertLensParameter(parameter, meta, settings);
 
     // ANDROID_QUIRKS
 
@@ -548,7 +558,7 @@ int MetadataConvert::HALMetadataToRequestMetadata(const icamera::Parameters& par
 
     // ANDROID_SENSOR
     // ANDROID_SENSOR_INFO
-    convertSensorParameter(parameter, settings);
+    convertSensorParameter(parameter, meta, settings);
 
     // ANDROID_STATISTICS
     // ANDROID_STATISTICS_INFO
@@ -559,13 +569,16 @@ int MetadataConvert::HALMetadataToRequestMetadata(const icamera::Parameters& par
 
     // ANDROID_DEMOSAIC, ANDROID_EDGE, ANDROID_HOT_PIXEL, ANDROID_NOISE_REDUCTION
     // ANDROID_SHADING, ANDROID_INFO, ANDROID_BLACK_LEVEL, ANDROID_SYNC
-    convertAdvancedFeatureParameter(parameter, settings);
+    convertAdvancedFeatureParameter(parameter, meta, settings);
 
     // ANDROID_LED
 
     // ANDROID_REPROCESS
 
     // ANDROID_DEPTH
+
+    // VENDOR_TAG
+    convertVendorTagParameter(parameter, meta, settings);
 
     LOG1("@%s: convert entry count %zu", __func__, settings->entryCount());
     return icamera::OK;
@@ -582,8 +595,11 @@ int MetadataConvert::HALCapabilityToStaticMetadata(const icamera::Parameters& pa
     uint8_t aberrationAvailable = ANDROID_COLOR_CORRECTION_ABERRATION_MODE_OFF;
     settings->update(ANDROID_COLOR_CORRECTION_AVAILABLE_ABERRATION_MODES, &aberrationAvailable, 1);
 
+    icamera::CameraMetadata meta;
+    icamera::ParameterHelper::copyMetadata(parameter, &meta);
+
     // ANDROID_CONTROL
-    fillControlStaticMetadata(parameter, settings);
+    fillControlStaticMetadata(parameter, meta, settings);
 
     // ANDROID_FLASH
     // ANDROID_FLASH_INFO
@@ -591,27 +607,27 @@ int MetadataConvert::HALCapabilityToStaticMetadata(const icamera::Parameters& pa
     settings->update(ANDROID_FLASH_INFO_AVAILABLE, &flashInfoAvailable, 1);
 
     // ANDROID_JPEG
-    fillJpegStaticMetadata(parameter, settings);
+    fillJpegStaticMetadata(parameter, meta, settings);
 
     // ANDROID_LENS
     // ANDROID_LENS_INFO
-    fillLensStaticMetadata(parameter, settings);
+    fillLensStaticMetadata(parameter, meta, settings);
 
     // ANDROID_QUIRKS
 
     // ANDROID_REQUEST
-    fillRequestStaticMetadata(parameter, settings);
+    fillRequestStaticMetadata(parameter, meta, settings);
 
     // ANDROID_SCALER
-    fillScalerStaticMetadata(parameter, settings);
+    fillScalerStaticMetadata(parameter, meta, settings);
 
     // ANDROID_SENSOR
     // ANDROID_SENSOR_INFO
-    fillSensorStaticMetadata(parameter, settings, cameraId);
+    fillSensorStaticMetadata(parameter, meta, settings, cameraId);
 
     // ANDROID_STATISTICS
     // ANDROID_STATISTICS_INFO
-    fillStatisticsStaticMetadata(parameter, settings);
+    fillStatisticsStaticMetadata(parameter, meta, settings);
 
     // ANDROID_TONEMAP
     fillTonemapStaticMetadata(parameter, settings);
@@ -624,7 +640,7 @@ int MetadataConvert::HALCapabilityToStaticMetadata(const icamera::Parameters& pa
 
     // ANDROID_DEPTH
 
-    fillAdvancedFeatureStaticMetadata(parameter, settings);
+    fillAdvancedFeatureStaticMetadata(parameter, meta, settings);
 
     return icamera::OK;
 }
@@ -1232,6 +1248,26 @@ int MetadataConvert::convertSensorMetadata(const android::CameraMetadata& settin
     return icamera::OK;
 }
 
+int MetadataConvert::convertVendorControlMetadata(const android::CameraMetadata& settings,
+                                                  icamera::Parameters* parameter) {
+    bool enable = false;
+    uint32_t tag = INTEL_VENDOR_CAMERA_CALLBACK_RGBS;
+    camera_metadata_ro_entry entry = settings.find(tag);
+    if (entry.count == 1) {
+        enable = (entry.data.u8[0] == INTEL_VENDOR_CAMERA_CALLBACK_RGBS_TRUE) ? true : false;
+        parameter->setCallbackRgbs(enable);
+    }
+
+    tag = INTEL_VENDOR_CAMERA_CALLBACK_TM_CURVE;
+    entry = settings.find(tag);
+    if (entry.count == 1) {
+        enable = (entry.data.u8[0] == INTEL_VENDOR_CAMERA_CALLBACK_TM_CURVE_TRUE) ? true : false;
+        parameter->setCallbackTmCurve(enable);
+    }
+
+    return icamera::OK;
+}
+
 int MetadataConvert::convertRequestParameter(const icamera::Parameters& parameter,
                                              android::CameraMetadata* settings, int cameraId) {
     const icamera::CameraMetadata* meta = StaticCapability::getInstance(cameraId)->getCapability();
@@ -1246,6 +1282,7 @@ int MetadataConvert::convertRequestParameter(const icamera::Parameters& paramete
 }
 
 int MetadataConvert::convertSensorParameter(const icamera::Parameters& parameter,
+                                            const icamera::CameraMetadata& meta,
                                             android::CameraMetadata* settings) {
     int64_t exposure;
     if (parameter.getExposureTime(exposure) == 0) {
@@ -1268,11 +1305,8 @@ int MetadataConvert::convertSensorParameter(const icamera::Parameters& parameter
         }
     }
 
-    icamera::CameraMetadata meta;
-    icamera::ParameterHelper::copyMetadata(parameter, &meta);
-
     uint32_t tag = CAMERA_SENSOR_ROLLING_SHUTTER_SKEW;
-    icamera_metadata_entry entry = meta.find(tag);
+    icamera_metadata_ro_entry entry = meta.find(tag);
     if (entry.count == 1) {
         int64_t rollingShutter = entry.data.i64[0] * 1000;  // us -> ns
         settings->update(ANDROID_SENSOR_ROLLING_SHUTTER_SKEW, &rollingShutter, entry.count);
@@ -1311,12 +1345,10 @@ int MetadataConvert::convertLensMetadata(const android::CameraMetadata& settings
 }
 
 int MetadataConvert::convertLensParameter(const icamera::Parameters& parameter,
+                                          const icamera::CameraMetadata& meta,
                                           android::CameraMetadata* settings) {
-    icamera::CameraMetadata meta;
-    icamera::ParameterHelper::copyMetadata(parameter, &meta);
-
     uint32_t tag = CAMERA_LENS_INFO_AVAILABLE_APERTURES;
-    icamera_metadata_entry entry = meta.find(tag);
+    icamera_metadata_ro_entry entry = meta.find(tag);
     if (entry.count >= 1) {
         settings->update(ANDROID_LENS_APERTURE, entry.data.f, 1);
     }
@@ -1324,7 +1356,7 @@ int MetadataConvert::convertLensParameter(const icamera::Parameters& parameter,
     float focal = 0.0f;
     parameter.getFocalLength(focal);
     if (focal < EPSILON) {
-        icamera_metadata_entry entry = meta.find(CAMERA_LENS_INFO_AVAILABLE_FOCAL_LENGTHS);
+        entry = meta.find(CAMERA_LENS_INFO_AVAILABLE_FOCAL_LENGTHS);
         if (entry.count >= 1) {
             focal = entry.data.f[0];
         }
@@ -1404,11 +1436,8 @@ int MetadataConvert::convertAdvancedFeatureMetadata(const android::CameraMetadat
 }
 
 int MetadataConvert::convertAdvancedFeatureParameter(const icamera::Parameters& parameter,
+                                                     const icamera::CameraMetadata& meta,
                                                      android::CameraMetadata* settings) {
-    int ret = icamera::OK;
-    icamera::CameraMetadata meta;
-    icamera::ParameterHelper::copyMetadata(parameter, &meta);
-
     // ANDROID_DEMOSAIC
 
     // ANDROID_EDGE
@@ -1418,6 +1447,7 @@ int MetadataConvert::convertAdvancedFeatureParameter(const icamera::Parameters& 
     // ANDROID_NOISE_REDUCTION
 
     // ANDROID_SHADING
+    int ret = icamera::OK;
     icamera::camera_shading_mode_t shadingMode;
     uint8_t saMode = ANDROID_SHADING_MODE_OFF;
     if (parameter.getShadingMode(shadingMode) == icamera::OK) {
@@ -1460,13 +1490,45 @@ int MetadataConvert::convertAdvancedFeatureParameter(const icamera::Parameters& 
     return icamera::OK;
 }
 
+int MetadataConvert::convertVendorTagParameter(const icamera::Parameters& parameter,
+                                               const icamera::CameraMetadata& meta,
+                                               android::CameraMetadata* settings) {
+    icamera_metadata_ro_entry entry = meta.find(INTEL_VENDOR_CAMERA_CALLBACK_RGBS);
+    if (entry.count == 1 && entry.data.u8[0] == INTEL_VENDOR_CAMERA_CALLBACK_RGBS_TRUE) {
+        size_t gridSize = 0;
+        entry = meta.find(INTEL_VENDOR_CAMERA_RGBS_GRID_SIZE);
+        if (entry.count == 2) {
+            settings->update(INTEL_VENDOR_CAMERA_RGBS_GRID_SIZE, entry.data.i32, entry.count);
+            gridSize = entry.data.i32[0] * entry.data.i32[1] * 5;
+        }
+        entry = meta.find(INTEL_VENDOR_CAMERA_SHADING_CORRECTION);
+        if (entry.count == 1) {
+            settings->update(INTEL_VENDOR_CAMERA_SHADING_CORRECTION, entry.data.u8, entry.count);
+        }
+        entry = meta.find(INTEL_VENDOR_CAMERA_RGBS_STATS_BLOCKS);
+        if (entry.count == gridSize) {
+            settings->update(INTEL_VENDOR_CAMERA_RGBS_STATS_BLOCKS, entry.data.u8, entry.count);
+        }
+    }
+
+    entry = meta.find(INTEL_VENDOR_CAMERA_CALLBACK_TM_CURVE);
+    if (entry.count == 1 && entry.data.u8[0] == INTEL_VENDOR_CAMERA_CALLBACK_TM_CURVE_TRUE) {
+        camera_metadata_entry aEntry = settings->find(ANDROID_TONEMAP_MAX_CURVE_POINTS);
+        int32_t curvePoint = (aEntry.count == 1) ? (aEntry.data.i32[0] * 2) : 0;
+        entry = meta.find(INTEL_VENDOR_CAMERA_TONE_MAP_CURVE);
+        if (entry.count == curvePoint) {
+            settings->update(INTEL_VENDOR_CAMERA_TONE_MAP_CURVE, entry.data.f, entry.count);
+        }
+    }
+
+    return icamera::OK;
+}
+
 void MetadataConvert::fillControlStaticMetadata(const icamera::Parameters& parameter,
+                                                const icamera::CameraMetadata& meta,
                                                 android::CameraMetadata* settings) {
     int ret = icamera::OK;
-    icamera::CameraMetadata meta;
-    icamera::ParameterHelper::copyMetadata(parameter, &meta);
-
-    icamera_metadata_entry entry = meta.find(CAMERA_CONTROL_AVAILABLE_MODES);
+    icamera_metadata_ro_entry entry = meta.find(CAMERA_CONTROL_AVAILABLE_MODES);
     if (entry.count != 0) {
         settings->update(ANDROID_CONTROL_AVAILABLE_MODES, entry.data.u8, entry.count);
     }
@@ -1637,6 +1699,7 @@ void MetadataConvert::fillControlStaticMetadata(const icamera::Parameters& param
 }
 
 void MetadataConvert::fillScalerStaticMetadata(const icamera::Parameters& parameter,
+                                               const icamera::CameraMetadata& meta,
                                                android::CameraMetadata* settings) {
 // stream configuration: fmt, w, h, type
 #define STREAM_CFG_SIZE 4
@@ -1649,11 +1712,8 @@ void MetadataConvert::fillScalerStaticMetadata(const icamera::Parameters& parame
     uint8_t type = ANDROID_SCALER_CROPPING_TYPE_CENTER_ONLY;
     settings->update(ANDROID_SCALER_CROPPING_TYPE, &type, 1);
 
-    icamera::CameraMetadata meta;
-    icamera::ParameterHelper::copyMetadata(parameter, &meta);
-
     uint32_t tag = CAMERA_SCALER_AVAILABLE_INPUT_OUTPUT_FORMATS_MAP;
-    icamera_metadata_entry entry = meta.find(tag);
+    icamera_metadata_ro_entry entry = meta.find(tag);
     if (entry.count > 0) {
         settings->update(ANDROID_SCALER_AVAILABLE_INPUT_OUTPUT_FORMATS_MAP, entry.data.i32,
                          entry.count);
@@ -1714,6 +1774,7 @@ void MetadataConvert::fillTonemapStaticMetadata(const icamera::Parameters& param
 }
 
 void MetadataConvert::fillSensorStaticMetadata(const icamera::Parameters& parameter,
+                                               const icamera::CameraMetadata& meta,
                                                android::CameraMetadata* settings,
                                                int cameraId) {
     icamera::camera_range_t timeRange;
@@ -1739,11 +1800,8 @@ void MetadataConvert::fillSensorStaticMetadata(const icamera::Parameters& parame
         LOGW("No SensorSensitivityRange provided!");
     }
 
-    icamera::CameraMetadata meta;
-    icamera::ParameterHelper::copyMetadata(parameter, &meta);
-
     uint32_t tag = CAMERA_SENSOR_MAX_ANALOG_SENSITIVITY;
-    icamera_metadata_entry entry = meta.find(tag);
+    icamera_metadata_ro_entry entry = meta.find(tag);
     // Overwrite if tag exists.
     if (entry.count == 1) {
         settings->update(ANDROID_SENSOR_MAX_ANALOG_SENSITIVITY, entry.data.i32, entry.count);
@@ -1817,10 +1875,8 @@ void MetadataConvert::fillSensorStaticMetadata(const icamera::Parameters& parame
 }
 
 void MetadataConvert::fillLensStaticMetadata(const icamera::Parameters& parameter,
+                                             const icamera::CameraMetadata& meta,
                                              android::CameraMetadata* settings) {
-    icamera::CameraMetadata meta;
-    icamera::ParameterHelper::copyMetadata(parameter, &meta);
-
     float aperture = 0.0;
     if (icamera::OK == parameter.getLensAperture(aperture)) {
         settings->update(ANDROID_LENS_INFO_AVAILABLE_APERTURES, &aperture, 1);
@@ -1832,7 +1888,7 @@ void MetadataConvert::fillLensStaticMetadata(const icamera::Parameters& paramete
     }
 
     uint32_t tag = CAMERA_LENS_INFO_AVAILABLE_FOCAL_LENGTHS;
-    icamera_metadata_entry entry = meta.find(tag);
+    icamera_metadata_ro_entry entry = meta.find(tag);
     if (entry.count >= 1) {
         settings->update(ANDROID_LENS_INFO_AVAILABLE_FOCAL_LENGTHS, entry.data.f, entry.count);
     }
@@ -1873,12 +1929,10 @@ void MetadataConvert::fillLensStaticMetadata(const icamera::Parameters& paramete
 }
 
 void MetadataConvert::fillRequestStaticMetadata(const icamera::Parameters& parameter,
+                                                const icamera::CameraMetadata& meta,
                                                 android::CameraMetadata* settings) {
-    icamera::CameraMetadata meta;
-    icamera::ParameterHelper::copyMetadata(parameter, &meta);
-
     uint32_t tag = CAMERA_REQUEST_MAX_NUM_OUTPUT_STREAMS;
-    icamera_metadata_entry entry = meta.find(tag);
+    icamera_metadata_ro_entry entry = meta.find(tag);
     if (entry.count >= 1) {
         settings->update(ANDROID_REQUEST_MAX_NUM_OUTPUT_STREAMS, entry.data.i32, entry.count);
     }
@@ -2084,12 +2138,10 @@ void MetadataConvert::fillRequestStaticMetadata(const icamera::Parameters& param
 }
 
 void MetadataConvert::fillStatisticsStaticMetadata(const icamera::Parameters& parameter,
+                                                   const icamera::CameraMetadata& meta,
                                                    android::CameraMetadata* settings) {
-    icamera::CameraMetadata meta;
-    icamera::ParameterHelper::copyMetadata(parameter, &meta);
-
-    icamera_metadata_entry entry;
-    entry = meta.find(CAMERA_STATISTICS_INFO_AVAILABLE_FACE_DETECT_MODES);
+    icamera_metadata_ro_entry entry
+        = meta.find(CAMERA_STATISTICS_INFO_AVAILABLE_FACE_DETECT_MODES);
     if (entry.count != 0) {
         settings->update(ANDROID_STATISTICS_INFO_AVAILABLE_FACE_DETECT_MODES, entry.data.u8,
                          entry.count);
@@ -2129,12 +2181,10 @@ void MetadataConvert::fillStatisticsStaticMetadata(const icamera::Parameters& pa
 }
 
 void MetadataConvert::fillJpegStaticMetadata(const icamera::Parameters& parameter,
+                                             const icamera::CameraMetadata& meta,
                                              android::CameraMetadata* settings) {
-    icamera::CameraMetadata meta;
-    icamera::ParameterHelper::copyMetadata(parameter, &meta);
-
     uint32_t tag = CAMERA_JPEG_MAX_SIZE;
-    icamera_metadata_entry entry = meta.find(tag);
+    icamera_metadata_ro_entry entry = meta.find(tag);
     if (entry.count == 1) {
         settings->update(ANDROID_JPEG_MAX_SIZE, entry.data.i32, entry.count);
     }
@@ -2147,15 +2197,13 @@ void MetadataConvert::fillJpegStaticMetadata(const icamera::Parameters& paramete
 }
 
 void MetadataConvert::fillAdvancedFeatureStaticMetadata(const icamera::Parameters& parameter,
+                                                        const icamera::CameraMetadata& meta,
                                                         android::CameraMetadata* settings) {
-    icamera::CameraMetadata meta;
-    icamera::ParameterHelper::copyMetadata(parameter, &meta);
-
     // ANDROID_DEMOSAIC
 
     // ANDROID_EDGE
     uint32_t tag = CAMERA_EDGE_AVAILABLE_EDGE_MODES;
-    icamera_metadata_entry entry = meta.find(tag);
+    icamera_metadata_ro_entry entry = meta.find(tag);
     if (entry.count >= 1) {
         settings->update(ANDROID_EDGE_AVAILABLE_EDGE_MODES, entry.data.u8, entry.count);
     }

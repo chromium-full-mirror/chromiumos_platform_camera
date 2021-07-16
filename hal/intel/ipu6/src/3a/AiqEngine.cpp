@@ -128,7 +128,7 @@ int AiqEngine::run3A(long requestId, long applyingSeq, long* effectSeq)
         LOG3A("%s: needRun3A is false, return AIQ_STATE_WAIT", __func__);
         state = AIQ_STATE_WAIT;
     } else {
-        state = prepareInputParam(aiqStats);
+        state = prepareInputParam(aiqStats, aiqResult);
         aiqResult->mTuningMode = mAiqParam.tuningMode;
     }
 
@@ -284,7 +284,7 @@ bool AiqEngine::needRun3A(AiqStatistics *aiqStatistics, long requestId)
     return true;
 }
 
-AiqEngine::AiqState AiqEngine::prepareInputParam(AiqStatistics* aiqStats)
+AiqEngine::AiqState AiqEngine::prepareInputParam(AiqStatistics* aiqStats, AiqResult *aiqResult)
 {
     // set Aiq Params
     int ret = mAiqSetting->getAiqParameter(mAiqParam);
@@ -313,13 +313,15 @@ AiqEngine::AiqState AiqEngine::prepareInputParam(AiqStatistics* aiqStats)
 
     // set Stats
     cca::cca_stats_params statsParams = {};
+    aiqResult->mOutStats.get_rgbs_stats = mAiqParam.callbackRgbs;
+
     ret = prepareStatsParams(&statsParams, aiqStats);
     if (ret != OK) {
         LOG3A("%s: no useful stats", __func__);
         return AIQ_STATE_RUN;
     }
 
-    mAiqCore->setStatsParams(statsParams);
+    mAiqCore->setStatsParams(statsParams, &aiqResult->mOutStats);
 
     return AIQ_STATE_RUN;
 }

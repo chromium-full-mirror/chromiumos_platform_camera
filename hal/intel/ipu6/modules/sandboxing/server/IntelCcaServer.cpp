@@ -66,7 +66,7 @@ status_t IntelCcaServer::setStats(void* pData, int dataSize) {
 
     intel_cca_set_stats_data* params = static_cast<intel_cca_set_stats_data*>(pData);
 
-    ia_err ret = mCca->setStatsParams(params->inParams);
+    ia_err ret = mCca->setStatsParams(params->inParams, &params->outStats);
     CheckAndLogError(ret != ia_err_none, UNKNOWN_ERROR, "@%s, setStatsParams fails", __func__);
     LOG2("@%s, ret:%d", __func__, ret);
 

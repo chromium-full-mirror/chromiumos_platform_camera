@@ -295,9 +295,11 @@ int AiqCore::updateParameter(const aiq_parameter_t &param) {
     return OK;
 }
 
-int AiqCore::setStatsParams(const cca::cca_stats_params &statsParams) {
+int AiqCore::setStatsParams(const cca::cca_stats_params &statsParams,
+                            cca::cca_out_stats *outStats) {
     LOG3A("@%s, frame_id:%lu, frame_timestamp:%lu, mTuningMode:%d", __func__,
           statsParams.frame_id, statsParams.frame_timestamp, mTuningMode);
+    CheckAndLogError(!outStats, BAD_VALUE, "@%s, outStats is nullptr", __func__);
     int ret = OK;
 
     IntelCca* intelCca = getIntelCca(mTuningMode);
@@ -305,7 +307,7 @@ int AiqCore::setStatsParams(const cca::cca_stats_params &statsParams) {
                      mTuningMode);
     {
         PERF_CAMERA_ATRACE_PARAM1_IMAGING("intelCca->setStatsParams", 1);
-        ia_err iaErr = intelCca->setStatsParams(statsParams);
+        ia_err iaErr = intelCca->setStatsParams(statsParams, outStats);
         ret = AiqUtils::convertError(iaErr);
         CheckAndLogError(ret != OK, ret, "setStatsParams fails, ret: %d", ret);
     }

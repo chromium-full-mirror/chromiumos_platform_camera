@@ -88,7 +88,7 @@ public:
     /**
      * \brief Set ispStatistics to AiqPlus and Aiq3A or custom 3A
      */
-    int setStatsParams(const cca::cca_stats_params &statsParams);
+    int setStatsParams(const cca::cca_stats_params &statsParams, cca::cca_out_stats *outStats);
 
     /**
      * \brief run AE

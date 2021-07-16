@@ -59,6 +59,7 @@ public:
     cca::cca_af_results mAfResults;
     cca::cca_gbce_params mGbceResults;
     cca::cca_pa_params mPaResults;
+    cca::cca_out_stats mOutStats;
 
     ia_isp_custom_controls mCustomControls;
 

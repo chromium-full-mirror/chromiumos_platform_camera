@@ -64,8 +64,10 @@ class MetadataConvert {
     static int convertRequestParameter(const icamera::Parameters& parameter,
                                        android::CameraMetadata* settings, int cameraId);
     static int convertSensorParameter(const icamera::Parameters& parameter,
+                                      const icamera::CameraMetadata& meta,
                                       android::CameraMetadata* settings);
     static int convertLensParameter(const icamera::Parameters& parameter,
+                                    const icamera::CameraMetadata& meta,
                                     android::CameraMetadata* settings);
     static int convertStatisticsParameter(const icamera::Parameters& /*parameter*/,
                                           android::CameraMetadata* settings);
@@ -76,7 +78,11 @@ class MetadataConvert {
     static int convertAdvancedFeatureMetadata(const android::CameraMetadata& settings,
                                               icamera::Parameters* parameter);
     static int convertAdvancedFeatureParameter(const icamera::Parameters& parameter,
+                                               const icamera::CameraMetadata& meta,
                                                android::CameraMetadata* settings);
+    static int convertVendorTagParameter(const icamera::Parameters& parameter,
+                                         const icamera::CameraMetadata& meta,
+                                         android::CameraMetadata* settings);
 
     // Android control metadata -> parameters
     static int convertColorCorrectionMetadata(const android::CameraMetadata& settings,
@@ -95,26 +101,36 @@ class MetadataConvert {
                                      icamera::Parameters* parameter, bool forceConvert);
     static int convertLensMetadata(const android::CameraMetadata& settings,
                                    icamera::Parameters* parameter);
+    static int convertVendorControlMetadata(const android::CameraMetadata& settings,
+                                            icamera::Parameters* parameter);
 
     // Capabilities -> Android static metadata
     static void fillControlStaticMetadata(const icamera::Parameters& parameter,
+                                          const icamera::CameraMetadata& meta,
                                           android::CameraMetadata* settings);
     static void fillScalerStaticMetadata(const icamera::Parameters& parameter,
+                                         const icamera::CameraMetadata& meta,
                                          android::CameraMetadata* settings);
     static void fillSensorStaticMetadata(const icamera::Parameters& parameter,
+                                         const icamera::CameraMetadata& meta,
                                          android::CameraMetadata* settings,
                                          int cameraId);
     static void fillLensStaticMetadata(const icamera::Parameters& parameter,
+                                       const icamera::CameraMetadata& meta,
                                        android::CameraMetadata* settings);
     static void fillRequestStaticMetadata(const icamera::Parameters& parameter,
+                                          const icamera::CameraMetadata& meta,
                                           android::CameraMetadata* settings);
     static void fillStatisticsStaticMetadata(const icamera::Parameters& parameter,
+                                             const icamera::CameraMetadata& meta,
                                              android::CameraMetadata* settings);
     static void fillTonemapStaticMetadata(const icamera::Parameters& parameter,
                                           android::CameraMetadata* settings);
     static void fillJpegStaticMetadata(const icamera::Parameters& parameter,
+                                       const icamera::CameraMetadata& meta,
                                        android::CameraMetadata* settings);
     static void fillAdvancedFeatureStaticMetadata(const icamera::Parameters& parameter,
+                                                  const icamera::CameraMetadata& meta,
                                                   android::CameraMetadata* settings);
 
     static int convertToHalWindow(const int32_t* data, int dataCount,

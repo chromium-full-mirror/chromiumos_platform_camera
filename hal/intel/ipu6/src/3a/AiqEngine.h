@@ -114,7 +114,7 @@ private:
         AIQ_STATE_MAX
     };
 
-    AiqState prepareInputParam(AiqStatistics* aiqStats);
+    AiqState prepareInputParam(AiqStatistics* aiqStats, AiqResult *aiqResult);
     AiqState runAiq(long requestId, AiqResult *aiqResult, long applyingSeq);
     AiqState handleAiqResult(AiqResult *aiqResult);
     AiqState done(AiqResult *aiqResult);

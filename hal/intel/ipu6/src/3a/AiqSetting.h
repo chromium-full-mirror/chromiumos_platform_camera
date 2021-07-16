@@ -116,6 +116,8 @@ struct aiq_parameter_t {
     camera_tonemap_curves_t tonemapCurves;
     float tonemapCurveMem[DEFAULT_TONEMAP_CURVE_POINT_NUM * 3];  // r, g, b
     camera_test_pattern_mode_t testPatternMode;
+    bool callbackRgbs;
+    bool callbackTmCurve;
 
     aiq_parameter_t() { reset(); }
     void reset();

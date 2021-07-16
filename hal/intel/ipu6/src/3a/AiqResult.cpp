@@ -43,6 +43,7 @@ AiqResult::AiqResult(int cameraId) :
     CLEAR(mPaResults);
     CLEAR(mAeResults);
     CLEAR(mAfResults);
+    CLEAR(mOutStats);
     CLEAR(mFocusRange);
     CLEAR(mLensShadingMap);
 }
@@ -61,6 +62,7 @@ int AiqResult::init()
     CLEAR(mAfResults);
     CLEAR(mAwbResults);
     CLEAR(mPaResults);
+    CLEAR(mOutStats);
 
     mAiqParam.reset();
 
@@ -96,6 +98,7 @@ AiqResult &AiqResult::operator=(const AiqResult &other)
     mAfResults = other.mAfResults;
     mGbceResults = other.mGbceResults;
     mPaResults = other.mPaResults;
+    mOutStats = other.mOutStats;
 
     mCustomControls.count = other.mCustomControls.count;
     for (int i = 0; i < mCustomControls.count; i++) {

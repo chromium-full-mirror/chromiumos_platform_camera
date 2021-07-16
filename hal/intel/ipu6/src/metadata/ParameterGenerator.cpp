@@ -18,6 +18,7 @@
 
 #include <math.h>
 #include <memory>
+#include <vector>
 
 #include "iutils/Errors.h"
 #include "iutils/CameraLog.h"
@@ -412,6 +413,32 @@ int ParameterGenerator::updateCommonMetadata(Parameters *params, const AiqResult
     metadata.update(CAMERA_SENSOR_ROLLING_SHUTTER_SKEW, &aiqResult->mRollingShutter, 1);
     int64_t frameDuration = aiqResult->mFrameDuration * 1000;  // us -> ns
     metadata.update(CAMERA_SENSOR_FRAME_DURATION, &frameDuration, 1);
+
+    if (aiqResult->mAiqParam.callbackRgbs) {
+        int32_t width = aiqResult->mOutStats.rgbs_grid.grid_width;
+        int32_t height = aiqResult->mOutStats.rgbs_grid.grid_height;
+        int32_t gridSize[] = {width, height};
+        metadata.update(INTEL_VENDOR_CAMERA_RGBS_GRID_SIZE, gridSize, ARRAY_SIZE(gridSize));
+
+        uint8_t lscFlags = aiqResult->mOutStats.rgbs_grid.shading_correction;
+        metadata.update(INTEL_VENDOR_CAMERA_SHADING_CORRECTION, &lscFlags, 1);
+
+        metadata.update(INTEL_VENDOR_CAMERA_RGBS_STATS_BLOCKS,
+                        reinterpret_cast<const uint8_t*>(aiqResult->mOutStats.rgbs_blocks),
+                        (width * height * 5));
+    }
+
+    if (aiqResult->mAiqParam.callbackTmCurve) {
+        const cca::cca_gbce_params &gbceResults = aiqResult->mGbceResults;
+        int multiplier = gbceResults.tone_map_lut_size / mTonemapMaxCurvePoints;
+
+        std::vector<float> tmCurve(mTonemapMaxCurvePoints * 2);
+        for (int32_t i = 0; i < mTonemapMaxCurvePoints; i++) {
+            tmCurve[i * 2] = static_cast<float>(i) / (mTonemapMaxCurvePoints - 1);
+            tmCurve[i * 2 + 1] = gbceResults.tone_map_lut[i * multiplier];
+        }
+        metadata.update(INTEL_VENDOR_CAMERA_TONE_MAP_CURVE, tmCurve.data(), tmCurve.size());
+    }
 
     ParameterHelper::merge(metadata, params);
     return OK;
