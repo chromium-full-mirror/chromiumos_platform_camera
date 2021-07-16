@@ -30,8 +30,7 @@ AiqEngine::AiqEngine(int cameraId, SensorHwCtrl *sensorHw, LensHw *lensHw, AiqSe
     mCameraId(cameraId),
     mAiqSetting(setting),
     mParamGen(paramGen),
-    mFirstAiqRunning(true),
-    mLastStatsSequence(-1)
+    mFirstAiqRunning(true)
 {
     LOG1("%s, mCameraId = %d", __func__, mCameraId);
 
@@ -42,6 +41,8 @@ AiqEngine::AiqEngine(int cameraId, SensorHwCtrl *sensorHw, LensHw *lensHw, AiqSe
 
     // Should consider better place to maintain the life cycle of AiqResultStorage
     mAiqResultStorage = AiqResultStorage::getInstance(mCameraId);
+
+    CLEAR(mAiqRunningHistory);
 }
 
 AiqEngine::~AiqEngine()
@@ -132,8 +133,9 @@ int AiqEngine::run3A(long requestId, long applyingSeq, long* effectSeq)
         aiqResult->mTuningMode = mAiqParam.tuningMode;
     }
 
+    bool aiqRun = false;
     if (state == AIQ_STATE_RUN) {
-        state = runAiq(requestId, aiqResult, applyingSeq);
+        state = runAiq(requestId, applyingSeq, aiqResult, &aiqRun);
     }
     if (state == AIQ_STATE_RESULT_SET) {
         state = handleAiqResult(aiqResult);
@@ -144,10 +146,16 @@ int AiqEngine::run3A(long requestId, long applyingSeq, long* effectSeq)
 
     mAiqResultStorage->unLockAiqStatistics();
 
+    if (aiqRun) {
+        mAiqRunningHistory.aiqResult = aiqResult;
+        mAiqRunningHistory.requestId = requestId;
+        mAiqRunningHistory.statsSequnce = aiqStats ? aiqStats->mSequence : -1;
+    }
+
     if (effectSeq) {
         *effectSeq = mAiqResultStorage->getAiqResult()->mSequence;
-        LOG3A("%s, effect sequence %ld, mLastStatsSequence %ld", __func__, *effectSeq,
-               mLastStatsSequence);
+        LOG3A("%s, effect sequence %ld, statsSequnce %ld", __func__, *effectSeq,
+              mAiqRunningHistory.statsSequnce);
     }
 
     PlatformData::saveMakernoteData(mCameraId, mAiqParam.makernoteMode,
@@ -176,7 +184,6 @@ void AiqEngine::handleEvent(EventData eventData)
 
 int AiqEngine::prepareStatsParams(cca::cca_stats_params *statsParams, AiqStatistics *aiqStatistics)
 {
-    mLastStatsSequence = aiqStatistics->mSequence;
     LOG3A("%s, sequence %ld", __func__, aiqStatistics->mSequence);
 
     // update face detection related parameters
@@ -273,8 +280,8 @@ bool AiqEngine::needRun3A(AiqStatistics *aiqStatistics, long requestId)
         return false;
     }
 
-    if (mLastStatsSequence == aiqStatistics->mSequence) {
-        LOG3A("no new stats skip, mLastStatsSequence = %ld", mLastStatsSequence);
+    if (mAiqRunningHistory.statsSequnce == aiqStatistics->mSequence) {
+        LOG3A("no new stats skip, statsSequnce = %ld", aiqStatistics->mSequence);
         return false;
     } else if (mSensorManager->getCurrentExposureAppliedDelay() > kMaxExposureAppliedDelay) {
         LOG3A("exposure setting applied delay is too larger, skip it");
@@ -326,17 +333,27 @@ AiqEngine::AiqState AiqEngine::prepareInputParam(AiqStatistics* aiqStats, AiqRes
     return AIQ_STATE_RUN;
 }
 
-AiqEngine::AiqState AiqEngine::runAiq(long requestId, AiqResult *aiqResult, long applyingSeq)
+AiqEngine::AiqState AiqEngine::runAiq(long requestId, long applyingSeq, AiqResult* aiqResult,
+                                      bool* aiqRun)
 {
-    int ret = mAiqCore->runAe(requestId, aiqResult);
-    if (ret != OK) {
-        return AIQ_STATE_ERROR;
-    }
-    setSensorExposure(aiqResult, applyingSeq);
+    if ((requestId % PlatformData::getAiqRunningInterval(mCameraId) == 0)
+        || mFirstAiqRunning) {
+        int ret = mAiqCore->runAe(requestId, aiqResult);
+        if (ret != OK) {
+            return AIQ_STATE_ERROR;
+        }
 
-    ret = mAiqCore->runAiq(requestId, aiqResult);
-    if (ret != OK) {
-        return AIQ_STATE_ERROR;
+        setSensorExposure(aiqResult, applyingSeq);
+
+        ret = mAiqCore->runAiq(requestId, aiqResult);
+        if (ret != OK) {
+            return AIQ_STATE_ERROR;
+        }
+        *aiqRun = true;
+    } else {
+        *aiqResult = *(mAiqRunningHistory.aiqResult);
+        setSensorExposure(aiqResult, applyingSeq);
+        mParamGen->setRequestIdMap(requestId, mAiqRunningHistory.requestId);
     }
 
     return AIQ_STATE_RESULT_SET;

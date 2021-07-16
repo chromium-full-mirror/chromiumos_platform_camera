@@ -58,6 +58,7 @@ public:
      */
     int getParameters(long sequence, Parameters *param, bool setting = true, bool result = true);
     int getRequestId(long predictSequence, long& requestId);
+    void setRequestIdMap(long currentRequestId, long requestIdWithAiq);
 
 private:
     ParameterGenerator(const ParameterGenerator& other);
@@ -100,6 +101,9 @@ private:
     // first: sequence id, second: RequestParam data
     std::map<long, std::shared_ptr<RequestParam>> mRequestParamMap;
     Parameters mLastParam;
+
+    // first: request id of none running AIQ, second: request id of running AIQ
+    std::map<long, long> mRequestIdMap;
 
     std::unique_ptr<float[]> mTonemapCurveRed;
     std::unique_ptr<float[]> mTonemapCurveBlue;

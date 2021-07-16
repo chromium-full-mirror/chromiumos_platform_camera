@@ -115,7 +115,7 @@ private:
     };
 
     AiqState prepareInputParam(AiqStatistics* aiqStats, AiqResult *aiqResult);
-    AiqState runAiq(long requestId, AiqResult *aiqResult, long applyingSeq);
+    AiqState runAiq(long requestId, long applyingSeq, AiqResult *aiqResult, bool *aiqRun);
     AiqState handleAiqResult(AiqResult *aiqResult);
     AiqState done(AiqResult *aiqResult);
 
@@ -145,7 +145,12 @@ private:
 
     aiq_parameter_t mAiqParam;
 
-    long mLastStatsSequence;
+    struct AiqRunningHistory {
+        AiqResult* aiqResult;
+        long requestId;
+        long statsSequnce;
+    };
+    AiqRunningHistory mAiqRunningHistory;
 };
 
 } /* namespace icamera */

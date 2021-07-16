@@ -727,7 +727,7 @@ int PipeLiteExecutor::runPipe(map<Port, shared_ptr<CameraBuffer> > &inBuffers,
             ia_binary_data* buffer = (ia_binary_data*)mStatsBuffers.front()->getBufferAddr();
             CheckAndLogError(buffer == nullptr, BAD_VALUE, "buffer is null pointer.");
             buffer->size = 0; // Clear it, then the stats memory is from p2p
-            buffer->data = 0;
+            buffer->data = nullptr;
             pgStatsDatas.push_back(buffer);
             mStatsBuffers.pop();
         }
@@ -964,7 +964,10 @@ int PipeLiteExecutor::allocBuffers()
             shared_ptr<CameraBuffer> statsBuf = CameraBuffer::create(mCameraId,
                          BUFFER_USAGE_PSYS_STATS, V4L2_MEMORY_USERPTR, sizeof(ia_binary_data), i);
             CheckAndLogError(!statsBuf, NO_MEMORY, "Executor %s: Allocate stats buffer failed", mName.c_str());
-
+            ia_binary_data* buffer = (ia_binary_data*)statsBuf->getBufferAddr();
+            CheckAndLogError(buffer == nullptr, BAD_VALUE, "buffer is null pointer.");
+            buffer->size = 0;
+            buffer->data = nullptr;
             AutoMutex lock(mStatsBuffersLock);
             mStatsBuffers.push(statsBuf);
         }

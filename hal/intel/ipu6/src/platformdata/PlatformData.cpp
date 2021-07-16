@@ -208,6 +208,11 @@ bool PlatformData::isEnableAIQ(int cameraId)
     return getInstance()->mStaticCfg.mCameras[cameraId].mEnableAIQ;
 }
 
+int PlatformData::getAiqRunningInterval(int cameraId)
+{
+    return getInstance()->mStaticCfg.mCameras[cameraId].mAiqRunningInterval;
+}
+
 bool PlatformData::isEnableMkn(int cameraId)
 {
     return getInstance()->mStaticCfg.mCameras[cameraId].mEnableMkn;

@@ -101,6 +101,7 @@ public:
                 mSensorGainType(SENSOR_GAIN_NONE),
                 mLensCloseCode(0),
                 mEnableAIQ(false),
+                mAiqRunningInterval(1),
                 mEnableMkn(true),
                 mSkipFrameV4L2Error(false),
                 mCITMaxMargin(0),
@@ -166,6 +167,7 @@ public:
             int mSensorGainType;
             int mLensCloseCode;
             bool mEnableAIQ;
+            int mAiqRunningInterval;
             bool mEnableMkn;
             bool mSkipFrameV4L2Error;
             int mCITMaxMargin;
@@ -407,6 +409,14 @@ public:
      * \return if AIQ is enabled or not.
      */
     static bool isEnableAIQ(int cameraId);
+
+    /**
+     * get running rate of AIQ
+     *
+     * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
+     * \return int: the running rate of AIQ
+     */
+    static int getAiqRunningInterval(int cameraId);
 
     /**
      * Check Mkn is enabled or not

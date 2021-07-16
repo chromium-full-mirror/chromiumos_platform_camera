@@ -318,6 +318,8 @@ void CameraParser::handleSensor(CameraParser *profiles, const char *name, const 
         pCurrentCam->mEnableAIQ = strcmp(atts[1], "true") == 0;
     } else if (strcmp(name, "enableMkn") == 0) {
         pCurrentCam->mEnableMkn = strcmp(atts[1], "true") == 0;
+    } else if (strcmp(name, "AiqRunningInterval") == 0) {
+        pCurrentCam->mAiqRunningInterval = atoi(atts[1]);
     } else if (strcmp(name, "useCrlModule") == 0) {
         pCurrentCam->mUseCrlModule = strcmp(atts[1], "true") == 0;
     } else if (strcmp(name, "skipFrameV4L2Error") == 0) {

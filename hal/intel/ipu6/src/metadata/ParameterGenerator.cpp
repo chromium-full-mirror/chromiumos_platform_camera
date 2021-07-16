@@ -78,6 +78,7 @@ int ParameterGenerator::reset()
     LOG1("%s, mCameraId = %d", __func__, mCameraId);
     AutoMutex l(mParamsLock);
     mRequestParamMap.clear();
+    mRequestIdMap.clear();
 
     return OK;
 }
@@ -91,7 +92,7 @@ int ParameterGenerator::saveParameters(long sequence, long requestId, const Para
     if (param)
         mLastParam = *param;
 
-    LOG2("%s, sequence %ld", __func__, sequence);
+    LOG2("%s, sequence %ld, requestId %ld", __func__, sequence, requestId);
     std::shared_ptr<RequestParam> requestParam = nullptr;
     if (mRequestParamMap.size() < kStorageSize) {
         requestParam = std::make_shared<RequestParam>();
@@ -220,6 +221,15 @@ int ParameterGenerator::getUserRequestId(long sequence, int32_t& userRequestId)
     return UNKNOWN_ERROR;
 }
 
+void ParameterGenerator::setRequestIdMap(long currentRequestId, long requestIdWithAiq)
+{
+    AutoMutex l(mParamsLock);
+    if (mRequestIdMap.size() >= kStorageSize) {
+        mRequestIdMap.erase(mRequestIdMap.begin());
+    }
+    mRequestIdMap[currentRequestId] = requestIdWithAiq;
+}
+
 int ParameterGenerator::getRequestId(long sequence, long& requestId)
 {
     CHECK_SEQUENCE(sequence);
@@ -228,15 +238,25 @@ int ParameterGenerator::getRequestId(long sequence, long& requestId)
     AutoMutex l(mParamsLock);
     if (mRequestParamMap.find(sequence) != mRequestParamMap.end()) {
         requestId = mRequestParamMap[sequence]->requestId;
-        return OK;
     }
 
-    // Find nearest request id
-    for (auto it = mRequestParamMap.crbegin(); it != mRequestParamMap.crend(); ++it) {
-        if (it->first <= sequence) {
-            requestId = mRequestParamMap[it->first]->requestId;
-            return OK;
+    if (requestId == -1) {
+        // Find nearest request id
+        for (auto it = mRequestParamMap.crbegin(); it != mRequestParamMap.crend(); ++it) {
+            if (it->first <= sequence) {
+                requestId = mRequestParamMap[it->first]->requestId;
+            }
         }
+    }
+
+    if (mRequestIdMap.find(requestId) != mRequestIdMap.end()) {
+        // find the real request id of running AIQ
+        requestId = mRequestIdMap[requestId];
+    }
+
+    if (requestId != -1) {
+        LOG2("request id %ld for sequence id %ld", requestId, sequence);
+        return OK;
     }
 
     LOGE("Can't find requestId for seq %ld", sequence);
