@@ -242,7 +242,8 @@ int GPUExecutor::getStillTnrTriggerInfo(TuningMode mode) {
     ia_err ret = intelCca->getCMC(&cmc);
     CheckAndLogError(ret != OK, BAD_VALUE, "@%s get cmc data failed", __func__);
     mStillTnrTriggerInfo = cmc.tnr7us_trigger_info;
-    LOG2("%s still tnr trigger gain num: %d", mName.c_str(), mStillTnrTriggerInfo.num_gains);
+    LOG2("%s still tnr trigger gain num: %d threshold: %f", mName.c_str(),
+         mStillTnrTriggerInfo.num_gains, mStillTnrTriggerInfo.tnr7us_threshold_gain);
     return OK;
 }
 
@@ -259,6 +260,7 @@ int GPUExecutor::getTotalGain(int64_t seq, float* totalGain) {
     }
     *totalGain = (aiqResults->mAeResults.exposures[0].exposure->analog_gain *
                   aiqResults->mAeResults.exposures[0].exposure->digital_gain);
+    LOG2("%s totalGain: %f", mName.c_str(), *totalGain);
     return OK;
 }
 
@@ -278,8 +280,7 @@ int GPUExecutor::getTnrExtraFrameCount(int64_t seq) {
     int ret = getTotalGain(seq, &totalGain);
     CheckAndLogError(ret, 0, "@%s, Failed to get total gain", __func__);
 
-    if (!mStillTnrTriggerInfo.num_gains)
-        return PlatformData::getTnrExtraFrameCount(mCameraId);
+    if (!mStillTnrTriggerInfo.num_gains) return PlatformData::getTnrExtraFrameCount(mCameraId);
 
     int index = 0;
     for (int i = 1; i < mStillTnrTriggerInfo.num_gains; i++) {
@@ -426,12 +427,13 @@ int GPUExecutor::updateTnrISPConfig(Tnr7Param* pbuffer, uint32_t sequence) {
         tmpTnr7BinData.data = reinterpret_cast<char*>(ipuParameters->data) + blankKernelSize;
 
         PalOutput.setPublicOutput(&tmpTnr7BinData);
-        ia_pal_isp_tnr7_bc_1_0_t* pBc;
+        ia_pal_isp_tnr7_bc_1_1_t* pBc;
         ia_pal_isp_tnr7_blend_1_0_t* pBlend;
-        ia_pal_isp_tnr7_ims_1_0_t* pIms;
-        ret |= PalOutput.getKernelPublicOutput(ia_pal_uuid_isp_tnr7_bc_1_0, (void*&)pBc);
+        ia_pal_isp_tnr7_ims_1_1_t* pIms;
+
+        ret |= PalOutput.getKernelPublicOutput(ia_pal_uuid_isp_tnr7_bc_1_1, (void*&)pBc);
         ret |= PalOutput.getKernelPublicOutput(ia_pal_uuid_isp_tnr7_blend_1_0, (void*&)pBlend);
-        ret |= PalOutput.getKernelPublicOutput(ia_pal_uuid_isp_tnr7_ims_1_0, (void*&)pIms);
+        ret |= PalOutput.getKernelPublicOutput(ia_pal_uuid_isp_tnr7_ims_1_1, (void*&)pIms);
         CheckAndLogError(ret != ia_err_none, UNKNOWN_ERROR, "Can't read isp tnr7 parameters");
 
         tnr7_bc_1_0_t* tnr7_bc = &(pbuffer->bc);
@@ -449,6 +451,11 @@ int GPUExecutor::updateTnrISPConfig(Tnr7Param* pbuffer, uint32_t sequence) {
             tnr7_ims->d_top[i] = pIms->d_top[i];
             tnr7_ims->outofbounds[i] = pIms->outofbounds[i];
         }
+        tnr7_ims->radial_start = pIms->radial_start;
+        tnr7_ims->radial_coeff = pIms->radial_coeff;
+        tnr7_ims->frame_center_x = pIms->frame_center_x;
+        tnr7_ims->frame_center_y = pIms->frame_center_y;
+        tnr7_ims->r_coeff = pIms->r_coeff;
 
         // tnr7 bc params
         tnr7_bc->enable = pBc->enable;
@@ -460,19 +467,22 @@ int GPUExecutor::updateTnrISPConfig(Tnr7Param* pbuffer, uint32_t sequence) {
             tnr7_bc->coeffs[i] = pBc->coeffs[i];
         }
 
-        tnr7_bc->global_protection = pBc->global_protection;
-        tnr7_bc->global_protection_motion_level = pBc->global_protection_motion_level;
-        for (int i = 0; i < sizeof(pBc->global_protection_sensitivity_lut_values) / sizeof(int32_t);
-             i++) {
-            tnr7_bc->global_protection_sensitivity_lut_values[i] =
-                pBc->global_protection_sensitivity_lut_values[i];
+        if (mStreamId == VIDEO_STREAM_ID) {
+            tnr7_bc->global_protection = pBc->global_protection;
+            tnr7_bc->global_protection_motion_level = pBc->global_protection_motion_level;
+            for (int i = 0;
+                 i < sizeof(pBc->global_protection_sensitivity_lut_values) / sizeof(int32_t); i++) {
+                tnr7_bc->global_protection_sensitivity_lut_values[i] =
+                    pBc->global_protection_sensitivity_lut_values[i];
+            }
+            for (int i = 0;
+                 i < sizeof(pBc->global_protection_sensitivity_lut_slopes) / sizeof(int32_t); i++) {
+                tnr7_bc->global_protection_sensitivity_lut_slopes[i] =
+                    pBc->global_protection_sensitivity_lut_slopes[i];
+            }
+        } else {
+            tnr7_bc->global_protection = 0;
         }
-        for (int i = 0; i < sizeof(pBc->global_protection_sensitivity_lut_slopes) / sizeof(int32_t);
-             i++) {
-            tnr7_bc->global_protection_sensitivity_lut_slopes[i] =
-                pBc->global_protection_sensitivity_lut_slopes[i];
-        }
-
         // tnr7 blend params
         tnr7_blend->enable = pBlend->enable;
         tnr7_blend->enable_main_output = pBlend->enable_main_output;

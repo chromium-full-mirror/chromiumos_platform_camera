@@ -206,8 +206,7 @@ bool PSysDAG::fetchTnrOutBuffer(int64_t seq, std::shared_ptr<CameraBuffer> buf)
 
 bool PSysDAG::isBypassStillTnr(int64_t seq)
 {
-    return mStillExecutor != nullptr &&
-           (mStillTnrExecutor != nullptr ? mStillTnrExecutor->isBypassStillTnr(seq) : true);
+    return mStillTnrExecutor != nullptr ? mStillTnrExecutor->isBypassStillTnr(seq) : true;
 }
 
 int PSysDAG::getTnrExtraFrameCount(int64_t seq)
