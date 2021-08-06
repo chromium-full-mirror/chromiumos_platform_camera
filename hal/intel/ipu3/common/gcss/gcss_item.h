@@ -134,6 +134,7 @@ public:
 
     GraphConfigNode(const GraphConfigNode&);
     GraphConfigNode() : GraphConfigItem(NODE), mAncestor(nullptr){};
+    GraphConfigNode& operator=(const GraphConfigNode&) = delete;
     ~GraphConfigNode();
 
     GraphConfigNode* copy();
@@ -198,7 +199,6 @@ public:
     operator IGraphConfig*() { return this; }
 
 private:
-    DISALLOW_ASSIGN(GraphConfigNode);
     GraphConfigItem::const_iterator getNext(const_iterator& it){
                                             return std::next(it, 1);}
     GraphConfigItem::const_iterator getNextAttribute(
