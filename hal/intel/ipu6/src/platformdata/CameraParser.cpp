@@ -320,6 +320,33 @@ void CameraParser::handleSensor(CameraParser *profiles, const char *name, const 
         pCurrentCam->mEnableMkn = strcmp(atts[1], "true") == 0;
     } else if (strcmp(name, "AiqRunningInterval") == 0) {
         pCurrentCam->mAiqRunningInterval = atoi(atts[1]);
+    } else if (strcmp(name, "AlgoRunningRate") == 0) {
+        int size = strlen(atts[1]);
+        char src[size + 1];
+        MEMCPY_S(src, size, atts[1], size);
+        src[size] = '\0';
+        int algo = IMAGING_ALGO_NONE;
+        char* savePtr = nullptr;
+
+        char* tablePtr = strtok_r(src, ",", &savePtr);
+        while (tablePtr) {
+            if (strcmp(tablePtr, "AE") == 0) {
+                algo = IMAGING_ALGO_AE;
+            } else if (strcmp(tablePtr, "AWB") == 0) {
+                algo = IMAGING_ALGO_AWB;
+            } else if (strcmp(tablePtr, "AF") == 0) {
+                algo = IMAGING_ALGO_AF;
+            } else {
+                LOGE("The wrong algo type %s", tablePtr);
+                return;
+            }
+
+            tablePtr = strtok_r(nullptr, ",", &savePtr);
+            CheckAndLogError(!tablePtr, VOID_VALUE, "the run rate of algo %d is nullptr", algo);
+
+            pCurrentCam->mAlgoRunningRateMap[algo] = atof(tablePtr);
+            tablePtr = strtok_r(nullptr, ",", &savePtr);
+        }
     } else if (strcmp(name, "useCrlModule") == 0) {
         pCurrentCam->mUseCrlModule = strcmp(atts[1], "true") == 0;
     } else if (strcmp(name, "skipFrameV4L2Error") == 0) {

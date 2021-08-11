@@ -57,8 +57,6 @@ AiqCore::AiqCore(int cameraId) :
 
     CLEAR(mFrameParams);
     CLEAR(mLastAeResult),
-    CLEAR(mLastAwbResult),
-    CLEAR(mLastAfResult),
 
     CLEAR(mGbceParams);
     CLEAR(mPaParams);
@@ -122,8 +120,6 @@ int AiqCore::init() {
     CheckAndLogError(ret != OK, ret, "@%s, Init 3a parameter failed ret: %d", __func__, ret);
 
     CLEAR(mLastAeResult),
-    CLEAR(mLastAwbResult),
-    CLEAR(mLastAfResult),
     mAeRunTime = 0;
     mAwbRunTime = 0;
     mAiqRunTime = 0;
@@ -347,18 +343,13 @@ int AiqCore::runAiq(long requestId, AiqResult *aiqResult) {
 
     // fill the parameter
     if (aaaRunType & IMAGING_ALGO_AWB) {
-        if (!mAwbForceLock && (mAwbRunTime % mIntel3AParameter->mAwbPerTicks == 0)
-            && mIntel3AParameter->mTestPatternMode == TEST_PATTERN_OFF) {
-            mIntel3AParameter->mAwbParams.is_bypass = false;
-        } else {
-            mIntel3AParameter->mAwbParams.is_bypass = true;
-        }
+        mIntel3AParameter->mAwbParams.is_bypass = bypassAwb();
         mAiqParams->awb_input = mIntel3AParameter->mAwbParams;
         LOG3A("AWB bypass %d", mAiqParams->awb_input.is_bypass);
         mAiqParams->bitmap |= cca::CCA_MODULE_AWB;
     }
 
-    if (aaaRunType & IMAGING_ALGO_AF && !mAfForceLock) {
+    if (aaaRunType & IMAGING_ALGO_AF && !bypassAf()) {
         mAiqParams->bitmap |= cca::CCA_MODULE_AF;
         mAiqParams->af_input = mIntel3AParameter->mAfParams;
     }
@@ -403,11 +394,7 @@ int AiqCore::runAiq(long requestId, AiqResult *aiqResult) {
 
     // handle awb result
     if (aaaRunType & IMAGING_ALGO_AWB) {
-        cca::cca_awb_results *newAwbResults = &mLastAwbResult;
-
-        if (!mAwbForceLock && (mAwbRunTime % mIntel3AParameter->mAwbPerTicks == 0)) {
-            *newAwbResults = mAiqResults->awb_output;
-        }
+        cca::cca_awb_results *newAwbResults = &mAiqResults->awb_output;
 
         if (!PlatformData::isIsysEnabled(mCameraId)) {
             // Fix AWB gain to 1 for none-ISYS cases
@@ -473,12 +460,7 @@ int AiqCore::runAEC(long requestId, cca::cca_ae_results* aeResults) {
     cca::cca_ae_results *newAeResults = &mLastAeResult;
 
     // Run AEC with setting bypass mode to false
-    if (mAeRunTime == 0 || (mIntel3AParameter->mAeParams.ev_shift != mLastEvShift)
-        || (!mAeForceLock && (mAeRunTime % mIntel3AParameter->mAePerTicks == 0))) {
-        mIntel3AParameter->mAeParams.is_bypass = false;
-    } else {
-        mIntel3AParameter->mAeParams.is_bypass = true;
-    }
+    mIntel3AParameter->mAeParams.is_bypass = bypassAe();
 
     LOG3A("AEC frame_use: %d, bypass: %d", mIntel3AParameter->mAeParams.frame_use,
           mIntel3AParameter->mAeParams.is_bypass);
@@ -700,6 +682,63 @@ int AiqCore::processSAResults(cca::cca_sa_results *saResults, float *lensShading
     }
 
     return OK;
+}
+
+bool AiqCore::bypassAe() {
+    if (mAeRunTime == 0 || (mIntel3AParameter->mAeParams.ev_shift != mLastEvShift)) return false;
+    if (mAeForceLock || mAeRunTime % mIntel3AParameter->mAePerTicks != 0) return true;
+
+    bool converged = mLastAeResult.exposures[0].converged;
+
+    return skipAlgoRunning(&mAeRunRateInfo, IMAGING_ALGO_AE, converged);
+}
+
+bool AiqCore::bypassAf() {
+    if (mAfForceLock) return true;
+
+    bool converged = mAiqResults->af_output.status == ia_aiq_af_status_success
+                     && mAiqResults->af_output.final_lens_position_reached;
+
+    return skipAlgoRunning(&mAfRunRateInfo, IMAGING_ALGO_AF, converged);
+}
+
+bool AiqCore::bypassAwb() {
+    if (mAwbForceLock || mAwbRunTime % mIntel3AParameter->mAwbPerTicks != 0
+        || mIntel3AParameter->mTestPatternMode != TEST_PATTERN_OFF) return true;
+
+    bool converged = mAiqResults->awb_output.distance_from_convergence < EPSILON;
+
+    return skipAlgoRunning(&mAwbRunRateInfo, IMAGING_ALGO_AWB, converged);
+}
+
+bool AiqCore::skipAlgoRunning(RunRateInfo *info, int algo, bool converged) {
+    float configRunningRate = PlatformData::getAlgoRunningRate(algo, mCameraId);
+    if (configRunningRate < EPSILON) return false;
+    LOG3A("the running rate of type %d is %f", algo, configRunningRate);
+
+    // if converged, skip algo if running rate is reached.
+    if (converged) {
+        info->runCcaTime++;
+        if (checkRunRate(configRunningRate, info)) return true;
+
+        info->runAlgoTime++;
+    } else {
+        info->runCcaTime = 0;
+        info->runAlgoTime = 0;
+    }
+
+    return false;
+}
+
+bool AiqCore::checkRunRate(float configRunningRate, const RunRateInfo *info) {
+    LOG3A("configRunningRate %f, runAlgoTime %d, runCcaTime %d",
+          configRunningRate, info->runAlgoTime, info->runCcaTime);
+    if (info->runCcaTime == 0) return true;
+
+    float algoRunningRate = static_cast<float>(info->runAlgoTime) / info->runCcaTime;
+    if ((algoRunningRate - configRunningRate) > EPSILON) return true;
+
+    return false;
 }
 
 IntelCca* AiqCore::getIntelCca(TuningMode tuningMode) {

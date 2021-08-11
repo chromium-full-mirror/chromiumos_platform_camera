@@ -102,6 +102,17 @@ typedef enum {
     IMG_TRANS
 } DvsType;
 
+// Imaging algorithms
+typedef enum {
+    IMAGING_ALGO_NONE = 0,
+    IMAGING_ALGO_AE   = 1,
+    IMAGING_ALGO_AWB  = 1 << 1,
+    IMAGING_ALGO_AF   = 1 << 2,
+    IMAGING_ALGO_GBCE = 1 << 3,
+    IMAGING_ALGO_PA   = 1 << 4,
+    IMAGING_ALGO_SA   = 1 << 5
+} imaging_algorithm_t;
+
 // Note AUTO is not real config mode in the HAL.
 typedef camera_stream_configuration_mode_t ConfigMode;
 

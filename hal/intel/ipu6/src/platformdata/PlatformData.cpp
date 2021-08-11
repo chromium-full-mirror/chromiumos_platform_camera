@@ -218,6 +218,17 @@ bool PlatformData::isEnableMkn(int cameraId)
     return getInstance()->mStaticCfg.mCameras[cameraId].mEnableMkn;
 }
 
+float PlatformData::getAlgoRunningRate(int algo, int cameraId)
+{
+    PlatformData::StaticCfg::CameraInfo *pCam = &getInstance()->mStaticCfg.mCameras[cameraId];
+
+    if (pCam->mAlgoRunningRateMap.find(algo) != pCam->mAlgoRunningRateMap.end()) {
+        return pCam->mAlgoRunningRateMap[algo];
+    }
+
+    return 0.0;
+}
+
 bool PlatformData::isEnableLtmThread(int cameraId)
 {
     return getInstance()->mStaticCfg.mCameras[cameraId].mEnableLtmThread;

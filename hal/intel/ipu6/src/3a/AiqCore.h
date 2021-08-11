@@ -145,6 +145,20 @@ private:
     int calculateHyperfocalDistance(TuningMode mode);
     int calculateDepthOfField(const cca::cca_af_results &afResults, camera_range_t *focusRange);
     int initAiqPlusParams();
+
+    struct RunRateInfo {
+        int runCcaTime;     // cca (like runAEC, runAIQ) running time after converged
+        int runAlgoTime;    // algo (like AE, AF ...) running time after converged
+        RunRateInfo() { runCcaTime = 0; runAlgoTime = 0; }
+    };
+    bool bypassAe();
+    bool bypassAf();
+    bool bypassAwb();
+    // return ture if skip algo running
+    bool skipAlgoRunning(RunRateInfo *info, int algo, bool converged);
+    // return true if run rate is larger than config run rate
+    bool checkRunRate(float configRunningRate, const RunRateInfo *info);
+
     IntelCca* getIntelCca(TuningMode tuningMode);
 
 private:
@@ -157,11 +171,6 @@ private:
     bool mAfForceLock;
 
     std::unique_ptr<Intel3AParameter> mIntel3AParameter;
-
-    // Original AeResult class arrays are kept in 3a engine which is safely used here.
-    cca::cca_ae_results mLastAeResult;
-    cca::cca_awb_results mLastAwbResult;
-    cca::cca_af_results mLastAfResult;
 
     uint64_t mAeRunTime;
     uint64_t mAwbRunTime;
@@ -200,10 +209,16 @@ private:
 
     camera_tonemap_mode_t mTonemapMode;
 
+    cca::cca_ae_results mLastAeResult;
+
     std::unique_ptr<cca::cca_aiq_params> mAiqParams;
     std::unique_ptr<cca::cca_aiq_results> mAiqResults;
 
     int32_t mTonemapMaxCurvePoints;
+
+    RunRateInfo mAeRunRateInfo;
+    RunRateInfo mAfRunRateInfo;
+    RunRateInfo mAwbRunRateInfo;
 };
 
 } /* namespace icamera */

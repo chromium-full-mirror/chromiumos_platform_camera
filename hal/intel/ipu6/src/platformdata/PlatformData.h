@@ -169,6 +169,8 @@ public:
             bool mEnableAIQ;
             int mAiqRunningInterval;
             bool mEnableMkn;
+            // first: one algo type in imaging_algorithm_t, second: running rate
+            std::unordered_map<int, float> mAlgoRunningRateMap;
             bool mSkipFrameV4L2Error;
             int mCITMaxMargin;
             camera_yuv_color_range_mode_t mYuvColorRangeMode;
@@ -425,6 +427,15 @@ public:
      * \return if Mkn is enabled or not.
      */
     static bool isEnableMkn(int cameraId);
+
+    /**
+     * get running rate of every Algorithms
+     *
+     * \param algo: one type of imaging_algorithm_t
+     * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
+     * \return float: the running rate of every Algorithms, otherwise return 0.0
+     */
+    static float getAlgoRunningRate(int algo, int cameraId);
 
     /**
      * Check if sensor digital gain is used or not
