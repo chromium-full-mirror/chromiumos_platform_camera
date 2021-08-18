@@ -56,6 +56,9 @@ int HALFormatToV4l2Format(int cameraId, int halFormat, int usage) {
                 format = V4L2_PIX_FMT_NV12;
             }
             break;
+        case HAL_PIXEL_FORMAT_YCBCR_P010:
+            format = V4L2_PIX_FMT_P010;
+            break;
         case HAL_PIXEL_FORMAT_YCbCr_420_888:
         case HAL_PIXEL_FORMAT_BLOB:
             format = V4L2_PIX_FMT_NV12;
