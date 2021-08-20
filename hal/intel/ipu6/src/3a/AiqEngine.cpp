@@ -162,7 +162,16 @@ EventListener *AiqEngine::getSofEventListener()
     LOG1("%s, mCameraId = %d", __func__, mCameraId);
 
     AutoMutex l(mEngineLock);
-    return mSensorManager->getSofEventListener();
+    return this;
+}
+
+void AiqEngine::handleEvent(EventData eventData)
+{
+    AutoMutex l(mEngineLock);
+    LOG3A("@%s", __func__);
+
+    mSensorManager->handleSofEvent(eventData);
+    mLensManager->handleSofEvent(eventData);
 }
 
 int AiqEngine::prepareStatsParams(cca::cca_stats_params *statsParams, AiqStatistics *aiqStatistics)
@@ -208,7 +217,7 @@ void AiqEngine::setAiqResult(AiqResult *aiqResult, bool skip)
         LOG3A("%s, skipping frame aiqResult->mSequence = %ld", __func__, aiqResult->mSequence);
     }
 
-    mLensManager->setLensResult(aiqResult->mAeResults, aiqResult->mAfResults);
+    mLensManager->setLensResult(aiqResult->mAfResults, aiqResult->mSequence, mAiqParam);
     aiqResult->mAiqParam = mAiqParam;
 }
 

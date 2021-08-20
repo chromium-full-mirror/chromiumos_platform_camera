@@ -46,6 +46,7 @@ Intel3AParameter::Intel3AParameter(int cameraId) :
     mAePerTicks(1),
     mAwbPerTicks(1),
     mAfForceLock(false),
+    mManualFocusDistance(0.0),
     mDuringAfTriggerScan(false)
 {
     LOG3A("%s", __func__);
@@ -88,6 +89,7 @@ int Intel3AParameter::init()
 
     mAfMode = AF_MODE_AUTO;
     mAfForceLock = false;
+    mManualFocusDistance = 0.0;
     mAfTrigger = AF_TRIGGER_IDLE;
     mDuringAfTriggerScan = false;
     return OK;
@@ -644,6 +646,7 @@ void Intel3AParameter::updateAfParameter(const aiq_parameter_t& param)
             focusInMm = 1000 * (1.0f / focusDistance);
             mAfParams.manual_focus_parameters.manual_focus_action =
                 ia_aiq_manual_focus_action_set_distance;
+            mManualFocusDistance = focusDistance;
         } else {
             // 0.0f focus distance means infinity
             mAfParams.focus_mode = ia_aiq_af_operation_mode_infinity;
