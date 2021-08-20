@@ -73,15 +73,7 @@ void SensorManager::reset()
     mSofEventInfo.clear();
 }
 
-EventListener *SensorManager::getSofEventListener()
-{
-    AutoMutex l(mLock);
-    LOG1("@%s mCameraId = %d", __func__, mCameraId);
-
-    return this;
-}
-
-void SensorManager::handleEvent(EventData eventData)
+void SensorManager::handleSofEvent(EventData eventData)
 {
     AutoMutex l(mLock);
     LOG3A("@%s", __func__);

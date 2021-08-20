@@ -516,6 +516,13 @@ void AiqCore::focusDistanceResult(const cca::cca_af_results *afResults,
     if (mIntel3AParameter->mAfParams.focus_mode == ia_aiq_af_operation_mode_infinity) {
         // infinity mode is special: we need to report 0.0f (1/inf = 0)
         *afDistanceDiopters = 0.0f;
+    } else if (mIntel3AParameter->mAfParams.focus_mode == ia_aiq_af_operation_mode_manual
+               && (mIntel3AParameter->mAfParams.manual_focus_parameters.manual_focus_action
+                   == ia_aiq_manual_focus_action_set_distance)
+               && (mIntel3AParameter->mAfParams.manual_focus_parameters.manual_focus_distance
+                   == afResults->current_focus_distance)) {
+        // Don't need to calculate diopter in manual mode
+        *afDistanceDiopters = mIntel3AParameter->mManualFocusDistance;
     } else if (afResults->current_focus_distance != 0) {
         // In AIQ, 'current_focus_distance' is in millimeters
         // For rounding multiply by extra 100.

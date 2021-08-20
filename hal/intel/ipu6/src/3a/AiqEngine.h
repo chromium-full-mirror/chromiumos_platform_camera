@@ -23,6 +23,7 @@
 #include "AiqResultStorage.h"
 #include "SensorManager.h"
 #include "LensManager.h"
+#include "CameraEvent.h"
 #include "ParameterGenerator.h"
 
 namespace icamera {
@@ -34,7 +35,7 @@ namespace icamera {
  * and set result to HW layer.
  * This is sub thread class.
  */
-class AiqEngine {
+class AiqEngine : public EventListener {
 
 public:
     AiqEngine(int cameraId, SensorHwCtrl *sensorHw, LensHw *lensHw, AiqSetting *setting,
@@ -80,9 +81,14 @@ public:
     int stopEngine();
 
     /**
-     * \brief Get software EventListener
+     * \brief Get SOF EventListener
      */
     EventListener *getSofEventListener();
+
+    /**
+     * \brief handle event
+     */
+    void handleEvent(EventData eventData);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(AiqEngine);

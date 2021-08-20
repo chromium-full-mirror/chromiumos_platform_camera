@@ -80,6 +80,7 @@ public:
     int mAwbPerTicks;
 
     bool mAfForceLock; // Lock AF to respond autofocus action triggered by user.
+    float mManualFocusDistance;
 private:
     static const int MAX_FOCUS_DISTANCE = 5000; // unit is mm
 
