@@ -43,7 +43,7 @@ extern "C" {
 LIBEXPORT ia_err
 ia_exc_analog_gain_to_sensor_units(
     const cmc_parsed_analog_gain_conversion_t *a_gain_conversion,
-    const float a_analog_gain,
+    const float32_t a_analog_gain,
     uint16_t *a_analog_gain_code_global);
 
 /*!
@@ -58,7 +58,7 @@ ia_exc_analog_gain_to_sensor_units(
 LIBEXPORT ia_err
 ia_exc_digital_gain_to_sensor_units(
     const cmc_parsed_digital_gain_t * a_gain_conversion,
-    const float a_digital_gain,
+    const float32_t a_digital_gain,
     uint16_t *a_digital_gain_code_global);
 
 /*!
@@ -73,7 +73,7 @@ LIBEXPORT ia_err
 ia_exc_sensor_units_to_analog_gain(
     const cmc_parsed_analog_gain_conversion_t * a_gain_conversion,
     const uint16_t a_code,
-    float *a_analog_gain);
+    float32_t *a_analog_gain);
 
 /*!
  * \brief Converts digital gain from sensor units to generic units.
@@ -87,7 +87,7 @@ LIBEXPORT ia_err
 ia_exc_sensor_units_to_digital_gain(
     const cmc_parsed_digital_gain_t * a_gain_conversion,
     const uint16_t a_code,
-    float *a_digital_gain);
+    float32_t *a_digital_gain);
 
 /*!
  * \brief Gets analog gain and code based on current code.
@@ -102,7 +102,7 @@ LIBEXPORT ia_err
 ia_exc_get_analog_gain_code(
     const cmc_parsed_analog_gain_conversion_t * a_gain_conversion,
     const uint16_t code,
-    const int gain_code_offset,
+    const int32_t gain_code_offset,
     uint16_t *a_offset_code);
 
 /*!
@@ -118,7 +118,7 @@ LIBEXPORT ia_err
 ia_exc_get_digital_gain_code(
     const cmc_parsed_digital_gain_t *a_gain_conversion,
     const uint16_t code,
-    const int gain_code_offset,
+    const int32_t gain_code_offset,
     uint16_t *a_offset_code);
 
 /*!
@@ -140,9 +140,9 @@ ia_exc_convert_iso_to_gains(
     const cmc_parsed_digital_gain_t *a_digital_gain_conversion,
     const cmc_sensitivity_t *a_sensitivity,
     const int32_t a_iso,
-    float *a_analog_gain,
+    float32_t *a_analog_gain,
     int32_t *a_analog_gain_code,
-    float *a_digital_gain,
+    float32_t *a_digital_gain,
     int32_t *a_digital_gain_code);
 
 /*!

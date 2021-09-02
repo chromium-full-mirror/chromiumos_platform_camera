@@ -386,7 +386,7 @@ typedef enum
     ia_pal_uuid_isp_tnr7_rme_1_0 = 8230,
     ia_pal_uuid_isp_tnr7_spatial_1_0 = 3133,
     ia_pal_uuid_isp_tvs_1_0 = 64291,
-    ia_pal_uuid_isp_upscaler_1_0 = 42734,
+    ia_pal_uuid_isp_upscaler_1_0 = 25569,
     ia_pal_uuid_isp_vcr_3_1 = 36035,
     ia_pal_uuid_isp_vcr3 = 32600,
     ia_pal_uuid_isp_vcsc_2_0 = 6086,
@@ -410,6 +410,7 @@ typedef enum
     ia_pal_uuid_system_api_io_buffer = 47777,
     ia_pal_uuid_system_api_io_buffer_1_1 = 56474,
     ia_pal_uuid_system_api_lsc_1_2 = 19967,
+    ia_pal_uuid_system_api_rgbs_grid_1_0 = 35673,
     ia_pal_uuid_system_api_tvs_1_0 = 29571,
 
 } ia_system_api_uuid;

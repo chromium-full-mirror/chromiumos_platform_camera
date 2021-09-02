@@ -65,7 +65,7 @@ ia_exc_exposure_time_to_sensor_units(
 LIBEXPORT ia_err
 ia_exc_gain_to_sensor_units(
     const cmc_gain_conversion_t *a_gain_conversion,
-    const float a_gain,
+    const float32_t a_gain,
     uint16_t *a_gain_code);
 
 /*!
@@ -96,7 +96,7 @@ LIBEXPORT ia_err
 ia_exc_sensor_units_to_gain(
     const cmc_gain_conversion_t *a_gain_conversion,
     const uint16_t a_gain_code,
-    float *a_gain);
+    float32_t *a_gain);
 
 /*!
 * \brief Gets gain and code based on current code.
@@ -129,7 +129,7 @@ ia_exc_convert_iso_to_multi_gains(
     const cmc_multi_gain_conversions_t *a_multi_gain_conversions,
     const cmc_sensitivity_t * a_sensitivity,
     const int32_t a_iso,
-    float a_gains[IA_CMC_GAINS_MAX_NUM],
+    float32_t a_gains[IA_CMC_GAINS_MAX_NUM],
     int32_t a_gain_codes[IA_CMC_GAINS_MAX_NUM]);
 
 /*!

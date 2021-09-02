@@ -40,6 +40,8 @@ typedef struct
     int32_t global_protection_sensitivity_lut_slopes[2];
     /*!< global_protection_motion_level average alignment conf of previous frame*/
     int32_t global_protection_motion_level;
+    /*!< global_protection_inv_num_pixels inverse of number of pixels in frame - prec is U0.20*/
+    int32_t global_protection_inv_num_pixels;
 
 } tnr7_bc_1_0_t;
 

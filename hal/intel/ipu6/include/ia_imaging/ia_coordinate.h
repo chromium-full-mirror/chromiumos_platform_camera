@@ -92,10 +92,10 @@ typedef enum
  */
 typedef struct
 {
-    int top;    /*!< Top coordinate value in the coordinate system. */
-    int left;   /*!< Left coordinate value in the coordinate system. */
-    int bottom; /*!< Bottom coordinate value in the coordinate system. */
-    int right;  /*!< Right coordinate value in the coordinate system. */
+    int32_t top;    /*!< Top coordinate value in the coordinate system. */
+    int32_t left;   /*!< Left coordinate value in the coordinate system. */
+    int32_t bottom; /*!< Bottom coordinate value in the coordinate system. */
+    int32_t right;  /*!< Right coordinate value in the coordinate system. */
 } ia_coordinate_system;
 
 /*!

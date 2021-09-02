@@ -14233,6 +14233,10 @@ typedef struct
     int32_t cropper_output_width;
     /*!< cropper_output_height cropper Output height , equals upscaler input height*/
     int32_t cropper_output_height;
+    /*!< upscale_input_height upscaler input height, equals to cropper_output_height*/
+    int32_t upscale_input_height;
+    /*!< upscale_input_width upscaler input width, equals to cropper_output_width*/
+    int32_t upscale_input_width;
 
 } ia_pal_isp_upscaler_1_0_t;
 
@@ -16494,6 +16498,16 @@ typedef struct
     uint8_t ir_processing;
 
 } ia_pal_system_api_lsc_1_2_t;
+
+/*! \system api struct rgbs_grid_1_0
+RGBS grid (AWB statistics)
+*/
+typedef struct
+{
+    /*!< is_fragmentation If no - min_out_bytes=0. Otherwise - calculate to fit grid to CL.*/
+    uint8_t is_fragmentation;
+
+} ia_pal_system_api_rgbs_grid_1_0_t;
 
 /*! \system api struct tvs_1_0
 Trainable visual scaler

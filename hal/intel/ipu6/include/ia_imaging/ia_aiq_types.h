@@ -776,6 +776,11 @@ typedef struct {
     float ir_nr_bnlm;
     float ir_nr_xnr;
     float ir_nr_iefd;
+    float ir_nr_tnr;
+    float ir_nr_brightness;
+    float ir_nr_shadow;
+    float ir_nr_tg_adj;
+    float ir_nr_offset_max;
 } ia_aiq_rgbir_t;
 
 /*!

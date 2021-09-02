@@ -514,6 +514,7 @@ typedef struct
     const ia_aiq_depth_grid **depth_grids;                      /*!< Optional. Depth grid statistics */
     unsigned int num_depth_grids;                               /*!< Optional. Number of depth grid statistics */
     const ia_aiq_grid *ir_grid;                                 /*!< Optional. Ir grid statistics, if available. */
+    bool bAssitLightOn;                                         /*!< True if the af assist light is on, false otherwise .*/
 } ia_aiq_statistics_input_params_v4;
 
 /*!

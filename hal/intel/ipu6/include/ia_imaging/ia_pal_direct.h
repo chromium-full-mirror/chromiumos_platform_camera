@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#pragma once
+#ifndef IA_PAL_DIRECT_H
+#define IA_PAL_DIRECT_H
+
 #include "ia_aiq_types.h"
 #include "ia_ltm_types.h"
 #include "ia_dvs_types.h"
@@ -75,3 +77,5 @@ typedef struct
     ia_aiq_ir_weight_t const* direct_ia_aiq_ir_weight_grid;
     ia_aiq_rgbir_t const* direct_ia_aiq_rgbir_t;
 } ia_pal_direct_results;
+
+#endif // IA_PAL_DIRECT_H
