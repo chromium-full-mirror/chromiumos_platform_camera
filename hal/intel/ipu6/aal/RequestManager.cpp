@@ -209,6 +209,7 @@ int RequestManager::configureStreams(camera3_stream_configuration_t* stream_list
     // Enable video pipe if yuv stream exists (for 3A stats data)
     bool needAssignPreviewStream = true;
     icamera::stream_t* yuvStream = nullptr;
+    icamera::stream_t* blobStream = nullptr;
     for (uint32_t i = 0; i < streamsNum; i++) {
         /*
          * 1, for CAMERA3_STREAM_INPUT stream, format YCbCr_420_888 is for YUV
@@ -248,18 +249,24 @@ int RequestManager::configureStreams(camera3_stream_configuration_t* stream_list
         CheckAndLogError(ret != icamera::OK, ret, "failed to fill requestStreams[%d], ret:%d", ret,
                          requestStreamNum);
 
-        if (!yuvStream && stream_list->streams[i]->format != HAL_PIXEL_FORMAT_BLOB &&
-            !IS_ZSL_USAGE(stream_list->streams[i]->usage)) {
+        if (stream_list->streams[i]->format == HAL_PIXEL_FORMAT_BLOB) {
+            blobStream = &requestStreams[requestStreamNum];
+        } else if (!yuvStream && !IS_ZSL_USAGE(stream_list->streams[i]->usage)) {
             yuvStream = &requestStreams[requestStreamNum];
         }
+
         if (requestStreams[requestStreamNum].usage == icamera::CAMERA_STREAM_PREVIEW ||
             requestStreams[requestStreamNum].usage == icamera::CAMERA_STREAM_VIDEO_CAPTURE)
             needAssignPreviewStream = false;
 
         requestStreamNum++;
     }
-    if (needAssignPreviewStream && yuvStream) {
-        yuvStream->usage = icamera::CAMERA_STREAM_PREVIEW;
+    if (needAssignPreviewStream) {
+        if (yuvStream) {
+            yuvStream->usage = icamera::CAMERA_STREAM_PREVIEW;
+        } else if (blobStream) {
+            blobStream->usage = icamera::CAMERA_STREAM_PREVIEW;
+        }
     }
 
     CLEAR(mHALStream);

@@ -355,7 +355,12 @@ bool Camera3Stream::threadLoop() {
     }
 
     if (mHALStream.usage != icamera::CAMERA_STREAM_OPAQUE_RAW) {
-        ccBuf->dumpImage(frameNumber, icamera::DUMP_AAL_OUTPUT, dumpOutputFmt);
+        if (dumpOutputFmt == V4L2_PIX_FMT_JPEG) {
+            ccBuf->dumpImage(frameNumber, icamera::DUMP_AAL_OUTPUT | icamera::DUMP_JPEG_BUFFER,
+                             dumpOutputFmt);
+        } else {
+            ccBuf->dumpImage(frameNumber, icamera::DUMP_AAL_OUTPUT, dumpOutputFmt);
+        }
     }
     if (ccBuf->isLocked()) {
         ccBuf->unlock();

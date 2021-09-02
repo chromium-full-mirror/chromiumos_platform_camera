@@ -54,6 +54,7 @@ typedef enum vendor_metadata_tag {
     INTEL_VENDOR_CAMERA_RGBS_STATS_BLOCKS,            // byte[]       | public
     INTEL_VENDOR_CAMERA_CALLBACK_TM_CURVE,            // enum         | public
     INTEL_VENDOR_CAMERA_TONE_MAP_CURVE,               // float[]      | public
+    INTEL_VENDOR_CAMERA_POWER_MODE,                   // enum         | public
     INTEL_VENDOR_CAMERA_END,
 } vendor_metadata_tag_t;
 
@@ -78,4 +79,10 @@ typedef enum vendor_metadata_enum_intel_vendor_camera_callback_tm_curve {
     INTEL_VENDOR_CAMERA_CALLBACK_TM_CURVE_FALSE,
     INTEL_VENDOR_CAMERA_CALLBACK_TM_CURVE_TRUE,
 } vendor_metadata_enum_intel_vendor_camera_callback_tm_curve_t;
+
+// INTEL_VENDOR_CAMERA_POWER_MODE
+typedef enum vendor_metadata_enum_intel_vendor_camera_power_mode {
+    INTEL_VENDOR_CAMERA_POWER_MODE_LOW_POWER,
+    INTEL_VENDOR_CAMERA_POWER_MODE_HIGH_QUALITY,
+} vendor_metadata_enum_intel_vendor_camera_power_mode_t;
 

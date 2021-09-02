@@ -38,6 +38,7 @@ static tag_info_t intel_vendor_camera[INTEL_VENDOR_CAMERA_END -
     { "rgbsStatsBlocks",               ICAMERA_TYPE_BYTE   },
     { "callbackTmCurve",               ICAMERA_TYPE_BYTE   },
     { "toneMapCurve",                  ICAMERA_TYPE_FLOAT  },
+    { "powerMode",                     ICAMERA_TYPE_BYTE   },
 };
 
 tag_info_t *vendor_tag_info[INTEL_VENDOR_SECTION_COUNT] = {
@@ -104,6 +105,21 @@ int vendor_metadata_enum_snprint(uint32_t tag,
             break;
         }
         case INTEL_VENDOR_CAMERA_TONE_MAP_CURVE: {
+            break;
+        }
+        case INTEL_VENDOR_CAMERA_POWER_MODE: {
+            switch (value) {
+                case INTEL_VENDOR_CAMERA_POWER_MODE_LOW_POWER:
+                    msg = "LOW_POWER";
+                    ret = 0;
+                    break;
+                case INTEL_VENDOR_CAMERA_POWER_MODE_HIGH_QUALITY:
+                    msg = "HIGH_QUALITY";
+                    ret = 0;
+                    break;
+                default:
+                    msg = "error: enum value out of range";
+            }
             break;
         }
 
