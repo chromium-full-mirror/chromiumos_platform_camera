@@ -122,8 +122,8 @@ int AiqEngine::run3A(long requestId, long applyingSeq, long* effectSeq)
 
     AiqStatistics *aiqStats = mFirstAiqRunning ? nullptr :
         const_cast<AiqStatistics*>(mAiqResultStorage->getAndLockAiqStatistics());
-    AiqResult *aiqResult = mAiqResultStorage->acquireAiqResult();
     AiqState state = AIQ_STATE_IDLE;
+    AiqResult *aiqResult = mAiqResultStorage->acquireAiqResult();
 
     if (!needRun3A(aiqStats, requestId)) {
         LOG3A("%s: needRun3A is false, return AIQ_STATE_WAIT", __func__);
@@ -140,6 +140,7 @@ int AiqEngine::run3A(long requestId, long applyingSeq, long* effectSeq)
     if (state == AIQ_STATE_RESULT_SET) {
         state = handleAiqResult(aiqResult);
     }
+
     if (state == AIQ_STATE_DONE) {
         done(aiqResult);
     }

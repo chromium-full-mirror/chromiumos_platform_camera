@@ -67,6 +67,7 @@ namespace icamera {
 #define CAMERA_DEFAULT_CFG_PATH "/etc/camera/"
 #define CAMERA_GRAPH_DESCRIPTOR_FILE "gcss/graph_descriptor.xml"
 #define CAMERA_GRAPH_SETTINGS_DIR "gcss/"
+
 #define TNR7US_RESTART_THRESHOLD 5
 
 class GraphConfigNodes;
@@ -94,6 +95,7 @@ public:
                 sensorDescription("unset"),
                 mLensName(""),
                 mLensHwType(LENS_NONE_HW),
+                mSensorAwb(false),
                 mAutoSwitchType(AUTO_SWITCH_PSYS),
                 mLtmEnabled(false),
                 mSensorExposureNum(2),
@@ -162,6 +164,7 @@ public:
             std::string sensorDescription;
             std::string mLensName;
             int mLensHwType;
+            bool mSensorAwb;
             int mAutoSwitchType;
             bool mLtmEnabled;
             int mSensorExposureNum;
@@ -367,6 +370,14 @@ public:
      * \return int: the Lens HW type
      */
     static int getLensHwType(int cameraId);
+
+    /**
+     * get the sensor AWB
+     *
+     * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
+     * \return bool: the sensor AWB enable
+     */
+    static bool getSensorAwbEnable(int cameraId);
 
     /**
      * get the DVS type

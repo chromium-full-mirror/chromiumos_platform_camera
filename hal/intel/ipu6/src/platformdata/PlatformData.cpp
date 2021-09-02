@@ -178,6 +178,11 @@ int PlatformData::getLensHwType(int cameraId)
     return getInstance()->mStaticCfg.mCameras[cameraId].mLensHwType;
 }
 
+bool PlatformData::getSensorAwbEnable(int cameraId)
+{
+    return getInstance()->mStaticCfg.mCameras[cameraId].mSensorAwb;
+}
+
 int PlatformData::getDVSType(int cameraId)
 {
     return getInstance()->mStaticCfg.mCameras[cameraId].mDVSType;

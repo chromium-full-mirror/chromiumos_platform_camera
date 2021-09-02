@@ -767,6 +767,13 @@ int IspParamAdaptor::runIspAdaptL(ia_isp_bxt_program_group *pgPtr, ia_isp_bxt_gd
                         inputParams->program_group.base.run_kernels[i].enable = false;
                     }
                     break;
+                case ia_pal_uuid_isp_bxt_wb:
+                    if (PlatformData::getSensorAwbEnable(mCameraId)) {
+                        LOG2("%s: disable kernel(%d) in sensor awb mode", __func__,
+                           inputParams->program_group.base.run_kernels[i].kernel_uuid);
+                        inputParams->program_group.base.run_kernels[i].enable = false;
+                    }
+                    break;
             }
         }
     }
