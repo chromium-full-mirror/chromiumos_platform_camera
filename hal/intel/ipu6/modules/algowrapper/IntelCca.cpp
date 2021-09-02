@@ -230,12 +230,13 @@ void IntelCca::deinit() {
     releaseIntelCCA();
 }
 
-ia_err IntelCca::decodeStats(uint64_t statsPointer, uint32_t statsSize,
+ia_err IntelCca::decodeStats(uint64_t statsPointer, uint32_t statsSize, uint32_t bitmap,
                              ia_isp_bxt_statistics_query_results_t* results) {
-    LOG2("@%s, statsPointer: 0x%lu, statsSize:%d", __func__, statsPointer, statsSize);
+    LOG2("@%s, statsPointer: 0x%lu, statsSize:%d, bitmap:%x", __func__, statsPointer,
+         statsSize, bitmap);
     CheckAndLogError(!results, ia_err_argument, "@%s, results is nullptr", __func__);
 
-    ia_err ret = getIntelCCA()->decodeStats(statsPointer, statsSize, results);
+    ia_err ret = getIntelCCA()->decodeStats(statsPointer, statsSize, bitmap, results);
     LOG2("@%s, ret:%d", __func__, ret);
 
     return ret;

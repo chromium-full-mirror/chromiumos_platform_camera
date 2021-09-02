@@ -347,8 +347,9 @@ int IspParamAdaptor::decodeStatsData(TuningMode tuningMode,
 
     CheckAndLogError(hwStatsData == nullptr, UNKNOWN_ERROR, "%s, hwStatsData is nullptr", __func__);
     ia_isp_bxt_statistics_query_results_t queryResults = {};
+    uint32_t bitmap = 0xff; // Decode all stats by default
     ia_err iaErr = mIntelCca->decodeStats(reinterpret_cast<uint64_t>(hwStatsData->data),
-                                          hwStatsData->size, &queryResults);
+                                          hwStatsData->size, bitmap, &queryResults);
     CheckAndLogError(iaErr != ia_err_none, UNKNOWN_ERROR, "%s, Faield convert statistics",
                      __func__);
     LOG2("%s, query results: rgbs_grid(%d), af_grid(%d), dvs_stats(%d)", __func__,

@@ -61,7 +61,7 @@ class IntelCca {
 
     void deinit();
 
-    ia_err decodeStats(uint64_t statsPointer, uint32_t statsSize,
+    ia_err decodeStats(uint64_t statsPointer, uint32_t statsSize, uint32_t bitmap,
                        ia_isp_bxt_statistics_query_results_t* results);
 
     uint32_t getPalDataSize(const cca::cca_program_group& programGroup);

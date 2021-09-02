@@ -1876,7 +1876,7 @@ void MetadataConvert::fillSensorStaticMetadata(const icamera::Parameters& parame
     tag = CAMERA_SENSOR_ORIENTATION;
     entry = meta.find(tag);
     if (entry.count == 1) {
-        orientation = entry.data.u8[0];
+        orientation = entry.data.i32[0];
     }
     settings->update(ANDROID_SENSOR_ORIENTATION, &orientation, 1);
 

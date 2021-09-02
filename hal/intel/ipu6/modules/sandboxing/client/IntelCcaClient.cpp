@@ -398,10 +398,10 @@ void IntelCca::deinit() {
     CheckAndLogError(ret != ia_err_none, VOID_VALUE, "@%s, requestSyncCca fails", __func__);
 }
 
-ia_err IntelCca::decodeStats(uint64_t statsPointer, uint32_t statsSize,
+ia_err IntelCca::decodeStats(uint64_t statsPointer, uint32_t statsSize, uint32_t bitmap,
                              ia_isp_bxt_statistics_query_results_t* results) {
-    LOGIPC("@%s, mCameraId:%d, tuningMode:%d, statsPointer:0x%lx, statsSize:%d", __func__,
-           mCameraId, mTuningMode, statsPointer, statsSize);
+    LOGIPC("@%s, mCameraId:%d, tuningMode:%d, statsPointer:0x%lx, statsSize:%d, bitmap:%x",
+           __func__, mCameraId, mTuningMode, statsPointer, statsSize, bitmap);
     CheckAndLogError(!results, ia_err_argument, "@%s, results is nullptr", __func__);
     CheckAndLogError(!mInitialized, ia_err_general, "@%s, mInitialized is false", __func__);
 
@@ -413,6 +413,7 @@ ia_err IntelCca::decodeStats(uint64_t statsPointer, uint32_t statsSize,
     params->statsHandle = mCommon.getShmMemHandle(reinterpret_cast<void*>(statsPointer));
     params->statsBuffer.data = nullptr;
     params->statsBuffer.size = statsSize;
+    params->bitmap = bitmap;
 
     ia_err ret = mCommon.requestSyncCca(IPC_CCA_DECODE_STATS, mMemDecodeStats.mHandle);
     CheckAndLogError(ret != ia_err_none, ia_err_general, "@%s, requestSyncCca fails", __func__);
