@@ -151,9 +151,9 @@ private:
         int runAlgoTime;    // algo (like AE, AF ...) running time after converged
         RunRateInfo() { runCcaTime = 0; runAlgoTime = 0; }
     };
-    bool bypassAe();
-    bool bypassAf();
-    bool bypassAwb();
+    bool bypassAe(const aiq_parameter_t &param);
+    bool bypassAf(const aiq_parameter_t &param);
+    bool bypassAwb(const aiq_parameter_t &param);
     // return ture if skip algo running
     bool skipAlgoRunning(RunRateInfo *info, int algo, bool converged);
     // return true if run rate is larger than config run rate
@@ -214,15 +214,15 @@ private:
     std::unique_ptr<cca::cca_aiq_params> mAiqParams;
     std::unique_ptr<cca::cca_aiq_results> mAiqResults;
 
-    int32_t mTonemapMaxCurvePoints;
-    bool mIsPLCEnable;
-
-    bool mAeRunRateEnabled;
+    bool mAeBypassed;
     RunRateInfo mAeRunRateInfo;
-    bool mAfRunRateEnabled;
+    bool mAfBypassed;
     RunRateInfo mAfRunRateInfo;
-    bool mAwbRunRateEnabled;
+    bool mAwbBypassed;
     RunRateInfo mAwbRunRateInfo;
+
+    uint32_t mLockedExposureTimeUs;
+    uint16_t mLockedIso;
 };
 
 } /* namespace icamera */

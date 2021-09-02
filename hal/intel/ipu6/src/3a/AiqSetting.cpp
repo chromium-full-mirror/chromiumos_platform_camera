@@ -270,6 +270,8 @@ int AiqSetting::setParameters(const Parameters& params)
         }
     }
 
+    params.getPowerMode(mAiqParam.powerMode);
+
     mAiqParam.dump();
 
     return OK;
@@ -354,6 +356,8 @@ void aiq_parameter_t::reset()
     callbackRgbs = false;
     callbackTmCurve = false;
 
+    powerMode = CAMERA_LOW_POWER;
+
     CLEAR(resolution);
 }
 
@@ -424,6 +428,7 @@ void aiq_parameter_t::dump()
     LOG3A("testPatternMode %d", testPatternMode);
     LOG3A("callback RGBS stats %s", callbackRgbs ? "true" : "false");
     LOG3A("callback Tonemap curve: %s", callbackTmCurve ? "true" : "false");
+    LOG3A("power mode %d", powerMode);
 }
 
 } /* namespace icamera */

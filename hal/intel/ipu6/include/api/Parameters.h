@@ -726,6 +726,14 @@ typedef enum {
 } camera_msg_type_t;
 
 /**
+ * \enum camera_power_mode_t: Use to control power mode.
+ */
+typedef enum {
+    CAMERA_LOW_POWER = 0,
+    CAMERA_HIGH_QUALITY,
+} camera_power_mode_t;
+
+/**
  * \struct Sensor RAW data info for ZSL.
  */
 typedef struct {
@@ -2616,6 +2624,24 @@ public:
     * \return 0 if successfully, otherwise non-0 value is returned.
     */
     int getTonemapCurves(camera_tonemap_curves_t& curves) const;
+
+    /**
+     * \brief Set power mode.
+     *
+     * \param[in] camera_power_mode_t mode
+     *
+     * \return 0 if set successfully, otherwise non-0 value is returned.
+     */
+    int setPowerMode(camera_power_mode_t mode);
+
+    /**
+     * \brief Get power mode
+     *
+     * \param[out] camera_power_mode_t mode
+     *
+     * \return 0 if power mode was set, otherwise non-0 value is returned.
+     */
+    int getPowerMode(camera_power_mode_t &mode) const;
 
     /**
      * \brief Set user request id

@@ -149,6 +149,11 @@ static const ValuePair<uint8_t> tonemapPresetCurvesTable[] = {
     {icamera::TONEMAP_PRESET_CURVE_REC709, ANDROID_TONEMAP_PRESET_CURVE_REC709},
 };
 
+static const ValuePair<uint8_t> powerModesTable[] = {
+    {icamera::CAMERA_LOW_POWER, INTEL_VENDOR_CAMERA_POWER_MODE_LOW_POWER},
+    {icamera::CAMERA_HIGH_QUALITY, INTEL_VENDOR_CAMERA_POWER_MODE_HIGH_QUALITY},
+};
+
 static bool isValueSupported(uint8_t mode, const icamera::CameraMetadata* caps, uint32_t tag) {
     icamera_metadata_ro_entry entry = caps->find(tag);
     if (entry.count > 0) {
@@ -1257,6 +1262,17 @@ int MetadataConvert::convertVendorControlMetadata(const android::CameraMetadata&
     if (entry.count == 1) {
         enable = (entry.data.u8[0] == INTEL_VENDOR_CAMERA_CALLBACK_TM_CURVE_TRUE) ? true : false;
         parameter->setCallbackTmCurve(enable);
+    }
+
+    tag = INTEL_VENDOR_CAMERA_POWER_MODE;
+    entry = settings.find(tag);
+    if (entry.count == 1) {
+        int halPowerMode = icamera::CAMERA_LOW_POWER;
+        int ret = getHalValue(entry.data.u8[0], powerModesTable, ARRAY_SIZE(powerModesTable),
+                              &halPowerMode);
+        if (ret == icamera::OK) {
+            parameter->setPowerMode(static_cast<icamera::camera_power_mode_t>(halPowerMode));
+        }
     }
 
     return icamera::OK;

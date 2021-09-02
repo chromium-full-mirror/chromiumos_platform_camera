@@ -2002,6 +2002,25 @@ int Parameters::getTonemapCurves(camera_tonemap_curves_t& curves) const {
     return (curves.rSize && curves.bSize && curves.gSize) ? OK : NAME_NOT_FOUND;
 }
 
+int Parameters::setPowerMode(camera_power_mode_t mode)
+{
+    uint8_t value = mode;
+    ParameterHelper::AutoWLock wl(mData);
+    return ParameterHelper::getMetadata(mData).update(INTEL_VENDOR_CAMERA_POWER_MODE, &value, 1);
+}
+
+int Parameters::getPowerMode(camera_power_mode_t &mode) const
+{
+    ParameterHelper::AutoRLock rl(mData);
+    auto entry = ParameterHelper::getMetadataEntry(mData, INTEL_VENDOR_CAMERA_POWER_MODE);
+    if (entry.count != 1) {
+        return NAME_NOT_FOUND;
+    }
+
+    mode = (camera_power_mode_t)entry.data.u8[0];
+    return OK;
+}
+
 int Parameters::setUserRequestId(int32_t userRequestId) {
     ParameterHelper::AutoWLock wl(mData);
 

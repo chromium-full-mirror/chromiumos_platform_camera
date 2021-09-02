@@ -47,6 +47,7 @@ Intel3AParameter::Intel3AParameter(int cameraId) :
     mAwbPerTicks(1),
     mAfForceLock(false),
     mManualFocusDistance(0.0),
+    mAeMode(AE_MODE_AUTO),
     mDuringAfTriggerScan(false)
 {
     LOG3A("%s", __func__);
@@ -90,6 +91,7 @@ int Intel3AParameter::init()
     mAfMode = AF_MODE_AUTO;
     mAfForceLock = false;
     mManualFocusDistance = 0.0;
+    mAeMode = AE_MODE_AUTO;
     mAfTrigger = AF_TRIGGER_IDLE;
     mDuringAfTriggerScan = false;
     return OK;
@@ -314,6 +316,7 @@ void Intel3AParameter::setManualIso(const aiq_parameter_t& param)
 
 void Intel3AParameter::updateAeParameter(const aiq_parameter_t& param)
 {
+    mAeMode = param.aeMode;
     mAeParams.frame_use = AiqUtils::convertFrameUsageToIaFrameUsage(param.frameUsage);
     mAeParams.num_exposures = PlatformData::getExposureNum(mCameraId,
                                   CameraUtils::isMultiExposureCase(mCameraId, param.tuningMode));

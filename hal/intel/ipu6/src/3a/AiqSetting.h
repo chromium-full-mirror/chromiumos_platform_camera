@@ -107,6 +107,7 @@ struct aiq_parameter_t {
     camera_test_pattern_mode_t testPatternMode;
     bool callbackRgbs;
     bool callbackTmCurve;
+    camera_power_mode_t powerMode;
 
     aiq_parameter_t() { reset(); }
     void reset();
