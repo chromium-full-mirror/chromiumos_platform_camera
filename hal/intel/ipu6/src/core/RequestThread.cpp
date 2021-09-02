@@ -44,7 +44,8 @@ RequestThread::RequestThread(int cameraId, AiqUnitBase *a3AControl, ParameterGen
     mLastEffectSeq(-1),
     mLastAppliedSeq(-1),
     mLastSofSeq(-1),
-    mBlockRequest(true)
+    mBlockRequest(true),
+    mSofEnabled(false)
 {
     CLEAR(mStreamConfig);
     CLEAR(mConfiguredStreams);
@@ -52,6 +53,8 @@ RequestThread::RequestThread(int cameraId, AiqUnitBase *a3AControl, ParameterGen
 
     mStreamConfig.operation_mode = CAMERA_STREAM_CONFIGURATION_MODE_END;
     mPerframeControlSupport = PlatformData::isFeatureSupported(mCameraId, PER_FRAME_CONTROL);
+
+    mSofEnabled = PlatformData::isIsysEnabled(cameraId);
 }
 
 RequestThread::~RequestThread()
@@ -583,7 +586,9 @@ void RequestThread::handleRequest(CameraRequest& request, long applyingSeq)
             }
         }
 
-        if (requestId >= 0) m3AControl->run3A(requestId, applyingSeq, &effectSeq);
+        if (requestId >= 0) {
+            m3AControl->run3A(requestId, applyingSeq, mSofEnabled ? &effectSeq : nullptr);
+        }
 
         {
             AutoMutex l(mPendingReqLock);

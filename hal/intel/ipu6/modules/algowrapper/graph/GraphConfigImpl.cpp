@@ -370,7 +370,7 @@ status_t GraphConfigImpl::queryAllMatchedResults(const std::vector<HalStream*>& 
         mFirstQueryResults.clear();
         mGraphQueryManager->queryGraphs(query.second, mFirstQueryResults);
         if (mFirstQueryResults.empty()) {
-            LOG2("%s, Failed to query the result, please check the settings xml", __func__,
+            LOG2("%s, Failed to query the result, please check the settings xml (0x%x)", __func__,
                  mConfigMode);
             return BAD_VALUE;
         }

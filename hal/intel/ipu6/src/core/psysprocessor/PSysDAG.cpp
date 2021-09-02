@@ -497,7 +497,10 @@ int PSysDAG::configure(ConfigMode configMode, TuningMode tuningMode, bool useTnr
     int ret = mIspParamAdaptor->init();
     CheckAndLogError(ret != OK, ret, "Init isp Adaptor failed, tuningMode %d", mTuningMode);
 
-    ret = mIspParamAdaptor->configure(mInputFrameInfo[mDefaultMainInputPort], mConfigMode, mTuningMode);
+    int ipuOutputFormat = -1;
+    if (!mOutputFrameInfo.empty()) ipuOutputFormat = mOutputFrameInfo.begin()->second.format;
+    ret = mIspParamAdaptor->configure(mInputFrameInfo[mDefaultMainInputPort], mConfigMode,
+                                      mTuningMode, ipuOutputFormat);
     CheckAndLogError(ret != OK, ret, "Configure isp Adaptor failed, tuningMode %d", mTuningMode);
 
     ret = createPipeExecutors(useTnrOutBuffer);

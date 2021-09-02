@@ -75,7 +75,8 @@ public:
 
     int init();
     int deinit();
-    int configure(const stream_t &stream, ConfigMode configMode, TuningMode tuningMode);
+    int configure(const stream_t &stream, ConfigMode configMode, TuningMode tuningMode,
+                  int ipuOutputFormat = -1);
 
     int getParameters(Parameters& param);
     int decodeStatsData(TuningMode tuningMode,
@@ -141,6 +142,7 @@ private:
     int mCameraId;
     PgParamType mPgParamType;
     TuningMode mTuningMode;
+    int mIpuOutputFormat;
 
     //Guard for IspParamAdaptor public API
     Mutex mIspAdaptorLock;

@@ -41,6 +41,7 @@ IspParamAdaptor::IspParamAdaptor(int cameraId, PgParamType type) :
         mCameraId(cameraId),
         mPgParamType(type),
         mTuningMode(TUNING_MODE_VIDEO),
+        mIpuOutputFormat(V4L2_PIX_FMT_NV12),
         mGraphConfig(nullptr),
         mIntelCca(nullptr) {
     LOG1("IspParamAdaptor was created for id:%d type:%d", mCameraId, mPgParamType);
@@ -221,12 +222,13 @@ int IspParamAdaptor::postConfigure(int width, int height, ia_binary_data *binary
  * \param configMode[IN]: The real configure mode.
  * \param tuningMode[IN]:  The tuning mode.
  * \param stream[IN]: frame info.
+ * \param ipuOutputFormat[IN]: format of output frame
  * \return OK: everything went ok.
  * \return UNKNOWN_ERROR: First run of ISP adaptation failed.
  * \return NO_INIT: Initialization of P2P or PG_DIE wrapper failed.
  */
 int IspParamAdaptor::configure(const stream_t &stream, ConfigMode configMode,
-                               TuningMode tuningMode) {
+                               TuningMode tuningMode, int ipuOutputFormat) {
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL1);
 
     int ret = OK;
@@ -237,6 +239,8 @@ int IspParamAdaptor::configure(const stream_t &stream, ConfigMode configMode,
 
     AutoMutex l(mIspAdaptorLock);
 
+    if (ipuOutputFormat != -1) mIpuOutputFormat = ipuOutputFormat;
+    LOG2("PSys output format %x", mIpuOutputFormat);
     mTuningMode = tuningMode;
     CLEAR(mLastPalDataForVideoPipe);
     for (uint32_t i = 0; i < mPalRecords.size(); i++) {
@@ -742,8 +746,12 @@ int IspParamAdaptor::runIspAdaptL(ia_isp_bxt_program_group *pgPtr, ia_isp_bxt_gd
                 case ia_pal_uuid_isp_ofa_2_mp:
                 case ia_pal_uuid_isp_ofa_2_dp:
                 case ia_pal_uuid_isp_ofa_2_ppp:
-                    // These metadata options map to ofa_format_nv12 defined in ofa_format_t
-                    inputParams->program_group.base.run_kernels[i].metadata[1] = 2;
+                    // These metadata options map to ofa_format_t
+                    if (mIpuOutputFormat == V4L2_PIX_FMT_YUYV) {
+                        inputParams->program_group.base.run_kernels[i].metadata[1] = 5;
+                    } else {
+                        inputParams->program_group.base.run_kernels[i].metadata[1] = 2;
+                    }
                     break;
 #endif
                 case ia_pal_uuid_isp_bxt_ofa_dp:

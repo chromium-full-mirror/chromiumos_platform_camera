@@ -34,9 +34,7 @@ SofSource::SofSource(int cameraId) :
 {
     LOG1("%s: SofSource is constructed", __func__);
 
-    mSofDisabled = !PlatformData::isEnableAIQ(mCameraId);
-
-    mSofDisabled = mSofDisabled || !PlatformData::isIsysEnabled(cameraId);
+    mSofDisabled = !PlatformData::isIsysEnabled(cameraId);
 }
 
 SofSource::~SofSource()

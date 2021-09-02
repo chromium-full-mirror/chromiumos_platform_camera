@@ -1002,6 +1002,8 @@ void PSysProcessor::onFrameDone(const PSysTaskData& result)
         bool holdOnInput = needHoldOnInputFrame(settingSequence, sequence);
         bool hasRawOutput = isBufferHoldForRawReprocess(sequence);
 
+        LOG2("%s, dst sequence: %ld, src sequence: %ld, hasRawOutput: %d, holdOnInput: %d",
+             __func__, settingSequence, sequence, hasRawOutput, holdOnInput);
         // Return buffer only if the buffer is not used in the future.
         if (!holdOnInput && mBufferProducer && !hasRawOutput) {
             for (const auto& src : result.mInputBuffers) {

@@ -581,7 +581,7 @@ status_t GraphConfigPipe::getPgRbmValue(string pgName, IGraphType::StageAttr* st
     CheckAndLogError(!rbmAddr, NO_MEMORY, "%s get rbm value: %s", __func__, rbmString.c_str());
 
     if (stageAttr->rbm_bytes > MAX_RBM_STR_SIZE) {
-        LOGE("%s, memory is too small to save rbm value: %d, %zu", __func__,
+        LOGE("%s, memory is too small to save rbm value: %d, %d", __func__,
              stageAttr->rbm_bytes, MAX_RBM_STR_SIZE);
         stageAttr->rbm_bytes = 0;
         return NO_MEMORY;
