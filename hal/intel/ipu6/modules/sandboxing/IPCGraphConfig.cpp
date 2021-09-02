@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "IPC_GRAPH_CONFIG"
+#define LOG_TAG IPC_GRAPH_CONFIG
 
 #include "modules/sandboxing/IPCGraphConfig.h"
 

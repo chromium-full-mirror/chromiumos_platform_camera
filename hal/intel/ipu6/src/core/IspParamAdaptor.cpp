@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "IspParamAdaptor"
+#define LOG_TAG IspParamAdaptor
 
 #include "IspParamAdaptor.h"
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "GraphConfigImplClient"
+#define LOG_TAG GraphConfigImplClient
 
 #include "modules/sandboxing/client/GraphConfigImplClient.h"
 

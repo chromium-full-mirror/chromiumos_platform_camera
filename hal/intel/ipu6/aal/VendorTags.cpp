@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "VendorTags"
+#define LOG_TAG VendorTags
 
 #include "aal/VendorTags.h"
 

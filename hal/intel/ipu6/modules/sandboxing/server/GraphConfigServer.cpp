@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "GraphConfigServer"
+#define LOG_TAG GraphConfigServer
 
 #include "modules/sandboxing/server/GraphConfigServer.h"
 

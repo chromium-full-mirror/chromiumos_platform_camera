@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "IPCIntelPGParam"
+#define LOG_TAG IPCIntelPGParam
 
 #include "modules/sandboxing/IPCIntelPGParam.h"
 

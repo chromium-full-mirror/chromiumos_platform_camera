@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "Camera3HAL"
+#define LOG_TAG Camera3HAL
 
 #include "Camera3HAL.h"
 

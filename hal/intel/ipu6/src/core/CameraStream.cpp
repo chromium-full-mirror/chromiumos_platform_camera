@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "CameraStream"
+#define LOG_TAG CameraStream
 
 #include "iutils/CameraLog.h"
 #include "iutils/Errors.h"

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "Ltm"
+#define LOG_TAG Ltm
 
 #include "Ltm.h"
 

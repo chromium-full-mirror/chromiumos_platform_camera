@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "Camera3AMetadata"
+#define LOG_TAG Camera3AMetadata
 
 #include "Camera3AMetadata.h"
 

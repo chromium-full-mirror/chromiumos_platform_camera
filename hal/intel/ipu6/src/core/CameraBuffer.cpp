@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "CameraBuffer"
+#define LOG_TAG CameraBuffer
 
 #include <sys/mman.h>
 #include <stdlib.h>

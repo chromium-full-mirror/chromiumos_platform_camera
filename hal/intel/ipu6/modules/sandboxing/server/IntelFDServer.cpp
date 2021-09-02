@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "IntelFDServer"
+#define LOG_TAG IntelFDServer
 
 #include "modules/sandboxing/server/IntelFDServer.h"
 

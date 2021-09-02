@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "ProcessorManager"
+#define LOG_TAG ProcessorManager
 
 #include "ProcessorManager.h"
 #include "iutils/CameraLog.h"

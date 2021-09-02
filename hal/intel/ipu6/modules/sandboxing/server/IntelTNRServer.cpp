@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "IntelTNRServer"
+#define LOG_TAG IntelTNRServer
 
 #include "modules/sandboxing/server/IntelTNRServer.h"
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "Utils"
+#define LOG_TAG Utils
 
 #include <stdio.h>
 #include <stdlib.h>

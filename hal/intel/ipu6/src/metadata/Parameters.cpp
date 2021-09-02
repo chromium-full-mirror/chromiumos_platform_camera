@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "Parameters"
+#define LOG_TAG Parameters
 
 #include "iutils/Errors.h"
 #include "iutils/CameraLog.h"

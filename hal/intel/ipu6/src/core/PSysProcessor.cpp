@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "PSysProcessor"
+#define LOG_TAG PSysProcessor
 
 #include <set>
 #include <utility>

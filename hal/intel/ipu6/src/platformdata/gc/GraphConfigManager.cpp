@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "GraphConfigManager"
+#define LOG_TAG GraphConfigManager
 
 #include "src/platformdata/gc/GraphConfigManager.h"
 

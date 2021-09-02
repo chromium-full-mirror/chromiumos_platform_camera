@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "IntelAWBStateMachine"
+#define LOG_TAG IntelAWBStateMachine
 
 #include "IntelAWBStateMachine.h"
 

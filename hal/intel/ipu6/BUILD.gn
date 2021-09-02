@@ -132,6 +132,8 @@ shared_library("libcamhal") {
     "src/v4l2/SysCall.cpp",
     "src/v4l2/V4l2DeviceFactory.cpp",
     "src/v4l2/NodeInfo.cpp",
+    "src/iutils/ModuleTags.cpp",
+    "src/iutils/LogSink.cpp",
   ]
 
   cflags_cc = [
@@ -301,6 +303,8 @@ shared_library("libcam_algo") {
     "modules/algowrapper/IntelCca.cpp",
     "modules/algowrapper/IntelPGParam.cpp",
     "src/3a/AiqUtils.cpp",
+    "src/iutils/ModuleTags.cpp",
+    "src/iutils/LogSink.cpp",
   ]
   cflags_cc = [
     "-fvisibility=default",

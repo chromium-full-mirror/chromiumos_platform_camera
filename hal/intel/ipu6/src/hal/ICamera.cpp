@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "ICamera"
+#define LOG_TAG ICamera
 
 #include "iutils/CameraDump.h"
 #include "iutils/CameraLog.h"

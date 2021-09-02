@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "AiqResult"
+#define LOG_TAG AiqResult
 
 #include "iutils/Errors.h"
 #include "iutils/CameraLog.h"

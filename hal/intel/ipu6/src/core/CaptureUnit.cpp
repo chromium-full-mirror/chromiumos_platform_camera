@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "CaptureUnit"
+#define LOG_TAG CaptureUnit
 
 #include <poll.h>
 #include <fcntl.h>

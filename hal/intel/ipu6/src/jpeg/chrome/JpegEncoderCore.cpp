@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "JpegEncoderCore"
+#define LOG_TAG JpegEncoderCore
 
 #include "JpegEncoderCore.h"
 

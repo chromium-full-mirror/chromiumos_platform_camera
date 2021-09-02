@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "IntelTNR7US"
+#define LOG_TAG IntelTNR7US
 
 #include "modules/algowrapper/IntelTNR7US.h"
 

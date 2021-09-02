@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "HalV3Utils"
+#define LOG_TAG HalV3Utils
 #include <linux/videodev2.h>
 #include <math.h>
 

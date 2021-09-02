@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "AiqInitData"
+#define LOG_TAG AiqInitData
 
 #include <unordered_map>
 #include <dirent.h>

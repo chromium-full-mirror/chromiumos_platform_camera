@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "AiqSetting"
+#define LOG_TAG AiqSetting
 
 #include <algorithm>
 

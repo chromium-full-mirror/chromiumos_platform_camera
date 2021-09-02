@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "SyncManager"
+#define LOG_TAG SyncManager
 
 #include <sys/sysinfo.h>
 #include <math.h>

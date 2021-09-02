@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "IntelAlgoClient"
+#define LOG_TAG IntelAlgoClient
 
 #include "modules/sandboxing/client/IntelAlgoClient.h"
 #include "modules/sandboxing/client/IntelCcaClient.h"

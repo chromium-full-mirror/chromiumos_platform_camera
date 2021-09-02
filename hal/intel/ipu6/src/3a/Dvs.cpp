@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "Dvs"
+#define LOG_TAG Dvs
 #include "src/3a/Dvs.h"
 
 #include <ia_cmc_parser.h>

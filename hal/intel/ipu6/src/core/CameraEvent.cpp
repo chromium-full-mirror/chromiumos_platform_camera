@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "CameraEvent"
+#define LOG_TAG CameraEvent
 
 #include "iutils/CameraLog.h"
 

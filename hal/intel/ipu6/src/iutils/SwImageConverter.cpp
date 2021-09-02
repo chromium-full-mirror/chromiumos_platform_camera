@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "SwImageConverter"
+#define LOG_TAG SwImageConverter
 
 #include "Errors.h"
 #include "Utils.h"

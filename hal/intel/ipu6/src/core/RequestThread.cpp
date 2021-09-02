@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "RequestThread"
+#define LOG_TAG RequestThread
 
 #include "iutils/Errors.h"
 #include "iutils/CameraLog.h"

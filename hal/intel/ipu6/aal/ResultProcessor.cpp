@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "ResultProcessor"
+#define LOG_TAG ResultProcessor
 
 #include "ResultProcessor.h"
 

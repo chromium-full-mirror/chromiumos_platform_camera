@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "AiqEngine"
+#define LOG_TAG AiqEngine
 
 #include "iutils/Utils.h"
 #include "iutils/Errors.h"

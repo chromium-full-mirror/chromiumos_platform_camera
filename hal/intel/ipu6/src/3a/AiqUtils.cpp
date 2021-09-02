@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "AiqUtils"
+#define LOG_TAG AiqUtils
 
 #include <math.h>
 #include <algorithm>

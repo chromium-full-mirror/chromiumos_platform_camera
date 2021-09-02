@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "IPC_FACE_DETECTION"
+#define LOG_TAG IPC_FACE_DETECTION
 
 #include "modules/sandboxing/IPCIntelFD.h"
 

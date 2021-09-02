@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "Intel3AParameter"
+#define LOG_TAG Intel3AParameter
 
 #include <cmath>
 #include <climits>

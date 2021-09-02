@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "MetadataConvert"
+#define LOG_TAG MetadataConvert
 
 #include "MetadataConvert.h"
 

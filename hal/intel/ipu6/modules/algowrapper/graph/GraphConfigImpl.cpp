@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "GraphConfigImpl"
+#define LOG_TAG GraphConfigImpl
 
 #include "modules/algowrapper/graph/GraphConfigImpl.h"
 

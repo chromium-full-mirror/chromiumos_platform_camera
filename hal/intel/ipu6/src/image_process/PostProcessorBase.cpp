@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#define LOG_TAG "PostProcessorBase"
+#define LOG_TAG PostProcessorBase
 
 #include <vector>
 #include <hardware/camera3.h>

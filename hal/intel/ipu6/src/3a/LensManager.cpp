@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "LensManager"
+#define LOG_TAG LensManager
 
 #include "LensManager.h"
 #include "iutils/Utils.h"

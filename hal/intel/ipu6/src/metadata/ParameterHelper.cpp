@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "ParameterHelper"
+#define LOG_TAG ParameterHelper
 
 #include "iutils/Utils.h"
 #include "iutils/CameraLog.h"

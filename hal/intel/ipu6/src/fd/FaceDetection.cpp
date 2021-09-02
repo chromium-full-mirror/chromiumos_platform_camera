@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "FaceDetection"
+#define LOG_TAG FaceDetection
 #include "src/fd/FaceDetection.h"
 
 #include <algorithm>

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "MediaControl"
+#define LOG_TAG MediaControl
 
 #include <stack>
 #include <string>

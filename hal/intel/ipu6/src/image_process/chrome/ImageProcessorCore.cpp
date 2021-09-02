@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "ImageProcessorCore"
+#define LOG_TAG ImageProcessorCore
 
 #include <libyuv.h>
 #include "iutils/CameraLog.h"

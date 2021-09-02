@@ -17,7 +17,7 @@
 #include <string>
 #include <vector>
 
-#define LOG_TAG "DeviceBase"
+#define LOG_TAG DeviceBase
 
 #include "iutils/CameraLog.h"
 #include "iutils/CameraDump.h"

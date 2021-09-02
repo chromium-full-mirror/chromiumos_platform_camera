@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "PlatformData"
+#define LOG_TAG PlatformData
 
 #include <sys/sysinfo.h>
 #include <math.h>

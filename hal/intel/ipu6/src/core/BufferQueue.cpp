@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "BufferQueue"
+#define LOG_TAG BufferQueue
 
 #include "iutils/CameraLog.h"
 

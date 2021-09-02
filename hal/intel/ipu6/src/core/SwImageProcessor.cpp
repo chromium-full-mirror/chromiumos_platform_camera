@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "SwImageProcessor"
+#define LOG_TAG SwImageProcessor
 
 #include "iutils/Utils.h"
 #include "iutils/SwImageConverter.h"

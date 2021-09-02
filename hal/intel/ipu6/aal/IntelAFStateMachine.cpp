@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "IntelAFStateMachine"
+#define LOG_TAG IntelAFStateMachine
 
 #include "IntelAFStateMachine.h"
 

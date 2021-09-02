@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "CameraDump"
+#define LOG_TAG CameraDump
 
 #include <stdio.h>
 #include <stdlib.h>

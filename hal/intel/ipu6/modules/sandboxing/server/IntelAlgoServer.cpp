@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "IntelAlgoServer"
+#define LOG_TAG IntelAlgoServer
 
 #include "modules/sandboxing/server/IntelAlgoServer.h"
 

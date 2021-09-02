@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "GraphConfigPipe"
+#define LOG_TAG GraphConfigPipe
 
 #include "modules/algowrapper/graph/GraphConfigPipe.h"
 

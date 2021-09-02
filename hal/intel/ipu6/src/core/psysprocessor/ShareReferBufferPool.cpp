@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "ShareRefer"
+#define LOG_TAG ShareRefer
 
 #include "ShareReferBufferPool.h"
 

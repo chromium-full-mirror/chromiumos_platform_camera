@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "icamera_metadata_base"
+#define LOG_TAG icamera_metadata_base
 
 #include <inttypes.h>
 #include "icamera_metadata_base.h"

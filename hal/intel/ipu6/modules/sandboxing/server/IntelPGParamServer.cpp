@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "IntelPGParamS"
+#define LOG_TAG IntelPGParamS
 
 #include "modules/sandboxing/server/IntelPGParamServer.h"
 

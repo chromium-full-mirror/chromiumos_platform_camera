@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "PostProcessor"
+#define LOG_TAG PostProcessor
 
 #include "PostProcessor.h"
 

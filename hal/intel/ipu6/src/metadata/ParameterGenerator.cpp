@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "ParameterGenerator"
+#define LOG_TAG ParameterGenerator
 
 #include <math.h>
 #include <memory>

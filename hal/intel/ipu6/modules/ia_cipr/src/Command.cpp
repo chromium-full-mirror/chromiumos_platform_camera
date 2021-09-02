@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "CIPR_COMMAND"
+#define LOG_TAG CIPR_COMMAND
 
 #include "modules/ia_cipr/include/Command.h"
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "CIPR_BUFFER"
+#define LOG_TAG CIPR_BUFFER
 
 #include "modules/ia_cipr/include/Buffer.h"
 

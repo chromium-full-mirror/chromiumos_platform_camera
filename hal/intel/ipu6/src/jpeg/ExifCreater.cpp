@@ -21,7 +21,7 @@
  * Purpose : This file implements the JPEG encoder APIs as needed by Camera HAL
  */
 
-#define LOG_TAG "ExifCreater"
+#define LOG_TAG ExifCreater
 
 #include "ExifCreater.h"
 

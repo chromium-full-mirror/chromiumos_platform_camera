@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "IntelCca"
+#define LOG_TAG IntelCca
 
 #include <vector>
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "IntelPGParam"
+#define LOG_TAG IntelPGParam
 
 #include "modules/algowrapper/IntelPGParam.h"
 

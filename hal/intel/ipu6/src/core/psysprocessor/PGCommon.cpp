@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "PGCommon"
+#define LOG_TAG PGCommon
 
 #include "PGCommon.h"
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "EXIFMaker"
+#define LOG_TAG EXIFMaker
 
 #include "EXIFMaker.h"
 

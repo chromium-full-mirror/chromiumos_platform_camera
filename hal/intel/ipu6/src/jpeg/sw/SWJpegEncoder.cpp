@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#define LOG_TAG "SWJpegEncoder"
+#define LOG_TAG SWJpegEncoder
 
 #include "SWJpegEncoder.h"
 

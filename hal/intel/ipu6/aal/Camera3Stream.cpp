@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "Camera3Stream"
+#define LOG_TAG Camera3Stream
 
 #include "Camera3Stream.h"
 

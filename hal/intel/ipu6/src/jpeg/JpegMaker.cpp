@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "JpegMaker"
+#define LOG_TAG JpegMaker
 
 #include "JpegMaker.h"
 

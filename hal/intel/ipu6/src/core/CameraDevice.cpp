@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "CameraDevice"
+#define LOG_TAG CameraDevice
 
 #include <vector>
 #include <ia_pal_types_isp_ids_autogen.h>

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "MakerNote"
+#define LOG_TAG MakerNote
 
 #include "src/3a/MakerNote.h"
 

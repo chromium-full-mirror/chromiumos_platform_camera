@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "CameraHal"
+#define LOG_TAG CameraHal
 
 #include <vector>
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "PGUtils"
+#define LOG_TAG PGUtils
 
 #include "PGUtils.h"
 

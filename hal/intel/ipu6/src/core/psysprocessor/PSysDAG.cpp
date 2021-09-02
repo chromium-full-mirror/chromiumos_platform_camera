@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "PSysDAG"
+#define LOG_TAG PSysDAG
 
 #include <algorithm>
 #include "iutils/Utils.h"

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "Camera3Buffer"
+#define LOG_TAG Camera3Buffer
 
 #include "Camera3Buffer.h"
 

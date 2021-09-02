@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "PrivateStream"
+#define LOG_TAG PrivateStream
 
 #include "aal/PrivateStream.h"
 

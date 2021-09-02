@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "CIPR_CONTEXT"
+#define LOG_TAG CIPR_CONTEXT
 
 #include <errno.h>
 #include <fcntl.h>

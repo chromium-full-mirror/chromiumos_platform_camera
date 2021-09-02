@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "IntelAEStateMachine"
+#define LOG_TAG IntelAEStateMachine
 
 #include "IntelAEStateMachine.h"
 

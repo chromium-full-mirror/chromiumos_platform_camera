@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "PipeLiteExecutor"
+#define LOG_TAG PipeLiteExecutor
 
 #include <algorithm>
 

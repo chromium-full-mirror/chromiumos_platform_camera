@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "AiqResultStorage"
+#define LOG_TAG AiqResultStorage
 
 #include "AiqResultStorage.h"
 #include "iutils/CameraLog.h"

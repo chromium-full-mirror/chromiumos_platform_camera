@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "GPUExecutor"
+#define LOG_TAG GPUExecutor
 
 #include "GPUExecutor.h"
 

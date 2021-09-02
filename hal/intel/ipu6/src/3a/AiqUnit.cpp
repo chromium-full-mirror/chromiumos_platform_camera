@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "AiqUnit"
+#define LOG_TAG AiqUnit
 
 #include <map>
 #include <string>

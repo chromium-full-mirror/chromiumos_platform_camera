@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#define LOG_TAG "IntelCcaServer"
+#define LOG_TAG IntelCcaServer
 
 #include "modules/sandboxing/server/IntelCcaServer.h"
 
