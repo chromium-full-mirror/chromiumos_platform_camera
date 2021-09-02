@@ -329,6 +329,11 @@ AiqEngine::AiqState AiqEngine::prepareInputParam(AiqStatistics* aiqStats, AiqRes
         return AIQ_STATE_RUN;
     }
 
+    if (PlatformData::getSensorAeEnable(mCameraId)) {
+        LOG3A("@%s, sensor ae is enabled", __func__);
+        statsParams.using_rgbs_for_aec = true;
+    }
+
     mAiqCore->setStatsParams(statsParams, &aiqResult->mOutStats);
 
     return AIQ_STATE_RUN;

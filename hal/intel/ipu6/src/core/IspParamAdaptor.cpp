@@ -842,7 +842,7 @@ int IspParamAdaptor::runIspAdaptL(ia_isp_bxt_program_group *pgPtr, ia_isp_bxt_gd
         }
 
         LOG3A("%s: set digital gain for ULL pipe: %f", __func__, inputParams->manual_digital_gain);
-    } else if (CameraUtils::isMultiExposureCase(mTuningMode) &&
+    } else if (CameraUtils::isMultiExposureCase(mCameraId, mTuningMode) &&
                PlatformData::getSensorGainType(mCameraId) == ISP_DG_AND_SENSOR_DIRECT_AG) {
         inputParams->manual_digital_gain =
             aiqResults->mAeResults.exposures[0].exposure[0].digital_gain;
@@ -854,6 +854,7 @@ int IspParamAdaptor::runIspAdaptL(ia_isp_bxt_program_group *pgPtr, ia_isp_bxt_gd
     ia_err iaErr = ia_err_none;
     {
         PERF_CAMERA_ATRACE_PARAM1_IMAGING("ia_isp_bxt_run", 1);
+
         iaErr = mIntelCca->runAIC(requestId, inputParams, binaryData);
     }
     CheckAndLogError(iaErr != ia_err_none && iaErr != ia_err_not_run, UNKNOWN_ERROR,

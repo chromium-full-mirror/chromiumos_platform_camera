@@ -232,6 +232,8 @@ static string getAiqSettingAppendix(int cameraId, long sequence)
     double ag = sensorExposure->analog_gain_code_global;
     double dg = sensorExposure->digital_gain_global;
     float ispDg = 1.0f;
+    const int nSteps = 256;
+    const char* sensorName = PlatformData::getSensorName(cameraId);
 
     LOG2("%s: original sensorExposure AG: %f, DG: %f, exposure: AG: %f, DG: %f",
            __func__, ag, dg, exposure->analog_gain, exposure->digital_gain);
@@ -239,8 +241,6 @@ static string getAiqSettingAppendix(int cameraId, long sequence)
     if (icamera::CameraDump::isDumpFormatEnable(DUMP_FORMAT_IQSTUDIO)) {
 
         // Convert AG and DG per sensor for IQ Studio input.
-        const int nSteps = 256;
-        const char* sensorName = PlatformData::getSensorName(cameraId);
         ispDg = sensorExposure->digital_gain_global;
 
         if (strstr(sensorName, "imx185") != nullptr) {
@@ -266,9 +266,22 @@ static string getAiqSettingAppendix(int cameraId, long sequence)
         }
 
         if (aiqResults->mAeResults.num_exposures == 2) {
-            snprintf(settingAppendix, (MAX_NAME_LEN - 1), "~ag#%.0f~dg#%.0f~cmnt#ispdg_%.0f~exp#%d,%d",
-                ag, dg, ispDg, exposure->exposure_time_us,
-                aiqResults->mAeResults.exposures[1].exposure->exposure_time_us);
+            if (strstr(sensorName, "imx390") != nullptr) {
+                double ag_1 = aiqResults->mAeResults.exposures[1].sensor_exposure[0].analog_gain_code_global;
+                LOG2("%s: ag_0: %f, ag_1: %f", __func__, ag, ag_1);
+
+                ag_1 = nSteps * pow(10, (double)ag_1 * 0.3 / 20);
+                LOG2("%s: after convert: ag_0: %f, ag_1: %f", __func__, ag, ag_1);
+
+                snprintf(settingAppendix, (MAX_NAME_LEN - 1),
+                    "~ag#%.0f,%.0f~dg#%.0f~cmnt#ispdg_%.0f~exp#%d,%d",
+                    ag, ag_1, dg, ispDg, exposure->exposure_time_us,
+                    aiqResults->mAeResults.exposures[1].exposure->exposure_time_us);
+            } else {
+                snprintf(settingAppendix, (MAX_NAME_LEN - 1), "~ag#%.0f~dg#%.0f~cmnt#ispdg_%.0f~exp#%d,%d",
+                    ag, dg, ispDg, exposure->exposure_time_us,
+                    aiqResults->mAeResults.exposures[1].exposure->exposure_time_us);
+            }
         } else {
             snprintf(settingAppendix, (MAX_NAME_LEN - 1), "~ag#%.0f~dg#%.0f~cmnt#ispdg_%.0f~exp#%d",
                 ag, dg, ispDg, exposure->exposure_time_us);
@@ -281,9 +294,22 @@ static string getAiqSettingAppendix(int cameraId, long sequence)
         }
 
         if (aiqResults->mAeResults.num_exposures == 2) {
-            snprintf(settingAppendix, (MAX_NAME_LEN - 1), "_ag#%.0f_dg#%.0f_ispdg#%.3f_exp#%d,%d",
-                ag, dg, ispDg, exposure->exposure_time_us,
-                aiqResults->mAeResults.exposures[1].exposure->exposure_time_us);
+          if (strstr(sensorName, "imx390") != nullptr) {
+                double ag_1 = aiqResults->mAeResults.exposures[1].sensor_exposure[0].analog_gain_code_global;
+                LOG2("%s: ag_0: %f, ag_1: %f", __func__, ag, ag_1);
+
+                ag_1 = nSteps * pow(10, (double)ag_1 * 0.3 / 20);
+                LOG2("%s: after convert: ag_0: %f, ag_1: %f", __func__, ag, ag_1);
+
+                snprintf(settingAppendix, (MAX_NAME_LEN - 1),
+                    "_ag#%.0f,%.0f_dg#%.0f_ispdg#%.3f_exp#%d,%d",
+                    ag, ag_1, dg, ispDg, exposure->exposure_time_us,
+                    aiqResults->mAeResults.exposures[1].exposure->exposure_time_us);
+            } else {
+                snprintf(settingAppendix, (MAX_NAME_LEN - 1), "_ag#%.0f_dg#%.0f_ispdg#%.3f_exp#%d,%d",
+                    ag, dg, ispDg, exposure->exposure_time_us,
+                    aiqResults->mAeResults.exposures[1].exposure->exposure_time_us);
+            }
         } else {
             snprintf(settingAppendix, (MAX_NAME_LEN - 1), "_ag#%.0f_dg#%.0f_ispdg#%.3f_exp#%d",
                 ag, dg, ispDg, exposure->exposure_time_us);

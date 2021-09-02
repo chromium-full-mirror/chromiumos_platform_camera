@@ -283,7 +283,7 @@ int ParameterGenerator::updateWithAiqResultsL(long sequence, Parameters *params)
             AE_STATE_CONVERGED : AE_STATE_NOT_CONVERGED;
     params->setAeState(aeState);
 
-    if (CameraUtils::isMultiExposureCase(aiqResult->mTuningMode) &&
+    if (CameraUtils::isMultiExposureCase(mCameraId, aiqResult->mTuningMode) &&
         aiqResult->mAeResults.num_exposures > 1) {
         params->setExposureTime(aiqResult->mAeResults.exposures[1].exposure[0].exposure_time_us);
     } else {

@@ -96,6 +96,7 @@ public:
                 mLensName(""),
                 mLensHwType(LENS_NONE_HW),
                 mSensorAwb(false),
+                mSensorAe(false),
                 mAutoSwitchType(AUTO_SWITCH_PSYS),
                 mLtmEnabled(false),
                 mSensorExposureNum(2),
@@ -165,6 +166,7 @@ public:
             std::string mLensName;
             int mLensHwType;
             bool mSensorAwb;
+            bool mSensorAe;
             int mAutoSwitchType;
             bool mLtmEnabled;
             int mSensorExposureNum;
@@ -378,6 +380,14 @@ public:
      * \return bool: the sensor AWB enable
      */
     static bool getSensorAwbEnable(int cameraId);
+
+    /**
+     * get the sensor AE
+     *
+     * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
+     * \return bool: the sensor AE enable
+     */
+    static bool getSensorAeEnable(int cameraId);
 
     /**
      * get the DVS type

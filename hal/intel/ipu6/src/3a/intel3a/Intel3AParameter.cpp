@@ -192,6 +192,7 @@ float Intel3AParameter::convertdBGainToISO(float sensitivityGain, int baseIso)
 
 void Intel3AParameter::setAeManualLimits(const aiq_parameter_t& param)
 {
+
     ia_aiq_ae_manual_limits* limit = &mAeParams.manual_limits[0];
 
     limit->manual_exposure_time_max = -1;
@@ -315,7 +316,8 @@ void Intel3AParameter::updateAeParameter(const aiq_parameter_t& param)
 {
     mAeParams.frame_use = AiqUtils::convertFrameUsageToIaFrameUsage(param.frameUsage);
     mAeParams.num_exposures = PlatformData::getExposureNum(mCameraId,
-                                  CameraUtils::isMultiExposureCase(param.tuningMode));
+                                  CameraUtils::isMultiExposureCase(mCameraId, param.tuningMode));
+
     setAeManualLimits(param);
 
     switch(param.antibandingMode) {

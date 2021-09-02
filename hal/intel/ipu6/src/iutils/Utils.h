@@ -266,7 +266,7 @@ namespace CameraUtils {
 
     int getInterlaceHeight(int field, int height);
 
-    bool isMultiExposureCase(TuningMode tuningMode);
+    bool isMultiExposureCase(int cameraId, TuningMode tuningMode);
 
     bool isUllPsysPipe(TuningMode tuningMode);
 

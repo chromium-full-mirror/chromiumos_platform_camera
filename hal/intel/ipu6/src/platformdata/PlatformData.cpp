@@ -183,6 +183,11 @@ bool PlatformData::getSensorAwbEnable(int cameraId)
     return getInstance()->mStaticCfg.mCameras[cameraId].mSensorAwb;
 }
 
+bool PlatformData::getSensorAeEnable(int cameraId)
+{
+    return getInstance()->mStaticCfg.mCameras[cameraId].mSensorAe;
+}
+
 int PlatformData::getDVSType(int cameraId)
 {
     return getInstance()->mStaticCfg.mCameras[cameraId].mDVSType;

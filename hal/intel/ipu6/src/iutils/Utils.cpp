@@ -632,7 +632,7 @@ int CameraUtils::getInterlaceHeight(int field, int height)
         return height;
 }
 
-bool CameraUtils::isMultiExposureCase(TuningMode tuningMode)
+bool CameraUtils::isMultiExposureCase(int cameraId, TuningMode tuningMode)
 {
     LOG2("%s, tuningMode %d", __func__, tuningMode);
 
