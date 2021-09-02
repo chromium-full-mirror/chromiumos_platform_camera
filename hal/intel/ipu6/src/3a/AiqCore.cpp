@@ -50,7 +50,11 @@ AiqCore::AiqCore(int cameraId) :
     mLscGridRGGBLen(0),
     mLastEvShift(0.0f),
     mTonemapMode(TONEMAP_MODE_FAST),
-    mTonemapMaxCurvePoints(0) {
+    mTonemapMaxCurvePoints(0),
+    mIsPLCEnable(false),
+    mAeRunRateEnabled(false),
+    mAfRunRateEnabled(false),
+    mAwbRunRateEnabled(false) {
     LOG3A("@%s", __func__);
 
     mIntel3AParameter = std::unique_ptr<Intel3AParameter>(new Intel3AParameter(cameraId));
@@ -289,6 +293,11 @@ int AiqCore::updateParameter(const aiq_parameter_t &param) {
     mAfForceLock = mIntel3AParameter->mAfForceLock;
 
     mTonemapMode = param.tonemapMode;
+
+    // Enable AE/AWB/AF running rate if working in AUTO modes
+    mAeRunRateEnabled = param.aeMode == AE_MODE_AUTO;
+    mAfRunRateEnabled = param.afMode != AF_MODE_OFF;
+    mAwbRunRateEnabled = param.awbMode == AWB_MODE_AUTO;
 
     return OK;
 }
@@ -694,6 +703,8 @@ bool AiqCore::bypassAe() {
     if (mAeRunTime == 0 || (mIntel3AParameter->mAeParams.ev_shift != mLastEvShift)) return false;
     if (mAeForceLock || mAeRunTime % mIntel3AParameter->mAePerTicks != 0) return true;
 
+    if (!mAeRunRateEnabled) return false;
+
     bool converged = mLastAeResult.exposures[0].converged;
 
     return skipAlgoRunning(&mAeRunRateInfo, IMAGING_ALGO_AE, converged);
@@ -701,6 +712,8 @@ bool AiqCore::bypassAe() {
 
 bool AiqCore::bypassAf() {
     if (mAfForceLock) return true;
+
+    if (!mAfRunRateEnabled) return false;
 
     bool converged = mAiqResults->af_output.status == ia_aiq_af_status_success
                      && mAiqResults->af_output.final_lens_position_reached;
@@ -711,6 +724,8 @@ bool AiqCore::bypassAf() {
 bool AiqCore::bypassAwb() {
     if (mAwbForceLock || mAwbRunTime % mIntel3AParameter->mAwbPerTicks != 0
         || mIntel3AParameter->mTestPatternMode != TEST_PATTERN_OFF) return true;
+
+    if (!mAwbRunRateEnabled) return false;
 
     bool converged = mAiqResults->awb_output.distance_from_convergence < EPSILON;
 

@@ -351,12 +351,6 @@ int MetadataConvert::constructDefaultMetadata(int cameraId, android::CameraMetad
     mode = ANDROID_COLOR_CORRECTION_ABERRATION_MODE_OFF;
     settings->update(ANDROID_COLOR_CORRECTION_ABERRATION_MODE, &mode, 1);
 
-    mode = INTEL_VENDOR_CAMERA_CALLBACK_RGBS_FALSE;
-    settings->update(INTEL_VENDOR_CAMERA_CALLBACK_RGBS, &mode, 1);
-
-    mode = INTEL_VENDOR_CAMERA_CALLBACK_TM_CURVE_FALSE;
-    settings->update(INTEL_VENDOR_CAMERA_CALLBACK_TM_CURVE, &mode, 1);
-
     return icamera::OK;
 }
 

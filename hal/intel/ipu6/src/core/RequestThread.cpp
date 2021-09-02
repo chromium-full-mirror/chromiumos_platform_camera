@@ -478,7 +478,8 @@ bool RequestThread::threadLoop()
          if (blockRequest()) {
             int ret = mRequestSignal.waitRelative(lock, kWaitDuration * SLOWLY_MULTIPLIER);
             if (ret == TIMED_OUT) {
-                LOGW("%s: wait event time out", __func__);
+                LOGW("wait event time out, %d requests processing, %zu requests in HAL",
+                     mRequestsInProcessing, mPendingRequests.size());
                 return true;
             }
 

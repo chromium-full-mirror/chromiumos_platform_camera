@@ -409,6 +409,8 @@ if (use.ipu6se) {
       "src/iutils/ScopedAtrace.cpp",
       "src/iutils/Thread.cpp",
       "src/iutils/CameraLog.cpp",
+      "src/iutils/ModuleTags.cpp",
+      "src/iutils/LogSink.cpp",
       "modules/sandboxing/IPCCommon.cpp",
       "modules/sandboxing/server/IntelAlgoServer.cpp",
       "modules/sandboxing/server/IntelGPUAlgoServer.cpp",

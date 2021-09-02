@@ -217,8 +217,11 @@ private:
     int32_t mTonemapMaxCurvePoints;
     bool mIsPLCEnable;
 
+    bool mAeRunRateEnabled;
     RunRateInfo mAeRunRateInfo;
+    bool mAfRunRateEnabled;
     RunRateInfo mAfRunRateInfo;
+    bool mAwbRunRateEnabled;
     RunRateInfo mAwbRunRateInfo;
 };
 

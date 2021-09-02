@@ -467,22 +467,19 @@ int GPUExecutor::updateTnrISPConfig(Tnr7Param* pbuffer, uint32_t sequence) {
             tnr7_bc->coeffs[i] = pBc->coeffs[i];
         }
 
-        if (mStreamId == VIDEO_STREAM_ID) {
-            tnr7_bc->global_protection = pBc->global_protection;
-            tnr7_bc->global_protection_motion_level = pBc->global_protection_motion_level;
-            for (int i = 0;
-                 i < sizeof(pBc->global_protection_sensitivity_lut_values) / sizeof(int32_t); i++) {
-                tnr7_bc->global_protection_sensitivity_lut_values[i] =
-                    pBc->global_protection_sensitivity_lut_values[i];
-            }
-            for (int i = 0;
-                 i < sizeof(pBc->global_protection_sensitivity_lut_slopes) / sizeof(int32_t); i++) {
-                tnr7_bc->global_protection_sensitivity_lut_slopes[i] =
-                    pBc->global_protection_sensitivity_lut_slopes[i];
-            }
-        } else {
-            tnr7_bc->global_protection = 0;
+        tnr7_bc->global_protection = pBc->global_protection;
+        tnr7_bc->global_protection_motion_level = pBc->global_protection_motion_level;
+        for (int i = 0; i < sizeof(pBc->global_protection_sensitivity_lut_values) / sizeof(int32_t);
+             i++) {
+            tnr7_bc->global_protection_sensitivity_lut_values[i] =
+                pBc->global_protection_sensitivity_lut_values[i];
         }
+        for (int i = 0; i < sizeof(pBc->global_protection_sensitivity_lut_slopes) / sizeof(int32_t);
+             i++) {
+            tnr7_bc->global_protection_sensitivity_lut_slopes[i] =
+                pBc->global_protection_sensitivity_lut_slopes[i];
+        }
+
         // tnr7 blend params
         tnr7_blend->enable = pBlend->enable;
         tnr7_blend->enable_main_output = pBlend->enable_main_output;
