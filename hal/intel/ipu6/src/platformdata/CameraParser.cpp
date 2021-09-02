@@ -555,6 +555,10 @@ void CameraParser::handleSensor(CameraParser *profiles, const char *name, const 
         pCurrentCam->mTnrExtraFrameNum = val > 0 ? val : DEFAULT_TNR_EXTRA_FRAME_NUM;
     } else if (strcmp(name, "dummyStillSink") == 0) {
         pCurrentCam->mDummyStillSink = strcmp(atts[1], "true") == 0;
+    } else if (!strcmp(name, "forceFlushIpuBuffer")) {
+        pCurrentCam->mForceFlushIpuBuffer = strcmp(atts[1], "true") == 0;
+    } else if (!strcmp(name, "isPLCEnable")) {
+        pCurrentCam->mPLCEnable = strcmp(atts[1], "true") == 0;
     }
 }
 

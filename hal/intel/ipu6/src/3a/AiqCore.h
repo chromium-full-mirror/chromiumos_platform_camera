@@ -215,6 +215,7 @@ private:
     std::unique_ptr<cca::cca_aiq_results> mAiqResults;
 
     int32_t mTonemapMaxCurvePoints;
+    bool mIsPLCEnable;
 
     RunRateInfo mAeRunRateInfo;
     RunRateInfo mAfRunRateInfo;

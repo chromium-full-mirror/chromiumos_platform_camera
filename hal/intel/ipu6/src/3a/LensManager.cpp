@@ -31,6 +31,7 @@ LensManager::LensManager(int cameraId, LensHw *lensHw) :
     mFocusPosition(-1),
     mLastSofSequence(-1)
 {
+    mSeqToPositionMap.clear();
     LOG1("%s, mCameraId = %d", __func__, mCameraId);
 }
 

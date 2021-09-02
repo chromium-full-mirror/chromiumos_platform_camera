@@ -150,7 +150,9 @@ public:
                 mMaxNvmDataSize(0),
                 mVideoStreamNum(DEFAULT_VIDEO_STREAM_NUM),
                 mTnrExtraFrameNum(DEFAULT_TNR_EXTRA_FRAME_NUM),
-                mDummyStillSink(false)
+                mDummyStillSink(false),
+                mForceFlushIpuBuffer(false),
+                mPLCEnable(false)
             {
             }
 
@@ -247,6 +249,8 @@ public:
             int mVideoStreamNum;
             int mTnrExtraFrameNum;
             bool mDummyStillSink;
+            bool mForceFlushIpuBuffer;
+            bool mPLCEnable;
         };
 
         std::vector<CameraInfo> mCameras;
@@ -1220,44 +1224,45 @@ public:
      */
     static void setScalerInfo(int cameraId, std::vector<IGraphType::ScalerInfo> scalerInfo);
 
-     /**
+    /**
      * Check gpu tnr is enabled or not
      *
      * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
      * \return true if tnr is enabled.
      */
-     static bool isGpuTnrEnabled();
+    static bool isGpuTnrEnabled();
 
-     /**
+    /**
      * get the video stream number supported
      *
      * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
      * \return HAL video stream number.
      */
-     static int getVideoStreamNum(int cameraId);
+    static int getVideoStreamNum(int cameraId);
 
-     /**
+    /**
      * Check should connect gpu algo or not
      * should connect gpu algo service if any gpu algorithm is used
      * \return true if should connect gpu algo.
      */
-     static bool isUsingGpuAlgo();
+    static bool isUsingGpuAlgo();
 
-     /**
+    /**
      * Check if still stream tnr is prior to video tnr
      */
-     static bool isStillTnrPrior();
+    static bool isStillTnrPrior();
 
-     /**
+    /**
      * Check if update tnr7us params every frame
      */
-     static bool isTnrParamForceUpdate();
-     /**
+    static bool isTnrParamForceUpdate();
+
+    /**
      * the extra frame count for still stream
      */
-     static int getTnrExtraFrameCount(int cameraId);
+    static int getTnrExtraFrameCount(int cameraId);
 
-     /*
+    /*
      * Set the orientation Info
      *
      * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
@@ -1274,11 +1279,27 @@ public:
     static int getSensorOrientation(int cameraId);
 
     /**
-    * check if support dummy still stream
-    *
-    * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
-    * \return true if supported.
-    */
+     * check if support dummy still stream
+     *
+     * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
+     * \return true if supported.
+     */
     static bool isDummyStillSink(int cameraId);
+
+    /*
+     * check if forcing flushing IPU buffer is enabled
+     *
+     * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
+     * \return true if forcing flush IPU buffer.
+     */
+    static bool getForceFlushIpuBuffer(int cameraId);
+
+    /*
+     * Get PLC Enable status
+     *
+     * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
+     * \return true if supported.
+     */
+    static bool getPLCEnable(int cameraId);
 };
 } /* namespace icamera */

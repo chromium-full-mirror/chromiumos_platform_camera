@@ -1461,4 +1461,14 @@ bool PlatformData::isDummyStillSink(int cameraId)
 {
     return getInstance()->mStaticCfg.mCameras[cameraId].mDummyStillSink;
 }
+
+bool PlatformData::getForceFlushIpuBuffer(int cameraId)
+{
+    return getInstance()->mStaticCfg.mCameras[cameraId].mForceFlushIpuBuffer;
+}
+
+bool PlatformData::getPLCEnable(int cameraId)
+{
+    return getInstance()->mStaticCfg.mCameras[cameraId].mPLCEnable;
+}
 } // namespace icamera

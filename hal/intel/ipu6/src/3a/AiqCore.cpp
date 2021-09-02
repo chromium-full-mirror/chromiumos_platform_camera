@@ -84,6 +84,8 @@ AiqCore::AiqCore(int cameraId) :
         LOGW("%s: wrong tonemap points", __func__);
         mTonemapMaxCurvePoints = 0;
     }
+
+    mIsPLCEnable = PlatformData::getPLCEnable(mCameraId);
 }
 
 AiqCore::~AiqCore() {
@@ -365,6 +367,10 @@ int AiqCore::runAiq(long requestId, AiqResult *aiqResult) {
             mGbceParams.is_bypass = false;
         }
         mAiqParams->bitmap |= cca::CCA_MODULE_GBCE;
+        if (mIsPLCEnable)
+            mGbceParams.athena_mode = true;
+        else
+            mGbceParams.athena_mode = false;
         mAiqParams->gbce_input = mGbceParams;
     }
 
