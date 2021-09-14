@@ -217,6 +217,7 @@ void CameraDevice::bindListeners()
 
     if (!mProcessors.empty()) {
         mProcessors.front()->registerListener(EVENT_PSYS_REQUEST_BUF_READY, this);
+        mProcessors.front()->registerListener(EVENT_REQUEST_METADATA_READY, this);
     }
 
     mSofSource->registerListener(EVENT_ISYS_SOF, mRequestThread);
@@ -251,6 +252,7 @@ void CameraDevice::unbindListeners()
 
     if (!mProcessors.empty()) {
         mProcessors.front()->removeListener(EVENT_PSYS_REQUEST_BUF_READY, this);
+        mProcessors.front()->removeListener(EVENT_REQUEST_METADATA_READY, this);
     }
 
     if (mPerframeControlSupport || !PlatformData::isIsysEnabled(mCameraId)) {
@@ -855,7 +857,7 @@ int CameraDevice::qbuf(camera_buffer_t **ubuffer,
 int CameraDevice::getParameters(Parameters& param, long sequence)
 {
     PERF_CAMERA_ATRACE();
-    LOG1("@%s mCameraId:%d", __func__, mCameraId);
+    LOG2("<id%d:seq%ld>@%s", mCameraId, sequence, __func__);
     AutoMutex   m(mDeviceLock);
 
     if (sequence >= 0 && mState != DEVICE_STOP) {
@@ -1120,20 +1122,34 @@ void CameraDevice::handleEvent(EventData eventData)
 
     case EVENT_PSYS_REQUEST_BUF_READY: {
         if (mCallback) {
-            camera_msg_data_t data;
-            CLEAR(data);
-            data.type = CAMERA_ISP_BUF_READY;
+            camera_msg_data_t data = {CAMERA_ISP_BUF_READY, {}};
             int32_t userRequestId = 0;
             int ret = mParamGenerator->getUserRequestId(eventData.data.requestReady.sequence,
                                                         userRequestId);
             CheckAndLogError(ret != OK, VOID_VALUE, "failed to find request id,  seq %ld",
                              eventData.data.requestReady.sequence);
-            data.data.buffer_ready.sequence = eventData.data.requestReady.sequence;
+
             data.data.buffer_ready.timestamp = eventData.data.requestReady.timestamp;
             data.data.buffer_ready.frameNumber = static_cast<uint32_t>(userRequestId);
             mCallback->notify(mCallback, data);
             PlatformData::updateMakernoteTimeStamp(mCameraId, eventData.data.requestReady.sequence,
                                                    data.data.buffer_ready.timestamp);
+        }
+        break;
+    }
+
+    case EVENT_REQUEST_METADATA_READY: {
+        if (mCallback) {
+            camera_msg_data_t data = {CAMERA_METADATA_READY, {}};
+            int32_t userRequestId = 0;
+            int ret = mParamGenerator->getUserRequestId(eventData.data.requestReady.sequence,
+                                                        userRequestId);
+            CheckAndLogError(ret != OK, VOID_VALUE, "failed to find request id,  seq %ld",
+                             eventData.data.requestReady.sequence);
+
+            data.data.metadata_ready.sequence = eventData.data.requestReady.sequence;
+            data.data.metadata_ready.frameNumber = static_cast<uint32_t>(userRequestId);
+            mCallback->notify(mCallback, data);
         }
         break;
     }

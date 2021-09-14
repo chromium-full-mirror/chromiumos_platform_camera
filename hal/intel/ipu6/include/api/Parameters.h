@@ -721,6 +721,7 @@ typedef struct {
 typedef enum {
     CAMERA_EVENT_NONE = 0,
     CAMERA_ISP_BUF_READY,
+    CAMERA_METADATA_READY,
     CAMERA_DEVICE_ERROR,
     CAMERA_IPC_ERROR,
 } camera_msg_type_t;
@@ -747,8 +748,15 @@ typedef struct {
 typedef struct {
     uint32_t frameNumber;
     uint64_t timestamp;
-    long sequence;
 } isp_buffer_ready_t;
+
+/**
+ * \struct metadata_ready_t: Use to send metadata ready event data.
+ */
+typedef struct {
+    uint32_t frameNumber;
+    long sequence;
+} metadata_ready_t;
 
 /**
  * \struct camera_msg_data_t: Use to specify msg data.
@@ -757,6 +765,7 @@ typedef struct {
     camera_msg_type_t type;
     union {
         isp_buffer_ready_t buffer_ready;
+        metadata_ready_t metadata_ready;
     } data;
 } camera_msg_data_t;
 

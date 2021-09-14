@@ -521,10 +521,14 @@ bool ResultProcessor::ResultThread::threadLoop() {
             LOG2("@%s, frameNumber %d, timestamp %ld, mResultProcessor:%p", __func__,
                  event.frameNumber, event.timestamp, mResultProcessor);
             mResultProcessor->shutterDone(event);
-
+            break;
+        }
+        // Regards metadata ready as metadata event
+        case icamera::CAMERA_METADATA_READY: {
             icamera::Parameters parameter;
-            icamera::camera_get_parameters(mCameraId, parameter, data.data.buffer_ready.sequence);
-            MetadataEvent metadataEvent = {data.data.buffer_ready.frameNumber, &parameter};
+            icamera::camera_get_parameters(mCameraId, parameter, data.data.metadata_ready.sequence);
+            MetadataEvent metadataEvent = {data.data.metadata_ready.frameNumber, &parameter};
+
             mResultProcessor->metadataDone(metadataEvent);
             break;
         }

@@ -32,6 +32,7 @@
 #include "IGraphConfig.h"
 
 #include "ia_pal_types_isp_ids_autogen.h"
+#include "ia_pal_types_isp_parameters_autogen.h"
 #include "ia_pal_types_isp.h"
 
 namespace icamera {
@@ -43,7 +44,8 @@ IspParamAdaptor::IspParamAdaptor(int cameraId, PgParamType type) :
         mTuningMode(TUNING_MODE_VIDEO),
         mIpuOutputFormat(V4L2_PIX_FMT_NV12),
         mGraphConfig(nullptr),
-        mIntelCca(nullptr) {
+        mIntelCca(nullptr),
+        mGammaTmOffset(-1) {
     LOG1("IspParamAdaptor was created for id:%d type:%d", mCameraId, mPgParamType);
     CLEAR(mLastPalDataForVideoPipe);
 
@@ -84,6 +86,7 @@ int IspParamAdaptor::deinit() {
     for (uint32_t i = 0; i < mPalRecords.size(); i++) {
         mPalRecords[i].offset = -1;
     }
+    mGammaTmOffset = -1;
 
     mIspAdaptorState = ISP_ADAPTOR_NOT_INIT;
     return OK;
@@ -246,6 +249,7 @@ int IspParamAdaptor::configure(const stream_t &stream, ConfigMode configMode,
     for (uint32_t i = 0; i < mPalRecords.size(); i++) {
         mPalRecords[i].offset = -1;
     }
+    mGammaTmOffset = -1;
 
     mIntelCca = IntelCca::getInstance(mCameraId, tuningMode);
     CheckAndLogError(!mIntelCca, UNKNOWN_ERROR, "%s, mIntelCca is nullptr, tuningMode:%d",
@@ -530,6 +534,10 @@ int IspParamAdaptor::runIspAdapt(const IspSettings* ispSettings, long requestId,
             int64_t dataSequence = settingSequence;
             if (binaryData.size == 0) {
                 dataSequence = ispParam->mSequenceToDataMap.rbegin()->first;
+                if (streamId == VIDEO_STREAM_ID) {
+                    updateResultFromAlgo(&(ispParam->mSequenceToDataMap.rbegin()->second),
+                                         settingSequence);
+                }
             }
             updateIspParameterMap(ispParam, dataSequence, settingSequence, binaryData);
             if (binaryData.size > 0) {
@@ -537,6 +545,7 @@ int IspParamAdaptor::runIspAdapt(const IspSettings* ispSettings, long requestId,
 
                 if (it.first == VIDEO_STREAM_ID) {
                     mLastPalDataForVideoPipe = binaryData;
+                    updateResultFromAlgo(&binaryData, settingSequence);
                 }
             }
         }
@@ -872,6 +881,58 @@ int IspParamAdaptor::runIspAdaptL(ia_isp_bxt_program_group *pgPtr, ia_isp_bxt_gd
     dumpIspParameter(streamId, settingSequence, *binaryData);
 
     return OK;
+}
+
+void IspParamAdaptor::updateResultFromAlgo(ia_binary_data* binaryData, long sequence) {
+    AiqResult* aiqResults =
+        const_cast<AiqResult*>(AiqResultStorage::getInstance(mCameraId)->getAiqResult(sequence));
+    if (aiqResults == nullptr) {
+        LOGW("%s: no result for sequence %ld! use the latest instead", __func__, sequence);
+        aiqResults =
+            const_cast<AiqResult*>(AiqResultStorage::getInstance(mCameraId)->getAiqResult());
+        CheckAndLogError((aiqResults == nullptr), VOID_VALUE, "Cannot find available aiq result.");
+    }
+
+    // update tone map result from pal algo
+    if (aiqResults->mAiqParam.callbackTmCurve &&
+        aiqResults->mGbceResults.have_manual_settings == false) {
+
+        char* src = static_cast<char*>(binaryData->data);
+        if (mGammaTmOffset < 0) {
+            uint32_t offset = 0;
+            bool foundRes = false;
+
+            while (offset < binaryData->size) {
+                ia_pal_record_header *header =
+                    reinterpret_cast<ia_pal_record_header*>(src + offset);
+                if (header->uuid == ia_pal_uuid_isp_gammatm_v3) {
+                    LOG2("src uuid %d, offset %d, size %d", header->uuid, offset, header->size);
+                    foundRes = true;
+                    break;
+                }
+                offset += header->size;
+            }
+            if (!foundRes) return;
+            mGammaTmOffset = offset;
+        }
+
+        ia_pal_isp_gammatm_v3_t *TM =
+            reinterpret_cast<ia_pal_isp_gammatm_v3_t*>(src + mGammaTmOffset +
+                                                       ALIGN_8(sizeof(ia_pal_record_header)));
+        uint32_t tmSize = (reinterpret_cast<char *>(&(TM->prog_shift)) -
+                           reinterpret_cast<char *>(TM->tm_lut_gen_lut)) / sizeof(int32_t);
+        CheckAndLogError(tmSize < aiqResults->mGbceResults.tone_map_lut_size,
+                         VOID_VALUE, "memory is too small to store tone map from algo");
+
+        LOG2("%s, Tonemap Curve. enable: %d, prog_shift: %d, table size: %zu",
+             __func__, TM->enable, TM->prog_shift, tmSize);
+
+        const int shiftBase = 1 << TM->prog_shift;
+        for (uint32_t i = 0; i < aiqResults->mGbceResults.tone_map_lut_size; i++) {
+            aiqResults->mGbceResults.tone_map_lut[i] = static_cast<float>(TM->tm_lut_gen_lut[i]) /
+                                                       shiftBase;
+        }
+    }
 }
 
 void IspParamAdaptor::dumpIspParameter(int streamId, long sequence, ia_binary_data binaryData) {

@@ -128,7 +128,7 @@ void IntelAlgoClient::registerErrorCallback(const camera_callback_ops_t* errCb) 
     mErrCb = errCb;
 
     if (!mIPCStatus && mErrCb) {
-        camera_msg_data_t data = {CAMERA_IPC_ERROR, {0}};
+        camera_msg_data_t data = {CAMERA_IPC_ERROR, {}};
         mErrCb->notify(mErrCb, data);
     }
 }
@@ -308,7 +308,7 @@ void IntelAlgoClient::notifyHandler(uint32_t msg) {
     mIPCStatus = false;
 
     if (mErrCb) {
-        camera_msg_data_t data = {CAMERA_IPC_ERROR, {0}};
+        camera_msg_data_t data = {CAMERA_IPC_ERROR, {}};
         mErrCb->notify(mErrCb, data);
     } else {
         LOGE("@%s, mErrCb is nullptr, no device error is sent out", __func__);

@@ -560,6 +560,7 @@ void PSysProcessor::handleRawReprocessing(CameraBufferPortMap *srcBuffers,
     Port defaultPort = srcBuffers->begin()->first;
     shared_ptr<CameraBuffer> mainBuf = (*srcBuffers)[defaultPort];
     long inputSequence = mainBuf->getSequence();
+    uint64_t timestamp = TIMEVAL2NSECS(mainBuf->getTimestamp());
 
     if (rawOutputBuffer) {
         if (!needExecutePipe(settingSequence, inputSequence)) {
@@ -568,7 +569,6 @@ void PSysProcessor::handleRawReprocessing(CameraBufferPortMap *srcBuffers,
             return;
         }
         // Return opaque RAW data
-        uint64_t timestamp = TIMEVAL2NSECS(mainBuf->getTimestamp());
         sensor_raw_info_t opaqueRawInfo = { inputSequence, timestamp };
 
         rawOutputBuffer->updateV4l2Buffer(*mainBuf->getV4L2Buffer().Get());
@@ -579,16 +579,14 @@ void PSysProcessor::handleRawReprocessing(CameraBufferPortMap *srcBuffers,
               timestamp, inputSequence, rawOutputBuffer->getBufferSize(),
               rawOutputBuffer->getBufferAddr());
 
-        // handle Shutter first
-        sendPsysBufReadyEvent(dstBuffers, settingSequence, timestamp);
+        // handle Shutter first if has raw output
+        sendPsysRequestEvent(dstBuffers, settingSequence, timestamp, EVENT_PSYS_REQUEST_BUF_READY);
 
         // Return opaque RAW buffer
         for (auto &it : mBufferConsumerList) {
             it->onFrameAvailable(mOpaqueRawPort, rawOutputBuffer);
         }
         *hasRawOutput = true;
-
-        PlatformData::updateMakernoteTimeStamp(mCameraId, settingSequence, timestamp);
 
         if (stillBuf.empty() && videoBuf.empty()) {
             *allBufDone = true;
@@ -597,8 +595,9 @@ void PSysProcessor::handleRawReprocessing(CameraBufferPortMap *srcBuffers,
             dstBuffers->erase(mOpaqueRawPort);
         }
     } else if (settingSequence != -1 && inputSequence > settingSequence) {
-        // handle Shutter first
-        sendPsysBufReadyEvent(dstBuffers, settingSequence, 0);
+        timestamp = 0;
+        // handle Shutter first if has raw input
+        sendPsysRequestEvent(dstBuffers, settingSequence, timestamp, EVENT_PSYS_REQUEST_BUF_READY);
 
         // only one video buffer is supported
         if (PlatformData::isGpuTnrEnabled() && videoBuf.size() == 1) {
@@ -627,6 +626,11 @@ void PSysProcessor::handleRawReprocessing(CameraBufferPortMap *srcBuffers,
                 *hasRawInput = true;
             }
         }
+    }
+
+    // handle Metadata ready event if all buffer done here(psys doesn't run)
+    if (*allBufDone) {
+        sendPsysRequestEvent(dstBuffers, settingSequence, timestamp, EVENT_REQUEST_METADATA_READY);
     }
 
     LOG2("%s, hasRawInput %d, hasRawOutput %d, allBufDone %d, settingSequence %ld, inputSequence %ld",
@@ -772,12 +776,16 @@ status_t PSysProcessor::prepareTask(CameraBufferPortMap *srcBuffers,
     if (needRunPipe) {
         // Raw output already has been returned back, and don't need to handle again.
         if (!hasRawOutput) {
-            sendPsysBufReadyEvent(dstBuffers, settingSequence, timestamp);
+            // handle buffer done for normal YUV output
+            sendPsysRequestEvent(dstBuffers, settingSequence, timestamp,
+                                 EVENT_PSYS_REQUEST_BUF_READY);
         }
         if (PlatformData::isGpuTnrEnabled()) {
             handleStillPipeForTnr(inputSequence, dstBuffers);
         }
         dispatchTask(*srcBuffers, *dstBuffers);
+        // handle metadata event after running pal(update metadata from pal result)
+        sendPsysRequestEvent(dstBuffers, settingSequence, timestamp, EVENT_REQUEST_METADATA_READY);
     } else if (!holdOnInput && !isBufferHoldForRawReprocess(inputSequence)) {
         for (const auto& src : *srcBuffers) {
             mBufferProducer->qbuf(src.first, src.second);
@@ -969,22 +977,24 @@ void PSysProcessor::sendPsysFrameDoneEvent(const CameraBufferPortMap* dstBuffers
     }
 }
 
-void PSysProcessor::sendPsysBufReadyEvent(const CameraBufferPortMap* dstBuffers,
-                                          int64_t sequence, uint64_t timestamp)
+void PSysProcessor::sendPsysRequestEvent(const CameraBufferPortMap* dstBuffers, int64_t sequence,
+                                         uint64_t timestamp, EventType eventType)
 {
     for (const auto& output : *dstBuffers) {
         if (output.second && output.second->getUsage() != BUFFER_USAGE_PSYS_INTERNAL) {
             EventData event;
-            event.type = EVENT_PSYS_REQUEST_BUF_READY;
+            event.type = eventType;
             event.buffer = nullptr;
-            event.data.requestReady.timestamp
-                = timestamp > 0 ? timestamp : output.second->getUserBuffer()->timestamp;
+            event.data.requestReady.timestamp =
+                timestamp > 0 ? timestamp : output.second->getUserBuffer()->timestamp;
             event.data.requestReady.sequence = sequence;
+
             notifyListeners(event);
             break;
         }
     }
 }
+
 void PSysProcessor::onFrameDone(const PSysTaskData& result)
 {
     PERF_CAMERA_ATRACE();

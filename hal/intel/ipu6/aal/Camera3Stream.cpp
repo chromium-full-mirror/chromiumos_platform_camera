@@ -301,14 +301,17 @@ bool Camera3Stream::threadLoop() {
         CheckAndLogError(ccBuf == nullptr, false, "ccBuf is nullptr");
     }
 
-    if (inputCam3Buf || mHALStream.usage == icamera::CAMERA_STREAM_OPAQUE_RAW) {
-        // notify shutter done
-        ShutterEvent shutterEvent = {frameNumber, inputCam3Buf ? 0 : outCamBuf.timestamp};
+    if (inputCam3Buf) {
+        // notify shutter/metadata done for yuv reprocessing cases
+        ShutterEvent shutterEvent = {frameNumber, 0};
         mEventCallback->shutterDone(shutterEvent);
 
-        // notify metadata done
         MetadataEvent event = {frameNumber, &parameter};
         mEventCallback->metadataDone(event);
+    } else if (mHALStream.usage == icamera::CAMERA_STREAM_OPAQUE_RAW) {
+        // notify shutter done before buffer done for raw output
+        ShutterEvent shutterEvent = {frameNumber, outCamBuf.timestamp};
+        mEventCallback->shutterDone(shutterEvent);
     }
 
     int dumpOutputFmt = V4L2_PIX_FMT_NV12;
