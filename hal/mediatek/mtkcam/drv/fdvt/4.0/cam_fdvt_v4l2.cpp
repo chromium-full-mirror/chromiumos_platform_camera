@@ -620,6 +620,7 @@ static int request_buffers(int fd,
   reqbuf.count = buf_count;
   reqbuf.type = buf_type;
   reqbuf.memory = mem_type;
+  reqbuf.flags = V4L2_MEMORY_FLAG_NON_COHERENT;
 
   if (xioctl(fd, VIDIOC_REQBUFS, &reqbuf)) {
     MY_LOGE("Buffer request cnt:%d type:%d mem:%d", buf_count, buf_type,

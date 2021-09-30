@@ -329,7 +329,7 @@ status_t V4L2StreamNode::setupBuffersLocked() {
   }
 
   status_t ret = mNode->SetupBuffers(
-      (mBufferPoolSize > 0) ? mBufferPoolSize : STREAM_NODE_BUFFERS, false,
+      (mBufferPoolSize > 0) ? mBufferPoolSize : STREAM_NODE_BUFFERS, true,
       mType, &mBuffers);
   CheckAndLogError(ret != NO_ERROR, ret, "@%s SetupBuffers failed",
                    __FUNCTION__);
