@@ -383,6 +383,7 @@ typedef struct
 {
     ia_aiq_color_channels color_gains;              /*!< Optional. RGB gains for each color channels.
                                                          These gain will be applied on top of RGB gains calculated from WB results. */
+    bool enable_gtm_desaturation;                   /*!< Optional, use base_gamma to calculate saturation factor */
 } cca_pa_input_params;
 
 /*!
@@ -645,6 +646,29 @@ struct cca_init_params{
             IA_MEMSET(&gdcConfig, 0, sizeof(gdcConfig));
         }
 };
+/*!
+*  \brief paramters of Multi CCA Flow.
+*/
+typedef enum {
+    front = 0,
+    right,
+    back,
+    left,
+} ccd_sv_id;
+
+typedef struct
+{
+    uint8_t cam_idx;     /*!< multiple camera index. */
+    bool main_cam_flag;   /*!< current camera is main camera or not. */
+    ccd_sv_id sv_idx;     /*!< surround view camera index. */
+}cca_multi_id;
+
+typedef struct
+{
+    uint8_t cam_num;    /*!< maximum multiple camera number. */
+    uint8_t group_type; /*!< 0, 1:X 1, X:X. */
+    cca_init_params* init_params;
+}cca_multi_cam;
 
 }//cca
 #endif //INTELCCA_TYPES_H_

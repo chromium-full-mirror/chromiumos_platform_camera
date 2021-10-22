@@ -109,10 +109,12 @@ typedef enum
     ia_pal_uuid_isp_ccm_3a_2_0 = 62344,
     ia_pal_uuid_isp_comp_spliter = 35257,
     ia_pal_uuid_isp_compand_1_0 = 35311,
+    ia_pal_uuid_isp_compression = 58827,
     ia_pal_uuid_isp_crop_sis = 12166,
     ia_pal_uuid_isp_cvt_1_0 = 32427,
     ia_pal_uuid_isp_debug_info = 12967,
     ia_pal_uuid_isp_decompand_1_0 = 55624,
+    ia_pal_uuid_isp_decompression = 44892,
     ia_pal_uuid_isp_dehaze_1_0 = 58873,
     ia_pal_uuid_isp_dma_cropper_dp = 47638,
     ia_pal_uuid_isp_dma_cropper_mp = 27230,
@@ -406,11 +408,14 @@ typedef enum
 typedef enum
 {
     ia_pal_uuid_system_api_bnlm_3_3 = 5901,
+    ia_pal_uuid_system_api_compression = 41714,
+    ia_pal_uuid_system_api_decompression = 41285,
     ia_pal_uuid_system_api_gdc7 = 60738,
     ia_pal_uuid_system_api_io_buffer = 47777,
     ia_pal_uuid_system_api_io_buffer_1_1 = 56474,
     ia_pal_uuid_system_api_lsc_1_2 = 19967,
     ia_pal_uuid_system_api_rgbs_grid_1_0 = 35673,
+    ia_pal_uuid_system_api_tnr7_blend_1_0 = 53161,
     ia_pal_uuid_system_api_tvs_1_0 = 29571,
 
 } ia_system_api_uuid;

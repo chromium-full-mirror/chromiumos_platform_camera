@@ -4344,6 +4344,66 @@ typedef struct
 
 } ia_pal_isp_compand_1_0_t;
 
+/*! \isp struct compression
+
+*/
+typedef struct
+{
+    /*!< enable When set, this frame is being compressed/decompressed.*/
+    int32_t enable;
+    /*!< cmp_enable[2] When set, this frame is being compressed/decompressed.*/
+    int32_t cmp_enable[2];
+    /*!< max_quanta_8b_y[20] MAX Quanta per QP, 8bits, Y plane*/
+    int32_t max_quanta_8b_y[20];
+    /*!< max_quanta_8b_uv[20] MAX Quanta per QP, 8bits, UV plane*/
+    int32_t max_quanta_8b_uv[20];
+    /*!< max_quanta_10b_y[24] MAX Quanta per QP, 10bits, Y plane*/
+    int32_t max_quanta_10b_y[24];
+    /*!< max_quanta_10b_uv[24] MAX Quanta per QP, 10bits, UV plane*/
+    int32_t max_quanta_10b_uv[24];
+    /*!< max_quanta_12b_y[28] MAX Quanta per QP, 12bits, Y plane*/
+    int32_t max_quanta_12b_y[28];
+    /*!< max_quanta_12b_uv[28] MAX Quanta per QP, 12bits, UV plane*/
+    int32_t max_quanta_12b_uv[28];
+    /*!< lossy_cfg[2] decides lossless or lossy*/
+    int32_t lossy_cfg[2];
+    /*!< fp_comp_enable[2] when lossy is enabled, this decides if compression is BW or FP*/
+    int32_t fp_comp_enable[2];
+    /*!< bitdepth[2] bitdepth of source*/
+    int32_t bitdepth[2];
+    /*!< fp_cmp_ratio[2] Specifies the hard constraint on the compressed size of each macro-page.*/
+    int32_t fp_cmp_ratio[2];
+    /*!< src_stride[2] Surface stride in bytes. Stride is the distance in bytes between the first pixel of the first tile to the first pixel is the tile which is below the first tile.*/
+    int32_t src_stride[2];
+    /*!< bw_cmp_ratio_plus[2] Upper bound on compression ratio + hysteresis.*/
+    int32_t bw_cmp_ratio_plus[2];
+    /*!< bw_cmp_ratio_minus[2] Lower threshold on compression ratio - hysteresis.*/
+    int32_t bw_cmp_ratio_minus[2];
+    /*!< bw_inst_upper[2] Upper threshold for the instant compression value to QP generation*/
+    int32_t bw_inst_upper[2];
+    /*!< bw_inst_lower[2] Lower threshold for the instant compression value to QP generation*/
+    int32_t bw_inst_lower[2];
+    /*!< init_history[2] Value with which the elements in the moving average window are initialized.*/
+    int32_t init_history[2];
+    /*!< init_qp[2] Specifies the value to which current QP is initialized at the beginning of each frame*/
+    int32_t init_qp[2];
+    /*!< min_qp[2] Specifies the maximum QP that the bitrate control algorithm is allowed to use*/
+    int32_t min_qp[2];
+    /*!< max_qp[2] Specifies the minimum QP that the bitrate control algorithm is allowed to use*/
+    int32_t max_qp[2];
+    /*!< ma_win_size[2] Window size (i.e. number of history element) for moving average*/
+    int32_t ma_win_size[2];
+    /*!< max_qp_inc[2] Counter that determines how quickly the upper limit of QP can be increased to keep footprint under control.*/
+    int32_t max_qp_inc[2];
+    /*!< max_qp_dec[2] Counter that determines how quickly the upper limit of QP can be decreased after footprint is under control.*/
+    int32_t max_qp_dec[2];
+    /*!< qp_inc_rst_val[2] When maximal QP is incremented or decremented, the counters are initiated with this values*/
+    int32_t qp_inc_rst_val[2];
+    /*!< fp_guard_band_log[2] Guard band for FP compression that reduces probability of needing evasive action towards the end of the macro-page*/
+    int32_t fp_guard_band_log[2];
+
+} ia_pal_isp_compression_t;
+
 /*! \isp struct crop_sis
 
 */
@@ -4429,6 +4489,28 @@ typedef struct
     int32_t linear_pedestal;
 
 } ia_pal_isp_decompand_1_0_t;
+
+/*! \isp struct decompression
+
+*/
+typedef struct
+{
+    /*!< enable When set, this frame is being compressed/decompressed.*/
+    int32_t enable;
+    /*!< cmp_enable[2] When set, this frame is being compressed/decompressed.*/
+    int32_t cmp_enable[2];
+    /*!< lossy_cfg[2] decides lossless or lossy*/
+    int32_t lossy_cfg[2];
+    /*!< fp_comp_enable[2] when lossy is enabled, this decides if compression is BW or FP*/
+    int32_t fp_comp_enable[2];
+    /*!< bitdepth[2] bitdepth of source*/
+    int32_t bitdepth[2];
+    /*!< fp_cmp_ratio[2] Specifies the hard constraint on the compressed size of each macro-page.*/
+    int32_t fp_cmp_ratio[2];
+    /*!< src_stride[2] Surface stride in bytes. Stride is the distance in bytes between the first pixel of the first tile to the first pixel is the tile which is below the first tile.*/
+    int32_t src_stride[2];
+
+} ia_pal_isp_decompression_t;
 
 /*! \isp struct dehaze_1_0
 
@@ -16215,6 +16297,76 @@ typedef struct
 
 } ia_pal_system_api_bnlm_3_3_t;
 
+/*! \system api struct compression
+
+*/
+typedef struct
+{
+    /*!< bitdepth[2] bitdepth of source*/
+    int32_t bitdepth[2];
+    /*!< bw_cmp_ratio_minus[2] Lower threshold on compression ratio - hysteresis.*/
+    int32_t bw_cmp_ratio_minus[2];
+    /*!< bw_cmp_ratio_plus[2] Upper bound on compression ratio + hysteresis.*/
+    int32_t bw_cmp_ratio_plus[2];
+    /*!< bw_inst_lower[2] Lower threshold for the instant compression value to QP generation*/
+    int32_t bw_inst_lower[2];
+    /*!< bw_inst_upper[2] Upper threshold for the instant compression value to QP generation*/
+    int32_t bw_inst_upper[2];
+    /*!< cmp_enable[2] When set, this frame is being compressed/decompressed.*/
+    int32_t cmp_enable[2];
+    /*!< enable When set, this frame is being compressed/decompressed.*/
+    int32_t enable;
+    /*!< fp_cmp_ratio[2] Specifies the hard constraint on the compressed size of each macro-page.*/
+    int32_t fp_cmp_ratio[2];
+    /*!< fp_comp_enable[2] when lossy is enabled, this decides if compression is BW or FP*/
+    int32_t fp_comp_enable[2];
+    /*!< fp_guard_band_log[2] Guard band for FP compression that reduces probability of needing evasive action towards the end of the macro-page*/
+    int32_t fp_guard_band_log[2];
+    /*!< init_history[2] Value with which the elements in the moving average window are initialized.*/
+    int32_t init_history[2];
+    /*!< init_qp[2] Specifies the value to which current QP is initialized at the beginning of each frame*/
+    int32_t init_qp[2];
+    /*!< lossy_cfg[2] decides lossless or lossy*/
+    int32_t lossy_cfg[2];
+    /*!< ma_win_size[2] Window size (i.e. number of history element) for moving average*/
+    int32_t ma_win_size[2];
+    /*!< max_qp[2] Specifies the minimum QP that the bitrate control algorithm is allowed to use*/
+    int32_t max_qp[2];
+    /*!< max_qp_dec[2] Counter that determines how quickly the upper limit of QP can be decreased after footprint is under control.*/
+    int32_t max_qp_dec[2];
+    /*!< max_qp_inc[2] Counter that determines how quickly the upper limit of QP can be increased to keep footprint under control.*/
+    int32_t max_qp_inc[2];
+    /*!< min_qp[2] Specifies the maximum QP that the bitrate control algorithm is allowed to use*/
+    int32_t min_qp[2];
+    /*!< qp_inc_rst_val[2] When maximal QP is incremented or decremented, the counters are initiated with this values*/
+    int32_t qp_inc_rst_val[2];
+    /*!< src_stride[2] Surface stride in bytes. Stride is the distance in bytes between the first pixel of the first tile to the first pixel is the tile which is below the first tile.*/
+    int32_t src_stride[2];
+
+} ia_pal_system_api_compression_t;
+
+/*! \system api struct decompression
+
+*/
+typedef struct
+{
+    /*!< bitdepth[2] bitdepth of source*/
+    int32_t bitdepth[2];
+    /*!< cmp_enable[2] When set, this frame is being compressed/decompressed.*/
+    int32_t cmp_enable[2];
+    /*!< enable When set, this frame is being compressed/decompressed.*/
+    int32_t enable;
+    /*!< fp_cmp_ratio[2] Specifies the hard constraint on the compressed size of each macro-page.*/
+    int32_t fp_cmp_ratio[2];
+    /*!< fp_comp_enable[2] when lossy is enabled, this decides if compression is BW or FP*/
+    int32_t fp_comp_enable[2];
+    /*!< lossy_cfg[2] decides lossless or lossy*/
+    int32_t lossy_cfg[2];
+    /*!< src_stride[2] Surface stride in bytes. Stride is the distance in bytes between the first pixel of the first tile to the first pixel is the tile which is below the first tile.*/
+    int32_t src_stride[2];
+
+} ia_pal_system_api_decompression_t;
+
 /*! \system api struct gdc7
 
 */
@@ -16508,6 +16660,18 @@ typedef struct
     uint8_t is_fragmentation;
 
 } ia_pal_system_api_rgbs_grid_1_0_t;
+
+/*! \system api struct tnr7_blend_1_0
+
+*/
+typedef struct
+{
+    /*!< enable_main_output Enable blend main output*/
+    uint8_t enable_main_output;
+    /*!< enable_vision_output Enable blend computer vision output*/
+    uint8_t enable_vision_output;
+
+} ia_pal_system_api_tnr7_blend_1_0_t;
 
 /*! \system api struct tvs_1_0
 Trainable visual scaler
