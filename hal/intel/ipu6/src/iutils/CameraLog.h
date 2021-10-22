@@ -231,7 +231,7 @@ extern void doLogBody(int logTag, int level, const char* fmt, ...);
 #define LOGFDFPS(...)                                                         \
     do {                                                                      \
         {                                                                     \
-            doLogBody(GET_FILE_SHIFT(LOG_TAG), icamera::CAMERA_DEBUG_LOG_FPS, \
+            doLogBody(GET_FILE_SHIFT(LOG_TAG), icamera::CAMERA_DEBUG_LOG_FACE_DETECTION_FPS, \
                       ##__VA_ARGS__);                                         \
         }                                                                     \
     } while (0)
@@ -327,9 +327,9 @@ void __camera_hal_log(bool condition, int prio, const char* tag,
         icamera::gLogLevel& icamera::CAMERA_DEBUG_LOG_FPS, ANDROID_LOG_DEBUG, \
         LOG_TAG, __VA_ARGS__)
 #define LOGFDFPS(format, args...)                                         \
-    icamera::Log::print_log(                                              \
-        icamera::gLogLevel& icamera::CAMERA_DEBUG_LOG_FACE_DETECTION_FPS, \
-        LOG_TAG, icamera::CAMERA_DEBUG_LOG_FACE_DETECTION_FPS, format, ##args)
+    icamera::__camera_hal_log(                                                \
+        icamera::gLogLevel& icamera::CAMERA_DEBUG_LOG_FACE_DETECTION_FPS, ANDROID_LOG_DEBUG, \
+        LOG_TAG, __VA_ARGS__)
 
 #define LOGE(...) \
     icamera::__camera_hal_log(true, ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)

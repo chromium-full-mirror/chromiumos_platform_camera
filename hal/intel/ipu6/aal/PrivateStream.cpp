@@ -174,7 +174,7 @@ bool PrivateStream::threadLoop() {
         CheckAndLogError(!outCam3Buf, true, "<req%u>can't identify the buffer source", frameNumber);
     }
 
-    processFrame(frameNumber, buffer);
+    processFrame(frameNumber, outCam3Buf);
     outCam3Buf->dumpImage(frameNumber, icamera::DUMP_AAL_OUTPUT, V4L2_PIX_FMT_NV12);
 
     {
@@ -206,11 +206,12 @@ PrivateStreamFD::~PrivateStreamFD() {
     }
 }
 
-void PrivateStreamFD::processFrame(uint32_t frameNumber, icamera::camera_buffer_t* buffer) {
+void PrivateStreamFD::processFrame(uint32_t frameNumber,
+                                   const std::shared_ptr<Camera3Buffer>& ccBuf) {
     LOG2("<req%u>@%s", frameNumber, __func__);
 
     if (mFaceDetection) {
-        mFaceDetection->runFaceDetectionBySync(*buffer);
+        mFaceDetection->runFaceDetectionBySync(ccBuf);
     }
 }
 }  // namespace camera3

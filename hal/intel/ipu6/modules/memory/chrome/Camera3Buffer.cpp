@@ -194,6 +194,7 @@ icamera::status_t Camera3Buffer::init(const camera3_stream_t* stream, buffer_han
     mType = BUF_TYPE_HANDLE;
     mGbmBufferManager = cros::CameraBufferManager::GetInstance();
     mHandle = handle;
+    mHandlePtr = &mHandle;
     mHalBuffer.s.width = stream->width;
     mHalBuffer.s.height = stream->height;
     mFormat = stream->format;

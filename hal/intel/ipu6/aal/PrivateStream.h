@@ -47,7 +47,8 @@ class PrivateStream : public icamera::Thread {
  protected:
     void returnBuffer(uint32_t frameNumber);
     virtual void requestExit();
-    virtual void processFrame(uint32_t frameNumber, icamera::camera_buffer_t* buffer) = 0;
+    virtual void processFrame(uint32_t frameNumber,
+                              const std::shared_ptr<Camera3Buffer>& ccBuf) = 0;
 
  protected:
     int mCameraId;
@@ -76,7 +77,7 @@ class PrivateStreamFD : public PrivateStream {
     virtual ~PrivateStreamFD();
 
  protected:
-    virtual void processFrame(uint32_t frameNumber, icamera::camera_buffer_t* buffer);
+    virtual void processFrame(uint32_t frameNumber, const std::shared_ptr<Camera3Buffer>& ccBuf);
 
  private:
     icamera::FaceDetection* mFaceDetection;

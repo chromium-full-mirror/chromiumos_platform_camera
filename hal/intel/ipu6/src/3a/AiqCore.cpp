@@ -302,11 +302,12 @@ int AiqCore::setStatsParams(const cca::cca_stats_params &statsParams,
 
     if (aiqStats && aiqStats->mPendingDecode) {
         uint32_t bitmap = 0;
-        if (!mRgbStatsBypassed) bitmap |= cca::CCA_STATS_RGBS | cca::CCA_STATS_HIST;
+        bool decodeRgbsStats = !mRgbStatsBypassed || outStats->get_rgbs_stats;
+        if (decodeRgbsStats) bitmap |= cca::CCA_STATS_RGBS | cca::CCA_STATS_HIST;
         if (!mAfBypassed) bitmap |= cca::CCA_STATS_AF;
         LOG3("<seq%ld> bypass bitmap %x", aiqStats->mSequence, bitmap);
 
-        if (!mRgbStatsBypassed && !mAfBypassed) {
+        if (decodeRgbsStats && !mAfBypassed) {
             aiqStats->mPendingDecode = false;
         }
         unsigned int byteUsed = 0;

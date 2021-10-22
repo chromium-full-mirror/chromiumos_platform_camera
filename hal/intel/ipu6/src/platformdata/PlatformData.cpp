@@ -254,6 +254,11 @@ bool PlatformData::isFaceAeEnabled(int cameraId)
     return getInstance()->mStaticCfg.mCameras[cameraId].mFaceAeEnabled;
 }
 
+int PlatformData::faceEngineVendor(int cameraId)
+{
+    return getInstance()->mStaticCfg.mCameras[cameraId].mFaceEngineVendor;
+}
+
 int PlatformData::faceEngineRunningInterval(int cameraId)
 {
     return getInstance()->mStaticCfg.mCameras[cameraId].mFaceEngineRunningInterval;

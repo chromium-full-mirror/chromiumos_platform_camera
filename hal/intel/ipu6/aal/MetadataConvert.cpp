@@ -743,11 +743,13 @@ int MetadataConvert::convertControlMetadata(const android::CameraMetadata& setti
     tag = ANDROID_STATISTICS_FACE_DETECT_MODE;
     entry = settings.find(tag);
     uint8_t fdValue = ANDROID_STATISTICS_FACE_DETECT_MODE_OFF;
-    if ((entry.count == 1) && (entry.data.u8[0] == ANDROID_STATISTICS_FACE_DETECT_MODE_OFF)) {
-        int faceIds[1] = {0};
-        parameter->setFaceIds(faceIds, 1);
-    } else {
-        fdValue = entry.data.u8[0];
+    if (entry.count == 1) {
+        if (entry.data.u8[0] == ANDROID_STATISTICS_FACE_DETECT_MODE_OFF) {
+            int faceIds[1] = {0};
+            parameter->setFaceIds(faceIds, 1);
+        } else {
+            fdValue = entry.data.u8[0];
+        }
     }
     parameter->setFaceDetectMode(fdValue);
 

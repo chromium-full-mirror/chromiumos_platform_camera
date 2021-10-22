@@ -52,6 +52,9 @@ namespace icamera {
 
 #define FACE_ENGINE_DEFAULT_RUNNING_INTERVAL 1
 
+#define FACE_ENGINE_INTEL_PVL 0
+#define FACE_ENGINE_GOOGLE_FACESSD 1
+
 #define DEFAULT_TNR_EXTRA_FRAME_NUM 2
 
 /* Max number of the RAW buffer number is 32.
@@ -142,6 +145,7 @@ public:
                 mPSACompression(false),
                 mOFSCompression(false),
                 mFaceAeEnabled(false),
+                mFaceEngineVendor(FACE_ENGINE_INTEL_PVL),
                 mFaceEngineRunningInterval(FACE_ENGINE_DEFAULT_RUNNING_INTERVAL),
                 mFaceEngineRunningIntervalNoFace(FACE_ENGINE_DEFAULT_RUNNING_INTERVAL),
                 mFaceEngineRunningSync(false),
@@ -230,6 +234,7 @@ public:
             bool mPSACompression;
             bool mOFSCompression;
             bool mFaceAeEnabled;
+            int mFaceEngineVendor;
             int mFaceEngineRunningInterval;
             int mFaceEngineRunningIntervalNoFace;
             int mFaceEngineRunningSync;
@@ -621,6 +626,14 @@ public:
      * \return if face detection is enabled or not.
      */
     static bool isFaceAeEnabled(int cameraId);
+
+    /**
+     * get face engine's vendor
+     *
+     * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
+     * \return the face engine's vendor.
+     */
+    static int faceEngineVendor(int cameraId);
 
     /**
      * get face engine's running interval

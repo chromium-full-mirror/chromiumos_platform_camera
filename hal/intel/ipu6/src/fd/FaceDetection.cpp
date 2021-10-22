@@ -200,19 +200,20 @@ void FaceDetection::printfFDRunRate() {
     mRequestRunTime = curTime;
 }
 
-void FaceDetection::runFaceDetection(const camera_buffer_t& buffer) {
+void FaceDetection::runFaceDetection(const std::shared_ptr<camera3::Camera3Buffer> ccBuf) {
     if (PlatformData::isFaceEngineSyncRunning(mCameraId)) {
-        runFaceDetectionBySync(buffer);
+        runFaceDetectionBySync(ccBuf);
     } else {
-        runFaceDetectionByAsync(buffer);
+        runFaceDetectionByAsync(ccBuf);
     }
 }
 
-void FaceDetection::runFaceDetectionBySync(const camera_buffer_t& buffer) {
+void FaceDetection::runFaceDetectionBySync(const std::shared_ptr<camera3::Camera3Buffer> ccBuf) {
     LOG2("@%s", __func__);
 
     if (!faceRunningByCondition()) return;
 
+    const icamera::camera_buffer_t buffer = ccBuf->getHalBuffer();
     int size = buffer.s.size;
     CheckAndLogError(size > MAX_FACE_FRAME_SIZE_SYNC, VOID_VALUE,
                      "Face frame buffer is too small, w:%d,h:%d,size:%d", buffer.s.width,
@@ -256,11 +257,12 @@ void FaceDetection::runFaceDetectionBySync(const camera_buffer_t& buffer) {
     returnRunBuf(params);
 }
 
-void FaceDetection::runFaceDetectionByAsync(const camera_buffer_t& buffer) {
+void FaceDetection::runFaceDetectionByAsync(const std::shared_ptr<camera3::Camera3Buffer> ccBuf) {
     LOG2("@%s", __func__);
 
     if (!faceRunningByCondition()) return;
 
+    const icamera::camera_buffer_t buffer = ccBuf->getHalBuffer();
     int size = buffer.s.stride * buffer.s.height;
     CheckAndLogError(size > MAX_FACE_FRAME_SIZE_ASYNC, VOID_VALUE,
                      "face frame buffer is too small!, w:%d,h:%d,size:%d", buffer.s.width,

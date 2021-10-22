@@ -357,7 +357,7 @@ bool Camera3Stream::threadLoop() {
     }
 
     if (mFaceDetection) {
-        mFaceDetection->runFaceDetection(ccBuf->getHalBuffer());
+        mFaceDetection->runFaceDetection(ccBuf);
     }
 
     if (mHALStream.usage != icamera::CAMERA_STREAM_OPAQUE_RAW) {

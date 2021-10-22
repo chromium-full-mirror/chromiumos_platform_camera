@@ -32,6 +32,7 @@
 #include <queue>
 #include <unordered_map>
 
+#include "Camera3Buffer.h"
 #include "FaceBase.h"
 #include "IntelCCATypes.h"
 #include "Parameters.h"
@@ -51,9 +52,9 @@ class FaceDetection : public Thread {
     static void destoryInstance(int cameraId);
     static FaceDetection* getInstance(int cameraId);
 
-    void runFaceDetection(const camera_buffer_t& buffer);
-    void runFaceDetectionBySync(const camera_buffer_t& buffer);
-    void runFaceDetectionByAsync(const camera_buffer_t& buffer);
+    void runFaceDetection(const std::shared_ptr<camera3::Camera3Buffer> ccBuf);
+    void runFaceDetectionBySync(const std::shared_ptr<camera3::Camera3Buffer> ccBuf);
+    void runFaceDetectionByAsync(const std::shared_ptr<camera3::Camera3Buffer> ccBuf);
     virtual bool threadLoop();
     static int getResult(int cameraId, cca::cca_face_state* faceState);
     static int getResult(int cameraId, CVFaceDetectionAbstractResult* result);
@@ -125,7 +126,7 @@ class FaceDetection {
         return nullptr;
     }
     static void destoryInstance(int cameraId) {}
-    void runFaceDetection(const camera_buffer_t& buffer) {}
+    void runFaceDetection(const std::shared_ptr<camera3::Camera3Buffer> ccBuf) {}
 };
 #endif
 

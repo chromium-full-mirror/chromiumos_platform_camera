@@ -545,6 +545,10 @@ void CameraParser::handleSensor(CameraParser* profiles, const char* name, const 
         pCurrentCam->mPsysBundleWithAic = strcmp(atts[1], "true") == 0;
     } else if (strcmp(name, "swProcessingAlignWithIsp") == 0) {
         pCurrentCam->mSwProcessingAlignWithIsp = strcmp(atts[1], "true") == 0;
+    } else if (strcmp(name, "faceEngineVendor") == 0) {
+        int val = atoi(atts[1]);
+        pCurrentCam->mFaceEngineVendor =
+            val >= 0 ? val : FACE_ENGINE_INTEL_PVL;
     } else if (strcmp(name, "faceEngineRunningInterval") == 0) {
         int val = atoi(atts[1]);
         pCurrentCam->mFaceEngineRunningInterval =
