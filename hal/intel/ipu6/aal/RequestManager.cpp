@@ -40,8 +40,6 @@
 #include "Utils.h"
 
 namespace camera3 {
-#define VGA_WIDTH 640
-#define VGA_HEIGHT 480
 #define VGA_360P 360
 
 RequestManager::RequestManager(int cameraId)
@@ -76,8 +74,8 @@ int RequestManager::init(const camera3_callback_ops_t* callback_ops) {
     /* If it supports one more video output to process face detection */
     if (icamera::PlatformData::isIPUSupportFD(mCameraId)) {
         mFDStreamsInfo.stream_type = CAMERA3_STREAM_OUTPUT;
-        mFDStreamsInfo.width = VGA_WIDTH;
-        mFDStreamsInfo.height = VGA_HEIGHT;
+        mFDStreamsInfo.width = RESOLUTION_VGA_WIDTH;
+        mFDStreamsInfo.height = RESOLUTION_VGA_HEIGHT;
     }
 
     // Update the default settings from camera HAL
@@ -307,7 +305,8 @@ int RequestManager::configureStreams(camera3_stream_configuration_t* stream_list
         LOG1("Face detection is enable");
         fdChooseStream = chooseStreamForFaceDetection(streamsNum, stream_list->streams);
         if (fdChooseStream && isIPUSupportFD) {
-            if (VGA_WIDTH * fdChooseStream->height != fdChooseStream->width * VGA_HEIGHT) {
+            if (RESOLUTION_VGA_WIDTH * fdChooseStream->height != \
+                fdChooseStream->width * RESOLUTION_VGA_HEIGHT) {
                 mFDStreamsInfo.height = VGA_360P;
             }
             mFDStreamsInfo.usage = fdChooseStream->usage;

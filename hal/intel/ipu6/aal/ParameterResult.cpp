@@ -23,14 +23,12 @@
 
 namespace camera3 {
 
-ParameterResult::ParameterResult(int cameraId) :
-    mCameraId(cameraId) {
-}
+ParameterResult::ParameterResult(int cameraId) : mCameraId(cameraId) {}
 
 ParameterResult::~ParameterResult() {
     std::lock_guard<std::mutex> l(mLock);
     for (auto it : mParameterResultMap) {
-        if (it.second != nullptr) delete(it.second);
+        if (it.second != nullptr) delete (it.second);
     }
     mParameterResultMap.clear();
 }

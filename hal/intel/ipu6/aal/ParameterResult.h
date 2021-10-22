@@ -18,8 +18,8 @@
 
 #include <unordered_map>
 
-#include "Utils.h"
 #include "Parameters.h"
+#include "Utils.h"
 
 namespace camera3 {
 

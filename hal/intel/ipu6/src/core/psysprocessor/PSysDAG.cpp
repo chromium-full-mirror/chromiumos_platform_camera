@@ -215,14 +215,25 @@ int PSysDAG::getTnrExtraFrameCount(int64_t seq)
 }
 
 /* multi-streams can bind to the same output port, but only one stream is active */
-bool PSysDAG::isInactiveStream(int streamId, const PSysTaskData* task)
+bool PSysDAG::isInactiveStillStream(int streamId, const PSysTaskData* task, Port port)
 {
+    if (streamId == VIDEO_STREAM_ID) return false;
     if (mStillExecutor == nullptr || mStillTnrExecutor == nullptr) return false;
     long sequence = task->mInputBuffers.at(mDefaultMainInputPort)->getSequence();
-    bool isTnrTask = !isBypassStillTnr(sequence) || task->mFakeTask;
+    bool hasStill = false;
 
-    return ((!isTnrTask && (streamId == STILL_TNR_STREAM_ID))
-     || (isTnrTask && (streamId == STILL_STREAM_ID)));
+    if (task->mOutputBuffers.find(port) != task->mOutputBuffers.end()) {
+        std::shared_ptr<CameraBuffer> camBuf =
+            (const_cast<PSysTaskData*>(task))->mOutputBuffers[port];
+        if (camBuf && camBuf->getStreamUsage() == CAMERA_STREAM_STILL_CAPTURE) hasStill = true;
+    }
+    bool isStillTnrTask = hasStill && (!isBypassStillTnr(sequence) || task->mFakeTask);
+
+    /* STILL_STREAM_ID, isStillTnrTask = false hasStill = true/false, active stream
+    ** STILL_TNR_STREAM_ID, isStillTnrTask = true hasStill = true, active stream
+    */
+    return (!isStillTnrTask && (streamId == STILL_TNR_STREAM_ID)) ||
+           (isStillTnrTask && (streamId == STILL_STREAM_ID));
 }
 
 int PSysDAG::linkAndConfigExecutors()
@@ -423,7 +434,8 @@ int PSysDAG::queueBuffers(const PSysTaskData& task)
     for (auto& inputFrame : task.mInputBuffers) {
         for (auto& inputMap : mInputMaps) {
             if (inputMap.mDagPort == inputFrame.first) {
-                if (isInactiveStream(mExecutorStreamId[inputMap.mExecutor], &task))
+                if (isInactiveStillStream(mExecutorStreamId[inputMap.mExecutor], &task,
+                                          inputFrame.first))
                     continue;
                 inputMap.mExecutor->onFrameAvailable(inputMap.mExecutorPort, inputFrame.second);
                 LOG2("%s, queue input buffer: dagPort: %d, executorPort: %d, name: %s", __func__,
@@ -436,7 +448,8 @@ int PSysDAG::queueBuffers(const PSysTaskData& task)
     for (auto& outputFrame : task.mOutputBuffers) {
         for (auto& outputMap : mOutputMaps) {
             if (outputMap.mDagPort == outputFrame.first) {
-                if (isInactiveStream(mExecutorStreamId[outputMap.mExecutor], &task))
+                if (isInactiveStillStream(mExecutorStreamId[outputMap.mExecutor], &task,
+                                          outputFrame.first))
                     continue;
                 outputMap.mExecutor->qbuf(outputMap.mExecutorPort, outputFrame.second);
                 LOG2("%s, queue output buffer, dagPort: %d, executorPort: %d, name: %s", __func__,
@@ -720,7 +733,7 @@ int PSysDAG::prepareIpuParams(long sequence, bool forceUpdate, TaskInfo *task)
                          __func__, outputFrame.first);
 
         for (auto& streamId : it->second) {
-            if (isInactiveStream(streamId, &(task->mTaskData))) continue;
+            if (isInactiveStillStream(streamId, &(task->mTaskData), outputFrame.first)) continue;
             if (std::find(activeStreamIds.begin(), activeStreamIds.end(), streamId)
                     == activeStreamIds.end()) {
                 activeStreamIds.push_back(streamId);

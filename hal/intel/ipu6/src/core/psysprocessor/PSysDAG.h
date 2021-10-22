@@ -115,7 +115,7 @@ private:
 
     int queueBuffers(const PSysTaskData& task);
     int returnBuffers(PSysTaskData& result);
-    bool isInactiveStream(int streamId, const PSysTaskData* task);
+    bool isInactiveStillStream(int streamId, const PSysTaskData* task, Port port);
 
     void dumpExternalPortMap();
 

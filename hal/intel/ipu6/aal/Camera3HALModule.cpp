@@ -24,11 +24,11 @@
 
 #include "Camera3HAL.h"
 #include "HALv3Utils.h"
-#include "VendorTags.h"
 #include "ICamera.h"
 #include "MetadataConvert.h"
 #include "PlatformData.h"
 #include "Utils.h"
+#include "VendorTags.h"
 #include "iutils/CameraDump.h"
 #include "iutils/CameraLog.h"
 
@@ -102,8 +102,7 @@ static int hal_get_camera_info(int cameraId, struct camera_info* cameraInfo) {
     if (sCameraMetadata[cameraId] == nullptr) {
         sCameraMetadata[cameraId] = new android::CameraMetadata;
         MetadataConvert::HALCapabilityToStaticMetadata(*(info.capability),
-                                                       sCameraMetadata[cameraId],
-                                                       cameraId);
+                                                       sCameraMetadata[cameraId], cameraId);
     }
     int32_t tag = ANDROID_LENS_FACING;
     camera_metadata_entry entry = sCameraMetadata[cameraId]->find(tag);
@@ -206,8 +205,8 @@ static int hal_init(void) {
     } else {
         sCameraNumber = (xmlCameraNum != -1) ? xmlCameraNum : crosCameraNum;
         CheckAndLogError(currentCameraNum < sCameraNumber, -EINVAL,
-                         "@%s, expected cameras number: %d, found: %d", __func__,
-                         sCameraNumber, currentCameraNum);
+                         "@%s, expected cameras number: %d, found: %d", __func__, sCameraNumber,
+                         currentCameraNum);
     }
 
     if (sCameraNumber != 0) {

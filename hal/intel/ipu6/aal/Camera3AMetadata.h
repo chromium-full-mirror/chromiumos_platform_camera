@@ -19,8 +19,8 @@
 #include "IntelAEStateMachine.h"
 #include "IntelAFStateMachine.h"
 #include "IntelAWBStateMachine.h"
-#include "Utils.h"
 #include "Parameters.h"
+#include "Utils.h"
 
 namespace camera3 {
 

@@ -46,8 +46,8 @@ PrivateStream::PrivateStream(int cameraId, const icamera::stream_t& halStream,
 
     // Run PrivateStream thread
     int ret = icamera::Thread::run(threadName);
-    CheckAndLogError(ret != icamera::OK, VOID_VALUE, "[%p]@%s Failed to run thread.",
-                     this, __func__);
+    CheckAndLogError(ret != icamera::OK, VOID_VALUE, "[%p]@%s Failed to run thread.", this,
+                     __func__);
 
     mBufferPool = std::unique_ptr<Camera3BufferPool>(new Camera3BufferPool());
     // Create the buffer pool with DMA handle buffer
@@ -84,8 +84,8 @@ icamera::camera_buffer_t* PrivateStream::fetchRequestBuffers(uint32_t frameNumbe
     buffer.s.id = mHALStream.id;
     mBuffers[frameNumber] = buffer;
 
-    LOG2("<id%d:req%u>@%s, mHALStream.id:%d, fetch buf addr:%p will run fd",
-         mCameraId, frameNumber, __func__, mHALStream.id, buf->data());
+    LOG2("<id%d:req%u>@%s, mHALStream.id:%d, fetch buf addr:%p will run fd", mCameraId, frameNumber,
+         __func__, mHALStream.id, buf->data());
 
     return &mBuffers[frameNumber];
 }

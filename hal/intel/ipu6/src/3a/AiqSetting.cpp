@@ -136,6 +136,10 @@ int AiqSetting::setParameters(const Parameters& params) {
     params.getAeConvergeSpeedMode(mAiqParam.aeConvergeSpeedMode);
     params.getAeConvergeSpeed(mAiqParam.aeConvergeSpeed);
     params.getRun3ACadence(mAiqParam.run3ACadence);
+    if (mAiqParam.run3ACadence < 1) {
+        LOGW("Invalid 3A cadence %d, use default 1.", mAiqParam.run3ACadence);
+        mAiqParam.run3ACadence = 1;
+    }
     params.getCallbackRgbs(&mAiqParam.callbackRgbs);
     params.getCallbackTmCurve(&mAiqParam.callbackTmCurve);
 

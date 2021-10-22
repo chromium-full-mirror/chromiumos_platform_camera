@@ -510,30 +510,6 @@ bool CameraDevice::isProcessorNeeded(const stream_config_t *streamList,
     return false;
 }
 
-/**
- * Return true only if there are both still and video stream configured.
- */
-bool CameraDevice::isStillDuringVideo(const stream_config_t *streamList)
-{
-    bool containStill = false;
-    bool containVideo = false;
-    for (int streamId = 0; streamId < streamList->num_streams; streamId++) {
-        switch (streamList->streams[streamId].usage) {
-        case CAMERA_STREAM_PREVIEW:
-        case CAMERA_STREAM_VIDEO_CAPTURE:
-            containVideo = true;
-            break;
-        case CAMERA_STREAM_STILL_CAPTURE:
-            containStill = true;
-            break;
-        default:
-            break;
-        }
-    }
-
-    return (containStill && containVideo);
-}
-
 int CameraDevice::createStreams(stream_config_t *streamList)
 {
     LOG1("@%s, mCameraId:%d", __func__, mCameraId);

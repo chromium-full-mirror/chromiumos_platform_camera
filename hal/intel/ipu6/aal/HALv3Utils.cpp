@@ -27,9 +27,9 @@
 
 #include "Errors.h"
 #include "HALv3Utils.h"
+#include "MetadataConvert.h"
 #include "PlatformData.h"
 #include "Utils.h"
-#include "MetadataConvert.h"
 
 namespace camera3 {
 namespace HalV3Utils {
@@ -91,7 +91,7 @@ int getRotationDegrees(const camera3_stream_t& stream) {
     }
 }
 
-bool isSameRatioWithSensor(const icamera::stream_t *stream, int cameraId) {
+bool isSameRatioWithSensor(const icamera::stream_t* stream, int cameraId) {
     const icamera::CameraMetadata* meta = StaticCapability::getInstance(cameraId)->getCapability();
 
     float sensorRatio = 0.0f;
@@ -136,8 +136,8 @@ int fillHALStreams(int cameraId, const camera3_stream_t& camera3Stream, icamera:
 
     stream->field = 0;
     stream->stride = icamera::CameraUtils::getStride(stream->format, stream->width);
-    stream->size = icamera::CameraUtils::getFrameSize(stream->format, stream->width,
-                                                      stream->height, false, false, false);
+    stream->size = icamera::CameraUtils::getFrameSize(stream->format, stream->width, stream->height,
+                                                      false, false, false);
     stream->memType = V4L2_MEMORY_USERPTR;
     stream->streamType = icamera::CAMERA_STREAM_OUTPUT;
     // CAMERA_STREAM_PREVIEW is for user preview stream
@@ -194,7 +194,7 @@ std::vector<CrosCameraInfo> getCrosCameraInfo() {
     while (true) {
         std::string interfaceType;
         if (!crosConfigReader.GetString(base::StringPrintf("/camera/devices/%i", cameraIdx),
-                "interface", &interfaceType)) {
+                                        "interface", &interfaceType)) {
             break;
         }
         if (interfaceType == "mipi") {
@@ -203,11 +203,11 @@ std::vector<CrosCameraInfo> getCrosCameraInfo() {
             CrosCameraInfo info = {0, 0};
 
             if (crosConfigReader.GetString(base::StringPrintf("/camera/devices/%i", cameraIdx),
-                            "orientation", &orient)) {
+                                           "orientation", &orient)) {
                 info.orientation = atoi(orient.c_str());
             }
             if (crosConfigReader.GetString(base::StringPrintf("/camera/devices/%i", cameraIdx),
-                            "facing", &facing)) {
+                                           "facing", &facing)) {
                 if (facing == "front") {
                     info.facing = icamera::FACING_FRONT;
                 } else {
@@ -242,27 +242,27 @@ int32_t getDefaultRawWhiteLevel(int cameraId) {
     int32_t whiteLevel = 1023;
 
     switch (format) {
-    case V4L2_PIX_FMT_SBGGR8:
-    case V4L2_PIX_FMT_SGBRG8:
-    case V4L2_PIX_FMT_SGRBG8:
-    case V4L2_PIX_FMT_SRGGB8:
-        whiteLevel = 255;
-        break;
-    case V4L2_PIX_FMT_SBGGR10:
-    case V4L2_PIX_FMT_SGBRG10:
-    case V4L2_PIX_FMT_SGRBG10:
-    case V4L2_PIX_FMT_SRGGB10:
-        whiteLevel = 1023;
-        break;
-    case V4L2_PIX_FMT_SBGGR12:
-    case V4L2_PIX_FMT_SGBRG12:
-    case V4L2_PIX_FMT_SGRBG12:
-    case V4L2_PIX_FMT_SRGGB12:
-        whiteLevel = 4095;
-        break;
-    default:
-        LOGW("%s, Not suppport format %x", __func__, format);
-        break;
+        case V4L2_PIX_FMT_SBGGR8:
+        case V4L2_PIX_FMT_SGBRG8:
+        case V4L2_PIX_FMT_SGRBG8:
+        case V4L2_PIX_FMT_SRGGB8:
+            whiteLevel = 255;
+            break;
+        case V4L2_PIX_FMT_SBGGR10:
+        case V4L2_PIX_FMT_SGBRG10:
+        case V4L2_PIX_FMT_SGRBG10:
+        case V4L2_PIX_FMT_SRGGB10:
+            whiteLevel = 1023;
+            break;
+        case V4L2_PIX_FMT_SBGGR12:
+        case V4L2_PIX_FMT_SGBRG12:
+        case V4L2_PIX_FMT_SGRBG12:
+        case V4L2_PIX_FMT_SRGGB12:
+            whiteLevel = 4095;
+            break;
+        default:
+            LOGW("%s, Not suppport format %x", __func__, format);
+            break;
     }
 
     return whiteLevel;

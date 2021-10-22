@@ -334,11 +334,11 @@ int MetadataConvert::constructDefaultMetadata(int cameraId, android::CameraMetad
     mode = ANDROID_COLOR_CORRECTION_MODE_FAST;
     settings->update(ANDROID_COLOR_CORRECTION_MODE, &mode, 1);
 
-    float colorTransform[9] = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
+    int32_t colorTransform[9] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
     camera_metadata_rational_t transformMatrix[9];
     for (int i = 0; i < 9; i++) {
         transformMatrix[i].numerator = colorTransform[i];
-        transformMatrix[i].denominator = 1.0;
+        transformMatrix[i].denominator = 1;
     }
     settings->update(ANDROID_COLOR_CORRECTION_TRANSFORM, transformMatrix, 9);
 
@@ -355,15 +355,19 @@ int MetadataConvert::updateDefaultRequestSettings(int32_t cameraId, int type,
                                                   android::CameraMetadata* settings) {
     const icamera::CameraMetadata* caps = StaticCapability::getInstance(cameraId)->getCapability();
 
-    uint8_t intent =
-        (type == CAMERA3_TEMPLATE_PREVIEW)          ? ANDROID_CONTROL_CAPTURE_INTENT_PREVIEW
-        : (type == CAMERA3_TEMPLATE_STILL_CAPTURE)  ? ANDROID_CONTROL_CAPTURE_INTENT_STILL_CAPTURE
-        : (type == CAMERA3_TEMPLATE_VIDEO_RECORD)   ? ANDROID_CONTROL_CAPTURE_INTENT_VIDEO_RECORD
-        : (type == CAMERA3_TEMPLATE_VIDEO_SNAPSHOT) ? ANDROID_CONTROL_CAPTURE_INTENT_VIDEO_SNAPSHOT
-        : (type == CAMERA3_TEMPLATE_ZERO_SHUTTER_LAG)
-            ? ANDROID_CONTROL_CAPTURE_INTENT_ZERO_SHUTTER_LAG
-        : (type == CAMERA3_TEMPLATE_MANUAL) ? ANDROID_CONTROL_CAPTURE_INTENT_MANUAL
-                                            : ANDROID_CONTROL_CAPTURE_INTENT_CUSTOM;
+    uint8_t intent = (type == CAMERA3_TEMPLATE_PREVIEW)
+                         ? ANDROID_CONTROL_CAPTURE_INTENT_PREVIEW
+                         : (type == CAMERA3_TEMPLATE_STILL_CAPTURE)
+                               ? ANDROID_CONTROL_CAPTURE_INTENT_STILL_CAPTURE
+                               : (type == CAMERA3_TEMPLATE_VIDEO_RECORD)
+                                     ? ANDROID_CONTROL_CAPTURE_INTENT_VIDEO_RECORD
+                                     : (type == CAMERA3_TEMPLATE_VIDEO_SNAPSHOT)
+                                           ? ANDROID_CONTROL_CAPTURE_INTENT_VIDEO_SNAPSHOT
+                                           : (type == CAMERA3_TEMPLATE_ZERO_SHUTTER_LAG)
+                                                 ? ANDROID_CONTROL_CAPTURE_INTENT_ZERO_SHUTTER_LAG
+                                                 : (type == CAMERA3_TEMPLATE_MANUAL)
+                                                       ? ANDROID_CONTROL_CAPTURE_INTENT_MANUAL
+                                                       : ANDROID_CONTROL_CAPTURE_INTENT_CUSTOM;
     settings->update(ANDROID_CONTROL_CAPTURE_INTENT, &intent, 1);
 
     uint8_t ctrlMode = ANDROID_CONTROL_MODE_AUTO;
@@ -1040,7 +1044,7 @@ int MetadataConvert::convertEdgeMetadata(const android::CameraMetadata& settings
     camera_metadata_ro_entry entry = settings.find(ANDROID_EDGE_MODE);
     if (entry.count != 1) return icamera::OK;
 
-    int32_t mode = entry.data.u8[0];
+    uint8_t mode = entry.data.u8[0];
     /* When intent is still capture, the edgeMode default value should be HQ. In other case,
        the edgeMode default value should be FAST. The default value corresponds to
        EDGE_MODE_LEVEL_2.
@@ -1048,14 +1052,13 @@ int MetadataConvert::convertEdgeMetadata(const android::CameraMetadata& settings
     */
     icamera::camera_edge_mode_t edgeMode = icamera::EDGE_MODE_LEVEL_2;
 
-    if ((mode == ANDROID_EDGE_MODE_OFF) ||
-        (mode == ANDROID_EDGE_MODE_ZERO_SHUTTER_LAG)) {
+    if ((mode == ANDROID_EDGE_MODE_OFF) || (mode == ANDROID_EDGE_MODE_ZERO_SHUTTER_LAG)) {
         edgeMode = icamera::EDGE_MODE_LEVEL_4;
     } else if ((intent == ANDROID_CONTROL_CAPTURE_INTENT_STILL_CAPTURE) &&
-        (mode == ANDROID_EDGE_MODE_FAST)) {
+               (mode == ANDROID_EDGE_MODE_FAST)) {
         edgeMode = icamera::EDGE_MODE_LEVEL_3;
     } else if ((intent != ANDROID_CONTROL_CAPTURE_INTENT_STILL_CAPTURE) &&
-       (mode == ANDROID_EDGE_MODE_HIGH_QUALITY)) {
+               (mode == ANDROID_EDGE_MODE_HIGH_QUALITY)) {
         edgeMode = icamera::EDGE_MODE_LEVEL_1;
     }
 
@@ -1081,10 +1084,10 @@ int MetadataConvert::convertNoiseReductionMetadata(const android::CameraMetadata
         (mode == ANDROID_NOISE_REDUCTION_MODE_ZERO_SHUTTER_LAG)) {
         nrMode = icamera::NR_MODE_LEVEL_4;
     } else if ((intent == ANDROID_CONTROL_CAPTURE_INTENT_STILL_CAPTURE) &&
-        (mode == ANDROID_NOISE_REDUCTION_MODE_FAST)) {
+               (mode == ANDROID_NOISE_REDUCTION_MODE_FAST)) {
         nrMode = icamera::NR_MODE_LEVEL_3;
     } else if ((intent != ANDROID_CONTROL_CAPTURE_INTENT_STILL_CAPTURE) &&
-       (mode == ANDROID_NOISE_REDUCTION_MODE_HIGH_QUALITY)) {
+               (mode == ANDROID_NOISE_REDUCTION_MODE_HIGH_QUALITY)) {
         nrMode = icamera::NR_MODE_LEVEL_1;
     }
 
@@ -1133,7 +1136,7 @@ int MetadataConvert::convertTonemapMetadata(const android::CameraMetadata& setti
     curves.bSize = entry.count;
     curves.bCurve = entry.data.f;
     if (curves.rSize > 0 && curves.gSize > 0 && curves.bSize > 0) {
-         parameter->setTonemapCurves(curves);
+        parameter->setTonemapCurves(curves);
     }
 
     return icamera::OK;
@@ -1771,8 +1774,7 @@ void MetadataConvert::fillTonemapStaticMetadata(const icamera::Parameters& param
 
 void MetadataConvert::fillSensorStaticMetadata(const icamera::Parameters& parameter,
                                                const icamera::CameraMetadata& meta,
-                                               android::CameraMetadata* settings,
-                                               int cameraId) {
+                                               android::CameraMetadata* settings, int cameraId) {
     icamera::camera_range_t timeRange;
     // Fill it if it is supported
     if (parameter.getSupportedSensorExposureTimeRange(timeRange) == 0) {
@@ -2012,7 +2014,7 @@ void MetadataConvert::fillRequestStaticMetadata(const icamera::Parameters& param
         basicKeysCnt++;
     }
     settings->update(ANDROID_REQUEST_AVAILABLE_REQUEST_KEYS, totalRequestKeys, basicKeysCnt);
-    delete []totalRequestKeys;
+    delete[] totalRequestKeys;
 
     int32_t resultKeysBasic[] = {ANDROID_REQUEST_ID,
                                  ANDROID_REQUEST_TYPE,
@@ -2136,8 +2138,7 @@ void MetadataConvert::fillRequestStaticMetadata(const icamera::Parameters& param
 void MetadataConvert::fillStatisticsStaticMetadata(const icamera::Parameters& parameter,
                                                    const icamera::CameraMetadata& meta,
                                                    android::CameraMetadata* settings) {
-    icamera_metadata_ro_entry entry
-        = meta.find(CAMERA_STATISTICS_INFO_AVAILABLE_FACE_DETECT_MODES);
+    icamera_metadata_ro_entry entry = meta.find(CAMERA_STATISTICS_INFO_AVAILABLE_FACE_DETECT_MODES);
     if (entry.count != 0) {
         settings->update(ANDROID_STATISTICS_INFO_AVAILABLE_FACE_DETECT_MODES, entry.data.u8,
                          entry.count);
@@ -2374,8 +2375,7 @@ StaticCapability::StaticCapability(int cameraId) : mCameraId(cameraId) {
     icamera::ParameterHelper::copyMetadata(*cameraInfo.capability, &mMetadata);
 }
 
-StaticCapability::~StaticCapability() {
-}
+StaticCapability::~StaticCapability() {}
 
 std::mutex StaticCapability::sLock;
 std::unordered_map<int, StaticCapability*> StaticCapability::sInstances;

@@ -26,12 +26,12 @@ namespace camera3 {
  */
 class VendorTags {
  public:
-    static int getTagCount(const vendor_tag_ops_t *v);
-    static void getAllTags(const vendor_tag_ops_t *v, uint32_t *tag_array);
-    static const char* getSectionName(const vendor_tag_ops_t *v, uint32_t tag);
-    static const char* getTagName(const vendor_tag_ops_t *v, uint32_t tag);
-    static int getTagType(const vendor_tag_ops_t *v, uint32_t tag);
-    static void getVendorTagOps(vendor_tag_ops_t *ops);
+    static int getTagCount(const vendor_tag_ops_t* v);
+    static void getAllTags(const vendor_tag_ops_t* v, uint32_t* tag_array);
+    static const char* getSectionName(const vendor_tag_ops_t* v, uint32_t tag);
+    static const char* getTagName(const vendor_tag_ops_t* v, uint32_t tag);
+    static int getTagType(const vendor_tag_ops_t* v, uint32_t tag);
+    static void getVendorTagOps(vendor_tag_ops_t* ops);
 };
 
 }  // namespace camera3

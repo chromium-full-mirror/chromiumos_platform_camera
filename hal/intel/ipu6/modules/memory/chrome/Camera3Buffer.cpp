@@ -161,8 +161,8 @@ icamera::status_t Camera3Buffer::init(const camera3_stream_buffer* aBuffer, int 
                                                   mHalBuffer.s.height, false, false, false);
     mLocked = false;
     mUsage = aBuffer->stream->usage;
-    mHalBuffer.flags = IS_HW_USAGE(mUsage) ? 0 : camera_buffer_flags_t::BUFFER_FLAG_SW_WRITE
-                                                 | camera_buffer_flags_t::BUFFER_FLAG_SW_READ;
+    mHalBuffer.flags = IS_NO_FLUSH_USAGE(mUsage) ? 0 : camera_buffer_flags_t::BUFFER_FLAG_SW_WRITE
+                                                     | camera_buffer_flags_t::BUFFER_FLAG_SW_READ;
     mInit = true;
     mHalBuffer.addr = nullptr;
     mUserBuffer = *aBuffer;

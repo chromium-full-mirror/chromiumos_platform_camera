@@ -47,8 +47,7 @@ class MetadataConvert {
     static int HALMetadataToRequestMetadata(const icamera::Parameters& parameter,
                                             android::CameraMetadata* settings, int cameraId);
     static int HALCapabilityToStaticMetadata(const icamera::Parameters& parameter,
-                                             android::CameraMetadata* settings,
-                                             int cameraId);
+                                             android::CameraMetadata* settings, int cameraId);
     static void dumpMetadata(const camera_metadata_t* meta);
     static void convertFaceDetectionMetadata(const icamera::CVFaceDetectionAbstractResult& fdResult,
                                              android::CameraMetadata* settings);
@@ -113,8 +112,7 @@ class MetadataConvert {
                                          android::CameraMetadata* settings);
     static void fillSensorStaticMetadata(const icamera::Parameters& parameter,
                                          const icamera::CameraMetadata& meta,
-                                         android::CameraMetadata* settings,
-                                         int cameraId);
+                                         android::CameraMetadata* settings, int cameraId);
     static void fillLensStaticMetadata(const icamera::Parameters& parameter,
                                        const icamera::CameraMetadata& meta,
                                        android::CameraMetadata* settings);

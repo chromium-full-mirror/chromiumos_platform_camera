@@ -25,9 +25,11 @@
 
 namespace camera3 {
 
+#define IS_NO_FLUSH_USAGE(usage) \
+    (((usage)&GRALLOC_USAGE_HW_VIDEO_ENCODER) && ((usage)&GRALLOC_USAGE_HW_COMPOSER))
 #define IS_ZSL_USAGE(usage) (((usage)&GRALLOC_USAGE_HW_CAMERA_ZSL) == GRALLOC_USAGE_HW_CAMERA_ZSL)
-#define IS_HW_USAGE(usage) (((usage)&GRALLOC_USAGE_HW_VIDEO_ENCODER) \
-                            || ((usage)&GRALLOC_USAGE_HW_COMPOSER))
+#define IS_HW_USAGE(usage) \
+    (((usage)&GRALLOC_USAGE_HW_VIDEO_ENCODER) || ((usage)&GRALLOC_USAGE_HW_COMPOSER))
 
 namespace HalV3Utils {
 
@@ -39,7 +41,7 @@ struct CrosCameraInfo {
 const char* getCamera3StreamType(int type);
 int HALFormatToV4l2Format(int cameraId, int halFormat, int usage);
 int getRotationDegrees(const camera3_stream_t& stream);
-bool isSameRatioWithSensor(const icamera::stream_t *stream, int cameraId);
+bool isSameRatioWithSensor(const icamera::stream_t* stream, int cameraId);
 int fillHALStreams(int cameraId, const camera3_stream_t& camera3Stream, icamera::stream_t* stream);
 
 int getCrosConfigCameraNumber(const std::vector<CrosCameraInfo>& infos);

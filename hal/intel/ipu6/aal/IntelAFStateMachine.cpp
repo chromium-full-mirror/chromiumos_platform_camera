@@ -129,12 +129,11 @@ int IntelAFStateMachine::updateDefaults(android::CameraMetadata* result, bool fi
  * AF MODE   -  BASE
  ******************************************************************************/
 IntelAfModeBase::IntelAfModeBase()
-        : mLastAfControls {ANDROID_CONTROL_AF_MODE_AUTO, ANDROID_CONTROL_AF_TRIGGER_IDLE},
+        : mLastAfControls{ANDROID_CONTROL_AF_MODE_AUTO, ANDROID_CONTROL_AF_TRIGGER_IDLE},
           mCurrentAfState(ANDROID_CONTROL_AF_STATE_INACTIVE),
           mLensState(ANDROID_LENS_STATE_STATIONARY),
           mLastActiveTriggerTime(0),
-          mFramesSinceTrigger(0) {
-}
+          mFramesSinceTrigger(0) {}
 
 /**
  * processTriggers
@@ -213,8 +212,7 @@ void IntelAfModeBase::checkIfFocusTimeout() {
  * AF MODE   -  OFF
  ******************************************************************************/
 
-IntelAFModeOff::IntelAFModeOff() : IntelAfModeBase() {
-}
+IntelAFModeOff::IntelAFModeOff() : IntelAfModeBase() {}
 
 int IntelAFModeOff::processTriggers(uint8_t afTrigger, uint8_t afMode) {
     LOG2("%s", __func__);
@@ -242,8 +240,7 @@ int IntelAFModeOff::processResult(int afState, bool lensMoving, android::CameraM
  * AF MODE   -  AUTO
  ******************************************************************************/
 
-IntelAFModeAuto::IntelAFModeAuto() : IntelAfModeBase() {
-}
+IntelAFModeAuto::IntelAFModeAuto() : IntelAfModeBase() {}
 
 int IntelAFModeAuto::processTriggers(uint8_t afTrigger, uint8_t afMode) {
     LOG2("%s", __func__);
@@ -302,8 +299,7 @@ int IntelAFModeAuto::processResult(int afState, bool lensMoving, android::Camera
  * AF MODE   -  CONTINUOUS PICTURE
  ******************************************************************************/
 
-IntelAFModeContinuousPicture::IntelAFModeContinuousPicture() : IntelAfModeBase() {
-}
+IntelAFModeContinuousPicture::IntelAFModeContinuousPicture() : IntelAfModeBase() {}
 
 int IntelAFModeContinuousPicture::processTriggers(uint8_t afTrigger, uint8_t afMode) {
     LOG2("%s", __func__);

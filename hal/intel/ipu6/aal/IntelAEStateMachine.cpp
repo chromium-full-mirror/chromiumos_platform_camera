@@ -127,8 +127,7 @@ void IntelAEModeBase::resetState() {
  * AE MODE   -  OFF
  ******************************************************************************/
 
-IntelAEModeOff::IntelAEModeOff() : IntelAEModeBase() {
-}
+IntelAEModeOff::IntelAEModeOff() : IntelAEModeBase() {}
 
 int IntelAEModeOff::processState(uint8_t controlMode, uint8_t sceneMode,
                                  const AeControls& aeControls) {
@@ -164,8 +163,7 @@ int IntelAEModeOff::processResult(bool aeConverged, android::CameraMetadata* res
  * AE MODE   -  AUTO
  ******************************************************************************/
 
-IntelAEModeAuto::IntelAEModeAuto() : IntelAEModeBase() {
-}
+IntelAEModeAuto::IntelAEModeAuto() : IntelAEModeBase() {}
 
 int IntelAEModeAuto::processState(uint8_t controlMode, uint8_t sceneMode,
                                   const AeControls& aeControls) {

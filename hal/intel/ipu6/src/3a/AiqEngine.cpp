@@ -240,15 +240,7 @@ bool AiqEngine::needRun3A(AiqStatistics *aiqStatistics, long requestId) {
         return true;
     }
 
-    // Handle 3A cadence logic
-    int run3ACadence = mAiqParam.run3ACadence;
-    if (run3ACadence < 1) {
-        LOGW("Invalid 3A cadence %d, use default 1.", run3ACadence);
-        run3ACadence = 1;
-    }
-    LOG2("%s: run3ACadence is %d", __func__, run3ACadence);
-
-    if (requestId % run3ACadence != 0) {
+    if (requestId % mAiqParam.run3ACadence != 0) {
         // Skip 3A per cadence
         return false;
     }

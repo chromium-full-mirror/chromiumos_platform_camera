@@ -106,8 +106,7 @@ void IntelAWBModeBase::resetState() {
  * AWB MODE   -  OFF
  ******************************************************************************/
 
-IntelAWBModeOff::IntelAWBModeOff() : IntelAWBModeBase() {
-}
+IntelAWBModeOff::IntelAWBModeOff() : IntelAWBModeBase() {}
 
 int IntelAWBModeOff::processState(uint8_t controlMode, uint8_t sceneMode,
                                   const AwbControls& awbControls) {
@@ -145,8 +144,7 @@ int IntelAWBModeOff::processResult(bool converged, android::CameraMetadata* resu
  * AWB MODE   -  AUTO
  ******************************************************************************/
 
-IntelAWBModeAuto::IntelAWBModeAuto() : IntelAWBModeBase() {
-}
+IntelAWBModeAuto::IntelAWBModeAuto() : IntelAWBModeBase() {}
 
 int IntelAWBModeAuto::processState(uint8_t controlMode, uint8_t sceneMode,
                                    const AwbControls& awbControls) {
