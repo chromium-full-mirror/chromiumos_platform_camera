@@ -279,7 +279,7 @@ int RequestManager::configureStreams(camera3_stream_configuration_t* stream_list
     int halStreamFlag[kMaxStreamNum];
     int halStreamNum = chooseHALStreams(requestStreamNum, halStreamFlag, requestStreams);
     // halStreamNum should not exceed videoNum + 2 (1 opaque raw and 1 still)
-    int maxSupportStreamNum = icamera::PlatformData::getVideoStreamNum(mCameraId) + 2;
+    int maxSupportStreamNum = icamera::PlatformData::getVideoStreamNum() + 2;
     CheckAndLogError(halStreamNum > maxSupportStreamNum || halStreamNum <= 0, icamera::BAD_VALUE,
                      "failed to find HAL stream");
 
@@ -373,8 +373,9 @@ int RequestManager::configureStreams(camera3_stream_configuration_t* stream_list
         CheckAndLogError(halStreamIndex < 0 || halStreamIndex >= halStreamNum, icamera::BAD_VALUE,
                          "failed to find hal stream %d", halStreamIndex);
         Camera3Stream* s =
-            new Camera3Stream(mCameraId, mResultProcessor, mHALStream[halStreamIndex].max_buffers,
-                              mHALStream[halStreamIndex], *stream, inputStream, isHALStream);
+            new Camera3Stream(mCameraId, mResultProcessor, mParameterResult,
+                              mHALStream[halStreamIndex].max_buffers, mHALStream[halStreamIndex],
+                              *stream, inputStream, isHALStream);
         s->setActive(true);
         stream->priv = s;
         stream->max_buffers = mHALStream[halStreamIndex].max_buffers;
@@ -762,7 +763,7 @@ int RequestManager::chooseHALStreams(const uint32_t requestStreamNum, int* halSt
         }
     }
 
-    int avaVideoSlot = icamera::PlatformData::getVideoStreamNum(mCameraId);
+    int avaVideoSlot = icamera::PlatformData::getVideoStreamNum();
     // if HAL stream slots are enough, make all streams as HAL stream
     if (opaqueCount <= 1 && stillCount <= 1 && videoCount <= avaVideoSlot) {
         return requestStreamNum;

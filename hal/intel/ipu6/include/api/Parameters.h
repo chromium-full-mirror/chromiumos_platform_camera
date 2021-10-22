@@ -460,11 +460,11 @@ typedef enum {
 
 /*******************Start of Camera Parameters Definition**********************/
 /**
- * \enum camera_features: camera supportted features.
+ * \enum camera_features: camera supported features.
  */
 typedef enum {
-    MANUAL_EXPOSURE,       /**< Allow user to controll exposure time and ISO manually */
-    MANUAL_WHITE_BALANCE,  /**< Allow user to controll AWB mode, cct range, and gain */
+    MANUAL_EXPOSURE,       /**< Allow user to control exposure time and ISO manually */
+    MANUAL_WHITE_BALANCE,  /**< Allow user to control AWB mode, cct range, and gain */
     IMAGE_ENHANCEMENT,     /**< Sharpness, Brightness, Contrast, Hue, Saturation */
     NOISE_REDUCTION,       /**< Allow user to control NR mode and NR level */
     SCENE_MODE,            /**< Allow user to control scene mode */
@@ -932,7 +932,7 @@ typedef enum {
  * \enum camera_converge_speed_mode_t: Used to control AE/AWB converge speed mode.
  */
 typedef enum {
-    CONVERGE_SPEED_MODE_AIQ, /*!< Use AIQ Aglo to control converge speed. */
+    CONVERGE_SPEED_MODE_AIQ, /*!< Use AIQ algo to control converge speed. */
     CONVERGE_SPEED_MODE_HAL  /*!< Implement converge speed control in HAL. */
 } camera_converge_speed_mode_t;
 
@@ -940,7 +940,7 @@ typedef enum {
  * \enum camera_ae_distribution_priority_t: Used to control exposure priority mode.
  */
 typedef enum {
-    DISTRIBUTION_AUTO,    /*!< The AIQ Aglo decides completely */
+    DISTRIBUTION_AUTO,    /*!< The AIQ algo decides completely */
     DISTRIBUTION_SHUTTER, /*!< Shutter speed priority mode */
     DISTRIBUTION_ISO,     /*!< ISO priority mode */
     DISTRIBUTION_APERTURE /*!< Aperture priority mode */
@@ -1007,7 +1007,7 @@ typedef enum {
 } camera_mono_downscale_mode_t;
 
 /**
- * \enum camera_video_stabilization_mode_t: Used to control the video stabiliztion mode.
+ * \enum camera_video_stabilization_mode_t: Used to control the video stabilization mode.
  */
 typedef enum {
     VIDEO_STABILIZATION_MODE_OFF,
@@ -1237,7 +1237,7 @@ public:
      * \brief Get supported video stabilization mode
      *
      * Camera application MUST check if the video stabilization mode is supported before trying
-     * to enable it. Otherwise one error occuring, HAL may just ignore the request.
+     * to enable it. Otherwise one error occurring, HAL may just ignore the request.
      *
      * \param[out] supportedModes: All supported video stabilization mode will be filled in "supportedModes"
      *
@@ -1249,7 +1249,7 @@ public:
      * \brief Get supported ae mode
      *
      * Camera application MUST check if the ae mode is supported before trying to enable it.
-     * Otherwise one error occuring, HAL may just ignore the request.
+     * Otherwise one error occurring, HAL may just ignore the request.
      *
      * \param[out] supportedAeModes: All supported ae mode will be filled in "supportedAeModes"
      *
@@ -1261,7 +1261,7 @@ public:
      * \brief Get supported awb mode
      *
      * Camera application MUST check if the awb mode is supported before trying to enable it.
-     * Otherwise one error occuring, HAL may just ignore the request.
+     * Otherwise one error occurring, HAL may just ignore the request.
      *
      * \param[out] supportedAwbModes: All supported awb mode will be filled in "supportedAwbModes"
      *
@@ -1273,7 +1273,7 @@ public:
      * \brief Get supported af mode
      *
      * Camera application MUST check if the af mode is supported before trying to enable it.
-     * Otherwise one error occuring, HAL may just ignore the request.
+     * Otherwise one error occurring, HAL may just ignore the request.
      *
      * \param[out] supportedAfModes: All supported af mode will be filled in "supportedAfModes"
      *
@@ -1285,7 +1285,7 @@ public:
      * \brief Get supported scene mode
      *
      * Camera application MUST check if the scene mode is supported before trying to enable it.
-     * Otherwise one error occuring, HAL may just ignore the request.
+     * Otherwise one error occurring, HAL may just ignore the request.
      *
      * \param[out] supportedSceneModes: All supported scene mode will be filled in "supportedSceneModes"
      *
@@ -1297,7 +1297,7 @@ public:
      * \brief Get supported antibanding mode
      *
      * Camera application MUST check if the antibanding mode is supported before trying to enable it.
-     * Otherwise one error occuring, HAL may just ignore the request.
+     * Otherwise one error occurring, HAL may just ignore the request.
      *
      * \param[out] supportedAntibindingModes: All supported scene mode will be filled in "supportedAntibindingModes"
      *
@@ -1309,7 +1309,7 @@ public:
      * \brief Get if ae lock is available
      *
      * Camera application MUST check if ae lock is supported before trying to lock it.
-     * Otherwise one error occuring, HAL may just ignore the request.
+     * Otherwise one error occurring, HAL may just ignore the request.
      *
      * \return: true if lock is supported, false if not
      */
@@ -1319,7 +1319,7 @@ public:
      * \brief Get if awb lock is available
      *
      * Camera application MUST check if awb lock is supported before trying to lock it.
-     * Otherwise one error occuring, HAL may just ignore the request.
+     * Otherwise one error occurring, HAL may just ignore the request.
      *
      * \return: true if lock is supported, false if not
      */
@@ -1329,7 +1329,7 @@ public:
      * \brief Set AE region
      *
      * Current only fisrt region can take effect when BLC mode is BLC_AREA_MODE_ON;
-     * if BLC_AREA_MODE_OFF, AE region function will be diabled.
+     * if BLC_AREA_MODE_OFF, AE region function will be disabled.
      *
      * \param[in] camera_window_list_t aeRegions
      *

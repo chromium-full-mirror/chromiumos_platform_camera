@@ -48,7 +48,6 @@ namespace icamera {
 
 #define MAX_BUFFER_COUNT (10)
 #define MAX_STREAM_NUMBER   5
-#define DEFAULT_VIDEO_STREAM_NUM 2
 #define MAX_WEIGHT_GRID_SIDE_LEN 1024
 
 #define FACE_ENGINE_DEFAULT_RUNNING_INTERVAL 1
@@ -152,7 +151,6 @@ public:
                 mPsysBundleWithAic(false),
                 mSwProcessingAlignWithIsp(false),
                 mMaxNvmDataSize(0),
-                mVideoStreamNum(DEFAULT_VIDEO_STREAM_NUM),
                 mTnrExtraFrameNum(DEFAULT_TNR_EXTRA_FRAME_NUM),
                 mDummyStillSink(false),
                 mForceFlushIpuBuffer(false),
@@ -253,7 +251,6 @@ public:
             /* key: camera module name, value: camera module info */
             std::unordered_map<std::string, CameraMetadata> mCameraModuleInfoMap;
             std::vector<IGraphType::ScalerInfo> mScalerInfo;
-            int mVideoStreamNum;
             int mTnrExtraFrameNum;
             bool mDummyStillSink;
             bool mForceFlushIpuBuffer;
@@ -1266,10 +1263,9 @@ public:
     /**
      * get the video stream number supported
      *
-     * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
      * \return HAL video stream number.
      */
-    static int getVideoStreamNum(int cameraId);
+    static int getVideoStreamNum();
 
     /**
      * Check should connect gpu algo or not

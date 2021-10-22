@@ -49,7 +49,6 @@ AiqCore::AiqCore(int cameraId) :
     mLensShadingMapMode(LENS_SHADING_MAP_MODE_OFF),
     mLscGridRGGBLen(0),
     mLastEvShift(0.0f),
-    mTonemapMode(TONEMAP_MODE_FAST),
     mAeAndAwbConverged(false),
     mRgbStatsBypassed(false),
     mAeBypassed(false),
@@ -295,8 +294,6 @@ int AiqCore::updateParameter(const aiq_parameter_t &param) {
     mAwbForceLock = param.awbForceLock;
     mAfForceLock = mIntel3AParameter->mAfForceLock;
 
-    mTonemapMode = param.tonemapMode;
-
     // Enable AE/AWB/AF running rate if working in AUTO modes
     mAeBypassed = bypassAe(param);
     mAfBypassed = bypassAf(param);
@@ -325,7 +322,9 @@ int AiqCore::setStatsParams(const cca::cca_stats_params &statsParams,
         if (!mAfBypassed) bitmap |= cca::CCA_STATS_AF;
         LOG3A("aiqStats->mSequence %ld, bitmap %x", aiqStats->mSequence, bitmap);
 
-        aiqStats->mPendingDecode = false;
+        if (!mRgbStatsBypassed && !mAfBypassed) {
+            aiqStats->mPendingDecode = false;
+        }
         unsigned int byteUsed = 0;
         void* pStatsData = intelCca->fetchHwStatsData(aiqStats->mSequence, &byteUsed);
         CheckAndLogError(!pStatsData, UNKNOWN_ERROR, "%s, pStatsData is nullptr", __func__);
@@ -359,8 +358,7 @@ int AiqCore::runAe(long requestId, AiqResult* aiqResult) {
 }
 
 int AiqCore::runAiq(long requestId, AiqResult *aiqResult) {
-    LOG3A("@%s, aiqResult:%p, requestId:%ld, mTonemapMode:%d", __func__,
-          aiqResult, requestId, mTonemapMode);
+    LOG3A("@%s, aiqResult:%p, requestId:%ld", __func__, aiqResult, requestId);
     CheckAndLogError(!aiqResult, BAD_VALUE, "@%s, aiqResult is nullptr", __func__);
 
     int aaaRunType = IMAGING_ALGO_AWB | IMAGING_ALGO_GBCE | IMAGING_ALGO_PA;

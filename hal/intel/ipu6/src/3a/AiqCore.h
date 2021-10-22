@@ -210,8 +210,6 @@ private:
     size_t mLscGridRGGBLen;
     float mLastEvShift;
 
-    camera_tonemap_mode_t mTonemapMode;
-
     cca::cca_ae_results mLastAeResult;
 
     std::unique_ptr<cca::cca_aiq_params> mAiqParams;

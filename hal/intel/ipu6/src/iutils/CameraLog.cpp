@@ -102,28 +102,27 @@ void doLogBody(int logTag, int level, int grpPosition, const char* fmt, ...) {
     if (!(level & globalGroupsDescp[grpPosition].level)) return;
     char prefix[64] = {};
     ::snprintf(prefix, sizeof(prefix),
-               "CamHAL_%s:[%s {%s}]: ", tagNames[logTag],
-               icamera::cameraDebugLogToString(level), tagNames[grpPosition]);
+               "CamHAL[%s]: ", icamera::cameraDebugLogToString(level));
     char message[256] = {};
     va_list ap;
     va_start(ap, fmt);
     vsnprintf(message, sizeof(message), fmt, ap);
     va_end(ap);
-    globalLogSink->sendOffLog(prefix, message, level);
+    globalLogSink->sendOffLog(prefix, message, level, tagNames[grpPosition]);
 }
 
 void doLogBody(int logTag, int level, const char* fmt, ...) {
     if (!(level & globalGroupsDescp[logTag].level)) return;
 
     char prefix[64] = {};
-    ::snprintf(prefix, sizeof(prefix), "CamHAL_%s:[%s]: ", tagNames[logTag],
+    ::snprintf(prefix, sizeof(prefix), "CamHAL[%s]: ",
                icamera::cameraDebugLogToString(level));
     char message[256] = {};
     va_list ap;
     va_start(ap, fmt);
     vsnprintf(message, sizeof(message), fmt, ap);
     va_end(ap);
-    globalLogSink->sendOffLog(prefix, message, level);
+    globalLogSink->sendOffLog(prefix, message, level, tagNames[logTag]);
 }
 
 namespace Log {

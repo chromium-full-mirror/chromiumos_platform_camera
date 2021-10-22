@@ -24,7 +24,7 @@ class LogOutputSink {
 
     virtual const char* getName() const = 0;
     virtual void sendOffLog(const char* prefix, const char* logEntry,
-                            int level) = 0;
+                            int level, const char* logTags) = 0;
  protected:
     static void setLogTime(char *timeBuf);
 };
@@ -33,14 +33,14 @@ class gLogSink : public LogOutputSink {
  public:
     const char* getName() const override;
     void sendOffLog(const char* prefix, const char* logEntry,
-                    int level) override;
+                    int level, const char* logTags) override;
 };
 
 class StdconLogSink : public LogOutputSink {
  public:
     const char* getName() const override;
     void sendOffLog(const char* prefix, const char* logEntry,
-                    int level) override;
+                    int level, const char* logTags) override;
 };
 }  // namespace icamera
 

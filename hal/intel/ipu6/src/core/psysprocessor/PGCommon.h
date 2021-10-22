@@ -207,6 +207,7 @@ protected:
     int mCameraId;
     int mPGId;
     std::string mName;  // For debug
+    TuningMode mTuningMode;
     ia_uid mTerminalBaseUid;
     int32_t mStreamId;
     int mPGCount;

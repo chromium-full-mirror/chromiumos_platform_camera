@@ -43,8 +43,10 @@ struct CaptureResult {
 
 struct StreamComInfo {
     std::shared_ptr<Camera3Buffer> cam3Buf;
-    icamera::Parameters parameter;
+    int64_t sequence;
 };
+
+class ParameterResult;
 
 /**
  * \class Camera3Stream
@@ -55,7 +57,8 @@ struct StreamComInfo {
  */
 class Camera3Stream : public icamera::Thread {
  public:
-    Camera3Stream(int cameraId, CallbackEventInterface* callback, uint32_t maxNumReqInProc,
+    Camera3Stream(int cameraId, CallbackEventInterface* callback,
+                  ParameterResult* result, uint32_t maxNumReqInProc,
                   const icamera::stream_t& halStream, const camera3_stream_t& stream,
                   const camera3_stream_t* inputStream = nullptr, bool isHWStream = false);
     virtual ~Camera3Stream();
@@ -115,6 +118,7 @@ class Camera3Stream : public icamera::Thread {
     std::mutex mSofLock;
 
     CallbackEventInterface* mEventCallback;
+    ParameterResult* mParameterResult;
 
     int mPostProcessType;
     std::unique_ptr<PostProcessor> mPostProcessor;

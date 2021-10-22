@@ -26,17 +26,19 @@
 #include "HALv3Utils.h"
 #include "ICamera.h"
 #include "MetadataConvert.h"
+#include "ParameterResult.h"
 #include "PlatformData.h"
 #include "Utils.h"
 #include "stdlib.h"
 
 namespace camera3 {
 Camera3Stream::Camera3Stream(int cameraId, CallbackEventInterface* callback,
-                             uint32_t maxNumReqInProc, const icamera::stream_t& halStream,
-                             const camera3_stream_t& stream, const camera3_stream_t* inputStream,
-                             bool isHALStream)
+                             ParameterResult* result, uint32_t maxNumReqInProc,
+                             const icamera::stream_t& halStream, const camera3_stream_t& stream,
+                             const camera3_stream_t* inputStream, bool isHALStream)
         : mCameraId(cameraId),
           mEventCallback(callback),
+          mParameterResult(result),
           mPostProcessType(icamera::POST_PROCESS_NONE),
           mStreamState(false),
           mHALStream(halStream),
@@ -169,14 +171,13 @@ bool Camera3Stream::threadLoop() {
 
     // dequeue buffer from HAL
     icamera::camera_buffer_t* buffer = nullptr;
-    icamera::Parameters parameter;
     std::shared_ptr<Camera3Buffer> inputCam3Buf = result->inputCam3Buf;
     std::shared_ptr<StreamComInfo> halOutput = nullptr;
     long sequence = -1;
 
     if (!inputCam3Buf && mIsHALStream) {
         LOG1("[%p]@ dqbuf for frameNumber %d", this, frameNumber);
-        int ret = icamera::camera_stream_dqbuf(mCameraId, mHALStream.id, &buffer, &parameter);
+        int ret = icamera::camera_stream_dqbuf(mCameraId, mHALStream.id, &buffer, nullptr);
         if (ret == icamera::NO_INIT) {
             LOG1("[%p] stream exiting", this);
             mStreamStatus = PEND_PROCESS;
@@ -188,15 +189,12 @@ bool Camera3Stream::threadLoop() {
              buffer->addr);
 
         sequence = buffer->sequence;
-        int32_t userRequestId = 0;
-        if (parameter.getUserRequestId(userRequestId) == icamera::OK) {
-            {
-                std::unique_lock<std::mutex> lock(mLock);
-                if (mCaptureResultMap.find(static_cast<uint32_t>(userRequestId)) !=
-                    mCaptureResultMap.end()) {
-                    frameNumber = static_cast<uint32_t>(userRequestId);
-                    result = mCaptureResultMap[frameNumber];
-                }
+        {
+            std::unique_lock<std::mutex> lock(mLock);
+            if (mCaptureResultMap.find(static_cast<uint32_t>(buffer->reserved)) !=
+                mCaptureResultMap.end()) {
+                frameNumber = static_cast<uint32_t>(buffer->reserved);
+                result = mCaptureResultMap[frameNumber];
             }
         }
 
@@ -246,7 +244,7 @@ bool Camera3Stream::threadLoop() {
             }
 
             CheckAndLogError(!halOutput->cam3Buf, true, "can't identify the buffer source");
-            halOutput->parameter = parameter;
+            halOutput->sequence = sequence;
             halOutput->cam3Buf->setTimeStamp(buffer->timestamp);
         }
 
@@ -279,6 +277,7 @@ bool Camera3Stream::threadLoop() {
 
     icamera::camera_buffer_t outCamBuf = {};
     std::shared_ptr<Camera3Buffer> outCam3Buf = nullptr;
+    icamera::Parameters* parameter = nullptr;
 
     // start process buffers, HAL stream and listeners will do the same process
     if (!inputCam3Buf) {
@@ -286,7 +285,8 @@ bool Camera3Stream::threadLoop() {
         if (outCam3Buf) {
             outCamBuf = outCam3Buf->getHalBuffer();
         }
-        parameter = halOutput->parameter;
+        sequence = halOutput->sequence;
+        parameter = mParameterResult->getParameter(frameNumber, sequence);
     }
 
     buffer_handle_t handle = result->handle;
@@ -306,7 +306,7 @@ bool Camera3Stream::threadLoop() {
         ShutterEvent shutterEvent = {frameNumber, 0};
         mEventCallback->shutterDone(shutterEvent);
 
-        MetadataEvent event = {frameNumber, &parameter};
+        MetadataEvent event = {frameNumber, parameter};
         mEventCallback->metadataDone(event);
     } else if (mHALStream.usage == icamera::CAMERA_STREAM_OPAQUE_RAW) {
         // notify shutter done before buffer done for raw output
@@ -319,13 +319,13 @@ bool Camera3Stream::threadLoop() {
         LOG2("%s, hal buffer: %p, ccBuf address: %p", __func__, outCamBuf.addr, ccBuf->data());
         if (mPostProcessType & icamera::POST_PROCESS_JPEG_ENCODING) {
             dumpOutputFmt = V4L2_PIX_FMT_JPEG;
-            icamera::PlatformData::acquireMakernoteData(mCameraId, outCamBuf.timestamp, &parameter);
+            icamera::PlatformData::acquireMakernoteData(mCameraId, outCamBuf.timestamp, parameter);
         }
         // handle normal postprocess
         if (mPostProcessType != icamera::POST_PROCESS_NONE) {
             LOG2("%s, do software postProcessing for sequence: %ld", __func__, outCamBuf.sequence);
             icamera::status_t status =
-                mPostProcessor->doPostProcessing(outCam3Buf, parameter, ccBuf);
+                mPostProcessor->doPostProcessing(outCam3Buf, *parameter, ccBuf);
             CheckAndLogError(status != icamera::OK, true,
                              "@%s, doPostProcessing fails, mPostProcessType:%d", __func__,
                              mPostProcessType);
@@ -333,18 +333,18 @@ bool Camera3Stream::threadLoop() {
             MEMCPY_S(ccBuf->data(), ccBuf->size(), outCam3Buf->data(), outCam3Buf->size());
         }
     } else if (inputCam3Buf) {
-        parameter = result->param;
+        icamera::Parameters param = result->param;
         LOG1("[%p] @%s process input frameNumber: %d", this, __func__, frameNumber);
         if (mInputPostProcessType & icamera::POST_PROCESS_JPEG_ENCODING) {
             dumpOutputFmt = V4L2_PIX_FMT_JPEG;
             icamera::PlatformData::acquireMakernoteData(mCameraId, inputCam3Buf->getTimeStamp(),
-                                                        &parameter);
+                                                        &param);
         }
 
         inputCam3Buf->dumpImage(frameNumber, icamera::DUMP_AAL_INPUT, V4L2_PIX_FMT_NV12);
         if (mInputPostProcessType != icamera::POST_PROCESS_NONE) {
             icamera::status_t status =
-                mInputPostProcessor->doPostProcessing(inputCam3Buf, parameter, ccBuf);
+                mInputPostProcessor->doPostProcessing(inputCam3Buf, param, ccBuf);
             CheckAndLogError(status != icamera::OK, true,
                              "@%s, doPostProcessing fails, mInputPostProcessType:%d", __func__,
                              mInputPostProcessType);
@@ -591,6 +591,7 @@ bool Camera3Stream::fetchRequestBuffers(icamera::camera_buffer_t* buffer, uint32
     // Fill the specific setting
     buffer->s.usage = mHALStream.usage;
     buffer->s.id = mHALStream.id;
+    buffer->reserved = static_cast<int32_t>(frameNumber);
 
     return true;
 }

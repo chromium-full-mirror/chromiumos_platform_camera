@@ -62,6 +62,7 @@ PGCommon::PGCommon(int cameraId, int pgId, const std::string& pgName, TuningMode
     mCameraId(cameraId),
     mPGId(pgId),
     mName(pgName),
+    mTuningMode(tuningMode),
     mTerminalBaseUid(terminalBaseUid),
     mStreamId(-1),
     mPGCount(0),
@@ -91,10 +92,6 @@ PGCommon::PGCommon(int cameraId, int pgId, const std::string& pgName, TuningMode
     mTnrTerminalPair.outId = -1;
     CLEAR(mParamPayload);
     CLEAR(mShareReferIds);
-
-    if (PlatformData::isStatsRunningRateSupport(mCameraId)) {
-        mIntelCca = IntelCca::getInstance(mCameraId, tuningMode);
-    }
 }
 
 PGCommon::~PGCommon()
@@ -323,8 +320,13 @@ int PGCommon::prepare(IspParamAdaptor* adaptor, int statsCount, int streamId)
 
     configureFrameDesc();
 
-    if (mIntelCca && mStreamId == VIDEO_STREAM_ID && statsCount > 0) {
-        mIntelCca->allocStatsDataMem(maxStatsSize);
+    if (PlatformData::isStatsRunningRateSupport(mCameraId) && mStreamId == VIDEO_STREAM_ID
+        && statsCount > 0) {
+        mIntelCca = IntelCca::getInstance(mCameraId, mTuningMode);
+
+        if (mIntelCca) {
+            mIntelCca->allocStatsDataMem(maxStatsSize);
+        }
     }
 
     return OK;

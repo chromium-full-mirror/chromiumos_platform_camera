@@ -37,22 +37,22 @@ extern const char* cameraDebugLogToString(int level);
 const char* gLogSink::getName() const { return "Google gLOG"; }
 
 void gLogSink::sendOffLog(const char* prefix, const char* logEntry,
-                               int level) {
+                               int level, const char* logTags) {
     switch (level) {
         case CAMERA_DEBUG_LOG_ERR:
-            ::logging::LogMessage("<CAMHAL>", 0, -::logging::LOGGING_ERROR)
+            ::logging::LogMessage(prefix, 0, -::logging::LOGGING_ERROR)
                     .stream()
-                << prefix << logEntry;
+                << logTags << logEntry;
             break;
         case CAMERA_DEBUG_LOG_WARNING:
-            ::logging::LogMessage("<CAMHAL>", 0, -::logging::LOGGING_WARNING)
+            ::logging::LogMessage(prefix, 0, -::logging::LOGGING_WARNING)
                     .stream()
-                << prefix << logEntry;
+                << logTags << logEntry;
             break;
         default:
-            ::logging::LogMessage("<CAMHAL>", 0, -::logging::LOGGING_INFO)
+            ::logging::LogMessage(prefix, 0, -::logging::LOGGING_INFO)
                     .stream()
-                << prefix << logEntry;
+                << logTags << logEntry;
             break;
     }
 }
@@ -60,7 +60,7 @@ void gLogSink::sendOffLog(const char* prefix, const char* logEntry,
 const char* StdconLogSink::getName() const { return "Stdcon LOG"; }
 
 void StdconLogSink::sendOffLog(const char* prefix, const char* logEntry,
-                               int level) {
+                               int level, const char* logTags) {
 #define TIME_BUF_SIZE 128
     char timeInfo[TIME_BUF_SIZE];
     setLogTime(timeInfo);
