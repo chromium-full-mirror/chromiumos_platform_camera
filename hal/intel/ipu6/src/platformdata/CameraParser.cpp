@@ -46,7 +46,7 @@ CameraParser::CameraParser(MediaControl *mc, PlatformData::StaticCfg *cfg) :
     mInStaticMetadata(false),
     mMC(mc),
     mMetadataCache(nullptr) {
-    LOGXML("@%s", __func__);
+    LOG1("@%s", __func__);
     CheckAndLogError(cfg == nullptr, VOID_VALUE, "@%s, cfg is nullptr", __func__);
 
     // Get common data from libcamhal_profile.xml
@@ -107,9 +107,7 @@ CameraParser::CameraParser(MediaControl *mc, PlatformData::StaticCfg *cfg) :
     mMetadataCache = new long[mMetadataCacheSize];
     getSensorDataFromXmlFile();
 
-    if(gLogLevel & CAMERA_DEBUG_LOG_LEVEL2) {
-        dumpSensorInfo();
-    }
+    dumpSensorInfo();
 }
 
 CameraParser::~CameraParser()
@@ -136,10 +134,8 @@ string CameraParser::replaceStringInXml(CameraParser *profiles, const char *valu
     string::size_type found = string::npos;
     if ((found = valueTmp.find("$I2CBUS")) != string::npos) {
         valueTmp.replace(found, sizeof("$I2CBUS"), profiles->mI2CBus);
-        LOGXML("@%s, sensor full name is %s", __func__, valueTmp.c_str());
     } else if ((found = valueTmp.find("$CSI_PORT")) != string::npos) {
         valueTmp.replace(found, sizeof("$CSI_PORT"), profiles->mCsiPort);
-        LOGXML("@%s, csi entity full name is %s", __func__, valueTmp.c_str());
     }
 
     return valueTmp;
@@ -154,7 +150,7 @@ void CameraParser::getCsiPortAndI2CBus(CameraParser *profiles)
 {
     std::string fullSensorName = profiles->pCurrentCam->sensorName;
     if (fullSensorName.empty()) {
-        LOGXML("@%s, Faild to find sensorName", __func__);
+        LOG1("@%s, Faild to find sensorName", __func__);
         return;
     }
 
@@ -179,8 +175,8 @@ void CameraParser::getCsiPortAndI2CBus(CameraParser *profiles)
             if (profiles->mMC) {
                 profiles->mMC->getI2CBusAddress(sensorName, sinkEntityName, &profiles->mI2CBus);
             }
-            LOGXML("@%s, mI2CBus:%s, cisPort:%s", __func__, profiles->mI2CBus.c_str(),
-                   profiles->mCsiPort.c_str());
+            LOG1("@%s, mI2CBus:%s, cisPort:%s", __func__, profiles->mI2CBus.c_str(),
+                 profiles->mCsiPort.c_str());
             break;
         }
     }
@@ -200,13 +196,13 @@ void CameraParser::getCsiPortAndI2CBus(CameraParser *profiles)
  */
 void CameraParser::checkField(CameraParser *profiles, const char *name, const char **atts)
 {
-    LOGXML("@%s, name:%s", __func__, name);
     if (strcmp(name, "CameraSettings") == 0) {
         profiles->mCurrentDataField = FIELD_INVALID;
         return;
     } else if (strcmp(name, "Sensor") == 0) {
         profiles->mSensorNum++;
         profiles->mCurrentSensor = profiles->mSensorNum - 1;
+        LOG1("@%s, mCurrentSensor %d", __func__, profiles->mCurrentSensor);
         if (profiles->mCurrentSensor >= 0 && profiles->mCurrentSensor < MAX_CAMERA_NUMBER) {
             profiles->pCurrentCam = new PlatformData::StaticCfg::CameraInfo;
 
@@ -216,7 +212,8 @@ void CameraParser::checkField(CameraParser *profiles, const char *name, const ch
             while (atts[idx]) {
                 const char* key = atts[idx];
                 const char* val = atts[idx + 1];
-                LOGXML("@%s, name:%s, atts[%d]:%s, atts[%d]:%s", __func__, name, idx, key, idx+1, val);
+                LOG2("@%s, name:%s, atts[%d]:%s, atts[%d]:%s", __func__, name, idx, key, idx + 1,
+                     val);
                 if (strcmp(key, "name") == 0) {
                     profiles->pCurrentCam->sensorName = val;
                 } else if (strcmp(key, "description") == 0) {
@@ -255,7 +252,7 @@ void CameraParser::handleCommon(CameraParser *profiles, const char *name, const 
                      "@%s, name:%s, atts[0]:%s or atts[1] is nullptr, xml format wrong", __func__,
                      name, atts[0]);
 
-    LOGXML("@%s, name:%s, atts[0]:%s, atts[1]: %s", __func__, name, atts[0], atts[1]);
+    LOG2("@%s, name:%s, atts[0]:%s, atts[1]: %s", __func__, name, atts[0], atts[1]);
     CommonConfig *cfg = &profiles->mStaticCfg->mCommonConfig;
     if (strcmp(name, "version") == 0) {
         cfg->xmlVersion = atof(atts[1]);
@@ -288,17 +285,15 @@ void CameraParser::handleCommon(CameraParser *profiles, const char *name, const 
  */
 void CameraParser::handleSensor(CameraParser *profiles, const char *name, const char **atts)
 {
-    LOGXML("@%s, name:%s, profiles->mCurrentSensor:%d", __func__, name, profiles->mCurrentSensor);
     CheckAndLogError(strcmp(atts[0], "value") != 0 || (atts[1] == nullptr), VOID_VALUE,
                      "@%s, name:%s, atts[0]:%s or atts[1] is nullptr, xml format wrong",
                      __func__, name, atts[0]);
 
-    LOGXML("@%s, name:%s, atts[0]:%s, atts[1]:%s", __func__, name, atts[0], atts[1]);
+    LOG2("@%s, name:%s, atts[0]:%s, atts[1]:%s", __func__, name, atts[0], atts[1]);
     if (strcmp(name, "supportedISysSizes") == 0) {
         parseSizesList(atts[1], pCurrentCam->mSupportedISysSizes);
         for (const auto &s : pCurrentCam->mSupportedISysSizes)
-            LOGXML("@%s, mSupportedISysSizes: width:%d, height:%d", __func__,
-                s.width, s.height);
+            LOG2("@%s, mSupportedISysSizes: width:%d, height:%d", __func__, s.width, s.height);
     } else if (strcmp(name, "supportedISysFormat") == 0) {
         getSupportedFormat(atts[1], pCurrentCam->mSupportedISysFormat);
     } else if (strcmp(name, "iSysRawFormat") == 0) {
@@ -580,7 +575,6 @@ void CameraParser::handleSensor(CameraParser *profiles, const char *name, const 
 int CameraParser::parseSupportedTuningConfig(const char *str, vector <TuningConfig> &config)
 {
     CheckAndLogError(str == nullptr, -1, "@%s, str is nullptr", __func__);
-    LOGXML("@%s, str = %s", __func__, str);
 
     int sz = strlen(str);
     char src[sz + 1];
@@ -595,8 +589,8 @@ int CameraParser::parseSupportedTuningConfig(const char *str, vector <TuningConf
         CheckAndLogError(configMode == nullptr || tuningMode == nullptr
                          || aiqb == nullptr, -1, "@%s, wrong str %s", __func__, str);
 
-        LOGXML("@%s, configMode %s, tuningMode %s, aiqb name %s",
-                __func__, configMode, tuningMode, aiqb);
+        LOG2("@%s, configMode %s, tuningMode %s, aiqb name %s", __func__, configMode, tuningMode,
+             aiqb);
         cfg.configMode = CameraUtils::getConfigModeByName(configMode);
         cfg.tuningMode = CameraUtils::string2TuningMode(tuningMode);
         cfg.aiqbName = aiqb;
@@ -611,7 +605,6 @@ int CameraParser::parseSupportedTuningConfig(const char *str, vector <TuningConf
 int CameraParser::parseLardTags(const char *str, vector <LardTagConfig> &lardTags)
 {
     CheckAndLogError(str == nullptr, -1, "@%s, str is nullptr", __func__);
-    LOGXML("@%s, str = %s", __func__, str);
 
     int sz = strlen(str);
     char src[sz + 1];
@@ -636,8 +629,8 @@ int CameraParser::parseLardTags(const char *str, vector <LardTagConfig> &lardTag
                          || cfg.othersTag == 0, -1, "@%s, wrong str %s", __func__, str);
 
         lardTags.push_back(cfg);
-        LOGXML("@%s, tuningMode %s, cmc %s, aiq %s, isp %s, others %s",
-                __func__, tuningMode, cmcTag, aiqTag, ispTag, othersTag);
+        LOG2("@%s, tuningMode %s, cmc %s, aiq %s, isp %s, others %s", __func__, tuningMode, cmcTag,
+             aiqTag, ispTag, othersTag);
 
         if (savePtr != nullptr)
             savePtr = const_cast<char*>(skipWhiteSpace(savePtr));
@@ -654,7 +647,7 @@ void CameraParser::parseMediaCtlConfigElement(CameraParser *profiles, const char
 
     while (atts[idx]) {
         const char *key = atts[idx];
-        LOGXML("%s: name: %s, value: %s", __func__, atts[idx], atts[idx + 1]);
+        LOG2("%s: name: %s, value: %s", __func__, atts[idx], atts[idx + 1]);
         if (strcmp(key, "id") == 0) {
             mc.mcId = strtol(atts[idx + 1], nullptr, 10);
         } else if (strcmp(key, "ConfigMode") == 0) {
@@ -669,8 +662,8 @@ void CameraParser::parseMediaCtlConfigElement(CameraParser *profiles, const char
         idx += 2;
     }
 
-    LOGXML("@%s, name:%s, atts[0]:%s, id: %d", __func__, name, atts[0], mc.mcId);
-    //Add a new empty MediaControl Configuration
+    LOG2("@%s, name:%s, atts[0]:%s, id: %d", __func__, name, atts[0], mc.mcId);
+    // Add a new empty MediaControl Configuration
     profiles->pCurrentCam->mMediaCtlConfs.push_back(mc);
 }
 
@@ -680,13 +673,12 @@ void CameraParser::parseControlElement(CameraParser *profiles, const char *name,
 {
     McCtl ctl;
     MediaCtlConf &mc = profiles->pCurrentCam->mMediaCtlConfs.back();
-    LOGXML("@%s, name:%s", __func__, name);
 
     int idx = 0;
     while (atts[idx]) {
         const char* key = atts[idx];
         const char* val = atts[idx + 1];
-        LOGXML("@%s, name:%s, atts[%d]:%s, atts[%d]:%s", __func__, name, idx, key, idx + 1, val);
+        LOG2("@%s, name:%s, atts[%d]:%s, atts[%d]:%s", __func__, name, idx, key, idx + 1, val);
         if (strcmp(key, "name") == 0) {
             ctl.entityName = replaceStringInXml(profiles, val);
             if (profiles->mMC) {
@@ -732,7 +724,6 @@ void CameraParser::parseSelectionElement(CameraParser *profiles, const char *nam
 {
     McFormat sel;
     MediaCtlConf &mc = profiles->pCurrentCam->mMediaCtlConfs.back();
-    LOGXML("@%s, name:%s", __func__, name);
 
     sel.top = -1; //top is not specified, need to be calc later.
     sel.left = -1; //left is not specified, need to be calc later.
@@ -744,7 +735,7 @@ void CameraParser::parseSelectionElement(CameraParser *profiles, const char *nam
     while (atts[idx]) {
         const char* key = atts[idx];
         const char* val = atts[idx + 1];
-        LOGXML("@%s, name:%s, atts[%d]:%s, atts[%d]:%s", __func__, name, idx, key, idx+1, val);
+        LOG2("@%s, name:%s, atts[%d]:%s, atts[%d]:%s", __func__, name, idx, key, idx + 1, val);
         if (strcmp(key, "name") == 0) {
             sel.entityName = replaceStringInXml(profiles, val);
             if (profiles->mMC) {
@@ -840,7 +831,7 @@ void CameraParser::parseStreamConfig(const char* src, stream_array_t& configs)
 
         switch (parseStep) {
             case 1: // Step 1: Parse format
-                LOGXML("stream format is %s", src);
+                LOG2("stream format is %s", src);
                 config.format = CameraUtils::string2PixelCode(src);
                 CheckAndLogError(config.format == -1, VOID_VALUE, "@%s, format fails", __func__);
                 break;
@@ -849,16 +840,16 @@ void CameraParser::parseStreamConfig(const char* src, stream_array_t& configs)
                 CheckAndLogError(!endPtr || *endPtr != 'x', VOID_VALUE, "@%s, width fails", __func__);
                 src = endPtr + 1;
                 config.height = strtol(src, &endPtr, 10);
-                LOGXML("(%dx%d)", config.width, config.height);
+                LOG2("(%dx%d)", config.width, config.height);
                 break;
             case 3: // Step 3: Parse field
                 config.field = strtol(src, &endPtr, 10);
-                LOGXML("stream field is %d", config.field);
+                LOG2("stream field is %d", config.field);
                 break;
             case 4: // Step 4: Parse MediaCtlConf id.
                 mcId = strtol(src, &endPtr, 10);
                 CheckAndLogError(mcId < 0, VOID_VALUE, "@%s, mcId fails", __func__);
-                LOGXML("the mcId for supported stream config is %d", mcId);
+                LOG2("the mcId for supported stream config is %d", mcId);
                 break;
         }
 
@@ -878,7 +869,7 @@ void CameraParser::parseStreamConfig(const char* src, stream_array_t& configs)
             CLEAR(config);
             mcId = -1;
             parseStep = 0;
-            LOGXML("Stream Configuration found");
+            LOG2("Stream Configuration found");
             if (lastElement) {
                 break;
             }
@@ -1092,8 +1083,6 @@ int CameraParser::parseSupportedAeParamRange(const char* src, vector<int>& scene
 
 void CameraParser::parseFormatElement(CameraParser *profiles, const char *name, const char **atts)
 {
-    LOGXML("@%s, name:%s", __func__, name);
-
     McFormat fmt;
     fmt.type = RESOLUTION_TARGET;
 
@@ -1101,7 +1090,7 @@ void CameraParser::parseFormatElement(CameraParser *profiles, const char *name, 
     while (atts[idx]) {
         const char* key = atts[idx];
         const char* val = atts[idx + 1];
-        LOGXML("@%s, name:%s, atts[%d]:%s, atts[%d]:%s", __func__, name, idx, key, idx+1, val);
+        LOG2("@%s, name:%s, atts[%d]:%s, atts[%d]:%s", __func__, name, idx, key, idx + 1, val);
         if (strcmp(key, "name") == 0) {
             fmt.entityName = replaceStringInXml(profiles, val);
             if (profiles->mMC) {
@@ -1143,13 +1132,12 @@ void CameraParser::parseLinkElement(CameraParser *profiles, const char *name, co
 {
     McLink link;
     MediaCtlConf &mc = profiles->pCurrentCam->mMediaCtlConfs.back();
-    LOGXML("@%s, name:%s", __func__, name);
 
     int idx = 0;
     while (atts[idx]) {
         const char* key = atts[idx];
         const char* val = atts[idx + 1];
-        LOGXML("@%s, name:%s, atts[%d]:%s, atts[%d]:%s", __func__, name, idx, key, idx+1, val);
+        LOG2("@%s, name:%s, atts[%d]:%s, atts[%d]:%s", __func__, name, idx, key, idx + 1, val);
         if (strcmp(key, "srcName") == 0) {
             link.srcEntityName = replaceStringInXml(profiles, val);
             if (profiles->mMC) {
@@ -1178,14 +1166,13 @@ void CameraParser::parseRouteElement(CameraParser *profiles, const char *name, c
 {
     McRoute route;
     MediaCtlConf &mc = profiles->pCurrentCam->mMediaCtlConfs.back();
-    LOGXML("@%s, name:%s", __func__, name);
     route.flag = MEDIA_LNK_FL_ENABLED;
 
     int idx = 0;
     while (atts[idx]) {
         const char* key = atts[idx];
         const char* val = atts[idx + 1];
-        LOGXML("@%s, name:%s, atts[%d]:%s, atts[%d]:%s", __func__, name, idx, key, idx+1, val);
+        LOG2("@%s, name:%s, atts[%d]:%s, atts[%d]:%s", __func__, name, idx, key, idx + 1, val);
         if (strcmp(key, "name") == 0) {
             route.entityName = replaceStringInXml(profiles, val);
             if (profiles->mMC) {
@@ -1215,7 +1202,8 @@ void CameraParser::parseVideoElement(CameraParser *profiles, const char * /*name
 
    videoNode.name = replaceStringInXml(profiles, atts[1]);
    videoNode.videoNodeType = GetNodeType(atts[3]);
-   LOGXML("@%s, name:%s, videoNodeType:%d", __func__, videoNode.name.c_str(), videoNode.videoNodeType);
+    LOG2("@%s, name:%s, videoNodeType:%d", __func__, videoNode.name.c_str(),
+         videoNode.videoNodeType);
 
    mc.videoNodes.push_back(videoNode);
 }
@@ -1225,15 +1213,13 @@ void CameraParser::parseVideoElement(CameraParser *profiles, const char * /*name
 // <output port="second" width="3264" height="2448" format="V4L2_PIX_FMT_SGRBG12V32"/>
 void CameraParser::parseOutputElement(CameraParser *profiles, const char *name, const char **atts)
 {
-    LOGXML("@%s, name:%s", __func__, name);
-
     McOutput output;
 
     int idx = 0;
     while (atts[idx]) {
         const char* key = atts[idx];
         const char* val = atts[idx + 1];
-        LOGXML("@%s, name:%s, atts[%d]:%s, atts[%d]:%s", __func__, name, idx, key, idx+1, val);
+        LOG2("@%s, name:%s, atts[%d]:%s, atts[%d]:%s", __func__, name, idx, key, idx + 1, val);
         if (strcmp(key, "port") == 0) {
             if (strcmp(val, "main") ==  0)
                 output.port = MAIN_PORT;
@@ -1255,8 +1241,8 @@ void CameraParser::parseOutputElement(CameraParser *profiles, const char *name, 
         idx += 2;
     }
 
-    LOGXML("@%s, port:%d, output size:%dx%d, v4l2Format:%x", __func__, output.port,
-            output.width, output.height, output.v4l2Format);
+    LOG2("@%s, port:%d, output size:%dx%d, v4l2Format:%x", __func__, output.port, output.width,
+         output.height, output.v4l2Format);
 
     MediaCtlConf &mc = profiles->pCurrentCam->mMediaCtlConfs.back();
     mc.outputs.push_back(output);
@@ -1496,7 +1482,7 @@ int CameraParser::getSupportedFormat(const char* str, vector <int>& supportedFor
         return -1;
     }
 
-    LOGXML("@%s, str:%s", __func__, str);
+    LOG2("@%s, str:%s", __func__, str);
     int sz = strlen(str);
     char src[sz + 1];
     MEMCPY_S(src, sz, str, sz);
@@ -1507,7 +1493,7 @@ int CameraParser::getSupportedFormat(const char* str, vector <int>& supportedFor
         int actual = CameraUtils::string2PixelCode(fmt);
         if (actual != -1) {
             supportedFormat.push_back(actual);
-            LOGXML("@%s, add format:%d", __func__, actual);
+            LOG2("@%s, add format:%d", __func__, actual);
         }
         fmt = strtok_r(nullptr, ",", &savePtr);
     }
@@ -1526,7 +1512,8 @@ int CameraParser::getSupportedFormat(const char* str, vector <int>& supportedFor
  */
 void CameraParser::handleMediaCtlCfg(CameraParser *profiles, const char *name, const char **atts)
 {
-    LOGXML("@%s, name:%s, atts[0]:%s, profiles->mCurrentSensor:%d", __func__, name, atts[0], profiles->mCurrentSensor);
+    LOG2("@%s, name:%s, atts[0]:%s, profiles->mCurrentSensor:%d", __func__, name, atts[0],
+         profiles->mCurrentSensor);
     if (strcmp(name, "MediaCtlConfig") == 0) {
         parseMediaCtlConfigElement(profiles, name, atts);
     } else if (strcmp(name, "link") == 0) {
@@ -1557,7 +1544,8 @@ void CameraParser::handleMediaCtlCfg(CameraParser *profiles, const char *name, c
  */
 void CameraParser::handleStaticMetaData(CameraParser *profiles, const char *name, const char **atts)
 {
-    LOGXML("@%s, name:%s, atts[0]:%s, profiles->mCurrentSensor:%d", __func__, name, atts[0], profiles->mCurrentSensor);
+    LOG2("@%s, name:%s, atts[0]:%s, profiles->mCurrentSensor:%d", __func__, name, atts[0],
+         profiles->mCurrentSensor);
     if (strcmp(name, "supportedStreamConfig") == 0) {
         stream_array_t configsArray;
         parseStreamConfig(atts[1], configsArray);
@@ -1566,10 +1554,9 @@ void CameraParser::handleStaticMetaData(CameraParser *profiles, const char *name
         int configs[dataSize];
         CLEAR(configs);
         for (size_t i = 0; i < configsArray.size(); i++) {
-            LOGXML("@%s, stream config info: format=%s (%dx%d) field=%d type=%d", __func__,
-                    CameraUtils::format2string(configsArray[i].format).c_str(),
-                    configsArray[i].width, configsArray[i].height,
-                    configsArray[i].field, configsArray[i].streamType);
+            LOG2("@%s, stream config info: format=%s (%dx%d) field=%d type=%d", __func__,
+                 CameraUtils::format2string(configsArray[i].format).c_str(), configsArray[i].width,
+                 configsArray[i].height, configsArray[i].field, configsArray[i].streamType);
             MEMCPY_S(&configs[i * STREAM_MEMBER_NUM], sizeof(stream_t),
                      &configsArray[i], sizeof(stream_t));
         }
@@ -1582,7 +1569,7 @@ void CameraParser::handleStaticMetaData(CameraParser *profiles, const char *name
         for (size_t i = 0; i < rangeArray.size(); i++){
             fpsRange[i] = static_cast<float>(rangeArray[i]);
         }
-        LOGXML("@%s, supported fps range size: %zu", __func__, rangeArray.size());
+        LOG2("@%s, supported fps range size: %zu", __func__, rangeArray.size());
         mMetadata.update(CAMERA_AE_AVAILABLE_TARGET_FPS_RANGES, fpsRange, ARRAY_SIZE(fpsRange));
     } else if (strcmp(name, "evRange") == 0) {
         vector<int> rangeArray;
@@ -1593,7 +1580,7 @@ void CameraParser::handleStaticMetaData(CameraParser *profiles, const char *name
         for (size_t i = 0; i < rangeArray.size(); i++) {
             evRange[i] = rangeArray[i];
         }
-        LOGXML("@%s, supported ev range size: %zu", __func__, rangeArray.size());
+        LOG2("@%s, supported ev range size: %zu", __func__, rangeArray.size());
         mMetadata.update(CAMERA_AE_COMPENSATION_RANGE, evRange, ARRAY_SIZE(evRange));
     } else if (strcmp(name, "evStep") == 0) {
         vector<int> rationalType;
@@ -1601,7 +1588,8 @@ void CameraParser::handleStaticMetaData(CameraParser *profiles, const char *name
         CheckAndLogError((ret != OK), VOID_VALUE, "Parse evStep failed");
 
         icamera_metadata_rational_t evStep = {rationalType[0], rationalType[1]};
-        LOGXML("@%s, the numerator: %d, denominator: %d", __func__, evStep.numerator, evStep.denominator);
+        LOG2("@%s, the numerator: %d, denominator: %d", __func__, evStep.numerator,
+             evStep.denominator);
         mMetadata.update(CAMERA_AE_COMPENSATION_STEP, &evStep, 1);
     } else if (strcmp(name, "supportedFeatures") == 0) {
         camera_features_list_t supportedFeatures;
@@ -1625,8 +1613,8 @@ void CameraParser::handleStaticMetaData(CameraParser *profiles, const char *name
         CLEAR(rangeData);
 
         for (size_t i = 0; i < scenes.size(); i++) {
-            LOGXML("@%s, scene mode:%d supported exposure time range (%f-%f)", __func__,
-                    scenes[i], minValues[i], maxValues[i]);
+            LOG2("@%s, scene mode:%d supported exposure time range (%f-%f)", __func__, scenes[i],
+                 minValues[i], maxValues[i]);
             rangeData[i * MEMBER_COUNT] = scenes[i];
             rangeData[i * MEMBER_COUNT + 1] = (int)minValues[i];
             rangeData[i * MEMBER_COUNT + 2] = (int)maxValues[i];
@@ -1644,8 +1632,8 @@ void CameraParser::handleStaticMetaData(CameraParser *profiles, const char *name
         CLEAR(rangeData);
 
         for (size_t i = 0; i < scenes.size(); i++) {
-            LOGXML("@%s, scene mode:%d supported gain range (%f-%f)", __func__,
-                    scenes[i], minValues[i], maxValues[i]);
+            LOG2("@%s, scene mode:%d supported gain range (%f-%f)", __func__, scenes[i],
+                 minValues[i], maxValues[i]);
             rangeData[i * MEMBER_COUNT] = scenes[i];
             // Since we use int to store float, before storing it we multiply min and max by 100.
             rangeData[i * MEMBER_COUNT + 1] = (int)(minValues[i] * 100);
@@ -1713,7 +1701,7 @@ void CameraParser::handleStaticMetaData(CameraParser *profiles, const char *name
             mountType = CEILING_MOUNTED;
 
         mMetadata.update(INTEL_INFO_SENSOR_MOUNT_TYPE, &mountType, 1);
-        LOGXML("@%s, sensor mount type: %d", __func__, mountType);
+        LOG2("@%s, sensor mount type: %d", __func__, mountType);
     } else if (strcmp(name, "StaticMetadata") != 0) { // Make sure it doesn't reach the end of StaticMetadata.
         handleGenericStaticMetaData(name, atts[1], &mMetadata);
     }
@@ -1756,27 +1744,27 @@ void CameraParser::handleGenericStaticMetaData(const char* name, const char* src
     char * endPtr = nullptr;
     do {
         switch (tagType) {
-        case ICAMERA_TYPE_BYTE:
-            data.u8[index]= (char)strtol(src, &endPtr, 10);
-            LOGXML(" - %d -", data.u8[index]);
-            break;
-        case ICAMERA_TYPE_INT32:
-        case ICAMERA_TYPE_RATIONAL:
-            data.i32[index]= strtol(src, &endPtr, 10);
-            LOGXML(" - %d -", data.i32[index]);
-            break;
-        case ICAMERA_TYPE_INT64:
-            data.i64[index]= strtol(src, &endPtr, 10);
-            LOGXML(" - %ld -", data.i64[index]);
-            break;
-        case ICAMERA_TYPE_FLOAT:
-            data.f[index]= strtof(src, &endPtr);
-            LOGXML(" - %8.3f -", data.f[index]);
-            break;
-        case ICAMERA_TYPE_DOUBLE:
-            data.d[index]= strtof(src, &endPtr);
-            LOGXML(" - %8.3f -", data.d[index]);
-            break;
+            case ICAMERA_TYPE_BYTE:
+                data.u8[index]= (char)strtol(src, &endPtr, 10);
+                LOG2(" - %d -", data.u8[index]);
+                break;
+            case ICAMERA_TYPE_INT32:
+            case ICAMERA_TYPE_RATIONAL:
+                data.i32[index] = strtol(src, &endPtr, 10);
+                LOG2(" - %d -", data.i32[index]);
+                break;
+            case ICAMERA_TYPE_INT64:
+                data.i64[index] = strtol(src, &endPtr, 10);
+                LOG2(" - %ld -", data.i64[index]);
+                break;
+            case ICAMERA_TYPE_FLOAT:
+                data.f[index] = strtof(src, &endPtr);
+                LOG2(" - %8.3f -", data.f[index]);
+                break;
+            case ICAMERA_TYPE_DOUBLE:
+                data.d[index] = strtof(src, &endPtr);
+                LOG2(" - %8.3f -", data.d[index]);
+                break;
         }
         index++;
 
@@ -1788,24 +1776,24 @@ void CameraParser::handleGenericStaticMetaData(const char* name, const char* src
     } while (index < maxIndex);
 
     switch (tagType) {
-    case ICAMERA_TYPE_BYTE:
-        metadata->update(tag, data.u8, index);
-        break;
-    case ICAMERA_TYPE_INT32:
-        metadata->update(tag, data.i32, index);
-        break;
-    case ICAMERA_TYPE_INT64:
-        metadata->update(tag, data.i64, index);
-        break;
-    case ICAMERA_TYPE_FLOAT:
-        metadata->update(tag, data.f, index);
-        break;
-    case ICAMERA_TYPE_DOUBLE:
-        metadata->update(tag, data.d, index);
-        break;
-    case ICAMERA_TYPE_RATIONAL:
-        metadata->update(tag, data.r, index / 2);
-        break;
+        case ICAMERA_TYPE_BYTE:
+            metadata->update(tag, data.u8, index);
+            break;
+        case ICAMERA_TYPE_INT32:
+            metadata->update(tag, data.i32, index);
+            break;
+        case ICAMERA_TYPE_INT64:
+            metadata->update(tag, data.i64, index);
+            break;
+        case ICAMERA_TYPE_FLOAT:
+            metadata->update(tag, data.f, index);
+            break;
+        case ICAMERA_TYPE_DOUBLE:
+            metadata->update(tag, data.d, index);
+            break;
+        case ICAMERA_TYPE_RATIONAL:
+            metadata->update(tag, data.r, index / 2);
+            break;
     }
 }
 
@@ -1830,15 +1818,15 @@ void CameraParser::startParseElement(void *userData, const char *name, const cha
         case FIELD_SENSOR:
             if (strcmp(name, "MediaCtlConfig") == 0) {
                 profiles->mInMediaCtlCfg = true;
-                LOGXML("@%s %s, mInMediaCtlCfg is set to true", __func__, name);
+                LOG2("@%s %s, mInMediaCtlCfg is set to true", __func__, name);
             } else if (strcmp(name, "StaticMetadata") == 0) {
                 profiles->mInStaticMetadata = true;
-                LOGXML("@%s %s, mInStaticMetadata is set to true", __func__, name);
+                LOG2("@%s %s, mInStaticMetadata is set to true", __func__, name);
             } else if (strncmp(name, "CameraModuleInfo_", strlen("CameraModuleInfo_")) == 0) {
                 // tag name like this: CameraModuleInfo_XXX
                 std::string tagName(name);
                 profiles->mCameraModuleName = tagName.substr(strlen("CameraModuleInfo_"));
-                LOGXML("@%s, mCameraModuleInfo %s is set", __func__, name);
+                LOG2("@%s, mCameraModuleInfo %s is set", __func__, name);
                 break;
             }
 
@@ -1850,8 +1838,8 @@ void CameraParser::startParseElement(void *userData, const char *name, const cha
                 profiles->handleStaticMetaData(profiles, name, atts);
             } else if (!profiles->mCameraModuleName.empty()) {
                 // The CameraModuleInfo belongs to the sensor segments
-                LOGXML("@%s, name:%s, atts[1]:%s, profiles->mCurrentSensor:%d", __func__,
-                       name, atts[1], profiles->mCurrentSensor);
+                LOG2("@%s, name:%s, atts[1]:%s, profiles->mCurrentSensor:%d", __func__, name,
+                     atts[1], profiles->mCurrentSensor);
                 profiles->handleGenericStaticMetaData(name, atts[1], &profiles->mCameraModuleMetadata);
             } else {
                 profiles->handleSensor(profiles, name, atts);
@@ -1876,21 +1864,21 @@ void CameraParser::startParseElement(void *userData, const char *name, const cha
  */
 void CameraParser::endParseElement(void *userData, const char *name)
 {
-    LOGXML("@%s %s", __func__, name);
+    LOG2("@%s %s", __func__, name);
 
     CameraParser *profiles = reinterpret_cast<CameraParser*>(userData);
 
     if (strcmp(name, "Sensor") == 0) {
         profiles->mCurrentDataField = FIELD_INVALID;
         if (profiles->pCurrentCam) {
-            LOGXML("@%s: Add camera id %d (%s)", __func__, profiles->mCurrentSensor,
-                   profiles->pCurrentCam->sensorName.c_str());
+            LOG2("@%s: Add camera id %d (%s)", __func__, profiles->mCurrentSensor,
+                 profiles->pCurrentCam->sensorName.c_str());
             if (profiles->pCurrentCam->mLensName.empty() &&
                 profiles->pCurrentCam->sensorName.find("-wf") != string::npos) {
                 if (profiles->mMC) {
                     int ret = profiles->mMC->getLensName(&profiles->pCurrentCam->mLensName);
                     if (ret != OK) {
-                        LOGXML("@%s, Failed to getLensName", __func__);
+                        LOG2("@%s, Failed to getLensName", __func__);
                     }
                 }
             }
@@ -1916,17 +1904,17 @@ void CameraParser::endParseElement(void *userData, const char *name)
     }
 
     if (strcmp(name, "MediaCtlConfig") == 0) {
-        LOGXML("@%s %s, mInMediaCtlCfg is set to false", __func__, name);
+        LOG2("@%s %s, mInMediaCtlCfg is set to false", __func__, name);
         profiles->mInMediaCtlCfg = false;
     }
 
     if (strcmp(name, "StaticMetadata") == 0) {
-        LOGXML("@%s %s, mInStaticMetadata is set to false", __func__, name);
+        LOG2("@%s %s, mInStaticMetadata is set to false", __func__, name);
         profiles->mInStaticMetadata = false;
     }
 
     if (strncmp(name, "CameraModuleInfo_", strlen("CameraModuleInfo_")) == 0) {
-        LOGXML("@%s Camera Module Name is %s", __func__, name);
+        LOG2("@%s Camera Module Name is %s", __func__, name);
         if (!profiles->mCameraModuleName.empty()) {
             profiles->pCurrentCam->mCameraModuleInfoMap[profiles->mCameraModuleName]
                 = mCameraModuleMetadata;
@@ -1941,7 +1929,7 @@ void CameraParser::endParseElement(void *userData, const char *name)
 /* the path of NVM device is in /sys/bus/i2c/devices/i2c-'adaptorId'/firmware_node/XXXX/path. */
 void CameraParser::getNVMDirectory(CameraParser* profiles)
 {
-    LOGXML("@%s", __func__);
+    LOG2("@%s", __func__);
 
     std::string nvmPath("/sys/bus/i2c/devices/i2c-");
     // attach i2c adaptor id, like 18-0010
@@ -1988,7 +1976,7 @@ void CameraParser::getNVMDirectory(CameraParser* profiles)
             // The first one in list is prioritized and should be selected.
             profiles->pCurrentCam->mNvmDirectory = nvm.directory;
             profiles->pCurrentCam->mMaxNvmDataSize = nvm.dataSize;
-            LOGXML("NVM dir %s", profiles->pCurrentCam->mNvmDirectory.c_str());
+            LOG2("NVM dir %s", profiles->pCurrentCam->mNvmDirectory.c_str());
             break;
         }
     }
@@ -2011,7 +1999,7 @@ void CameraParser::getNVMDirectory(CameraParser* profiles)
 std::vector<std::string> CameraParser::getAvailableSensors(const std::string &ipuName,
                                                         const std::vector<std::string> &sensorsList)
 {
-    LOGXML("@%s, ipuName:%s", __func__, ipuName.c_str());
+    LOG2("@%s, ipuName:%s", __func__, ipuName.c_str());
 
     /* if the string doesn't contain -wf- or -uf-, it needn't be parsed */
     if ((sensorsList[0].find("-wf-") == string::npos) &&
@@ -2036,8 +2024,8 @@ std::vector<std::string> CameraParser::getAvailableSensors(const std::string &ip
             AvailableSensorInfo sensorInfo = {sensorSinkNameTmp, false};
             availableSensors.push_back(srcSensor);
             mAvailableSensor[srcSensor] = sensorInfo;
-            LOGXML("@%s, The availabel sensor name:%s, sensorSinkNameTmp:%s",
-                   __func__, srcSensor.c_str(), sensorSinkNameTmp.c_str());
+            LOG2("@%s, The availabel sensor name:%s, sensorSinkNameTmp:%s", __func__,
+                 srcSensor.c_str(), sensorSinkNameTmp.c_str());
         }
     }
 
@@ -2054,10 +2042,8 @@ std::vector<std::string> CameraParser::getAvailableSensors(const std::string &ip
  */
 void CameraParser::getSensorDataFromXmlFile(void)
 {
-    LOGXML("@%s", __func__);
-
     // According to sensor name to get sensor data
-    LOGXML("The kinds of sensor is %zu", mStaticCfg->mCommonConfig.availableSensors.size());
+    LOG1("%s, available sensors: %zu", __func__, mStaticCfg->mCommonConfig.availableSensors.size());
     vector<string> allSensors = getAvailableSensors(mStaticCfg->mCommonConfig.ipuName,
                                                     mStaticCfg->mCommonConfig.availableSensors);
 
@@ -2075,64 +2061,70 @@ void CameraParser::getSensorDataFromXmlFile(void)
             sensorName.append(sensor);
         }
         sensorName.append(".xml");
+        LOG1("%s: parse sensor name %s", sensorName.c_str());
         int ret = getDataFromXmlFile(sensorName);
         CheckAndLogError(ret != OK, VOID_VALUE, "Failed to get sensor profile data from %s", sensorName.c_str());
     }
 }
 
-void CameraParser::dumpSensorInfo(void)
-{
-    LOGXML("@%s, line%d, for sensors settings==================", __func__, __LINE__);
-    LOGXML("@%s, line%d, sensor number:%d", __func__, __LINE__, getSensorNum());
+void CameraParser::dumpSensorInfo(void) {
+    if (!Log::isDebugLevelEnable(CAMERA_DEBUG_LOG_LEVEL3)) return;
+
+    LOG3("@%s, sensor number: %d ==================", __func__, getSensorNum());
     for (unsigned i = 0; i < getSensorNum(); i++) {
-        LOGXML("@%s, line%d, i:%d", __func__, __LINE__, i);
-        LOGXML("@%s, line%d, mCameras[%d].sensorName:%s", __func__, __LINE__, i, mStaticCfg->mCameras[i].sensorName.c_str());
-        LOGXML("@%s, line%d, mCameras[%d].mISysFourcc:%d", __func__, __LINE__, i, mStaticCfg->mCameras[i].mISysFourcc);
+        LOG3("Dump for mCameras[%d].sensorName:%s, mISysFourcc:%d", i,
+             mStaticCfg->mCameras[i].sensorName.c_str(), mStaticCfg->mCameras[i].mISysFourcc);
 
         stream_array_t supportedConfigs;
         mStaticCfg->mCameras[i].mCapability.getSupportedStreamConfig(supportedConfigs);
         for (size_t j = 0; j < supportedConfigs.size(); j++) {
-            LOGXML("@%s, line%d, mCameras[%d]: format:%d size(%dx%d) field:%d", __func__, __LINE__,
-                i, supportedConfigs[j].format, supportedConfigs[j].width,
-                supportedConfigs[j].height, supportedConfigs[j].field);
+            LOG3("    format:%d size(%dx%d) field:%d", supportedConfigs[j].format,
+                 supportedConfigs[j].width, supportedConfigs[j].height, supportedConfigs[j].field);
         }
 
         for (unsigned j = 0; j < mStaticCfg->mCameras[i].mSupportedISysFormat.size(); j++) {
-            LOGXML("@%s, line%d, mCameras[%d].mSupportedISysFormat:%d", __func__, __LINE__, i, mStaticCfg->mCameras[i].mSupportedISysFormat[j]);
+            LOG3("    mSupportedISysFormat:%d", mStaticCfg->mCameras[i].mSupportedISysFormat[j]);
         }
 
         // dump the media controller mapping table for supportedStreamConfig
-        LOGXML("The media controller mapping table size: %zu", mStaticCfg->mCameras[i].mStreamToMcMap.size());
+        LOG3("    The media controller mapping table size: %zu",
+             mStaticCfg->mCameras[i].mStreamToMcMap.size());
         for (auto& pool : mStaticCfg->mCameras[i].mStreamToMcMap) {
             int mcId = pool.first;
             stream_array_t &mcMapVector = pool.second;
-            LOGXML("mcId: %d, the supportedStreamConfig vector size: %zu", mcId, mcMapVector.size());
+            LOG3("    mcId: %d, the supportedStreamConfig size: %zu", mcId, mcMapVector.size());
         }
 
         // dump the media controller information
-        LOGXML("============Format Configuration==================");
+        LOG3("    Format Configuration:");
         for (unsigned j = 0; j < mStaticCfg->mCameras[i].mMediaCtlConfs.size(); j++) {
             const MediaCtlConf* mc = &mStaticCfg->mCameras[i].mMediaCtlConfs[j];
             for (unsigned k = 0; k < mc->links.size(); k++) {
                 const McLink* link = &mc->links[k];
-                LOGXML("       link src %s [%d:%d] ==> %s [%d:%d] enable %d", link->srcEntityName.c_str(), link->srcEntity, link->srcPad, link->sinkEntityName.c_str(), link->sinkEntity, link->sinkPad, link->enable);
+                LOG3("        link src %s [%d:%d] ==> %s [%d:%d] enable %d",
+                     link->srcEntityName.c_str(), link->srcEntity, link->srcPad,
+                     link->sinkEntityName.c_str(), link->sinkEntity, link->sinkPad, link->enable);
             }
             for (unsigned k = 0; k < mc->ctls.size(); k++) {
                 const McCtl* ctl = &mc->ctls[k];
-                LOGXML("       Ctl %s [%d] cmd %s [0x%08x] value %d", ctl->entityName.c_str(), ctl->entity, ctl->ctlName.c_str(), ctl->ctlCmd, ctl->ctlValue);
+                LOG3("        Ctl %s [%d] cmd %s [0x%08x] value %d", ctl->entityName.c_str(),
+                     ctl->entity, ctl->ctlName.c_str(), ctl->ctlCmd, ctl->ctlValue);
             }
             for (unsigned k = 0; k < mc->formats.size(); k++) {
                 const McFormat* format = &mc->formats[k];
                 if (format->formatType == FC_FORMAT)
-                    LOGXML("       format %s [%d:%d] [%dx%d] %s", format->entityName.c_str(), format->entity, format->pad, format->width, format->height, CameraUtils::pixelCode2String(format->pixelCode));
+                    LOG3("        format %s [%d:%d] [%dx%d] %s", format->entityName.c_str(),
+                         format->entity, format->pad, format->width, format->height,
+                         CameraUtils::pixelCode2String(format->pixelCode));
                 else if (format->formatType == FC_SELECTION)
-                    LOGXML("       select %s [%d:%d] selCmd: %d [%d, %d] [%dx%d]", format->entityName.c_str(), format->entity, format->pad, format->selCmd, format->top, format->left, format->width, format->height);
+                    LOG3("        select %s [%d:%d] selCmd: %d [%d, %d] [%dx%d]",
+                         format->entityName.c_str(), format->entity, format->pad, format->selCmd,
+                         format->top, format->left, format->width, format->height);
             }
         }
-        LOGXML("============End of Format Configuration===========");
     }
 
-    LOGXML("@%s, line%d, for common settings==================", __func__, __LINE__);
+    LOG3("@%s, done ==================", __func__);
 }
 
 } //namespace icamera

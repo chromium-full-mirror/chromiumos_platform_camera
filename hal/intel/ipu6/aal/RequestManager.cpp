@@ -146,7 +146,7 @@ void RequestManager::callbackNotify(const icamera::camera_callback_ops* cb,
 }
 
 void RequestManager::handleCallbackEvent(const icamera::camera_msg_data_t& data) {
-    LOG2("@%s, cameraId: %d", __func__, mCameraId);
+    LOG2("<id%d>@%s", mCameraId, __func__);
 
     if (!icamera::PlatformData::swProcessingAlignWithIsp(mCameraId)) return;
 
@@ -481,8 +481,8 @@ int RequestManager::constructDefaultRequestSettings(int type, const camera_metad
 
 int RequestManager::processCaptureRequest(camera3_capture_request_t* request) {
     CheckAndLogError(!request, icamera::UNKNOWN_ERROR, "@%s, request is nullptr", __func__);
-    LOG1("@%s, frame_number:%d, input_buffer:%d, num_output_buffers:%d", __func__,
-         request->frame_number, request->input_buffer ? 1 : 0, request->num_output_buffers);
+    LOG2("<req%u>@%s, input_buffer:%d, num_output_buffers:%d", request->frame_number, __func__,
+         request->input_buffer ? 1 : 0, request->num_output_buffers);
 
     TRACE_LOG_POINT("RequestManager", __func__, MAKE_COLOR(request->frame_number),
                     request->frame_number);
@@ -502,7 +502,8 @@ int RequestManager::processCaptureRequest(camera3_capture_request_t* request) {
             break;
         }
     }
-    CheckAndLogError(index < 0, icamera::UNKNOWN_ERROR, "no empty CameraBufferInfo!");
+    CheckAndLogError(index < 0, icamera::UNKNOWN_ERROR, "<req%u>no empty CameraBufferInfo!",
+                     request->frame_number);
     CLEAR(mCameraBufferInfo[index]);
 
     if (request->settings) {
@@ -668,7 +669,7 @@ void RequestManager::deleteStreams(bool inactiveOnly) {
 }
 
 int RequestManager::waitProcessRequest() {
-    LOG1("@%s", __func__);
+    LOG2("@%s", __func__);
     std::unique_lock<std::mutex> lock(mRequestLock);
     // check if it is ready to process next request
     while (mRequestInProgress >= mHALStream[0].max_buffers) {
@@ -690,7 +691,7 @@ void RequestManager::increaseRequestCount() {
 }
 
 void RequestManager::returnRequestDone(uint32_t frameNumber) {
-    LOG1("@%s  frame %d", __func__, frameNumber);
+    LOG2("<req%u>@%s", frameNumber, __func__);
 
     std::lock_guard<std::mutex> l(mRequestLock);
 
@@ -859,12 +860,12 @@ int RequestManager::chooseHALStreams(const uint32_t requestStreamNum, int* halSt
         videoHALStreamOrder.erase(videoHALStreamOrder.begin());
     }
 
-    LOG2("%s, videoHALStreamOrder size: %zu, stillHALStreamOrder: %zu", __func__,
+    LOG1("%s, videoHALStreamOrder size: %zu, stillHALStreamOrder: %zu", __func__,
          videoHALStreamOrder.size(), stillHALStreamOrder.size());
 
     // 2: set the flags to itself
     for (auto it = videoHALStreamOrder.begin(); it != videoHALStreamOrder.end(); ++it) {
-        LOG2("%s, bind itself for video stream index: %d", __func__, it->second);
+        LOG1("%s, bind itself for video stream index: %d", __func__, it->second);
         halStreamFlag[it->second] = it->second;
         activeHALNum++;
     }
@@ -884,7 +885,7 @@ int RequestManager::chooseHALStreams(const uint32_t requestStreamNum, int* halSt
         for (auto& vs : videoHALStreamOrder) {
             float streamRatio = static_cast<float>(vs.first->width) / vs.first->height;
             if (streamRatio != baseRatio) {
-                LOG2("%s, baseRatio: %f, streamRatio: %f, there is FOV lose", __func__,
+                LOG1("%s, baseRatio: %f, streamRatio: %f, there is FOV lose", __func__,
                      baseRatio, streamRatio);
             }
         }
@@ -897,7 +898,7 @@ int RequestManager::chooseHALStreams(const uint32_t requestStreamNum, int* halSt
             // has only 1 Still HAL stream, other still stream should be listeners
             if (halStreamList[i].usage == icamera::CAMERA_STREAM_STILL_CAPTURE) {
                 halStreamFlag[i] = stillHALStreamOrder.back().second;
-                LOG2("%s, bind still stream %d, to index: %d", __func__, i,
+                LOG1("%s, bind still stream %d, to index: %d", __func__, i,
                      stillHALStreamOrder.back().second);
             }
         }

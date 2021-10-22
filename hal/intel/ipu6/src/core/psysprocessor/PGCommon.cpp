@@ -104,6 +104,8 @@ int PGCommon::init()
     mPGParamAdapt = std::unique_ptr<IntelPGParam>(new IntelPGParam(mPGId));
 
     mCtx = new CIPR::Context();
+    CheckAndLogError(!(mCtx->isInitialized()), UNKNOWN_ERROR, "Failed to initialize Context");
+
     int ret = getCapability();
     if (ret != OK) return ret;
 
@@ -371,15 +373,18 @@ int PGCommon::createCommands()
     int ret = createCommand(mPGBuffer, &mCmd, &mCmdExtBuffer, bufCount);
     CheckAndLogError(ret, NO_MEMORY, "create cmd fail!");
     if (mPPG) {
-        ret = createCommand(mPPGBuffer, &mPPGCmd[PPG_CMD_TYPE_START], &mPPGCmdExtBuffer[PPG_CMD_TYPE_START], bufCount);
+        ret = createCommand(mPPGBuffer, &mPPGCmd[PPG_CMD_TYPE_START],
+                            &mPPGCmdExtBuffer[PPG_CMD_TYPE_START], bufCount);
         CheckAndLogError(ret, NO_MEMORY, "create ppg start buffer fail");
-        ret = createCommand(mPPGBuffer, &mPPGCmd[PPG_CMD_TYPE_STOP], &mPPGCmdExtBuffer[PPG_CMD_TYPE_STOP], 0);
+        ret = createCommand(mPPGBuffer, &mPPGCmd[PPG_CMD_TYPE_STOP],
+                            &mPPGCmdExtBuffer[PPG_CMD_TYPE_STOP], 0);
         CheckAndLogError(ret, NO_MEMORY, "create ppg stop fail");
     }
 
     CIPR::PSysEventConfig eventCfg = {};
     eventCfg.timeout = kEventTimeout * SLOWLY_MULTIPLIER;
     mEvent = new CIPR::Event(eventCfg);
+    CheckAndLogError(!(mEvent->isInitialized()), UNKNOWN_ERROR, "Failed to initialize Event");
 
     return OK;
 }
@@ -395,6 +400,8 @@ int PGCommon::createCommand(CIPR::Buffer* pg, CIPR::Command** cmd, CIPR::Buffer*
     std::fill(cmdCfg.buffers.begin(), cmdCfg.buffers.end(), nullptr);
 
     *cmd = new CIPR::Command(cmdCfg);
+    CheckAndLogError(!(*cmd)->isInitialized(), UNKNOWN_ERROR, "Failed to initialize Command");
+
     ret = (*cmd)->getConfig(&cmdCfg);
     CheckAndLogError(ret != CIPR::Result::OK, UNKNOWN_ERROR, "%s, call get_command_config fail", __func__);
 
@@ -417,8 +424,8 @@ int PGCommon::createCommand(CIPR::Buffer* pg, CIPR::Command** cmd, CIPR::Buffer*
     pgCommand->header.offset = sizeof(pgCommand->header);
     pgCommand->header.version = psys_command_ext_ppg_1; // for ipu6
     if (pgCommand->header.version == psys_command_ext_ppg_1) {
-        CIPR::memoryCopy(pgCommand->dynamicKernelBitmap, sizeof(ia_css_kernel_bitmap_t),
-                        &mKernelBitmap, sizeof(ia_css_kernel_bitmap_t));
+        MEMCPY_S(pgCommand->dynamicKernelBitmap, sizeof(ia_css_kernel_bitmap_t),
+                 &mKernelBitmap, sizeof(ia_css_kernel_bitmap_t));
     }
 
     // Update setting and set back to command
@@ -877,6 +884,7 @@ int PGCommon::configureFrameDesc() {
 int PGCommon::iterate(CameraBufferMap &inBufs, CameraBufferMap &outBufs,
                       ia_binary_data *statistics, const ia_binary_data *ipuParameters)
 {
+    PERF_CAMERA_ATRACE();
     LOG2("%s:%s ++", getName(), __func__);
 
     long sequence = 0;
@@ -1157,6 +1165,7 @@ void PGCommon::postTerminalBuffersDone(long sequence) {
 
 int PGCommon::executePG()
 {
+    PERF_CAMERA_ATRACE();
     TRACE_LOG_PROCESS(mName.c_str(), __func__);
     CheckAndLogError((!mCmd), INVALID_OPERATION, "%s, Command is invalid.", __func__);
     CheckAndLogError((!mProcessGroup), INVALID_OPERATION, "%s, process group is invalid.", __func__);

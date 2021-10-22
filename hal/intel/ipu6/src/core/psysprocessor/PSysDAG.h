@@ -82,7 +82,6 @@ public:
     int registerUserOutputBufs(Port port, const std::shared_ptr<CameraBuffer> &camBuffer);
 
     void addTask(PSysTaskData taskParam);
-    int getParameters(Parameters& param);
 
     void registerListener(EventType eventType, EventListener* eventListener);
     void removeListener(EventType eventType, EventListener* eventListener);

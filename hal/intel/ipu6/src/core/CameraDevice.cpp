@@ -267,8 +267,6 @@ void CameraDevice::unbindListeners()
 
 int CameraDevice::configureInput(const stream_t *inputConfig)
 {
-    PERF_CAMERA_ATRACE();
-
     AutoMutex lock(mDeviceLock);
     mInputConfig = *inputConfig;
 
@@ -719,6 +717,7 @@ int CameraDevice::stop()
 //No Lock for this fuction as it doesn't update any class member
 int CameraDevice::allocateMemory(camera_buffer_t *ubuffer)
 {
+    PERF_CAMERA_ATRACE();
     LOG1("@%s, mCameraId:%d", __func__, mCameraId);
     CheckAndLogError(mState < DEVICE_CONFIGURE, BAD_VALUE, "@%s: Wrong state id %d", __func__,
                      mState);
@@ -738,7 +737,7 @@ int CameraDevice::dqbuf(int streamId, camera_buffer_t **ubuffer, Parameters* set
 {
     CheckAndLogError(streamId < 0 || streamId > mStreamNum, BAD_VALUE,
                      "@%s: the given stream(%d) is invalid.", __func__, streamId);
-
+    PERF_CAMERA_ATRACE();
     LOG2("@%s, camera id:%d, stream id:%d", __func__, mCameraId, streamId);
 
     int ret = mRequestThread->waitFrame(streamId, ubuffer);
@@ -833,6 +832,7 @@ int CameraDevice::registerBuffer(camera_buffer_t **ubuffer, int bufferNum)
 int CameraDevice::qbuf(camera_buffer_t **ubuffer,
                        int bufferNum, const Parameters *settings)
 {
+    PERF_CAMERA_ATRACE();
     LOG2("@%s, mCameraId:%d", __func__, mCameraId);
 
     {
@@ -1166,7 +1166,6 @@ void CameraDevice::handleEvent(EventData eventData)
 
 int CameraDevice::initDefaultParameters()
 {
-    PERF_CAMERA_ATRACE();
     LOG1("@%s mCameraId:%d", __func__, mCameraId);
 
     camera_info_t info;

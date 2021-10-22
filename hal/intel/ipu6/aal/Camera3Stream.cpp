@@ -107,7 +107,6 @@ void Camera3Stream::handleSofAlignment() {
 }
 
 void Camera3Stream::drainAllPendingRequests() {
-    LOG1("[%p] %s", this, __func__);
     std::lock_guard<std::mutex> l(mLock);
 
     mStreamStatus = DRAIN_REQUESTS;
@@ -130,14 +129,16 @@ void Camera3Stream::drainRequest() {
     std::shared_ptr<CaptureResult> result = captureResult->second;
     uint32_t frameNumber = captureResult->first;
 
-    CheckAndLogError(result == nullptr, VOID_VALUE, "%s, capture result is nullptr", __func__);
+    CheckAndLogError(result == nullptr, VOID_VALUE, "<req%u>%s, capture result is nullptr",
+                     frameNumber, __func__);
     buffer_handle_t handle = result->handle;
     if (mBuffers.find(handle) != mBuffers.end() && mBuffers[handle] != nullptr) {
         std::shared_ptr<Camera3Buffer> ccBuf = mBuffers[handle];
         mBuffers.erase(handle);
         camera3_stream_buffer* buf = &result->outputBuffer;
 
-        CheckAndLogError(ccBuf == nullptr, VOID_VALUE, "%s, ccBuf is nullptr", __func__);
+        CheckAndLogError(ccBuf == nullptr, VOID_VALUE, "<req%u>%s, ccBuf is nullptr", frameNumber,
+                         __func__);
         if (ccBuf->isLocked()) {
             ccBuf->unlock();
         }
@@ -176,16 +177,17 @@ bool Camera3Stream::threadLoop() {
     long sequence = -1;
 
     if (!inputCam3Buf && mIsHALStream) {
-        LOG1("[%p]@ dqbuf for frameNumber %d", this, frameNumber);
+        LOG2("[%p]dqbuf for frameNumber %u", this, frameNumber);
         int ret = icamera::camera_stream_dqbuf(mCameraId, mHALStream.id, &buffer, nullptr);
         if (ret == icamera::NO_INIT) {
-            LOG1("[%p] stream exiting", this);
+            LOG2("[%p] stream exiting for frameNumber %u", this, frameNumber);
             mStreamStatus = PEND_PROCESS;
             return true;
         }
         CheckAndLogError(ret != icamera::OK || !buffer, true,
-                         "[%p]failed to dequeue buffer, ret %d", this, ret);
-        LOG2("[%p]@ %s, buffer->timestamp:%lu addr %p", this, __func__, buffer->timestamp,
+                         "[%p]failed to dequeue buffer for frameNumber %u, ret %d", this,
+                         frameNumber, ret);
+        LOG2("[%p]@%s, buffer->timestamp:%lu addr %p", this, __func__, buffer->timestamp,
              buffer->addr);
 
         sequence = buffer->sequence;
@@ -262,10 +264,9 @@ bool Camera3Stream::threadLoop() {
     } else if (!inputCam3Buf) {
         // listener stream get the buffer from HAL stream
         std::unique_lock<std::mutex> lock(mLock);
-        if (mHALStreamOutput.find(frameNumber) == mHALStreamOutput.end()) {
-            LOGE("[%p] can't find HAL stream output", this);
-            return true;
-        }
+        CheckAndLogError(mHALStreamOutput.find(frameNumber) == mHALStreamOutput.end(), true,
+                         "<req%u>[%p] can't find HAL stream output", frameNumber, this);
+
         halOutput = mHALStreamOutput[frameNumber];
         mHALStreamOutput.erase(frameNumber);
     }
@@ -294,11 +295,11 @@ bool Camera3Stream::threadLoop() {
     {
         std::unique_lock<std::mutex> lock(mLock);
         CheckAndLogError(mBuffers.find(handle) == mBuffers.end(), false,
-                         "can't find handle %p", handle);
+                         "<req%u>can't find handle %p", frameNumber, handle);
 
         ccBuf = mBuffers[handle];
         mBuffers.erase(handle);
-        CheckAndLogError(ccBuf == nullptr, false, "ccBuf is nullptr");
+        CheckAndLogError(ccBuf == nullptr, false, "<req%u>ccBuf is nullptr", frameNumber);
     }
 
     if (inputCam3Buf) {
@@ -316,25 +317,27 @@ bool Camera3Stream::threadLoop() {
 
     int dumpOutputFmt = V4L2_PIX_FMT_NV12;
     if (!inputCam3Buf && mHALStream.usage != icamera::CAMERA_STREAM_OPAQUE_RAW) {
-        LOG2("%s, hal buffer: %p, ccBuf address: %p", __func__, outCamBuf.addr, ccBuf->data());
+        LOG2("<req%u>%s, hal buffer: %p, ccBuf address: %p", frameNumber, __func__, outCamBuf.addr,
+             ccBuf->data());
         if (mPostProcessType & icamera::POST_PROCESS_JPEG_ENCODING) {
             dumpOutputFmt = V4L2_PIX_FMT_JPEG;
             icamera::PlatformData::acquireMakernoteData(mCameraId, outCamBuf.timestamp, parameter);
         }
         // handle normal postprocess
         if (mPostProcessType != icamera::POST_PROCESS_NONE) {
-            LOG2("%s, do software postProcessing for sequence: %ld", __func__, outCamBuf.sequence);
+            LOG2("<req%u:seq%ld>%s, do software postProcessing", frameNumber, outCamBuf.sequence,
+                 __func__);
             icamera::status_t status =
                 mPostProcessor->doPostProcessing(outCam3Buf, *parameter, ccBuf);
             CheckAndLogError(status != icamera::OK, true,
-                             "@%s, doPostProcessing fails, mPostProcessType:%d", __func__,
-                             mPostProcessType);
+                             "<req%u:seq%ld>@%s, doPostProcessing fails, mPostProcessType:%d",
+                             frameNumber, outCamBuf.sequence, __func__, mPostProcessType);
         } else if (outCam3Buf && outCam3Buf->data() != ccBuf->data()) {
             MEMCPY_S(ccBuf->data(), ccBuf->size(), outCam3Buf->data(), outCam3Buf->size());
         }
     } else if (inputCam3Buf) {
         icamera::Parameters param = result->param;
-        LOG1("[%p] @%s process input frameNumber: %d", this, __func__, frameNumber);
+        LOG2("<req%u>[%p]@%s process input", frameNumber, this, __func__);
         if (mInputPostProcessType & icamera::POST_PROCESS_JPEG_ENCODING) {
             dumpOutputFmt = V4L2_PIX_FMT_JPEG;
             icamera::PlatformData::acquireMakernoteData(mCameraId, inputCam3Buf->getTimeStamp(),
@@ -402,8 +405,6 @@ void Camera3Stream::requestExit() {
 }
 
 bool Camera3Stream::isLockUserBufferNeeded(const std::shared_ptr<Camera3Buffer>& inputCam3Buf) {
-    LOG2("[%p]@%s", this, __func__);
-
     return (mHALStream.usage == icamera::CAMERA_STREAM_OPAQUE_RAW ||
             mPostProcessType != icamera::POST_PROCESS_NONE ||
             mFaceDetection != nullptr ||
@@ -416,7 +417,7 @@ bool Camera3Stream::isLockUserBufferNeeded(const std::shared_ptr<Camera3Buffer>&
 int Camera3Stream::processRequest(const std::shared_ptr<Camera3Buffer>& inputCam3Buf,
                                   const camera3_stream_buffer_t& outputBuffer,
                                   uint32_t frame_number) {
-    LOG1("[%p] isHALStream: %d @%s", this, mIsHALStream, __func__);
+    LOG2("<req%u>[%p] isHALStream: %d @%s", frame_number, this, mIsHALStream, __func__);
 
     std::shared_ptr<Camera3Buffer> ccBuf = std::make_shared<Camera3Buffer>();
     buffer_handle_t handle = *outputBuffer.buffer;
@@ -444,7 +445,7 @@ int Camera3Stream::processRequest(const std::shared_ptr<Camera3Buffer>& inputCam
         std::lock_guard<std::mutex> l(mLock);
 
         if (inputCam3Buf) {
-            LOG1("[%p] frameNumber %d input buffer requested ", this, frame_number);
+            LOG1("<req%u>[%p] request input buffer", frame_number, this);
             return icamera::OK;
         }
 
@@ -461,7 +462,7 @@ void Camera3Stream::queueBufferDone(uint32_t frameNumber,
                                     const std::shared_ptr<Camera3Buffer>& inputCam3Buf,
                                     const camera3_stream_buffer_t& outputBuffer,
                                     const icamera::Parameters& param) {
-    LOG1("[%p]@%s, frameNumber:%d", this, __func__, frameNumber);
+    LOG2("<req%u>[%p]@%s", frameNumber, this, __func__);
     std::lock_guard<std::mutex> l(mLock);
 
     std::shared_ptr<CaptureResult> result = std::make_shared<CaptureResult>();
@@ -526,7 +527,7 @@ int Camera3Stream::setActive(bool state) {
 }
 
 void Camera3Stream::activateFaceDetection(unsigned int maxFaceNum) {
-    LOG1("[%p]@%s maxFaceNum %d, mCameraId %d", this, __func__, maxFaceNum, mCameraId);
+    LOG1("<id%d>[%p]@%s maxFaceNum %d", mCameraId, this, __func__, maxFaceNum);
 
     mFaceDetection = icamera::FaceDetection::createInstance(mCameraId, maxFaceNum, mHALStream.id,
                                                             mHALStream.width, mHALStream.height);
@@ -544,7 +545,7 @@ void Camera3Stream::addListener(Camera3Stream* listener) {
  */
 bool Camera3Stream::fetchRequestBuffers(icamera::camera_buffer_t* buffer, uint32_t frameNumber) {
     if (!mIsHALStream) return false;
-    LOG1("[%p]@%s isHALStream: %d frameNumber %d", this, __func__, mIsHALStream, frameNumber);
+    LOG2("<req%u>[%p]@%s isHALStream: %d", frameNumber, this, __func__, mIsHALStream);
 
     int requestStreamCount = 0;
     std::shared_ptr<StreamComInfo> request = nullptr;
@@ -576,10 +577,11 @@ bool Camera3Stream::fetchRequestBuffers(icamera::camera_buffer_t* buffer, uint32
      ** to do: prefer to use user buffer to avoid memcpy
      */
     if (!buf || requestStreamCount >= 2) {
-        LOG1("[%p]@%s get buffer from pool", this, __func__);
+        LOG2("[%p]@%s get buffer from pool", this, __func__);
         if (mBufferPool) {
             buf = mBufferPool->acquireBuffer();
-            CheckAndLogError(buf == nullptr, false, "no available internal buffer");
+            CheckAndLogError(buf == nullptr, false, "<req%u>no available internal buffer",
+                             frameNumber);
             // using buffer pool, store the buffer, then can return it when frame done
             mQueuedBuffer[frameNumber] = buf;
         } else {
@@ -600,7 +602,7 @@ bool Camera3Stream::fetchRequestBuffers(icamera::camera_buffer_t* buffer, uint32
 void Camera3Stream::checkListenerRequest(uint32_t frameNumber) {
     if (!mIsHALStream) return;
 
-    LOG1("[%p]@%s, frameNumber:%d", this, __func__, frameNumber);
+    LOG2("<req%u>[%p]@%s", frameNumber, this, __func__);
 
     bool listenerRequested = false;
     for (auto& iter : mListeners) {
@@ -610,8 +612,7 @@ void Camera3Stream::checkListenerRequest(uint32_t frameNumber) {
     if (!getCaptureRequest(frameNumber) && listenerRequested) {
         // HW stream is enabled by listener's request
         std::shared_ptr<CaptureResult> result = std::make_shared<CaptureResult>();
-        LOG1("[%p]@%s, frameNumber:%d, only listener requested", this, __func__,
-             frameNumber);
+        LOG2("<req%u>[%p]@%s, only listener requested", frameNumber, this, __func__);
         if (result) {
             std::lock_guard<std::mutex> l(mLock);
             result->frameNumber = frameNumber;
@@ -624,7 +625,7 @@ void Camera3Stream::checkListenerRequest(uint32_t frameNumber) {
 
 void Camera3Stream::notifyListenerBufferReady(uint32_t frameNumber,
                                               const std::shared_ptr<StreamComInfo>& halOutput) {
-    LOG1("[%p] @%s", this, __func__);
+    LOG2("[%p] @%s", this, __func__);
     std::lock_guard<std::mutex> l(mLock);
     if (mCaptureRequest.find(frameNumber) != mCaptureRequest.end()) {
         mHALStreamOutput[frameNumber] = halOutput;
@@ -679,7 +680,7 @@ bool Camera3Stream::waitCaptureResultReady() {
 void Camera3Stream::requestStreamDone(uint32_t frameNumber) {
     if (!mIsHALStream) return;
 
-    LOG1("[%p] @%s frameNumber: %d", this, __func__, frameNumber);
+    LOG2("<req%u>[%p] @%s", frameNumber, this, __func__);
 
     /* release buffers. if the buffer used to qbuf/dqbuf is from listener or HAL
      * stream, it will be released in its stream, because now we use buffer pool

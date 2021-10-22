@@ -25,12 +25,9 @@ namespace camera3 {
 
 ParameterResult::ParameterResult(int cameraId) :
     mCameraId(cameraId) {
-    LOG1("@%s", __func__);
 }
 
 ParameterResult::~ParameterResult() {
-    LOG1("@%s", __func__);
-
     std::lock_guard<std::mutex> l(mLock);
     for (auto it : mParameterResultMap) {
         if (it.second != nullptr) delete(it.second);
@@ -39,7 +36,7 @@ ParameterResult::~ParameterResult() {
 }
 
 icamera::Parameters* ParameterResult::getParameter(uint32_t frameNumber, int64_t sequence) {
-    LOG2("get parameter frame number %u, sequence %ld", frameNumber, sequence);
+    LOG2("<req%u:seq%ld>@%s", frameNumber, sequence, __func__);
     {
         std::lock_guard<std::mutex> l(mLock);
         if (mParameterResultMap.find(frameNumber) != mParameterResultMap.end()) {
@@ -57,7 +54,7 @@ icamera::Parameters* ParameterResult::getParameter(uint32_t frameNumber, int64_t
 }
 
 void ParameterResult::releaseParameter(uint32_t frameNumber) {
-    LOG2("release parameter frame number %u", frameNumber);
+    LOG2("<req%u>@%s", frameNumber, __func__);
     std::lock_guard<std::mutex> l(mLock);
     if (mParameterResultMap.find(frameNumber) != mParameterResultMap.end()) {
         delete mParameterResultMap[frameNumber];

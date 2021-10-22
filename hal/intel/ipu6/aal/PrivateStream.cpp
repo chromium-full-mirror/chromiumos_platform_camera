@@ -71,7 +71,7 @@ PrivateStream::~PrivateStream() {
 icamera::camera_buffer_t* PrivateStream::fetchRequestBuffers(uint32_t frameNumber) {
     CheckAndLogError(mInitialized == false, nullptr, "mInitialized is false");
 
-    LOG2("[%p]@%s frameNumber %d", this, __func__, frameNumber);
+    LOG2("<req%u>[%p]@%s", frameNumber, this, __func__);
 
     std::shared_ptr<Camera3Buffer> buf = mBufferPool->acquireBuffer();
     CheckAndLogError(buf == nullptr, nullptr, "@%s no available internal buffer", __func__);
@@ -84,20 +84,20 @@ icamera::camera_buffer_t* PrivateStream::fetchRequestBuffers(uint32_t frameNumbe
     buffer.s.id = mHALStream.id;
     mBuffers[frameNumber] = buffer;
 
-    LOG2("@%s camera:%d, mHALStream.id:%d, fetch buf addr:%p, frameNumber:%u ,will run fd",
-         __func__, mCameraId, mHALStream.id, buf->data(), frameNumber);
+    LOG2("<id%d:req%u>@%s, mHALStream.id:%d, fetch buf addr:%p will run fd",
+         mCameraId, frameNumber, __func__, mHALStream.id, buf->data());
 
     return &mBuffers[frameNumber];
 }
 
 void PrivateStream::returnBuffer(uint32_t frameNumber) {
     CheckAndLogError(mInitialized == false, VOID_VALUE, "mInitialized is false");
-    LOG2("[%p]@%s frameNumber: %u", this, __func__, frameNumber);
+    LOG2("<req%u>[%p]@%s", frameNumber, this, __func__);
 
     // release buffer
     if (mQueuedBuffer.find(frameNumber) != mQueuedBuffer.end()) {
-        LOG2("@%s camera:%d, mHALStream.id:%d, return buf addr:%p, frameNumber:%u", __func__,
-             mCameraId, mHALStream.id, mQueuedBuffer[frameNumber]->data(), frameNumber);
+        LOG2("<id%d:req%u>@%s mHALStream.id:%d, return buf addr:%p", mCameraId, frameNumber,
+             __func__, mHALStream.id, mQueuedBuffer[frameNumber]->data());
         // if HAL stream using buffer from pool to qbuf/dqbuf, return it
         mBufferPool->returnBuffer(mQueuedBuffer[frameNumber]);
         mQueuedBuffer.erase(frameNumber);
@@ -110,7 +110,7 @@ void PrivateStream::returnBuffer(uint32_t frameNumber) {
 
 void PrivateStream::queueBufferDone(uint32_t frameNumber) {
     CheckAndLogError(mInitialized == false, VOID_VALUE, "mInitialized is false");
-    LOG2("[%p]@%s, frameNumber:%u", this, __func__, frameNumber);
+    LOG2("<req%u>[%p]@%s", frameNumber, this, __func__);
     std::lock_guard<std::mutex> l(mLock);
     mPrivateResult.push(frameNumber);
     mBufferDoneCondition.notify_one();
@@ -154,13 +154,13 @@ bool PrivateStream::threadLoop() {
         if (mQueuedBuffer.find(frameNumber) != mQueuedBuffer.end()) {
             returnBuffer(frameNumber);
         }
-        LOG2("[%p] stream exiting, frameNumber %u", this, frameNumber);
+        LOG2("<req%u>[%p] stream exiting", frameNumber, this);
         return true;
     }
     CheckAndLogError(ret != icamera::OK || !buffer, true, "[%p]failed to dequeue buffer, ret %d",
                      this, ret);
-    LOG2("[%p]@%s, buffer->timestamp:%lu addr %p, frameNumber %u", this, __func__,
-         buffer->timestamp, buffer->addr, frameNumber);
+    LOG2("<req%u>[%p]@%s, buffer->timestamp:%lu addr %p", frameNumber, this, __func__,
+         buffer->timestamp, buffer->addr);
     std::shared_ptr<Camera3Buffer> outCam3Buf = nullptr;
     {
         std::unique_lock<std::mutex> lock(mLock);
@@ -171,8 +171,7 @@ bool PrivateStream::threadLoop() {
                 returnBuffer(frameNumber);
             }
         }
-        CheckAndLogError(!outCam3Buf, true, "can't identify the buffer source, frameNumber:%d",
-                         frameNumber);
+        CheckAndLogError(!outCam3Buf, true, "<req%u>can't identify the buffer source", frameNumber);
     }
 
     processFrame(frameNumber, buffer);
@@ -208,7 +207,7 @@ PrivateStreamFD::~PrivateStreamFD() {
 }
 
 void PrivateStreamFD::processFrame(uint32_t frameNumber, icamera::camera_buffer_t* buffer) {
-    LOG2("@%s, frameNumber:%u", __func__, frameNumber);
+    LOG2("<req%u>@%s", frameNumber, __func__);
 
     if (mFaceDetection) {
         mFaceDetection->runFaceDetectionBySync(*buffer);

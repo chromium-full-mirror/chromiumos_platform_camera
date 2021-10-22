@@ -320,10 +320,6 @@ int IspParamAdaptor::configure(const stream_t &stream, ConfigMode configMode,
     return postConfigure(stream.width, stream.height, &binaryData);
 }
 
-int IspParamAdaptor::getParameters(Parameters& param) {
-    return OK;
-}
-
 int IspParamAdaptor::decodeStatsData(TuningMode tuningMode,
                                      std::shared_ptr<CameraBuffer> statsBuffer,
                                      std::shared_ptr<IGraphConfig> graphConfig) {
@@ -709,7 +705,7 @@ void IspParamAdaptor::applyCscMatrix(ia_isp_bxt_csc* cscMatrix) {
 int IspParamAdaptor::runIspAdaptL(ia_isp_bxt_program_group *pgPtr, ia_isp_bxt_gdc_limits *mbrData,
                                   const IspSettings* ispSettings, long requestId, long settingSequence,
                                   ia_binary_data *binaryData, int streamId) {
-    PERF_CAMERA_ATRACE_IMAGING();
+    PERF_CAMERA_ATRACE();
     CheckAndLogError(!mIntelCca, UNKNOWN_ERROR, "%s, mIntelCca is nullptr", __func__);
     LOG2("%s: device type: %d, requestId:%ld", __func__, mPgParamType, requestId);
 
@@ -863,14 +859,14 @@ int IspParamAdaptor::runIspAdaptL(ia_isp_bxt_program_group *pgPtr, ia_isp_bxt_gd
                     aiqResults->mAeResults.exposures[0].exposure[0].digital_gain);
         }
 
-        LOG3A("%s: set digital gain for ULL pipe: %f", __func__, inputParams->manual_digital_gain);
+        LOG2("%s: set digital gain for ULL pipe: %f", __func__, inputParams->manual_digital_gain);
     } else if (CameraUtils::isMultiExposureCase(mCameraId, mTuningMode) &&
                PlatformData::getSensorGainType(mCameraId) == ISP_DG_AND_SENSOR_DIRECT_AG) {
         inputParams->manual_digital_gain =
             aiqResults->mAeResults.exposures[0].exposure[0].digital_gain;
 
-        LOG3A("%s: all digital gain is passed to ISP, DG(%ld): %f", __func__,
-              aiqResults->mSequence, aiqResults->mAeResults.exposures[0].exposure[0].digital_gain);
+        LOG2("%s: all digital gain is passed to ISP, DG(%ld): %f", __func__,
+             aiqResults->mSequence, aiqResults->mAeResults.exposures[0].exposure[0].digital_gain);
     }
 
     ia_err iaErr = ia_err_none;
@@ -952,13 +948,15 @@ void IspParamAdaptor::dumpIspParameter(int streamId, long sequence, ia_binary_da
 }
 
 void IspParamAdaptor::dumpProgramGroup(ia_isp_bxt_program_group *pgPtr) {
-    LOG2("the kernel count: %d, run_kernels: %p", pgPtr->kernel_count, pgPtr->run_kernels);
+    if (!Log::isDebugLevelEnable(CAMERA_DEBUG_LOG_LEVEL3)) return;
+
+    LOG3("the kernel count: %d, run_kernels: %p", pgPtr->kernel_count, pgPtr->run_kernels);
     for (unsigned int i = 0; i < pgPtr->kernel_count; i++) {
-        LOG2("kernel uuid: %d, stream_id: %d, enable: %d", pgPtr->run_kernels[i].kernel_uuid,
+        LOG3("kernel uuid: %d, stream_id: %d, enable: %d", pgPtr->run_kernels[i].kernel_uuid,
              pgPtr->run_kernels[i].stream_id, pgPtr->run_kernels[i].enable);
 
         if (pgPtr->run_kernels[i].resolution_info) {
-            LOG2("resolution info: input: %dx%d, output: %dx%d",
+            LOG3("resolution info: input: %dx%d, output: %dx%d",
                  (pgPtr->run_kernels[i].resolution_info)->input_width,
                  (pgPtr->run_kernels[i].resolution_info)->input_height,
                  (pgPtr->run_kernels[i].resolution_info)->output_width,
@@ -966,7 +964,7 @@ void IspParamAdaptor::dumpProgramGroup(ia_isp_bxt_program_group *pgPtr) {
         }
 
         if (pgPtr->run_kernels[i].resolution_history) {
-            LOG2("resolution history: input: %dx%d, output: %dx%d",
+            LOG3("resolution history: input: %dx%d, output: %dx%d",
                  (pgPtr->run_kernels[i].resolution_history)->input_width,
                  (pgPtr->run_kernels[i].resolution_history)->input_height,
                  (pgPtr->run_kernels[i].resolution_history)->output_width,
@@ -974,7 +972,7 @@ void IspParamAdaptor::dumpProgramGroup(ia_isp_bxt_program_group *pgPtr) {
         }
 
         if (pgPtr->pipe) {
-            LOG2("pipe info, uuid: %d, flags: %x", pgPtr->pipe[i].kernel_uuid,
+            LOG3("pipe info, uuid: %d, flags: %x", pgPtr->pipe[i].kernel_uuid,
                  pgPtr->pipe[i].flags);
         }
     }

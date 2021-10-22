@@ -61,13 +61,13 @@ static const long int MIN_AF_TIMEOUT = 2000000;  // 2 seconds
 static const int MAX_AF_FRAME_COUNT_TIMEOUT = 60;  // 2 seconds if 30fps
 
 IntelAFStateMachine::IntelAFStateMachine(int cameraId) : mCameraId(cameraId) {
-    LOG1("%s mCameraId %d", __func__, mCameraId);
+    LOG1("<id%d>%s", mCameraId, __func__);
     mCurrentAfMode = &mAutoMode;
     mLastAfControls = {ANDROID_CONTROL_AF_MODE_AUTO, ANDROID_CONTROL_AF_TRIGGER_IDLE};
 }
 
 IntelAFStateMachine::~IntelAFStateMachine() {
-    LOG1("%s mCameraId %d", __func__, mCameraId);
+    LOG1("<id%d>%s", mCameraId, __func__);
 }
 
 int IntelAFStateMachine::processTriggers(uint8_t afTrigger, uint8_t afMode) {
@@ -134,7 +134,6 @@ IntelAfModeBase::IntelAfModeBase()
           mLensState(ANDROID_LENS_STATE_STATIONARY),
           mLastActiveTriggerTime(0),
           mFramesSinceTrigger(0) {
-    LOG1("%s", __func__);
 }
 
 /**
@@ -163,7 +162,6 @@ int IntelAfModeBase::processTriggers(uint8_t afTrigger, uint8_t afMode) {
 
 void IntelAfModeBase::updateResult(android::CameraMetadata* results) {
     CheckAndLogError(!results, VOID_VALUE, "%s, result is nullptr", __func__);
-    LOG2("%s", __func__);
 
     LOG2("%s afMode = %d state = %d", __func__, mLastAfControls.afMode, mCurrentAfState);
 
@@ -216,7 +214,6 @@ void IntelAfModeBase::checkIfFocusTimeout() {
  ******************************************************************************/
 
 IntelAFModeOff::IntelAFModeOff() : IntelAfModeBase() {
-    LOG1("%s", __func__);
 }
 
 int IntelAFModeOff::processTriggers(uint8_t afTrigger, uint8_t afMode) {
@@ -246,7 +243,6 @@ int IntelAFModeOff::processResult(int afState, bool lensMoving, android::CameraM
  ******************************************************************************/
 
 IntelAFModeAuto::IntelAFModeAuto() : IntelAfModeBase() {
-    LOG1("%s", __func__);
 }
 
 int IntelAFModeAuto::processTriggers(uint8_t afTrigger, uint8_t afMode) {
@@ -258,10 +254,10 @@ int IntelAFModeAuto::processTriggers(uint8_t afTrigger, uint8_t afMode) {
     // This is only valid for the AUTO/MACRO state machine
     if (mLastAfControls.afTrigger == ANDROID_CONTROL_AF_TRIGGER_START) {
         mCurrentAfState = ANDROID_CONTROL_AF_STATE_ACTIVE_SCAN;
-        LOG2("@%s AF state ACTIVE_SCAN (trigger start)", __PRETTY_FUNCTION__);
+        LOG1("@%s AF state ACTIVE_SCAN (trigger start)", __PRETTY_FUNCTION__);
     } else if (mLastAfControls.afTrigger == ANDROID_CONTROL_AF_TRIGGER_CANCEL) {
         mCurrentAfState = ANDROID_CONTROL_AF_STATE_INACTIVE;
-        LOG2("@%s AF state INACTIVE (trigger cancel)", __PRETTY_FUNCTION__);
+        LOG1("@%s AF state INACTIVE (trigger cancel)", __PRETTY_FUNCTION__);
     }
 
     return icamera::OK;
@@ -307,7 +303,6 @@ int IntelAFModeAuto::processResult(int afState, bool lensMoving, android::Camera
  ******************************************************************************/
 
 IntelAFModeContinuousPicture::IntelAFModeContinuousPicture() : IntelAfModeBase() {
-    LOG1("%s", __func__);
 }
 
 int IntelAFModeContinuousPicture::processTriggers(uint8_t afTrigger, uint8_t afMode) {

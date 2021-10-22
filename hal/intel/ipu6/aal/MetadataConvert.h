@@ -35,8 +35,8 @@ namespace camera3 {
  */
 class MetadataConvert {
  public:
-    MetadataConvert(int cameraId);
-    virtual ~MetadataConvert();
+    MetadataConvert() {}
+    virtual ~MetadataConvert() {}
 
     static int constructDefaultMetadata(int cameraId, android::CameraMetadata* settings);
     static int updateDefaultRequestSettings(int cameraId, int type,
@@ -137,9 +137,6 @@ class MetadataConvert {
                                   icamera::camera_window_list_t* windows);
     static int convertToMetadataRegion(const icamera::camera_window_list_t& windows, int dataCount,
                                        int32_t* data);
-
- private:
-    int mCameraId;
 };
 
 class StaticCapability {

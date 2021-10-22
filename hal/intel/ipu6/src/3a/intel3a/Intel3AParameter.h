@@ -83,6 +83,8 @@ public:
     float mManualFocusDistance;
     camera_ae_mode_t mAeMode;
 private:
+    void dumpParameter();
+
     static const int MAX_FOCUS_DISTANCE = 5000; // unit is mm
 
     camera_af_mode_t mAfMode;

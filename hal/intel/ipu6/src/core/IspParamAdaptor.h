@@ -78,7 +78,6 @@ public:
     int configure(const stream_t &stream, ConfigMode configMode, TuningMode tuningMode,
                   int ipuOutputFormat = -1);
 
-    int getParameters(Parameters& param);
     int decodeStatsData(TuningMode tuningMode,
                         std::shared_ptr<CameraBuffer> statsBuffer,
                         std::shared_ptr<IGraphConfig> graphConfig = nullptr);

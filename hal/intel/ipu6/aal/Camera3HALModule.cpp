@@ -63,7 +63,7 @@ static int sCameraNumber = 0;
 static std::mutex sCameraHalMutex;
 
 int openCameraHardware(int id, const hw_module_t* module, hw_device_t** device) {
-    LOG1("@%s", __func__);
+    LOG1("@%s begin", __func__);
 
     if (sInstances[id]) return 0;
 
@@ -137,15 +137,8 @@ static int hal_dev_open(const hw_module_t* module, const char* name, hw_device_t
     icamera::Log::setDebugLevel();
     icamera::CameraDump::setDumpLevel();
 
-    LOG1("@%s", __func__);
-
-    int status = -EINVAL;
-
-    if (!name || !module || !device) {
-        LOGE("Camera name is nullptr");
-        return status;
-    }
-    LOG1("%s, camera id: %s", __func__, name);
+    CheckAndLogError(!name || !module || !device, -EINVAL, "Camera name is nullptr");
+    LOG1("<id%s>%s", name, __func__);
 
 #ifdef ENABLE_SANDBOXING
     if (!icamera::IntelAlgoClient::getInstance()->isIPCFine()) {
@@ -156,29 +149,21 @@ static int hal_dev_open(const hw_module_t* module, const char* name, hw_device_t
 #endif
 
     int camera_id = atoi(name);
-    if (camera_id < 0 || camera_id >= hal_get_number_of_cameras()) {
-        LOGE("%s: Camera id %d is out of bounds, num. of cameras (%d)", __func__, camera_id,
-             hal_get_number_of_cameras());
-        return -ENODEV;
-    }
+    CheckAndLogError(camera_id < 0 || camera_id >= hal_get_number_of_cameras(), -ENODEV,
+                     "<id%d>%s: Camera id is out of bounds, num. of cameras (%d)", camera_id,
+                     __func__, hal_get_number_of_cameras());
 
     std::lock_guard<std::mutex> l(sCameraHalMutex);
-
-    if (sInstanceCount > 0 && sInstances[camera_id]) {
-        LOGW("Camera already has been opened!");
-        return -EUSERS;
-    }
+    CheckAndLogError(sInstanceCount > 0 && sInstances[camera_id], -EUSERS,
+                     "Camera already has been opened!");
 
     return openCameraHardware(camera_id, module, device);
 }
 
 static int hal_dev_close(hw_device_t* device) {
     LOG1("@%s", __func__);
-
-    if (!device || sInstanceCount == 0) {
-        LOGW("hal close, instance count %d", sInstanceCount);
-        return -EINVAL;
-    }
+    CheckWarning(!device || sInstanceCount == 0, -EINVAL, "hal close, instance count %d",
+                 sInstanceCount);
 
     camera3_device_t* camera3_dev = (struct camera3_device*)device;
     Camera3HAL* camera_priv = static_cast<Camera3HAL*>(camera3_dev->priv);

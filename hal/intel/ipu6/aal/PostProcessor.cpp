@@ -27,11 +27,9 @@ PostProcessor::PostProcessor(int cameraId, const camera3_stream_t& stream)
           mPostProcessType(icamera::POST_PROCESS_NONE),
           mPostProcessorCore(std::unique_ptr<icamera::PostProcessorCore>(
               new icamera::PostProcessorCore(cameraId))) {
-    LOG1("@%s", __func__);
 }
 
 PostProcessor::~PostProcessor() {
-    LOG1("@%s", __func__);
 }
 
 icamera::status_t PostProcessor::configure(const camera3_stream_t& stream,
@@ -42,9 +40,9 @@ icamera::status_t PostProcessor::configure(const camera3_stream_t& stream,
 
     icamera::stream_t halStream;
     int ret = camera3::HalV3Utils::fillHALStreams(mCameraId, srcStream, &halStream);
-    LOG1("@%s, halStream: w:%d, h:%d, f:%d, size:%d, stride:%d, ret:%d", __func__, halStream.width,
-         halStream.height, halStream.format, halStream.size, halStream.stride, ret);
     CheckAndLogError(ret != icamera::OK, ret, "fillHALStreams fails, ret %d", ret);
+    LOG1("@%s, halStream: w:%d, h:%d, f:%d, size:%d, stride:%d", __func__, halStream.width,
+         halStream.height, halStream.format, halStream.size, halStream.stride);
 
     return configure(stream, halStream);
 }
@@ -81,7 +79,7 @@ icamera::status_t PostProcessor::configure(const camera3_stream_t& stream,
         info.outputInfo.format = inputStreamInfo.format;
         info.outputInfo.size = icamera::CameraUtils::getFrameSize(info.outputInfo.format,
             info.outputInfo.width, info.outputInfo.height, false, false, false);
-        LOG2("%s, Rotate: input %dx%d, output: %dx%d, angle: %d", __func__, inputStreamInfo.width,
+        LOG1("%s, Rotate: input %dx%d, output: %dx%d, angle: %d", __func__, inputStreamInfo.width,
              inputStreamInfo.height, info.outputInfo.width, info.outputInfo.height, angle);
 
         inputStreamInfo = info.outputInfo;
@@ -107,7 +105,7 @@ icamera::status_t PostProcessor::configure(const camera3_stream_t& stream,
         info.outputInfo.stride = info.outputInfo.width;
         info.outputInfo.size = icamera::CameraUtils::getFrameSize(info.outputInfo.format,
             info.outputInfo.width, info.outputInfo.height, false, false, false);
-        LOG2("%s, Crop: input %dx%d, output: %dx%d", __func__, inputStreamInfo.width,
+        LOG1("%s, Crop: input %dx%d, output: %dx%d", __func__, inputStreamInfo.width,
              inputStreamInfo.height, info.outputInfo.width, info.outputInfo.height);
 
         inputStreamInfo = info.outputInfo;
@@ -126,7 +124,7 @@ icamera::status_t PostProcessor::configure(const camera3_stream_t& stream,
         info.outputInfo.format = inputStreamInfo.format;
         info.outputInfo.size = icamera::CameraUtils::getFrameSize(info.outputInfo.format,
             info.outputInfo.width, info.outputInfo.height, false, false, false);
-        LOG2("%s, Scale: input %dx%d, output: %dx%d", __func__, inputStreamInfo.width,
+        LOG1("%s, Scale: input %dx%d, output: %dx%d", __func__, inputStreamInfo.width,
              inputStreamInfo.height, info.outputInfo.width, info.outputInfo.height);
 
         inputStreamInfo = info.outputInfo;
@@ -147,7 +145,7 @@ icamera::status_t PostProcessor::configure(const camera3_stream_t& stream,
             HalV3Utils::HALFormatToV4l2Format(mCameraId, stream.format, stream.usage);
         info.outputInfo.size = icamera::CameraUtils::getFrameSize(info.outputInfo.format,
             info.outputInfo.width, info.outputInfo.height, false, false, false);
-        LOG2("%s, Convert: input %dx%d, output: %dx%d", __func__, inputStreamInfo.width,
+        LOG1("%s, Convert: input %dx%d, output: %dx%d", __func__, inputStreamInfo.width,
              inputStreamInfo.height, info.outputInfo.width, info.outputInfo.height);
 
         inputStreamInfo = info.outputInfo;
@@ -178,7 +176,7 @@ icamera::status_t PostProcessor::configure(const camera3_stream_t& stream,
         LOGE("%s, stream info doesn't match between input and output stream.", __func__);
         return icamera::UNKNOWN_ERROR;
     }
-    LOG1("@%s, camera id %d, mPostProcessType %d, processing unit number: %zu", __func__, mCameraId,
+    LOG1("<id%d>@%s,mPostProcessType %d, processing unit number: %zu", mCameraId, __func__,
          mPostProcessType, processingOrder.size());
     mPostProcessorCore->configure(processingOrder);
 

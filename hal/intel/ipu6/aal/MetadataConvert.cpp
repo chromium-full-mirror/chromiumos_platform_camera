@@ -164,14 +164,6 @@ static bool isValueSupported(uint8_t mode, const icamera::CameraMetadata* caps, 
     return false;
 }
 
-MetadataConvert::MetadataConvert(int cameraId) : mCameraId(cameraId) {
-    LOG1("@%s, mCameraId %d", __func__, mCameraId);
-}
-
-MetadataConvert::~MetadataConvert() {
-    LOG1("@%s", __func__);
-}
-
 int MetadataConvert::constructDefaultMetadata(int cameraId, android::CameraMetadata* settings) {
     LOG1("@%s", __func__);
     const icamera::CameraMetadata* meta = StaticCapability::getInstance(cameraId)->getCapability();
@@ -471,7 +463,7 @@ int MetadataConvert::updateDefaultRequestSettings(int32_t cameraId, int type,
 int MetadataConvert::requestMetadataToHALMetadata(const android::CameraMetadata& settings,
                                                   icamera::Parameters* parameter,
                                                   bool forceConvert) {
-    LOG1("@%s: settings entry count %zu", __func__, settings.entryCount());
+    LOG2("@%s: settings entry count %zu", __func__, settings.entryCount());
     CheckAndLogError(parameter == nullptr, icamera::BAD_VALUE, "%s, parameter is nullptr",
                      __func__);
 
@@ -526,8 +518,6 @@ int MetadataConvert::requestMetadataToHALMetadata(const android::CameraMetadata&
 
 int MetadataConvert::HALMetadataToRequestMetadata(const icamera::Parameters& parameter,
                                                   android::CameraMetadata* settings, int cameraId) {
-    LOG1("@%s", __func__);
-
     CheckAndLogError(settings == nullptr, icamera::BAD_VALUE, "%s, settings is nullptr", __func__);
 
     // ANDROID_COLOR_CORRECTION
@@ -578,15 +568,13 @@ int MetadataConvert::HALMetadataToRequestMetadata(const icamera::Parameters& par
     // VENDOR_TAG
     convertVendorTagParameter(parameter, meta, settings);
 
-    LOG1("@%s: convert entry count %zu", __func__, settings->entryCount());
+    LOG2("@%s: convert entry count %zu", __func__, settings->entryCount());
     return icamera::OK;
 }
 
 int MetadataConvert::HALCapabilityToStaticMetadata(const icamera::Parameters& parameter,
                                                    android::CameraMetadata* settings,
                                                    int cameraId) {
-    LOG1("@%s", __func__);
-
     CheckAndLogError(settings == nullptr, icamera::BAD_VALUE, "%s, settings is nullptr", __func__);
 
     // ANDROID_COLOR_CORRECTION
@@ -2381,15 +2369,12 @@ void MetadataConvert::dumpMetadata(const camera_metadata_t* meta) {
 }
 
 StaticCapability::StaticCapability(int cameraId) : mCameraId(cameraId) {
-    LOG2("@%s, mCameraId %d", __func__, mCameraId);
-
     icamera::camera_info_t cameraInfo = {};
     icamera::get_camera_info(mCameraId, cameraInfo);
     icamera::ParameterHelper::copyMetadata(*cameraInfo.capability, &mMetadata);
 }
 
 StaticCapability::~StaticCapability() {
-    LOG2("@%s, mCameraId: %d", __func__, mCameraId);
 }
 
 std::mutex StaticCapability::sLock;

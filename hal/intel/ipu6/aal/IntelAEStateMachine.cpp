@@ -29,14 +29,14 @@ IntelAEStateMachine::IntelAEStateMachine(int cameraId)
           mLastControlMode(0),
           mLastSceneMode(0),
           mCurrentAeMode(NULL) {
-    LOG1("%s mCameraId %d", __func__, mCameraId);
+    LOG1("<id%d>%s", mCameraId, __func__);
     mCurrentAeMode = &mAutoMode;
     CLEAR(mLastAeControls);
     mLastAeControls.aeMode = ANDROID_CONTROL_AE_MODE_ON;
 }
 
 IntelAEStateMachine::~IntelAEStateMachine() {
-    LOG1("%s mCameraId %d", __func__, mCameraId);
+    LOG1("<id%d>%s", mCameraId, __func__);
 }
 
 /**
@@ -97,7 +97,6 @@ IntelAEModeBase::IntelAEModeBase()
           mAeRunCount(0),
           mAeConvergedCount(0),
           mCurrentAeState(ANDROID_CONTROL_AE_STATE_INACTIVE) {
-    LOG1("%s", __func__);
     CLEAR(mLastAeControls);
 }
 
@@ -129,7 +128,6 @@ void IntelAEModeBase::resetState() {
  ******************************************************************************/
 
 IntelAEModeOff::IntelAEModeOff() : IntelAEModeBase() {
-    LOG1("%s", __func__);
 }
 
 int IntelAEModeOff::processState(uint8_t controlMode, uint8_t sceneMode,
@@ -167,7 +165,6 @@ int IntelAEModeOff::processResult(bool aeConverged, android::CameraMetadata* res
  ******************************************************************************/
 
 IntelAEModeAuto::IntelAEModeAuto() : IntelAEModeBase() {
-    LOG1("%s", __func__);
 }
 
 int IntelAEModeAuto::processState(uint8_t controlMode, uint8_t sceneMode,
@@ -221,6 +218,7 @@ int IntelAEModeAuto::processState(uint8_t controlMode, uint8_t sceneMode,
 
 int IntelAEModeAuto::processResult(bool aeConverged, android::CameraMetadata* result) {
     CheckAndLogError(!result, icamera::UNKNOWN_ERROR, "%s, result is nullptr", __func__);
+    uint8_t aeState = mCurrentAeState;
     switch (mCurrentAeState) {
         case ANDROID_CONTROL_AE_STATE_LOCKED:
             // do nothing
@@ -262,12 +260,12 @@ int IntelAEModeAuto::processResult(bool aeConverged, android::CameraMetadata* re
             LOG2("%s: AE converged for %d frames", __func__, mAeConvergedCount);
         } else {
             mAeConvergedCount = 1;
-            LOG1("%s: AE converging -> converged, after running AE for %d times", __func__,
+            LOG2("%s: AE converging -> converged, after running AE for %d times", __func__,
                  mAeRunCount);
         }
     } else {
         if (mLastAeConvergedFlag == true) {
-            LOG1("%s: AE Converged -> converging", __func__);
+            LOG2("%s: AE Converged -> converging", __func__);
             mAeRunCount = 1;
             mAeConvergedCount = 0;
         } else {
@@ -279,6 +277,10 @@ int IntelAEModeAuto::processResult(bool aeConverged, android::CameraMetadata* re
 
     updateResult(result);
 
+    if (aeState != mCurrentAeState || aeConverged != mLastAeConvergedFlag) {
+        LOG1("%s: AE state has changed %u -> %u, and ae converged has changed %d -> %d", __func__,
+             aeState, mCurrentAeState, mLastAeConvergedFlag, aeConverged);
+    }
     return icamera::OK;
 }
 

@@ -158,10 +158,8 @@ int Camera3HAL::initialize(const camera3_callback_ops_t* callback_ops) {
     if (callback_ops == nullptr) return -ENODEV;
 
     status = mRequestManager->init(callback_ops);
-    if (status != icamera::OK) {
-        LOGE("Error register callback status = %d", status);
-        return -ENODEV;
-    }
+    CheckAndLogError(status != icamera::OK, -ENODEV, "Error register callback status = %d", status);
+
     return status;
 }
 
@@ -169,20 +167,16 @@ int Camera3HAL::configure_streams(camera3_stream_configuration_t* stream_list) {
     LOG1("@%s", __func__);
     CheckAndLogError(!mInitialized, -EINVAL, "@%s, mInitialized is false", __func__);
     CheckAndLogError(!stream_list, -EINVAL, "@%s, stream_list is nullptr", __func__);
+    CheckAndLogError(!stream_list->streams || !stream_list->num_streams, -EINVAL,
+                     "%s: Bad input! streams list ptr: %p, num %d", __func__, stream_list->streams,
+                     stream_list->num_streams);
 
-    if (!stream_list->streams || !stream_list->num_streams) {
-        LOGE("%s: Bad input! streams list ptr: %p, num %d", __func__, stream_list->streams,
-             stream_list->num_streams);
-        return -EINVAL;
-    }
     int num = stream_list->num_streams;
     LOG2("@%s, stream num:%d", __func__, num);
     while (num--) {
-        if (!stream_list->streams[num]) {
-            LOGE("%s: Bad input! streams (%d) 's ptr: %p", __func__, num,
-                 stream_list->streams[num]);
-            return -EINVAL;
-        }
+        CheckAndLogError(!stream_list->streams[num], -EINVAL,
+                         "%s: Bad input! streams (%d) 's ptr: %p", __func__, num,
+                         stream_list->streams[num]);
     }
 
     int status = mRequestManager->configureStreams(stream_list);

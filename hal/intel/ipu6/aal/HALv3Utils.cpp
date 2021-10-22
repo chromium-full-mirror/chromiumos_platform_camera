@@ -45,8 +45,6 @@ const char* getCamera3StreamType(int type) {
 }
 
 int HALFormatToV4l2Format(int cameraId, int halFormat, int usage) {
-    LOG1("@%s", __func__);
-
     int format = -1;
     switch (halFormat) {
         case HAL_PIXEL_FORMAT_IMPLEMENTATION_DEFINED:
@@ -75,7 +73,6 @@ int HALFormatToV4l2Format(int cameraId, int halFormat, int usage) {
 }
 
 int getRotationDegrees(const camera3_stream_t& stream) {
-    LOG1("@%s", __func__);
     if (stream.stream_type != CAMERA3_STREAM_OUTPUT) {
         LOG2("%s, no need rotation for stream type %d", __func__, stream.stream_type);
         return 0;
@@ -117,7 +114,7 @@ bool isSameRatioWithSensor(const icamera::stream_t *stream, int cameraId) {
 }
 
 int fillHALStreams(int cameraId, const camera3_stream_t& camera3Stream, icamera::stream_t* stream) {
-    LOG1("@%s, cameraId:%d", __func__, cameraId);
+    LOG1("<id%d>@%s", cameraId, __func__);
 
     stream->format = HALFormatToV4l2Format(cameraId, camera3Stream.format, camera3Stream.usage);
     CheckAndLogError(stream->format == -1, icamera::BAD_VALUE, "unsupported format %x",

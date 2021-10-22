@@ -599,11 +599,6 @@ void PSysDAG::addTask(PSysTaskData taskParam)
     }
 }
 
-int PSysDAG::getParameters(Parameters& param)
-{
-    return mIspParamAdaptor->getParameters(param);
-}
-
 TuningMode PSysDAG::getTuningMode(long sequence)
 {
     AutoMutex taskLock(mTaskLock);

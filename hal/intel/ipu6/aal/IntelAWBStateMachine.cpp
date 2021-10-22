@@ -29,14 +29,14 @@ IntelAWBStateMachine::IntelAWBStateMachine(int aCameraId)
           mLastControlMode(0),
           mLastSceneMode(0),
           mCurrentAwbMode(NULL) {
-    LOG1("%s mCameraId %d", __func__, mCameraId);
+    LOG1("<id%d>%s", mCameraId, __func__);
     mCurrentAwbMode = &mAutoMode;
     CLEAR(mLastAwbControls);
     mLastAwbControls.awbMode = ANDROID_CONTROL_AWB_MODE_AUTO;
 }
 
 IntelAWBStateMachine::~IntelAWBStateMachine() {
-    LOG1("%s mCameraId %d", __func__, mCameraId);
+    LOG1("<id%d>%s", mCameraId, __func__);
 }
 
 int IntelAWBStateMachine::processState(uint8_t controlMode, uint8_t sceneMode,
@@ -81,8 +81,6 @@ IntelAWBModeBase::IntelAWBModeBase()
         : mLastControlMode(0),
           mLastSceneMode(0),
           mCurrentAwbState(ANDROID_CONTROL_AWB_STATE_INACTIVE) {
-    LOG1("%s", __func__);
-
     CLEAR(mLastAwbControls);
 }
 
@@ -109,7 +107,6 @@ void IntelAWBModeBase::resetState() {
  ******************************************************************************/
 
 IntelAWBModeOff::IntelAWBModeOff() : IntelAWBModeBase() {
-    LOG1("%s", __func__);
 }
 
 int IntelAWBModeOff::processState(uint8_t controlMode, uint8_t sceneMode,
@@ -149,13 +146,12 @@ int IntelAWBModeOff::processResult(bool converged, android::CameraMetadata* resu
  ******************************************************************************/
 
 IntelAWBModeAuto::IntelAWBModeAuto() : IntelAWBModeBase() {
-    LOG1("%s", __func__);
 }
 
 int IntelAWBModeAuto::processState(uint8_t controlMode, uint8_t sceneMode,
                                    const AwbControls& awbControls) {
     if (controlMode != mLastControlMode) {
-        LOG1("%s: control mode has changed %d -> %d, reset AWB State", __func__, mLastControlMode,
+        LOG2("%s: control mode has changed %d -> %d, reset AWB State", __func__, mLastControlMode,
              controlMode);
         resetState();
     }
@@ -189,6 +185,8 @@ int IntelAWBModeAuto::processState(uint8_t controlMode, uint8_t sceneMode,
 
 int IntelAWBModeAuto::processResult(bool converged, android::CameraMetadata* result) {
     CheckAndLogError(!result, icamera::UNKNOWN_ERROR, "%s, result is nullptr", __func__);
+    uint8_t awbState = mCurrentAwbState;
+
     switch (mCurrentAwbState) {
         case ANDROID_CONTROL_AWB_STATE_LOCKED:
             // do nothing
@@ -208,6 +206,9 @@ int IntelAWBModeAuto::processResult(bool converged, android::CameraMetadata* res
 
     updateResult(result);
 
+    if (awbState != mCurrentAwbState) {
+        LOG1("%s: AWB state has changed %u -> %u", __func__, awbState, mCurrentAwbState);
+    }
     return icamera::OK;
 }
 

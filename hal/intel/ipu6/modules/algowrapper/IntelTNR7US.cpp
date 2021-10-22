@@ -206,6 +206,7 @@ int IntelTNR7US::asyncParamUpdate(int gain, bool forceUpdate) {
 }
 
 void IntelTNR7US::handleParamUpdate(int gain, bool forceUpdate) {
+    PERF_CAMERA_ATRACE();
     LOG1("%s gain: %d", __func__, gain);
     // gain value is from AE expore analog_gain * digital_gain
 
@@ -228,6 +229,7 @@ CmSurface2DUP* IntelTNR7US::getBufferCMSurface(void* bufAddr) {
 }
 
 CmSurface2DUP* IntelTNR7US::createCMSurface(void* bufAddr) {
+    PERF_CAMERA_ATRACE();
     LOG1("%s ", __func__);
     CmSurface2DUP* cmSurface = nullptr;
     int32_t ret = createCmSurface2DUP(mWidth, mHeight, CM_SURFACE_FORMAT_NV12, bufAddr, cmSurface);

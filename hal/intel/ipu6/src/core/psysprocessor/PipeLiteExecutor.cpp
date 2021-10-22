@@ -429,7 +429,7 @@ void PipeLiteExecutor::notifyStop()
 
 int PipeLiteExecutor::releaseStatsBuffer(const shared_ptr<CameraBuffer> &statsBuf)
 {
-    LOG3A("%s executor:%s", __func__, mName.c_str());
+    LOG2("%s executor:%s", __func__, mName.c_str());
     AutoMutex lock(mStatsBuffersLock);
 
     mStatsBuffers.push(statsBuf);
@@ -601,22 +601,19 @@ int PipeLiteExecutor::processNewFrame()
         if (gLogLevel & CAMERA_DEBUG_LOG_VC_SYNC) {
             int seq = cInBuffer->getSequence();
             SyncManager::getInstance()->printVcSyncCount();
-            LOGVCSYNC("[start runPipe], CPU-timestamp:%lu, sequence:%d, vc:%d, kernel-timestamp:%.3lfms, endl",
-                      CameraUtils::systemTime(),
-                      seq,
-                      cInBuffer->getVirtualChannel(),
-                      cInBuffer->getTimestamp().tv_sec*1000.0 + cInBuffer->getTimestamp().tv_usec/1000.0);
+            LOG2("[start runPipe], CPU-timestamp:%lu, seq:%d, vc:%d, kernel-timestamp:%.3l, endl",
+                 CameraUtils::systemTime(), seq, cInBuffer->getVirtualChannel(),
+                 cInBuffer->getTimestamp().tv_sec * 1000.0 +
+                 cInBuffer->getTimestamp().tv_usec / 1000.0);
         }
 
         SyncManager::getInstance()->updateVcSyncCount(vc);
 
         // Run pipe with buffers
         ret = runPipe(inBuffers, outBuffers, outStatsBuffers, eventType);
-        LOGVCSYNC("[done runPipe], CPU-timestamp:%lu, sequence:%u, vc:%d, kernel-timestamp:%.3lfms, endl",
-                  CameraUtils::systemTime(),
-                  cInBuffer->getSequence(),
-                  cInBuffer->getVirtualChannel(),
-                  cInBuffer->getTimestamp().tv_sec*1000.0 + cInBuffer->getTimestamp().tv_usec/1000.0);
+        LOG2("[done runPipe], CPU-timestamp:%lu, seq:%u, vc:%d, kernel-timestamp:%.3lf, endl",
+             CameraUtils::systemTime(), cInBuffer->getSequence(), cInBuffer->getVirtualChannel(),
+             cInBuffer->getTimestamp().tv_sec*1000.0 + cInBuffer->getTimestamp().tv_usec/1000.0);
     } else {
         // Run pipe with buffers
         ret = runPipe(inBuffers, outBuffers, outStatsBuffers, eventType);

@@ -320,8 +320,6 @@ int PSysProcessor::getParameters(Parameters& param)
                                                mIspSettings.manualSettings.manualSaturation };
     int ret = param.setImageEnhancement(enhancement);
 
-    ret |= mPSysDAGs[mCurConfigMode]->getParameters(param);
-
     return ret;
 }
 
@@ -446,7 +444,6 @@ void PSysProcessor::handleEvent(EventData eventData)
 
 // PSysProcessor ThreadLoop
 int PSysProcessor::processNewFrame() {
-    PERF_CAMERA_ATRACE();
     LOG2("@%s, mCameraId:%d", __func__, mCameraId);
 
     CheckAndLogError(!mBufferProducer, INVALID_OPERATION, "No available producer");
@@ -997,7 +994,6 @@ void PSysProcessor::sendPsysRequestEvent(const CameraBufferPortMap* dstBuffers, 
 
 void PSysProcessor::onFrameDone(const PSysTaskData& result)
 {
-    PERF_CAMERA_ATRACE();
 
     long sequence = result.mInputBuffers.begin()->second->getSequence();
     LOG2("@%s, mCameraId:%d, sequence %ld", __func__, mCameraId, sequence);

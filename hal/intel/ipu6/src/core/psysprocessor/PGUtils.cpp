@@ -101,7 +101,7 @@ ia_css_frame_format_type getCssFmt(int v4l2Fmt) {
         }
     }
 
-    LOG2("%s: unsupported v4l2 pixel format: %s", __func__,
+    LOG1("%s: unsupported v4l2 pixel format: %s", __func__,
          CameraUtils::format2string(v4l2Fmt).c_str());
     return IA_CSS_N_FRAME_FORMAT_TYPES;
 }
@@ -265,7 +265,7 @@ int getStride(int cssFmt, int width) {
 #endif
 
 bool getTerminalPairs(int pgId, TERMINAL_PAIR_TYPE type, std::vector<TerminalPair>* pairs) {
-    LOG2("@%s, pgId:%d, type:%d, pairs:%p", __func__, pgId, type, pairs);
+    LOG1("@%s, pgId:%d, type:%d, pairs:%p", __func__, pgId, type, pairs);
     CheckAndLogError(!pairs, false, "@%s, pairs is nullptr", __func__);
 
     struct TerminalPairs {
