@@ -337,7 +337,11 @@ int IspParamAdaptor::decodeStatsData(TuningMode tuningMode,
     aiqStatistics->mSequence = sequence;
     aiqStatistics->mTimestamp = TIMEVAL2USECS(statsBuffer->getTimestamp());
     aiqStatistics->mTuningMode = tuningMode;
+    aiqStatistics->mPendingDecode = PlatformData::isStatsRunningRateSupport(mCameraId);
     aiqResultStorage->updateAiqStatistics(sequence);
+
+    // Pend stats decoding to running 3A
+    if (aiqStatistics->mPendingDecode) return OK;
 
     ia_binary_data *hwStatsData = (ia_binary_data *)(statsBuffer->getBufferAddr());
     if (CameraDump::isDumpTypeEnable(DUMP_PSYS_DECODED_STAT) && hwStatsData != nullptr) {

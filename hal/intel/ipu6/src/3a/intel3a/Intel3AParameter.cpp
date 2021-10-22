@@ -399,15 +399,20 @@ void Intel3AParameter::updateAeParameter(const aiq_parameter_t& param)
         camera_window_t window = param.aeRegions.back();
 
         if (window.right > window.left && window.bottom > window.top) {
-            camera_coordinate_t coordinate = {};
-            coordinate.x = window.left + (window.right - window.left) / 2;
-            coordinate.y = window.top + (window.bottom - window.top) / 2;
-            camera_coordinate_system_t frameCoord = {0, 0, param.resolution.width, param.resolution.height};
-            LOG3A("%s: frame resolution %dx%d", __func__, param.resolution.width, param.resolution.height);
+            if ((window.right - window.left) != param.resolution.width &&
+                (window.bottom - window.top) != param.resolution.height) {
+                camera_coordinate_t coordinate = {};
+                coordinate.x = window.left + (window.right - window.left) / 2;
+                coordinate.y = window.top + (window.bottom - window.top) / 2;
+                camera_coordinate_system_t frameCoord = { 0, 0, param.resolution.width,
+                                                         param.resolution.height };
+                LOG3A("%s: frame resolution %dx%d", __func__, param.resolution.width,
+                      param.resolution.height);
 
-            coordinate = AiqUtils::convertToIaCoordinate(frameCoord, coordinate);
-            mAeParams.exposure_coordinate.x = coordinate.x;
-            mAeParams.exposure_coordinate.y = coordinate.y;
+                coordinate = AiqUtils::convertToIaCoordinate(frameCoord, coordinate);
+                mAeParams.exposure_coordinate.x = coordinate.x;
+                mAeParams.exposure_coordinate.y = coordinate.y;
+            }
             LOG3A("%s, exposure coordinate = [%d,%d], region = [%d,%d,%d,%d]", __func__,
                   mAeParams.exposure_coordinate.x, mAeParams.exposure_coordinate.y,
                   window.left, window.top, window.right, window.bottom);
