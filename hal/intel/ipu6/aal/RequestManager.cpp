@@ -35,6 +35,7 @@
 #include "ICamera.h"
 #include "MetadataConvert.h"
 #include "Parameters.h"
+#include "ParameterResult.h"
 #include "PlatformData.h"
 #include "Utils.h"
 
@@ -48,10 +49,13 @@ RequestManager::RequestManager(int cameraId)
           mCallbackOps(nullptr),
           mCameraDeviceStarted(false),
           mResultProcessor(nullptr),
+          mParameterResult(nullptr),
           mInputStreamConfigured(false),
           mRequestInProgress(0),
           mFDStream(nullptr) {
     LOG1("@%s", __func__);
+
+    mParameterResult = new ParameterResult(cameraId);
 
     CLEAR(mCameraBufferInfo);
     CLEAR(mFDStreamsInfo);
@@ -63,6 +67,7 @@ RequestManager::~RequestManager() {
     deleteStreams(false);
 
     delete mResultProcessor;
+    delete mParameterResult;
 }
 
 int RequestManager::init(const camera3_callback_ops_t* callback_ops) {
@@ -93,7 +98,7 @@ int RequestManager::init(const camera3_callback_ops_t* callback_ops) {
     MetadataConvert::updateDefaultRequestSettings(
         mCameraId, CAMERA3_TEMPLATE_PREVIEW, &mDefaultRequestSettings[CAMERA3_TEMPLATE_PREVIEW]);
 
-    mResultProcessor = new ResultProcessor(mCameraId, callback_ops, this);
+    mResultProcessor = new ResultProcessor(mCameraId, callback_ops, this, mParameterResult);
     mCallbackOps = callback_ops;
 
     // Register callback to icamera HAL
@@ -705,6 +710,8 @@ void RequestManager::returnRequestDone(uint32_t frameNumber) {
     if (mRequestInProgress == 0) {
         mWaitAllRequestsDone.notify_one();
     }
+
+    mParameterResult->releaseParameter(frameNumber);
 }
 
 int RequestManager::checkStreamRotation(camera3_stream_configuration_t* stream_list) {

@@ -101,13 +101,8 @@ void RequestThread::clearRequests()
     mBlockRequest = true;
 }
 
-void RequestThread::setConfigureModeByParam(const Parameters& param)
+void RequestThread::setConfigureModeByParam(camera_scene_mode_t sceneMode)
 {
-    camera_scene_mode_t sceneMode = SCENE_MODE_MAX;
-    if (param.getSceneMode(sceneMode) != OK) {
-        return;
-    }
-
     ConfigMode configMode = CameraUtils::getConfigModeBySceneMode(sceneMode);
     LOG2("@%s, sceneMode %d, configMode %d", __func__, sceneMode, configMode);
 
@@ -531,7 +526,10 @@ bool RequestThread::threadLoop()
     if (fetchNextRequest(request)) {
         // Update for reconfiguration
         if (request.mParams.get()) {
-            setConfigureModeByParam(*(request.mParams.get()));
+            camera_scene_mode_t sceneMode = SCENE_MODE_MAX;
+            if (request.mParams.get()->getSceneMode(sceneMode) == OK) {
+                setConfigureModeByParam(sceneMode);
+            }
         }
         // Re-check
         if (restart && isReconfigurationNeeded()) {

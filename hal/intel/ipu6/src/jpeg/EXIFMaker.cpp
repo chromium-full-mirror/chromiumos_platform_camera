@@ -598,10 +598,9 @@ void EXIFMaker::updateSensorInfo(const Parameters& params) {
 
     if (focal < EPSILON) {
         // Focal length is not supported, set to default value
-        icamera::CameraMetadata meta;
-        icamera::ParameterHelper::copyMetadata(params, &meta);
+        const icamera::CameraMetadata& meta = icamera::ParameterHelper::getMetadata(params);
 
-        icamera_metadata_entry entry = meta.find(CAMERA_LENS_INFO_AVAILABLE_FOCAL_LENGTHS);
+        icamera_metadata_ro_entry entry = meta.find(CAMERA_LENS_INFO_AVAILABLE_FOCAL_LENGTHS);
         if (entry.count >= 1) {
             focal = entry.data.f[0];
         }

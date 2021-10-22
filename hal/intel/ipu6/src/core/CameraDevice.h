@@ -271,9 +271,8 @@ private:
     int     mCameraId;
     int     mStreamNum;
     Parameters mParameter;
-    //The latest result parameters
-    Parameters mResultParameter;
     bool mPerframeControlSupport;
+    camera_scene_mode_t mLastSceneMode;
 
     RequestThread* mRequestThread;
     IGraphConfigManager *mGCM;

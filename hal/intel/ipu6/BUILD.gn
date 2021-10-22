@@ -42,6 +42,7 @@ shared_library("libcamhal") {
     "aal/PostProcessor.cpp",
     "aal/RequestManager.cpp",
     "aal/ResultProcessor.cpp",
+    "aal/ParameterResult.cpp",
     "modules/ia_cipr/src/Buffer.cpp",
     "modules/ia_cipr/src/Command.cpp",
     "modules/ia_cipr/src/Context.cpp",

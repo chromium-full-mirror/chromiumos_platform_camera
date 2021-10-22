@@ -86,6 +86,7 @@ IntelCca::~IntelCca() {
     LOG2("@%s", __func__);
     releaseIntelCCA();
     freeStatsDataMem();
+    mMemStatsInfoMap.clear();
 }
 
 cca::IntelCCA* IntelCca::getIntelCCA() {

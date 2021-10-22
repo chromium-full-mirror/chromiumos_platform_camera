@@ -73,9 +73,9 @@ public:
     stream_config_t getStreamConfig() { return mStreamConfig; };
 
     /**
-     * \brief set request configure mode by parameters.
+     * \brief set request configure mode.
      */
-    void setConfigureModeByParam(const Parameters& param);
+    void setConfigureModeByParam(camera_scene_mode_t sceneMode);
 
     /**
      * \brief post config for fake request

@@ -34,6 +34,8 @@
 
 namespace camera3 {
 
+class ParameterResult;
+
 // Store metadata that are created by the AAL
 // To avoid continuous allocation/de-allocation of metadata buffers
 class MetadataMemory {
@@ -123,7 +125,7 @@ class CallbackEventInterface {
 class ResultProcessor : public CallbackEventInterface {
  public:
     ResultProcessor(int cameraId, const camera3_callback_ops_t* callback,
-                    RequestManagerCallback* requestManagerCallback);
+                    RequestManagerCallback* requestManagerCallback, ParameterResult* result);
     virtual ~ResultProcessor();
 
     int registerRequest(const camera3_capture_request_t* request,
@@ -155,7 +157,7 @@ class ResultProcessor : public CallbackEventInterface {
  private:
     class ResultThread : public icamera::Thread {
      public:
-        ResultThread(int cameraId, ResultProcessor* resultProcessor);
+        ResultThread(ResultProcessor* resultProcessor, ParameterResult* result);
         ~ResultThread();
 
         void sendEvent(const icamera::camera_msg_data_t& data);
@@ -165,8 +167,8 @@ class ResultProcessor : public CallbackEventInterface {
 
      private:
         const uint64_t kMaxDuration = 2000000000;  // 2000ms
-        int mCameraId;
         ResultProcessor* mResultProcessor;
+        ParameterResult* mParameterResult;
 
         std::condition_variable mEventCondition;
         std::mutex mEventQueueLock;

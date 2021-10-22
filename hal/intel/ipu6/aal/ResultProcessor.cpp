@@ -23,6 +23,7 @@
 #include "Errors.h"
 #include "HALv3Utils.h"
 #include "MetadataConvert.h"
+#include "ParameterResult.h"
 #include "PlatformData.h"
 #include "Utils.h"
 
@@ -65,7 +66,8 @@ void MetadataMemory::copyMetadata(const camera_metadata_t* src) {
 }
 
 ResultProcessor::ResultProcessor(int cameraId, const camera3_callback_ops_t* callback,
-                                 RequestManagerCallback* requestManagerCallback)
+                                 RequestManagerCallback* requestManagerCallback,
+                                 ParameterResult* result)
         : mCameraId(cameraId),
           mCallbackOps(callback),
           mLastSettings(nullptr),
@@ -75,7 +77,7 @@ ResultProcessor::ResultProcessor(int cameraId, const camera3_callback_ops_t* cal
 
     mLastSettings = acquireMetadataMemory();
 
-    mResultThread = std::unique_ptr<ResultThread>(new ResultThread(cameraId, this));
+    mResultThread = std::unique_ptr<ResultThread>(new ResultThread(this, result));
 
     mCamera3AMetadata = new Camera3AMetadata(mCameraId);
     gettimeofday(&mRequestTime, nullptr);
@@ -465,9 +467,10 @@ void ResultProcessor::releaseMetadataMemory(MetadataMemory* metaMem) {
     mMetadataVector.push_back(metaMem);
 }
 
-ResultProcessor::ResultThread::ResultThread(int cameraId, ResultProcessor* resultProcessor)
-        : mCameraId(cameraId),
-          mResultProcessor(resultProcessor) {
+ResultProcessor::ResultThread::ResultThread(ResultProcessor* resultProcessor,
+                                            ParameterResult* result)
+        : mResultProcessor(resultProcessor),
+          mParameterResult(result) {
     LOG1("@%s", __func__);
 
     run("ResultThread");
@@ -525,10 +528,10 @@ bool ResultProcessor::ResultThread::threadLoop() {
         }
         // Regards metadata ready as metadata event
         case icamera::CAMERA_METADATA_READY: {
-            icamera::Parameters parameter;
-            icamera::camera_get_parameters(mCameraId, parameter, data.data.metadata_ready.sequence);
-            MetadataEvent metadataEvent = {data.data.metadata_ready.frameNumber, &parameter};
-
+            icamera::Parameters* parameter
+                = mParameterResult->getParameter(data.data.metadata_ready.frameNumber,
+                                                 data.data.metadata_ready.sequence);
+            MetadataEvent metadataEvent = {data.data.metadata_ready.frameNumber, parameter};
             mResultProcessor->metadataDone(metadataEvent);
             break;
         }

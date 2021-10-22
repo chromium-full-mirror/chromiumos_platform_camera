@@ -145,8 +145,14 @@ static void fancyLogInitSinks() {
 }
 
 static void fancyLogSetDefaultLevel() {
+    static const char* SUPPRESS_DEFLOG = "SUPPRESS_DEFLOG";
+    if (::getenv(SUPPRESS_DEFLOG))
+        return;
+
     for (int i = 0; i < TAGS_MAX_NUM; ++i) {
         globalGroupsDescp[i].level |= CAMERA_DEBUG_LOG_ERR;
+        globalGroupsDescp[i].level |= CAMERA_DEBUG_LOG_WARNING;
+        globalGroupsDescp[i].level |= CAMERA_DEBUG_LOG_INFO;
     }
 }
 

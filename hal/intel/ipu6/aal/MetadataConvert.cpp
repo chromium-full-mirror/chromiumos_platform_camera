@@ -544,8 +544,7 @@ int MetadataConvert::HALMetadataToRequestMetadata(const icamera::Parameters& par
 
     // ANDROID_LENS
     // ANDROID_LENS_INFO
-    icamera::CameraMetadata meta;
-    icamera::ParameterHelper::copyMetadata(parameter, &meta);
+    const icamera::CameraMetadata& meta = icamera::ParameterHelper::getMetadata(parameter);
     convertLensParameter(parameter, meta, settings);
 
     // ANDROID_QUIRKS
@@ -594,8 +593,7 @@ int MetadataConvert::HALCapabilityToStaticMetadata(const icamera::Parameters& pa
     uint8_t aberrationAvailable = ANDROID_COLOR_CORRECTION_ABERRATION_MODE_OFF;
     settings->update(ANDROID_COLOR_CORRECTION_AVAILABLE_ABERRATION_MODES, &aberrationAvailable, 1);
 
-    icamera::CameraMetadata meta;
-    icamera::ParameterHelper::copyMetadata(parameter, &meta);
+    const icamera::CameraMetadata& meta = icamera::ParameterHelper::getMetadata(parameter);
 
     // ANDROID_CONTROL
     fillControlStaticMetadata(parameter, meta, settings);

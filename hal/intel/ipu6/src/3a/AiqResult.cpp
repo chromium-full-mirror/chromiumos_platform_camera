@@ -31,6 +31,7 @@ AiqResult::AiqResult(int cameraId) :
     mAfDistanceDiopters(0.0f),
     mSkip(false),
     mLensPosition(0),
+    mSceneMode(SCENE_MODE_AUTO),
     mFrameDuration(0),
     mRollingShutter(0)
 {
@@ -91,6 +92,7 @@ AiqResult &AiqResult::operator=(const AiqResult &other)
     mAfDistanceDiopters = other.mAfDistanceDiopters;
     mSkip = other.mSkip;
     mLensPosition = other.mLensPosition;
+    mSceneMode = other.mSceneMode;
     mFocusRange = other.mFocusRange;
 
     mAeResults = other.mAeResults;

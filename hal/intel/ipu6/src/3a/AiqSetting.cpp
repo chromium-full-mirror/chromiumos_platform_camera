@@ -209,11 +209,9 @@ int AiqSetting::setParameters(const Parameters& params)
     int ret = params.getMakernoteMode(mAiqParam.makernoteMode);
     if (ret == NAME_NOT_FOUND) mAiqParam.makernoteMode = MAKERNOTE_MODE_OFF;
 
-    CameraMetadata meta;
-    ParameterHelper::copyMetadata(params, &meta);
-
+    const CameraMetadata& meta = ParameterHelper::getMetadata(params);
     uint32_t tag = CAMERA_LENS_INFO_MINIMUM_FOCUS_DISTANCE;
-    icamera_metadata_entry entry = meta.find(tag);
+    icamera_metadata_ro_entry entry = meta.find(tag);
     if (entry.count == 1) {
         mAiqParam.minFocusDistance = entry.data.f[0];
     }

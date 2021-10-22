@@ -338,22 +338,7 @@ int ParameterGenerator::updateWithAiqResultsL(long sequence, Parameters *params)
     params->setFocusRange(aiqResult->mFocusRange);
 
     // Update scene mode
-    camera_scene_mode_t sceneMode = SCENE_MODE_AUTO;
-    params->getSceneMode(sceneMode);
-
-    /* Use direct AE result to update sceneMode to reflect the actual mode AE want to have,
-     * Besides needed by full pipe auto-switch, this is also necessary when user want to
-     * switch pipe in user app according to AE result.
-     */
-    if (sceneMode == SCENE_MODE_AUTO) {
-        if (aiqResult->mAeResults.multiframe== ia_aiq_bracket_mode_hdr) {
-            sceneMode = SCENE_MODE_HDR;
-        } else if (aiqResult->mAeResults.multiframe == ia_aiq_bracket_mode_ull) {
-            sceneMode = SCENE_MODE_ULL;
-        }
-    }
-    LOG2("%s, sceneMode:%d", __func__, sceneMode);
-    params->setSceneMode(sceneMode);
+    params->setSceneMode(aiqResult->mSceneMode);
 
     camera_lens_shading_map_mode_type_t lensShadingMapMode = LENS_SHADING_MAP_MODE_OFF;
     params->getLensShadingMapMode(lensShadingMapMode);

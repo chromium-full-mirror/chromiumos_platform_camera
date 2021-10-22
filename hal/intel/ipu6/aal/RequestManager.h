@@ -30,6 +30,8 @@
 
 namespace camera3 {
 
+class ParameterResult;
+
 /**
  * \class RequestManager
  *
@@ -87,6 +89,7 @@ class RequestManager : public RequestManagerCallback, public icamera::camera_cal
     const camera3_callback_ops_t* mCallbackOps;
     bool mCameraDeviceStarted;
     ResultProcessor* mResultProcessor;
+    ParameterResult* mParameterResult;
 
     std::map<int, android::CameraMetadata> mDefaultRequestSettings;
     std::vector<Camera3Stream*> mCamera3StreamVector;

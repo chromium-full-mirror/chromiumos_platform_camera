@@ -38,6 +38,7 @@ CameraDevice::CameraDevice(int cameraId) :
     mState(DEVICE_UNINIT),
     mCameraId(cameraId),
     mStreamNum(0),
+    mLastSceneMode(SCENE_MODE_AUTO),
     mCallback(nullptr)
 {
     PERF_CAMERA_ATRACE();
@@ -748,8 +749,11 @@ int CameraDevice::dqbuf(int streamId, camera_buffer_t **ubuffer, Parameters* set
 
     CheckAndLogError(!*ubuffer || ret != OK, ret, "failed to get ubuffer from stream %d", streamId);
 
-    // Update and keep latest result, copy to settings when needed.
-    ret = mParamGenerator->getParameters((*ubuffer)->sequence, &mResultParameter, false, true);
+    const AiqResult *aiqResult
+        = AiqResultStorage::getInstance(mCameraId)->getAiqResult((*ubuffer)->sequence);
+    if (aiqResult != nullptr) {
+        mLastSceneMode = aiqResult->mSceneMode;
+    }
 
     if (settings) {
         ret = mParamGenerator->getParameters((*ubuffer)->sequence, settings);
@@ -848,7 +852,7 @@ int CameraDevice::qbuf(camera_buffer_t **ubuffer,
 
     // Make sure request's configure mode is updated by latest result param if no settings
     if (!settings) {
-        mRequestThread->setConfigureModeByParam(mResultParameter);
+        mRequestThread->setConfigureModeByParam(mLastSceneMode);
     }
 
     return mRequestThread->processRequest(bufferNum, ubuffer, settings);

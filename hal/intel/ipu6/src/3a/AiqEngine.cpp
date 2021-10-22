@@ -381,6 +381,20 @@ AiqEngine::AiqState AiqEngine::handleAiqResult(AiqResult *aiqResult)
 {
     LOG2("%s: aiqResult->mTuningMode = %d", __func__, aiqResult->mTuningMode);
 
+    aiqResult->mSceneMode = SCENE_MODE_AUTO;
+    /* Use direct AE result to update sceneMode to reflect the actual mode AE want to have,
+     * Besides needed by full pipe auto-switch, this is also necessary when user want to
+     * switch pipe in user app according to AE result.
+     */
+    if (mAiqParam.sceneMode == SCENE_MODE_AUTO) {
+        if (aiqResult->mAeResults.multiframe == ia_aiq_bracket_mode_hdr) {
+            aiqResult->mSceneMode = SCENE_MODE_HDR;
+        } else if (aiqResult->mAeResults.multiframe == ia_aiq_bracket_mode_ull) {
+            aiqResult->mSceneMode = SCENE_MODE_ULL;
+        }
+    }
+    LOG2("%s, sceneMode:%d", __func__, aiqResult->mSceneMode);
+
     applyManualTonemaps(aiqResult);
 
     return AIQ_STATE_DONE;

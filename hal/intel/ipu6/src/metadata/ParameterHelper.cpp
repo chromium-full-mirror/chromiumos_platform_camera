@@ -81,4 +81,8 @@ void ParameterHelper::copyMetadata(const Parameters& source, CameraMetadata* met
     *metadata = getMetadata(source.mData);
 }
 
+const CameraMetadata& ParameterHelper::getMetadata(const Parameters& source) {
+    return getMetadata(source.mData);
+}
+
 } // end of namespace icamera
