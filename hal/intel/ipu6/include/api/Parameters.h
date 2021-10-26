@@ -2653,6 +2653,24 @@ public:
     int getPowerMode(camera_power_mode_t &mode) const;
 
     /**
+     * \brief Set total exposure target
+     *
+     * \param[in] int64_t
+     *
+     * \return 0 if set successfully, otherwise non-0 value is returned.
+     */
+    int setTotalExposureTarget(int64_t totalExposureTarget);
+
+    /**
+     * \brief Get total exposure target
+     *
+     * \param[out] int64_t
+     *
+     * \return 0 if total exposure target was set, otherwise non-0 value is returned.
+     */
+    int getTotalExposureTarget(int64_t &totalExposureTarget) const;
+
+    /**
      * \brief Set user request id
      *
      * \param[in] user request id

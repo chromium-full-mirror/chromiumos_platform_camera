@@ -340,6 +340,12 @@ int IspParamAdaptor::decodeStatsData(TuningMode tuningMode,
     if (aiqStatistics->mPendingDecode) return OK;
 
     ia_binary_data *hwStatsData = (ia_binary_data *)(statsBuffer->getBufferAddr());
+    ia_binary_data statsData = { nullptr, 0 };
+    if (PlatformData::isStatsRunningRateSupport(mCameraId)) {
+        statsData.data = mIntelCca->fetchHwStatsData(sequence, &statsData.size);
+        if (statsData.data) hwStatsData = &statsData;
+    }
+
     if (CameraDump::isDumpTypeEnable(DUMP_PSYS_DECODED_STAT) && hwStatsData != nullptr) {
         BinParam_t bParam;
         bParam.bType = BIN_TYPE_GENERAL;

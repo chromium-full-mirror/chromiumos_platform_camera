@@ -2021,6 +2021,26 @@ int Parameters::getPowerMode(camera_power_mode_t &mode) const
     return OK;
 }
 
+int Parameters::setTotalExposureTarget(int64_t totalExposureTarget)
+{
+    ParameterHelper::AutoWLock wl(mData);
+    return ParameterHelper::getMetadata(mData).update(INTEL_VENDOR_CAMERA_TOTAL_EXPOSURE_TARGET,
+                                                      &totalExposureTarget, 1);
+}
+
+int Parameters::getTotalExposureTarget(int64_t &totalExposureTarget) const
+{
+    ParameterHelper::AutoRLock rl(mData);
+    auto entry = ParameterHelper::getMetadataEntry(mData,
+                                                   INTEL_VENDOR_CAMERA_TOTAL_EXPOSURE_TARGET);
+    if (entry.count != 1) {
+        return NAME_NOT_FOUND;
+    }
+
+    totalExposureTarget = entry.data.i64[0];
+    return OK;
+}
+
 int Parameters::setUserRequestId(int32_t userRequestId) {
     ParameterHelper::AutoWLock wl(mData);
 
