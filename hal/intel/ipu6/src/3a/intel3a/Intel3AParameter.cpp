@@ -382,6 +382,24 @@ void Intel3AParameter::updateAeParameter(const aiq_parameter_t& param) {
             }
         }
     }
+
+    CLEAR(mAeParams.manual_total_target_exposure);
+    if (param.totalExposureTarget > 0) {
+        IntelCca* intelCca = IntelCca::getInstance(mCameraId, param.tuningMode);
+        CheckAndLogError(!intelCca, VOID_VALUE, "%s, cca is nullptr, mode:%d", __func__,
+                         param.tuningMode);
+
+        cca::cca_cmc cmc;
+        int ret = intelCca->getCMC(&cmc);
+        LOG2("%s, cmc.base_iso %d", __func__, cmc.base_iso);
+        if (ret == OK && cmc.base_iso > 0) {
+            // Will overwrite total exposure
+            for (unsigned int i = 0; i < mAeParams.num_exposures; i++) {
+                mAeParams.manual_total_target_exposure[i] =
+                    param.totalExposureTarget / cmc.base_iso;
+            }
+        }
+    }
 }
 
 void Intel3AParameter::updatePaResult(cca::cca_pa_params* paResult) {

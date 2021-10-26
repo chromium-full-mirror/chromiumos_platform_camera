@@ -260,6 +260,7 @@ int AiqSetting::setParameters(const Parameters& params) {
     }
 
     params.getPowerMode(mAiqParam.powerMode);
+    params.getTotalExposureTarget(mAiqParam.totalExposureTarget);
 
     mAiqParam.dump();
 
@@ -343,6 +344,7 @@ void aiq_parameter_t::reset() {
     callbackTmCurve = false;
 
     powerMode = CAMERA_LOW_POWER;
+    totalExposureTarget = 0;
 
     CLEAR(resolution);
 }
@@ -418,6 +420,7 @@ void aiq_parameter_t::dump() {
           tonemapMode, tonemapPresetCurve, tonemapGamma, tonemapCurves.gSize);
     LOG3("testPatternMode %d", testPatternMode);
     LOG3("power mode %d", powerMode);
+    LOG3("totalExposureTarget %ld", totalExposureTarget);
 
     LOG3("callback RGBS stats %s", callbackRgbs ? "true" : "false");
     LOG3("callback Tonemap curve: %s", callbackTmCurve ? "true" : "false");

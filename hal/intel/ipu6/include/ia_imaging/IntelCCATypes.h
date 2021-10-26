@@ -189,6 +189,7 @@ typedef struct
                                                                      values of num_exposures length. Order of ISO values corresponds to exposure_index of
                                                                      ae_results, e.g., manual_iso[ae_results->exposures[0].exposure_index] = 100; */
     ia_aiq_ae_manual_limits manual_limits[MAX_NUM_EXPOSURE];    /*!< Optional. Manual limits which override limits defined in AEC tunings. */
+    uint32_t manual_total_target_exposure[MAX_NUM_EXPOSURE];    /*!< Optional. Manual total target exposure. */
     ia_aiq_ae_exposure_distribution_priority exposure_distribution_priority; /*!< Mandatory. AEC exposure distribution priority mode. */
     float32_t manual_convergence_time;                              /*!< Mandatory. Manual AEC convergence speed in seconds.
                                                                      -1.0 if NA (uses tunings).
