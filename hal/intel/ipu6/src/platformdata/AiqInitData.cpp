@@ -171,7 +171,7 @@ AiqInitData::AiqInitData(const std::string& sensorName, const std::string& camCf
         if (!aiqbNameFromModuleInfo.empty()) {
             aiqbName.assign(aiqbNameFromModuleInfo);
         }
-        LOG1("aiqb file name %s", aiqbName.c_str());
+        LOGI("aiqb file name %s", aiqbName.c_str());
 
         if (findConfigFile(camCfgDir, &aiqbName) != OK) {
             LOGE("there is no aiqb file:%s", cfg.aiqbName.c_str());
