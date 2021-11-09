@@ -578,15 +578,21 @@ status_t ImguUnit::ImguPipe::createProcessingTasks(std::shared_ptr<GraphConfig> 
             // preview stream and it's requested in every capture request.
             // If there are two HAL_PIXEL_FORMAT_IMPLEMENTATION_DEFINED streams,
             // We pick the smaller stream due to performance concern.
+            // if they are same resulotions, we pick the usage which is
+            // GRALLOC_USAGE_HW_COMPOSER
             if (s->format == HAL_PIXEL_FORMAT_IMPLEMENTATION_DEFINED) {
-                if (preStream && preStream->width * preStream->height <= s->width * s->height) {
+                if (preStream && ((preStream->width * preStream->height < s->width * s->height) ||
+                    ((preStream->width * preStream->height == s->width * s->height) &&
+                     !(s->usage & GRALLOC_USAGE_HW_COMPOSER)))) {
                     continue;
                 }
                 preStream = s;
             }
 
             if (s->format == HAL_PIXEL_FORMAT_YCbCr_420_888) {
-                if (yuvStream && yuvStream->width * yuvStream->height <= s->width * s->height) {
+                if (yuvStream && ((yuvStream->width * yuvStream->height < s->width * s->height) ||
+                    ((yuvStream->width * yuvStream->height == s->width * s->height) &&
+                     !(s->usage & GRALLOC_USAGE_HW_COMPOSER)))) {
                     continue;
                 }
                 yuvStream = s;
