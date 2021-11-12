@@ -126,8 +126,8 @@ class CameraBuffer {
 
     int getUsage() const { return mBufferUsage; }
 
-    void setSettingSequence(long sequence) { mSettingSequence = sequence; }
-    long getSettingSequence() const { return mSettingSequence; }
+    void setSettingSequence(int64_t sequence) { mSettingSequence = sequence; }
+    int64_t getSettingSequence() const { return mSettingSequence; }
 
     // Buffers are allocated the buffers by Camera
     int allocateMemory(V4L2VideoNode* vDevice = nullptr);
@@ -164,7 +164,7 @@ class CameraBuffer {
     int mBufferflag;
     camera_buffer_t* mU;
     int mBufferUsage;
-    long mSettingSequence;
+    int64_t mSettingSequence;
 
     void* mMmapAddrs[VIDEO_MAX_PLANES];
     int mDmaFd[VIDEO_MAX_PLANES];

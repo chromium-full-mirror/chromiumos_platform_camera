@@ -2301,9 +2301,7 @@ int MetadataConvert::convertToMetadataRegion(const icamera::camera_window_list_t
 }
 
 void MetadataConvert::dumpMetadata(const camera_metadata_t* meta) {
-    if (!meta || !icamera::Log::isDebugLevelEnable(icamera::CAMERA_DEBUG_LOG_LEVEL2)) {
-        return;
-    }
+    if (!meta || !icamera::Log::isLogTagEnabled(GET_FILE_SHIFT(MetadataConvert))) return;
 
     LOG2("%s", __func__);
     int entryCount = get_camera_metadata_entry_count(meta);

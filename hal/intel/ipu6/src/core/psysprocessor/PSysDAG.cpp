@@ -212,7 +212,7 @@ int PSysDAG::getTnrExtraFrameCount(int64_t seq) {
 bool PSysDAG::isInactiveStillStream(int streamId, const PSysTaskData* task, Port port) {
     if (streamId == VIDEO_STREAM_ID) return false;
     if (mStillExecutor == nullptr || mStillTnrExecutor == nullptr) return false;
-    long sequence = task->mInputBuffers.at(mDefaultMainInputPort)->getSequence();
+    int64_t sequence = task->mInputBuffers.at(mDefaultMainInputPort)->getSequence();
     bool hasStill = false;
 
     if (task->mOutputBuffers.find(port) != task->mOutputBuffers.end()) {
@@ -580,7 +580,7 @@ void PSysDAG::addTask(PSysTaskData taskParam) {
     // may be incorrect when runPipe.
     bool runIspAdaptor = true;
 
-    long sequence = taskParam.mInputBuffers.at(mDefaultMainInputPort)->getSequence();
+    int64_t sequence = taskParam.mInputBuffers.at(mDefaultMainInputPort)->getSequence();
     if (runIspAdaptor) {
         LOG2("%s, <seq%ld> run AIC before execute psys", __func__, sequence);
         prepareIpuParams(sequence, false, &task);
@@ -595,7 +595,7 @@ void PSysDAG::addTask(PSysTaskData taskParam) {
     }
 }
 
-TuningMode PSysDAG::getTuningMode(long sequence) {
+TuningMode PSysDAG::getTuningMode(int64_t sequence) {
     AutoMutex taskLock(mTaskLock);
 
     if (sequence < 0) return mTuningMode;
@@ -630,7 +630,7 @@ int PSysDAG::onFrameDone(Port port, const std::shared_ptr<CameraBuffer>& buffer)
 
     if (!buffer) return OK;  // No need to handle if the buffer is nullptr.
 
-    long sequence = buffer->getSequence();
+    int64_t sequence = buffer->getSequence();
     bool needReturn = false;
     Port outputPort = INVALID_PORT;
     bool fakeTask = false;
@@ -685,7 +685,7 @@ int PSysDAG::onFrameDone(Port port, const std::shared_ptr<CameraBuffer>& buffer)
     return OK;
 }
 
-int PSysDAG::prepareIpuParams(long sequence, bool forceUpdate, TaskInfo* task) {
+int PSysDAG::prepareIpuParams(int64_t sequence, bool forceUpdate, TaskInfo* task) {
     TRACE_LOG_PROCESS("PSysDAG", __func__, MAKE_COLOR(sequence), sequence);
     if (task == nullptr) {
         AutoMutex taskLock(mTaskLock);
@@ -794,7 +794,7 @@ void PSysDAG::tuningReconfig(TuningMode newTuningMode) {
 }
 
 void PSysDAG::dumpExternalPortMap() {
-    if (!Log::isDebugLevelEnable(CAMERA_DEBUG_LOG_LEVEL2)) return;
+    if (!Log::isLogTagEnabled(GET_FILE_SHIFT(PSysDAG))) return;
 
     for (auto& inputMap : mInputMaps) {
         if (inputMap.mExecutor) {

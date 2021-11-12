@@ -94,7 +94,7 @@ struct BufferEvent {
     uint32_t frameNumber;
     const camera3_stream_buffer_t* outputBuffer;
     uint64_t timestamp;
-    long sequence;
+    int64_t sequence;
 };
 
 struct ReferenceParam {
@@ -139,7 +139,7 @@ class ResultProcessor : public CallbackEventInterface {
 
     // Used to handle Opaque raw reprocessing
     void clearRawBufferInfoMap(void);
-    void checkAndChangeRawbufferInfo(long* sequence, uint64_t* timestamp);
+    void checkAndChangeRawbufferInfo(int64_t* sequence, uint64_t* timestamp);
 
     // Notify error to camera service
     void notifyError();

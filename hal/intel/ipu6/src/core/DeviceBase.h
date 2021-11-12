@@ -63,7 +63,7 @@ class DeviceBase : public EventSource {
     int streamOn();
     int streamOff();
 
-    int queueBuffer(long sequence);
+    int queueBuffer(int64_t sequence);
     int dequeueBuffer();
 
     void addFrameListener(BufferConsumer* listener) { mConsumers.insert(listener); }
@@ -72,10 +72,10 @@ class DeviceBase : public EventSource {
 
     bool hasPendingBuffer();
     void addPendingBuffer(const std::shared_ptr<CameraBuffer>& buffer);
-    long getPredictSequence();
+    int64_t getPredictSequence();
     int getBufferNumInDevice();
     void resetBuffers();
-    bool skipFrameAfterSyncCheck(long sequence);
+    bool skipFrameAfterSyncCheck(int64_t sequence);
 
     V4L2VideoNode* getV4l2Device() { return mDevice; }
     const char* getName() { return mName; }
@@ -90,7 +90,8 @@ class DeviceBase : public EventSource {
     /**
      * Pre-process the buffer which to be queued to the device.
      */
-    virtual int onQueueBuffer(long sequence, std::shared_ptr<CameraBuffer>& buffer) { return OK; }
+    virtual int onQueueBuffer(int64_t sequence,
+                              std::shared_ptr<CameraBuffer>& buffer) { return OK; }
 
     /**
      * Post-process the buffer after it's dequeued from the device.
@@ -124,7 +125,7 @@ class DeviceBase : public EventSource {
     VideoNodeDirection mNodeDirection;
     const char* mName;
     V4L2VideoNode* mDevice;  // The device used to queue/dequeue buffers.
-    long mLatestSequence;    // Track the latest bufffer sequence from driver.
+    int64_t mLatestSequence;    // Track the latest bufffer sequence from driver.
     bool mNeedSkipFrame;     // True if the frame/buffer needs to be skipped.
     int mFrameSkipNum;       // How many frames need to be skipped after stream on.
     DeviceCallback* mDeviceCB;

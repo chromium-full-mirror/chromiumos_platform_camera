@@ -321,7 +321,7 @@ int IspParamAdaptor::decodeStatsData(TuningMode tuningMode,
                      INVALID_OPERATION, "%s, wrong state %d", __func__, mIspAdaptorState);
     CheckAndLogError(!mIntelCca, UNKNOWN_ERROR, "%s, mIntelCca is nullptr", __func__);
 
-    long sequence = statsBuffer->getSequence();
+    int64_t sequence = statsBuffer->getSequence();
     LOG2("<seq:%ld>@%s", sequence, __func__);
     AiqResultStorage *aiqResultStorage = AiqResultStorage::getInstance(mCameraId);
     AiqStatistics *aiqStatistics = aiqResultStorage->acquireAiqStatistics();
@@ -335,12 +335,6 @@ int IspParamAdaptor::decodeStatsData(TuningMode tuningMode,
     if (aiqStatistics->mPendingDecode) return OK;
 
     ia_binary_data *hwStatsData = (ia_binary_data *)(statsBuffer->getBufferAddr());
-    ia_binary_data statsData = { nullptr, 0 };
-    if (PlatformData::isStatsRunningRateSupport(mCameraId)) {
-        statsData.data = mIntelCca->fetchHwStatsData(sequence, &statsData.size);
-        if (statsData.data) hwStatsData = &statsData;
-    }
-
     if (CameraDump::isDumpTypeEnable(DUMP_PSYS_DECODED_STAT) && hwStatsData != nullptr) {
         BinParam_t bParam;
         bParam.bType = BIN_TYPE_GENERAL;
@@ -472,7 +466,7 @@ void IspParamAdaptor::updateIspParameterMap(IspParameter* ispParam, int64_t data
  * runIspAdapt
  * Convert the results of the 3A algorithms and parse with P2P.
  */
-int IspParamAdaptor::runIspAdapt(const IspSettings* ispSettings, long requestId, long settingSequence,
+int IspParamAdaptor::runIspAdapt(const IspSettings* ispSettings, long requestId, int64_t settingSequence,
                                  int32_t streamId) {
     PERF_CAMERA_ATRACE();
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL2);
@@ -548,7 +542,7 @@ int IspParamAdaptor::runIspAdapt(const IspSettings* ispSettings, long requestId,
     return OK;
 }
 
-ia_binary_data* IspParamAdaptor::getIpuParameter(long sequence, int streamId) {
+ia_binary_data* IspParamAdaptor::getIpuParameter(int64_t sequence, int streamId) {
     AutoMutex l(mIpuParamLock);
 
     // This is only for getting the default ipu parameter
@@ -697,8 +691,9 @@ void IspParamAdaptor::applyCscMatrix(ia_isp_bxt_csc* cscMatrix) {
 }
 
 int IspParamAdaptor::runIspAdaptL(ia_isp_bxt_program_group *pgPtr, ia_isp_bxt_gdc_limits *mbrData,
-                                  const IspSettings* ispSettings, long requestId, long settingSequence,
-                                  ia_binary_data *binaryData, int streamId) {
+                                  const IspSettings* ispSettings, long requestId,
+                                  int64_t settingSequence, ia_binary_data *binaryData,
+                                  int streamId) {
     PERF_CAMERA_ATRACE();
     CheckAndLogError(!mIntelCca, UNKNOWN_ERROR, "%s, mIntelCca is nullptr", __func__);
     LOG2("<id%d:req%ld:streamId:%d>@%s: device type: %d", mCameraId, requestId, streamId,
@@ -878,7 +873,7 @@ int IspParamAdaptor::runIspAdaptL(ia_isp_bxt_program_group *pgPtr, ia_isp_bxt_gd
     return OK;
 }
 
-void IspParamAdaptor::updateResultFromAlgo(ia_binary_data* binaryData, long sequence) {
+void IspParamAdaptor::updateResultFromAlgo(ia_binary_data* binaryData, int64_t sequence) {
     AiqResult* aiqResults =
         const_cast<AiqResult*>(AiqResultStorage::getInstance(mCameraId)->getAiqResult(sequence));
     if (aiqResults == nullptr) {
@@ -936,7 +931,7 @@ void IspParamAdaptor::updateResultFromAlgo(ia_binary_data* binaryData, long sequ
     }
 }
 
-void IspParamAdaptor::dumpIspParameter(int streamId, long sequence, ia_binary_data binaryData) {
+void IspParamAdaptor::dumpIspParameter(int streamId, int64_t sequence, ia_binary_data binaryData) {
     if (mPgParamType == PG_PARAM_PSYS_ISA && !CameraDump::isDumpTypeEnable(DUMP_PSYS_PAL)) return;
     if (mPgParamType == PG_PARAM_ISYS && !CameraDump::isDumpTypeEnable(DUMP_ISYS_PAL)) return;
 
@@ -949,7 +944,7 @@ void IspParamAdaptor::dumpIspParameter(int streamId, long sequence, ia_binary_da
 }
 
 void IspParamAdaptor::dumpProgramGroup(ia_isp_bxt_program_group *pgPtr) {
-    if (!Log::isDebugLevelEnable(CAMERA_DEBUG_LOG_LEVEL3)) return;
+    if (!Log::isLogTagEnabled(GET_FILE_SHIFT(IspParamAdaptor))) return;
 
     LOG3("the kernel count: %d, run_kernels: %p", pgPtr->kernel_count, pgPtr->run_kernels);
     for (unsigned int i = 0; i < pgPtr->kernel_count; i++) {

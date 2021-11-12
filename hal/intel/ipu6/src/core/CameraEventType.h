@@ -40,22 +40,22 @@ enum EventType {
 
 struct EventDataStatsReady {
     timeval timestamp;
-    long sequence;
+    int64_t sequence;
 };
 
 struct EventDataSync {
     timeval timestamp;
-    long sequence;
+    int64_t sequence;
 };
 
 struct EventDataFrame {
     timeval timestamp;
-    long sequence;
+    int64_t sequence;
 };
 
 struct EventDataMeta {
     timeval timestamp;
-    long sequence;
+    int64_t sequence;
 };
 
 struct EventRequestData {
@@ -63,7 +63,7 @@ struct EventRequestData {
     camera_buffer_t** buffer;
     Parameters* param;
 
-    long settingSeq;
+    int64_t settingSeq;
 };
 
 struct EventConfigData {
@@ -76,7 +76,7 @@ struct EventFrameAvailable {
 
 struct EventRequestReady {
     int64_t timestamp;
-    long sequence;
+    int64_t sequence;
 };
 
 struct EventData {

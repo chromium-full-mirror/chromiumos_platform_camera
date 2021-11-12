@@ -561,7 +561,7 @@ int PipeLiteExecutor::processNewFrame() {
     // Should find first not none input buffer instead of always use the first one.
     shared_ptr<CameraBuffer> inBuf = inBuffers.begin()->second;
     CheckAndLogError(!inBuf, UNKNOWN_ERROR, "@%s: no valid input buffer", __func__);
-    long inBufSequence = inBuf->getSequence();
+    int64_t inBufSequence = inBuf->getSequence();
     v4l2_buffer_t inV4l2Buf = *inBuf->getV4L2Buffer().Get();
     TuningMode tuningMode = mPSysDag->getTuningMode(inBufSequence);
 
@@ -663,7 +663,7 @@ int PipeLiteExecutor::runPipe(map<Port, shared_ptr<CameraBuffer>>& inBuffers,
 
     // Get ISP parameters
     const ia_binary_data* ipuParameters = nullptr;
-    long sequence = inBuffers.begin()->second ? inBuffers.begin()->second->getSequence() : -1;
+    int64_t sequence = inBuffers.begin()->second ? inBuffers.begin()->second->getSequence() : -1;
     TRACE_LOG_PROCESS(mName.c_str(), "runPipe", MAKE_COLOR(sequence), sequence);
     if (mAdaptor) {
         ipuParameters = mAdaptor->getIpuParameter(sequence, mStreamId);
@@ -1056,7 +1056,7 @@ void PipeLiteExecutor::getTerminalBuffersFromExternal(
 }
 
 void PipeLiteExecutor::dumpPGs() const {
-    if (!Log::isDebugLevelEnable(CAMERA_DEBUG_LOG_LEVEL3)) return;
+    if (!Log::isLogTagEnabled(GET_FILE_SHIFT(PipeLiteExecutor))) return;
 
     LOG3("============= dump PGs for executor %s =================", getName());
     if (mIsInputEdge) {

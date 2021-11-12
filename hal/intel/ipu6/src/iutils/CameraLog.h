@@ -36,13 +36,8 @@ extern GroupDesc globalGroupsDescp[];
 #include "LogSink.h"
 #include "ModuleTags.h"
 
-#define STR1(X) #X
-#define STR(X) STR1(X)
-
 #define GENERATED_TAG_NAME(X) GENERATED_TAGS_##X
 #define GET_FILE_SHIFT(X) GENERATED_TAG_NAME(X)
-
-#define LOG_GROUP(X) GENERATED_TAGS_##X
 
 extern const char* tagNames[];
 extern icamera::LogOutputSink* globalLogSink;
@@ -124,8 +119,7 @@ namespace Log {
 void setDebugLevel(void);
 void print_log(bool enable, const char* module, const int level, const char* format, ...);
 bool isDebugLevelEnable(int level);
-bool isFancyLogEnabled(int module);
-bool isModulePrintable(const char* module);
+bool isLogTagEnabled(int tag);
 bool isDumpMediaInfo(void);
 void ccaPrintError(const char* fmt, va_list ap);
 void ccaPrintInfo(const char* fmt, va_list ap);

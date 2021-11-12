@@ -38,7 +38,6 @@ GroupDesc globalGroupsDescp[TAGS_MAX_NUM];
 
 namespace icamera {
 int gLogLevel = 0;
-char* gLogModules = nullptr;
 int gPerfLevel = 0;
 int gSlowlyRunRatio = 0;
 bool gIsDumpMediaInfo = false;
@@ -112,14 +111,14 @@ namespace Log {
 #define DEFAULT_LOG_SINK "GLOG"
 #define FILELOG_SINK     "FILELOG"
 
-static void fancyLogInitSinks() {
-    const char* sinkName = ::getenv("LOG_SINK");
+static void initLogSinks() {
+    const char* sinkName = ::getenv("logSink");
 
     if (!sinkName) {
         sinkName = DEFAULT_LOG_SINK;
     }
 
-    if (!::strcmp(sinkName, "GLOG")) {
+    if (!::strcmp(sinkName, DEFAULT_LOG_SINK)) {
         globalLogSink = new GLogSink();
     } else if (!::strcmp(sinkName, FILELOG_SINK)) {
         globalLogSink = new FileLogSink;
@@ -128,8 +127,8 @@ static void fancyLogInitSinks() {
     }
 }
 
-static void fancyLogSetLevel() {
-    static const char* LOG_FILE_TAG = "LOG_TAG";
+static void setLogTagLevel() {
+    static const char* LOG_FILE_TAG = "cameraTags";
     char* logFileTag = ::getenv(LOG_FILE_TAG);
 
     if (!logFileTag) return;
@@ -164,11 +163,10 @@ static void fancyLogSetLevel() {
 
 void setDebugLevel(void) {
     const char* PROP_CAMERA_HAL_DEBUG = "cameraDebug";
-    const char* PROP_CAMERA_HAL_MODULES = "cameraModules";
     const char* PROP_CAMERA_HAL_PERF = "cameraPerf";
     const char* PROP_CAMERA_RUN_RATIO = "cameraRunRatio";
 
-    fancyLogInitSinks();
+    initLogSinks();
 
     // debug
     char* dbgLevel = getenv(PROP_CAMERA_HAL_DEBUG);
@@ -183,16 +181,13 @@ void setDebugLevel(void) {
         globalGroupsDescp[i].level = gLogLevel;
     }
 
-    fancyLogSetLevel();
+    setLogTagLevel();
 
     char* slowlyRunRatio = getenv(PROP_CAMERA_RUN_RATIO);
     if (slowlyRunRatio) {
         gSlowlyRunRatio = strtoul(slowlyRunRatio, nullptr, 0);
         LOG1("Slow run ratio is 0x%x", gSlowlyRunRatio);
     }
-
-    // modules
-    gLogModules = getenv(PROP_CAMERA_HAL_MODULES);
 
     // performance
     char* perfLevel = getenv(PROP_CAMERA_HAL_PERF);
@@ -224,19 +219,9 @@ bool isDebugLevelEnable(int level) {
     return gLogLevel & level;
 }
 
-bool isFancyLogEnabled(int module) {
-    if (module < 0 || module >= TAGS_MAX_NUM) return false;
-    return globalGroupsDescp[module].level > 0;
-}
-
-bool isModulePrintable(const char* module) {
-    if (gLogModules == nullptr) {
-        return true;
-    } else if (strstr(gLogModules, module) != nullptr) {
-        return true;
-    } else {
-        return false;
-    }
+bool isLogTagEnabled(int tag) {
+    if (tag < 0 || tag >= TAGS_MAX_NUM) return false;
+    return globalGroupsDescp[tag].level > 0;
 }
 
 bool isDumpMediaInfo(void) {
@@ -247,10 +232,6 @@ __attribute__((__format__(__printf__, 4, 0))) void print_log(bool enable, const 
                                                              const int level, const char* format,
                                                              ...) {
     if (!enable && (level != CAMERA_DEBUG_LOG_ERR)) return;
-
-    if (!isModulePrintable(module)) {
-        return;
-    }
 
     va_list arg;
     va_start(arg, format);

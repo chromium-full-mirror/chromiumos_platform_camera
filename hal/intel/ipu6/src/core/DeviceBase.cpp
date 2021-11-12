@@ -120,7 +120,7 @@ int DeviceBase::streamOff() {
     return OK;
 }
 
-int DeviceBase::queueBuffer(long sequence) {
+int DeviceBase::queueBuffer(int64_t sequence) {
     LOG2("<id%d>%s, device:%s", mCameraId, __func__, mName);
 
     shared_ptr<CameraBuffer> buffer;
@@ -208,7 +208,7 @@ void DeviceBase::addPendingBuffer(const shared_ptr<CameraBuffer>& buffer) {
     mPendingBuffers.push_back(buffer);
 }
 
-long DeviceBase::getPredictSequence() {
+int64_t DeviceBase::getPredictSequence() {
     AutoMutex l(mBufferLock);
 
     return mLatestSequence + mFrameSkipNum + mBuffersInDevice.size();
@@ -220,7 +220,7 @@ shared_ptr<CameraBuffer> DeviceBase::getFirstDeviceBuffer() {
     return mBuffersInDevice.empty() ? nullptr : mBuffersInDevice.front();
 }
 
-bool DeviceBase::skipFrameAfterSyncCheck(long sequence) {
+bool DeviceBase::skipFrameAfterSyncCheck(int64_t sequence) {
     // For multi-camera sensor, to check whether the frame synced or not
     int count = 0;
     const int timeoutDuration = gSlowlyRunRatio ? (gSlowlyRunRatio * 1000000) : 1000;

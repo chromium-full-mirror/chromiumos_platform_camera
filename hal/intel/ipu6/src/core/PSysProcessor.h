@@ -73,11 +73,11 @@ private:
 
     void handleEvent(EventData eventData);
 
-    long getSettingSequence(const CameraBufferPortMap &outBuf);
-    bool needSkipOutputFrame(long sequence);
-    bool needExecutePipe(long settingSequence, long inputSequence);
-    bool needHoldOnInputFrame(long settingSequence, long inputSequence);
-    bool needSwitchPipe(long sequence);
+    int64_t getSettingSequence(const CameraBufferPortMap &outBuf);
+    bool needSkipOutputFrame(int64_t sequence);
+    bool needExecutePipe(int64_t settingSequence, int64_t inputSequence);
+    bool needHoldOnInputFrame(int64_t settingSequence, int64_t inputSequence);
+    bool needSwitchPipe(int64_t sequence);
 
     void outputRawImage(std::shared_ptr<CameraBuffer> &srcBuf,
                         std::shared_ptr<CameraBuffer> &dstBuf);
@@ -85,10 +85,10 @@ private:
     void handleRawReprocessing(CameraBufferPortMap *srcBuffers,
                                CameraBufferPortMap *dstBuffers, bool *allBufDone,
                                bool *hasRawOutput, bool *hasRawInput);
-    bool isBufferHoldForRawReprocess(long sequence);
+    bool isBufferHoldForRawReprocess(int64_t sequence);
     void saveRawBuffer(CameraBufferPortMap *srcBuffers);
     void returnRawBuffer();
-    void handleStillPipeForTnr(long sequence, CameraBufferPortMap *dstBuffers);
+    void handleStillPipeForTnr(int64_t sequence, CameraBufferPortMap *dstBuffers);
     void sendPsysFrameDoneEvent(const CameraBufferPortMap* dstBuffers);
     void sendPsysRequestEvent(const CameraBufferPortMap* dstBuffers,
                               int64_t sequence, uint64_t timestamp, EventType eventType);
@@ -126,16 +126,16 @@ private:
     timeval mSofTimestamp;
     Mutex mSofLock;
     Condition mSofCondition;
-    long mSofSequence;
+    int64_t mSofSequence;
 
     // variables for opaque raw
     Port mOpaqueRawPort;
     std::mutex mBufferMapLock;
     // hold RAW buffers for raw reprocessing or GPU still TNR
     bool mHoldRawBuffers;
-    std::map<long, CameraBufferPortMap> mRawBufferMap;
+    std::map<int64_t, CameraBufferPortMap> mRawBufferMap;
     // Indicate the latest sequence of raw buffer used in still TNR
-    long mLastStillTnrSequence;
+    int64_t mLastStillTnrSequence;
 
     enum {
         PIPELINE_UNCREATED = 0,

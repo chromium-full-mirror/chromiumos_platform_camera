@@ -63,7 +63,7 @@ class CameraStream : public BufferConsumer, public EventSource {
     /**
      * \brief Push one CameraBuffer to bufferProducer
      */
-    int qbuf(camera_buffer_t* ubuffer, long sequence);
+    int qbuf(camera_buffer_t* ubuffer, int64_t sequence);
 
     /**
      * \brief Calling mBufferProducer to allocate memory

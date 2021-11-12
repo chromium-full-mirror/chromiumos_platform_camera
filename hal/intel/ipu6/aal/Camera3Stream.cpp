@@ -174,7 +174,7 @@ bool Camera3Stream::threadLoop() {
     icamera::camera_buffer_t* buffer = nullptr;
     std::shared_ptr<Camera3Buffer> inputCam3Buf = result->inputCam3Buf;
     std::shared_ptr<StreamComInfo> halOutput = nullptr;
-    long sequence = -1;
+    int64_t sequence = -1;
 
     if (!inputCam3Buf && mIsHALStream) {
         LOG2("[%p]dqbuf for frameNumber %u", this, frameNumber);

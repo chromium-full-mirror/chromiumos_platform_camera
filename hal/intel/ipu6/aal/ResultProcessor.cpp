@@ -428,7 +428,7 @@ void ResultProcessor::returnRequestDone(uint32_t frameNumber) {
     LOG2("<req%u>@%s", frameNumber, __func__);
     TRACE_LOG_POINT("ResultProcessor", __func__, MAKE_COLOR(frameNumber), frameNumber);
 
-    if ((frameNumber % FPS_FRAME_COUNT == 0) && icamera::Log::isFancyLogEnabled(ST_FPS)) {
+    if ((frameNumber % FPS_FRAME_COUNT == 0) && icamera::Log::isLogTagEnabled(ST_FPS)) {
         struct timeval curTime;
         gettimeofday(&curTime, nullptr);
         int duration = static_cast<int>(curTime.tv_usec - mRequestTime.tv_usec +

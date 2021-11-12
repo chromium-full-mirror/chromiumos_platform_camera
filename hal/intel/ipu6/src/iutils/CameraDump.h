@@ -133,7 +133,7 @@ typedef struct {
 typedef struct {
     BinType_t bType;
     ModuleType_t mType;
-    long sequence;
+    int64_t sequence;
     union {
         GeneralParam_t gParam;
         StatParam_t sParam;

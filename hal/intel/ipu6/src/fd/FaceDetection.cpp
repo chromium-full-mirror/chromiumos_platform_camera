@@ -140,7 +140,7 @@ bool FaceDetection::faceRunningByCondition() {
 }
 
 void FaceDetection::printfFDRunRate() {
-    if (!Log::isFancyLogEnabled(ST_FPS)) return;
+    if (!Log::isLogTagEnabled(ST_FPS)) return;
 
     mRunCount++;
     if (mRunCount % FPS_FD_COUNT != 0) return;
