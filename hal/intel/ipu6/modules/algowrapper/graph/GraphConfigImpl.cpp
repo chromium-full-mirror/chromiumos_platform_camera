@@ -524,6 +524,34 @@ status_t GraphConfigImpl::prepareGraphConfig() {
     return OK;
 }
 
+string GraphConfigImpl::format2GraphStr(int format) {
+    switch (format) {
+        case V4L2_PIX_FMT_NV12:
+        case V4L2_PIX_FMT_P010:
+            return "Linear";
+        case V4L2_PIX_FMT_YUYV:
+            return "YUY2";
+        default:
+            LOGE("%s, unsupport the output format for graph: %s", __func__,
+                 CameraUtils::format2string(format).c_str());
+            return "Linear";
+    }
+}
+
+string GraphConfigImpl::format2GraphBpp(int format) {
+    switch (format) {
+        case V4L2_PIX_FMT_NV12:
+        case V4L2_PIX_FMT_YUYV:
+            return "8";
+        case V4L2_PIX_FMT_P010:
+            return "10";
+        default:
+            LOGE("%s, unsupport the output format for graph: %s", __func__,
+                 CameraUtils::format2string(format).c_str());
+            return "8";
+    }
+}
+
 /*
  * Do the secondary filter: configMode and stream format.
  */
@@ -565,9 +593,16 @@ status_t GraphConfigImpl::selectSetting(
         for (auto const& item : streamToSinkIdMap) {
             HalStream* s = item.first;
             ItemUID formatKey = {(ia_uid)item.second, GCSS_KEY_FORMAT};
-            string fmt = CameraUtils::format2string(s->format());
-            LOG2("The stream: %dx%d, format: %s", s->width(), s->height(), fmt.c_str());
+            string fmt = format2GraphStr(s->format());
             queryItem[formatKey] = fmt;
+
+            ItemUID bppKey = {(ia_uid)item.second, GCSS_KEY_BPP};
+            string bpp = format2GraphBpp(s->format());
+            queryItem[bppKey] = bpp;
+
+            LOG2("The stream: %dx%d, format: %s, graphFmt: %s, bpp: %s",
+                 s->width(), s->height(), CameraUtils::format2string(s->format()).c_str(),
+                 fmt.c_str(), bpp.c_str());
         }
 
         LOG1("dumpQuery with format condition");

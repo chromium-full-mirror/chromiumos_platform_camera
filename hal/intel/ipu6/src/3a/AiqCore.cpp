@@ -303,7 +303,11 @@ int AiqCore::setStatsParams(const cca::cca_stats_params& statsParams, cca::cca_o
         uint32_t bitmap = 0;
         bool decodeRgbsStats = !mRgbStatsBypassed || outStats->get_rgbs_stats;
         if (decodeRgbsStats) bitmap |= cca::CCA_STATS_RGBS | cca::CCA_STATS_HIST;
-        if (!mAfBypassed) bitmap |= cca::CCA_STATS_AF;
+        if (!mAfBypassed) {
+            bitmap |= cca::CCA_STATS_AF;
+
+            if (PlatformData::isPdafEnabled(mCameraId)) bitmap |= cca::CCA_STATS_PDAF;
+        }
         LOG3("<seq%ld> bypass bitmap %x", aiqStats->mSequence, bitmap);
 
         if (decodeRgbsStats && !mAfBypassed) {

@@ -128,6 +128,8 @@ class GraphConfigImpl {
     status_t getPgRbmValue(std::string pgName, IGraphType::StageAttr* stageAttr);
     status_t getMBRData(int32_t streamId, ia_isp_bxt_gdc_limits* data);
     status_t getPgNames(std::vector<std::string>* pgNames);
+    std::string format2GraphStr(int format);
+    std::string format2GraphBpp(int format);
 
     // Debug helper
     void dumpQuery(int useCase, const std::map<GCSS::ItemUID, std::string>& query);

@@ -170,6 +170,10 @@ int PlatformData::getLensHwType(int cameraId) {
     return getInstance()->mStaticCfg.mCameras[cameraId].mLensHwType;
 }
 
+bool PlatformData::isPdafEnabled(int cameraId) {
+    return getInstance()->mStaticCfg.mCameras[cameraId].mEnablePdaf;
+}
+
 bool PlatformData::getSensorAwbEnable(int cameraId) {
     return getInstance()->mStaticCfg.mCameras[cameraId].mSensorAwb;
 }

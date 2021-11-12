@@ -848,25 +848,34 @@ int PGCommon::configureFrameDesc() {
                 LOG1("%s set compression flag to PG %d terminal %d", __func__, mPGId, termIdx);
                 break;
             }
-            case IA_CSS_DATA_FORMAT_NV12: {
+            case IA_CSS_DATA_FORMAT_NV12:
+            case IA_CSS_DATA_FORMAT_P010: {
                 if (!PlatformData::getPSACompression(mCameraId)) break;
-                // now the bpl of NV12 format is width
-                int alignedBpl = ALIGN(width, PSYS_COMPRESSION_TNR_STRIDE_ALIGNMENT);
-                int alignedHeight = ALIGN(height, PSYS_COMPRESSION_TNR_LINEAR_HEIGHT_ALIGNMENT);
-                int alignedHeightUV = ALIGN(alignedHeight / UV_HEIGHT_DIVIDER,
-                                            PSYS_COMPRESSION_TNR_LINEAR_HEIGHT_ALIGNMENT);
+
+                unsigned int bpl = 0, heightAlignment = 0, tsBit = 0, tileSize = 0;
+                if (dstFrameDesc->frame_format_type == IA_CSS_DATA_FORMAT_NV12) {
+                    bpl = width;
+                    heightAlignment = PSYS_COMPRESSION_TNR_LINEAR_HEIGHT_ALIGNMENT;
+                    tsBit = TILE_STATUS_BITS_TNR_NV12_TILE_Y;
+                    tileSize = TILE_SIZE_TNR_NV12_Y;
+                } else {
+                    bpl = width * 2;
+                    heightAlignment = PSYS_COMPRESSION_OFS_TILE_HEIGHT_ALIGNMENT;
+                    tsBit = TILE_STATUS_BITS_OFS_P010_TILE_Y;
+                    tileSize = TILE_SIZE_OFS10_12_TILEY;
+                }
+
+                int alignedBpl = ALIGN(bpl, PSYS_COMPRESSION_TNR_STRIDE_ALIGNMENT);
+                int alignedHeight = ALIGN(height, heightAlignment);
+                int alignedHeightUV = ALIGN(height / UV_HEIGHT_DIVIDER, heightAlignment);
                 int imageBufferSize = ALIGN(alignedBpl * (alignedHeight + alignedHeightUV),
                                             PSYS_COMPRESSION_PAGE_SIZE);
                 int planarYTileStatus =
-                    CAMHAL_CEIL_DIV((alignedBpl * alignedHeight / TILE_SIZE_TNR_NV12_Y) *
-                                        TILE_STATUS_BITS_TNR_NV12_TILE_Y,
-                                    8);
+                    CAMHAL_CEIL_DIV((alignedBpl * alignedHeight / tileSize) * tsBit, 8);
                 planarYTileStatus = ALIGN(planarYTileStatus, PSYS_COMPRESSION_PAGE_SIZE);
 
                 int planarUVTileStatus =
-                    CAMHAL_CEIL_DIV((alignedBpl * alignedHeightUV / TILE_SIZE_TNR_NV12_LINEAR) *
-                                        TILE_STATUS_BITS_TNR_NV12_LINEAR,
-                                    8);
+                    CAMHAL_CEIL_DIV((alignedBpl * alignedHeightUV / tileSize) * tsBit, 8);
                 planarUVTileStatus = ALIGN(planarUVTileStatus, PSYS_COMPRESSION_PAGE_SIZE);
 
                 dstFrameDesc->bpp = cssBpp;

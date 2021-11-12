@@ -95,6 +95,7 @@ class PlatformData {
                       sensorDescription("unset"),
                       mLensName(""),
                       mLensHwType(LENS_NONE_HW),
+                      mEnablePdaf(false),
                       mSensorAwb(false),
                       mSensorAe(false),
                       mAutoSwitchType(AUTO_SWITCH_PSYS),
@@ -165,6 +166,7 @@ class PlatformData {
             std::string sensorDescription;
             std::string mLensName;
             int mLensHwType;
+            bool mEnablePdaf;
             bool mSensorAwb;
             bool mSensorAe;
             int mAutoSwitchType;
@@ -375,6 +377,14 @@ class PlatformData {
      * \return int: the Lens HW type
      */
     static int getLensHwType(int cameraId);
+
+    /**
+     * check if PDAF is supported or not
+     *
+     * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
+     * \return true if PDAF is supported.
+     */
+    static bool isPdafEnabled(int cameraId);
 
     /**
      * get the sensor AWB

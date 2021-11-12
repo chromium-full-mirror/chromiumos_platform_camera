@@ -385,6 +385,8 @@ void CameraParser::handleSensor(CameraParser* profiles, const char* name, const 
             LOGE("unknown Lens HW type %s, set to LENS_NONE_HW", atts[1]);
             pCurrentCam->mLensHwType = LENS_NONE_HW;
         }
+    } else if (strcmp(name, "enablePdaf") == 0) {
+        pCurrentCam->mEnablePdaf = strcmp(atts[1], "true") == 0;
     } else if (strcmp(name, "sensorAwb") == 0) {
         pCurrentCam->mSensorAwb = strcmp(atts[1], "true") == 0;
     } else if (strcmp(name, "sensorAe") == 0) {
