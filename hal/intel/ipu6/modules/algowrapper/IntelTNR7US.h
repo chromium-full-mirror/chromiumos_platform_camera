@@ -87,7 +87,6 @@ class IntelTNR7US {
     void handleParamUpdate(int gain, bool forceUpdate);
 
  private:
-    const uint32_t kMaxDuration = 5U;  // 5s
     int mCameraId;
     int mWidth;
     int mHeight;
@@ -96,10 +95,6 @@ class IntelTNR7US {
     std::unordered_map<void*, CmSurface2DUP*> mCMSurfaceMap;
     Tnr7Param* mTnrParam;
     std::unique_ptr<base::Thread> mThread;
-    pthread_mutex_t mLock;
-    pthread_cond_t mUpdateDoneCondition;
-
-    bool mParamUpdating;
 
     DISALLOW_COPY_AND_ASSIGN(IntelTNR7US);
 };
