@@ -27,6 +27,7 @@
 #include "iutils/Utils.h"
 
 #define CM_SURFACE_ALIGN_SIZE 0x1000
+#define CM_SURFACE_ALIGN_HEIGHT(val) ALIGN(val, 64)
 
 namespace icamera {
 
@@ -116,18 +117,18 @@ int IntelTNR7US::runTnrFrame(const void* inBufAddr, void* outBufAddr, uint32_t i
     }
     CheckAndLogError(outSurface == nullptr, UNKNOWN_ERROR,
                      "Failed to get CMSurface for output buffer");
-    struct timespec beginTime;
+    struct timespec beginTime = {};
     if (Log::isFancyLogEnabled(ST_GPU_TNR)) clock_gettime(CLOCK_MONOTONIC, &beginTime);
     /* call Tnr api to run tnr for the inSurface and store the result in outSurface */
-    int ret =
-        run_tnr7us_frame(mWidth, mHeight, mWidth, inSurface, outSurface, &tnrParam->scale,
-                         &tnrParam->ims, &tnrParam->bc, &tnrParam->blend, syncUpdate, mTnrType);
+    int ret = run_tnr7us_frame(mWidth, CM_SURFACE_ALIGN_HEIGHT(mHeight), mWidth, inSurface,
+                               outSurface, &tnrParam->scale, &tnrParam->ims, &tnrParam->bc,
+                               &tnrParam->blend, syncUpdate, mTnrType);
     if (fd >= 0) {
         destroyCMSurface(outSurface);
     }
     CheckAndLogError(ret != OK, UNKNOWN_ERROR, "tnr7us process failed");
     if (Log::isFancyLogEnabled(ST_GPU_TNR)) {
-        struct timespec endTime;
+        struct timespec endTime = {};
         clock_gettime(CLOCK_MONOTONIC, &endTime);
         uint64_t timeUsedUs = (endTime.tv_sec - beginTime.tv_sec) * 1000000 +
                               (endTime.tv_nsec - beginTime.tv_nsec) / 1000;
@@ -145,16 +146,27 @@ int IntelTNR7US::asyncParamUpdate(int gain, bool forceUpdate) {
     return OK;
 }
 
+int32_t IntelTNR7US::getSurfaceInfo(int width, int height, uint32_t* size) {
+    uint32_t pitch = 0;
+    uint32_t physicalSize = 0;
+    int ret = getSurface2DInfo(uint32_t(width), uint32_t(CM_SURFACE_ALIGN_HEIGHT(height)),
+                               CM_SURFACE_FORMAT_NV12, pitch, physicalSize);
+    CheckAndLogError(ret != 0, ret, "Failed to get surface info");
+    if (size) *size = physicalSize;
+    LOG1("@%s surface size: %u", __func__, physicalSize);
+    return OK;
+}
+
 void IntelTNR7US::handleParamUpdate(int gain, bool forceUpdate) {
     PERF_CAMERA_ATRACE();
     LOG2("@%s gain: %d", __func__, gain);
     // gain value is from AE expore analog_gain * digital_gain
-    struct timespec beginTime;
+    struct timespec beginTime = {};
     if (Log::isFancyLogEnabled(ST_GPU_TNR)) clock_gettime(CLOCK_MONOTONIC, &beginTime);
 
     tnr7usParamUpdate(gain, forceUpdate, mTnrType);
     if (Log::isFancyLogEnabled(ST_GPU_TNR)) {
-        struct timespec endTime;
+        struct timespec endTime = {};
         clock_gettime(CLOCK_MONOTONIC, &endTime);
         uint64_t timeUsedUs = (endTime.tv_sec - beginTime.tv_sec) * 1000000 +
                               (endTime.tv_nsec - beginTime.tv_nsec) / 1000;
@@ -173,7 +185,8 @@ CmSurface2DUP* IntelTNR7US::getBufferCMSurface(void* bufAddr) {
 CmSurface2DUP* IntelTNR7US::createCMSurface(void* bufAddr) {
     PERF_CAMERA_ATRACE();
     CmSurface2DUP* cmSurface = nullptr;
-    int32_t ret = createCmSurface2DUP(mWidth, mHeight, CM_SURFACE_FORMAT_NV12, bufAddr, cmSurface);
+    int32_t ret = createCmSurface2DUP(mWidth, CM_SURFACE_ALIGN_HEIGHT(mHeight),
+                                      CM_SURFACE_FORMAT_NV12, bufAddr, cmSurface);
     CheckAndLogError(ret != 0, nullptr, "failed to create CmSurface2DUP object");
     return cmSurface;
 }
@@ -181,4 +194,5 @@ CmSurface2DUP* IntelTNR7US::createCMSurface(void* bufAddr) {
 int32_t IntelTNR7US::destroyCMSurface(CmSurface2DUP* surface) {
     return destroyCMSurface2DUP(surface);
 }
+
 }  // namespace icamera

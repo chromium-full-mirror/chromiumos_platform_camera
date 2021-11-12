@@ -169,7 +169,13 @@ int GPUExecutor::allocBuffers() {
     int srcFmt = mTerminalsDesc[term].frameDesc.mFormat;
     int srcWidth = mTerminalsDesc[term].frameDesc.mWidth;
     int srcHeight = mTerminalsDesc[term].frameDesc.mHeight;
-    int size = PGCommon::getFrameSize(srcFmt, srcWidth, srcHeight, true);
+    uint32_t size = 0;
+
+    if (mIntelTNR) {
+        int ret = mIntelTNR->getSurfaceInfo(srcWidth, srcHeight, &size);
+        if (ret) size = PGCommon::getFrameSize(srcFmt, srcWidth, srcHeight, true);
+    }
+    LOG1("@%s, Required GPU TNR buffer size %u", __func__, size);
 
     for (int i = 0; i < MAX_BUFFER_COUNT; i++) {
         shared_ptr<CameraBuffer> buf;
@@ -535,13 +541,13 @@ int GPUExecutor::runTnrFrame(const std::shared_ptr<CameraBuffer>& inBuf,
     TRACE_LOG_PROCESS(mName.c_str(), __func__, MAKE_COLOR(inBuf->getSequence()),
                       inBuf->getSequence());
 
-    struct timespec beginTime;
+    struct timespec beginTime = {};
     if (mIntelTNR) {
         if (Log::isFancyLogEnabled(ST_GPU_TNR)) clock_gettime(CLOCK_MONOTONIC, &beginTime);
 
         ret = updateTnrISPConfig(mTnr7usParam, sequence);
         if (Log::isFancyLogEnabled(ST_GPU_TNR)) {
-            struct timespec endTime;
+            struct timespec endTime = {};
             clock_gettime(CLOCK_MONOTONIC, &endTime);
             uint64_t timeUsedUs = (endTime.tv_sec - beginTime.tv_sec) * 1000000 +
                                   (endTime.tv_nsec - beginTime.tv_nsec) / 1000;

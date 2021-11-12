@@ -50,6 +50,11 @@ void IntelGPUAlgoServer::handleRequest(const MsgReq& msg) {
         case IPC_GPU_TNR_INIT:
             status = mTNR.init(addr, requestSize);
             break;
+        case IPC_GPU_TNR_GET_SURFACE_INFO: {
+            TnrRequestInfo* requestInfo = static_cast<TnrRequestInfo*>(addr);
+            status = mTNR.getSurfaceInfo(requestInfo);
+            break;
+        }
         case IPC_GPU_TNR_PREPARE_SURFACE: {
             TnrRequestInfo* requestInfo = static_cast<TnrRequestInfo*>(addr);
             ShmInfo surfaceBuffer = {};

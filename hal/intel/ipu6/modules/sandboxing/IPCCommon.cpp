@@ -59,6 +59,7 @@ const char* IntelAlgoIpcCmdToString(IPC_CMD cmd) {
                                            "IPC_PG_PARAM_DECODE",
                                            "IPC_PG_PARAM_DEINIT",
                                            "IPC_GPU_TNR_INIT",
+                                           "IPC_GPU_TNR_GET_SURFACE_INFO",
                                            "IPC_GPU_TNR_PREPARE_SURFACE",
                                            "IPC_GPU_TNR_RUN_FRAME",
                                            "IPC_GPU_TNR_PARAM_UPDATE",
