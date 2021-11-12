@@ -527,7 +527,8 @@ void Camera3Stream::activateFaceDetection(unsigned int maxFaceNum) {
     LOG1("<id%d>[%p]@%s maxFaceNum %d", mCameraId, this, __func__, maxFaceNum);
 
     mFaceDetection = icamera::FaceDetection::createInstance(mCameraId, maxFaceNum, mHALStream.id,
-                                                            mHALStream.width, mHALStream.height);
+                                                            mHALStream.width, mHALStream.height,
+                                                            mStream.format, mStream.usage);
 }
 
 void Camera3Stream::addListener(Camera3Stream* listener) {

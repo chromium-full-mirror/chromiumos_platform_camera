@@ -27,7 +27,7 @@
 
 #include "AiqInitData.h"
 #include "CameraTypes.h"
-#include "FaceBase.h"
+#include "FaceType.h"
 #include "ICamera.h"
 #include "IGraphConfig.h"
 #include "MediaControl.h"
