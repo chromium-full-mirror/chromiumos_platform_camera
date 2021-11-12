@@ -97,6 +97,9 @@ shared_library("libcamhal") {
     "src/core/psysprocessor/PolicyManager.cpp",
     "src/core/psysprocessor/ShareReferBufferPool.cpp",
     "src/fd/FaceDetection.cpp",
+    "src/fd/IFaceDetection.cpp",
+    "src/fd/pvl/FaceDetectionPVL.cpp",
+    "src/fd/facessd/FaceSSD.cpp",
     "src/hal/CameraHal.cpp",
     "src/hal/ICamera.cpp",
     "src/image_process/ImageConverter.cpp",
@@ -148,6 +151,8 @@ shared_library("libcamhal") {
     "include/linux",
     "src",
     "src/fd",
+    "src/fd/pvl",
+    "src/fd/facessd",
     "src/platformdata",
     "src/platformdata/gc",
     "src/v4l2",
@@ -192,6 +197,7 @@ shared_library("libcamhal") {
     "jpeg",
     "dl",
     "rt",
+    "facessd_cros",
   ]
   pkg_deps = [
     "expat",
@@ -367,6 +373,7 @@ shared_library("libcam_algo") {
     "gcss",
     "ia_aiqb_parser",
     "rt",
+    "facessd_cros",
   ]
   pkg_deps = [
     "libcros_camera",

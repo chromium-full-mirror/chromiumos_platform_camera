@@ -192,7 +192,8 @@ PrivateStreamFD::PrivateStreamFD(int cameraId, const icamera::stream_t& halStrea
          mHALStream.height, mHALStream.format, stream.stream_type);
     unsigned int maxFacesNum = icamera::PlatformData::getMaxFaceDetectionNumber(mCameraId);
     mFaceDetection = icamera::FaceDetection::createInstance(mCameraId, maxFacesNum, mHALStream.id,
-                                                            mHALStream.width, mHALStream.height);
+                                                            mHALStream.width, mHALStream.height,
+                                                            stream.format, stream.usage);
 }
 
 PrivateStreamFD::~PrivateStreamFD() {
