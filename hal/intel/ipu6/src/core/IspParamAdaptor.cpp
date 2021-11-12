@@ -352,7 +352,7 @@ int IspParamAdaptor::decodeStatsData(TuningMode tuningMode,
 
     CheckAndLogError(!hwStatsData, UNKNOWN_ERROR, "%s, hwStatsData is nullptr", __func__);
     ia_isp_bxt_statistics_query_results_t queryResults = {};
-    uint32_t bitmap = 0xff; // Decode all stats by default
+    uint32_t bitmap = getRequestedStats();
     ia_err iaErr = mIntelCca->decodeStats(reinterpret_cast<uint64_t>(hwStatsData->data),
                                           hwStatsData->size, bitmap, &queryResults);
     CheckAndLogError(iaErr != ia_err_none, UNKNOWN_ERROR, "%s, Faield convert statistics",
@@ -747,18 +747,18 @@ int IspParamAdaptor::runIspAdaptL(ia_isp_bxt_program_group *pgPtr, ia_isp_bxt_gd
                     LOG2("%s, ia_pal_uuid_isp_tnr5_2x frame count = %d",
                          __func__, inputParams->program_group.base.run_kernels[i].metadata[0]);
                     break;
-#ifdef IPU_SYSVER_ipu6v5
                 case ia_pal_uuid_isp_ofa_2_mp:
                 case ia_pal_uuid_isp_ofa_2_dp:
                 case ia_pal_uuid_isp_ofa_2_ppp:
                     // These metadata options map to ofa_format_t
                     if (mIpuOutputFormat == V4L2_PIX_FMT_YUYV) {
                         inputParams->program_group.base.run_kernels[i].metadata[1] = 5;
+                    } else if (mIpuOutputFormat == V4L2_PIX_FMT_P010) {
+                        inputParams->program_group.base.run_kernels[i].metadata[1] = 15;
                     } else {
                         inputParams->program_group.base.run_kernels[i].metadata[1] = 2;
                     }
                     break;
-#endif
                 case ia_pal_uuid_isp_bxt_ofa_dp:
                 case ia_pal_uuid_isp_bxt_ofa_mp:
                 case ia_pal_uuid_isp_bxt_ofa_ppp:
@@ -984,6 +984,15 @@ void IspParamAdaptor::dumpCscMatrix(const ia_isp_bxt_csc* cscMatrix) {
          cscMatrix->rgb2yuv_coef[0], cscMatrix->rgb2yuv_coef[1], cscMatrix->rgb2yuv_coef[2],
          cscMatrix->rgb2yuv_coef[3], cscMatrix->rgb2yuv_coef[4], cscMatrix->rgb2yuv_coef[5],
          cscMatrix->rgb2yuv_coef[6], cscMatrix->rgb2yuv_coef[7], cscMatrix->rgb2yuv_coef[8]);
+}
+
+uint32_t IspParamAdaptor::getRequestedStats() {
+    uint32_t bitmap = cca::CCA_STATS_RGBS | cca::CCA_STATS_HIST | cca::CCA_STATS_AF |
+                      cca::CCA_STATS_YV | cca::CCA_STATS_LTM | cca::CCA_STATS_DVS;
+
+    if (PlatformData::isPdafEnabled(mCameraId)) bitmap |= cca::CCA_STATS_PDAF;
+
+    return bitmap;
 }
 
 } // namespace icamera

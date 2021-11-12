@@ -131,6 +131,7 @@ private:
     void dumpCscMatrix(const ia_isp_bxt_csc* cscMatrix);
     void applyCscMatrix(ia_isp_bxt_csc* cscMatrix);
     void updateResultFromAlgo(ia_binary_data* binaryData, long sequence);
+    uint32_t getRequestedStats();
 
  private:
     enum IspAdaptorState {

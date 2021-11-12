@@ -128,8 +128,6 @@ class GraphConfigPipe {
     /*
      * Pipeline connection support
      */
-    status_t pipelineGetConnections(const std::string& sinkName, int* streamId,
-                                    std::vector<IGraphType::PipelineConnection>* confVector);
     status_t portGetOwner(Node* port, IGraphType::ConnectionConfig* connectionInfo);
     status_t pipelineGetConnections(const std::vector<std::string>& pgList,
                                     std::vector<IGraphType::ScalerInfo>* scalerInfo,
