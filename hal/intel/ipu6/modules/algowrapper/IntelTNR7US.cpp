@@ -35,24 +35,13 @@ IntelTNR7US::IntelTNR7US(int cameraId)
           mWidth(0),
           mHeight(0),
           mTnrType(TNR_INSTANCE_MAX),
-          mTnrParam(nullptr),
-          mParamUpdating(false) {
-}
+          mTnrParam(nullptr) {}
 
 IntelTNR7US::~IntelTNR7US() {
     for (auto surface : mCMSurfaceMap) {
         destroyCMSurface(surface.second);
     }
     mCMSurfaceMap.clear();
-
-    int ret = pthread_cond_destroy(&mUpdateDoneCondition);
-    if (ret != 0) {
-        LOGE("@%s, call pthread_cond_destroy fails, ret:%d", __func__, ret);
-    }
-
-    ret = pthread_mutex_destroy(&mLock);
-    CheckAndLogError(ret != 0, VOID_VALUE, "@%s, call pthread_mutex_destroy fails, ret:%d",
-                     __func__, ret);
 }
 
 int IntelTNR7US::init(int width, int height, TnrType type) {
@@ -60,31 +49,6 @@ int IntelTNR7US::init(int width, int height, TnrType type) {
     mWidth = width;
     mHeight = height;
     mTnrType = type;
-
-    pthread_condattr_t attr;
-    int ret = pthread_condattr_init(&attr);
-    CheckAndLogError(ret != 0, UNKNOWN_ERROR, "@%s, call pthread_condattr_init fails, ret:%d",
-                     __func__, ret);
-
-    ret = pthread_condattr_setclock(&attr, CLOCK_MONOTONIC);
-    if (ret != 0) {
-        LOGE("@%s, call pthread_condattr_setclock fails, ret:%d", __func__, ret);
-        pthread_condattr_destroy(&attr);
-        return UNKNOWN_ERROR;
-    }
-
-    ret = pthread_cond_init(&mUpdateDoneCondition, &attr);
-    if (ret != 0) {
-        LOGE("@%s, call pthread_cond_init fails, ret:%d", __func__, ret);
-        pthread_condattr_destroy(&attr);
-        return UNKNOWN_ERROR;
-    }
-
-    pthread_condattr_destroy(&attr);
-
-    ret = pthread_mutex_init(&mLock, NULL);
-    CheckAndLogError(ret != 0, UNKNOWN_ERROR, "@%s, call pthread_mutex_init fails, ret:%d",
-                     __func__, ret);
 
     std::string threadName = "IntelTNR7US" + std::to_string(type + (mCameraId << 1));
     mThread = std::unique_ptr<base::Thread>(new base::Thread(threadName));
@@ -152,28 +116,8 @@ int IntelTNR7US::runTnrFrame(const void* inBufAddr, void* outBufAddr, uint32_t i
     }
     CheckAndLogError(outSurface == nullptr, UNKNOWN_ERROR,
                      "Failed to get CMSurface for output buffer");
-
-    /* the frame N gpu tnr run should wait for parameters of frame N-1 update completed */
-    nsecs_t startTime = CameraUtils::systemTime();
-    pthread_mutex_lock(&mLock);
-    if (mParamUpdating) {
-        int ret = 0;
-        struct timespec ts = {0, 0};
-        clock_gettime(CLOCK_MONOTONIC, &ts);
-        ts.tv_sec += kMaxDuration;
-        while (mParamUpdating && !ret) {
-            ret = pthread_cond_timedwait(&mUpdateDoneCondition, &mLock, &ts);
-        }
-
-        if (ret != 0) {
-            LOGE("@%s, call pthread_cond_timedwait fail, ret:%d, it takes %" PRId64 "ms", __func__,
-                 ret, (CameraUtils::systemTime() - startTime) / 1000000);
-            pthread_mutex_unlock(&mLock);
-            return UNKNOWN_ERROR;
-        }
-    }
-    pthread_mutex_unlock(&mLock);
-
+    struct timespec beginTime;
+    if (Log::isFancyLogEnabled(ST_GPU_TNR)) clock_gettime(CLOCK_MONOTONIC, &beginTime);
     /* call Tnr api to run tnr for the inSurface and store the result in outSurface */
     int ret =
         run_tnr7us_frame(mWidth, mHeight, mWidth, inSurface, outSurface, &tnrParam->scale,
@@ -182,15 +126,17 @@ int IntelTNR7US::runTnrFrame(const void* inBufAddr, void* outBufAddr, uint32_t i
         destroyCMSurface(outSurface);
     }
     CheckAndLogError(ret != OK, UNKNOWN_ERROR, "tnr7us process failed");
-
+    if (Log::isFancyLogEnabled(ST_GPU_TNR)) {
+        struct timespec endTime;
+        clock_gettime(CLOCK_MONOTONIC, &endTime);
+        uint64_t timeUsedUs = (endTime.tv_sec - beginTime.tv_sec) * 1000000 +
+                              (endTime.tv_nsec - beginTime.tv_nsec) / 1000;
+        LOG2(ST_GPU_TNR, "%s time:%lu us", __func__, timeUsedUs);
+    }
     return OK;
 }
 
 int IntelTNR7US::asyncParamUpdate(int gain, bool forceUpdate) {
-    pthread_mutex_lock(&mLock);
-    mParamUpdating = true;
-    pthread_mutex_unlock(&mLock);
-
     if (mThread->task_runner()) {
         mThread->task_runner()->PostTask(
             FROM_HERE,
@@ -203,15 +149,17 @@ void IntelTNR7US::handleParamUpdate(int gain, bool forceUpdate) {
     PERF_CAMERA_ATRACE();
     LOG2("@%s gain: %d", __func__, gain);
     // gain value is from AE expore analog_gain * digital_gain
+    struct timespec beginTime;
+    if (Log::isFancyLogEnabled(ST_GPU_TNR)) clock_gettime(CLOCK_MONOTONIC, &beginTime);
 
     tnr7usParamUpdate(gain, forceUpdate, mTnrType);
-    pthread_mutex_lock(&mLock);
-    mParamUpdating = false;
-    int ret = pthread_cond_signal(&mUpdateDoneCondition);
-    pthread_mutex_unlock(&mLock);
-
-    CheckAndLogError(ret != 0, VOID_VALUE, "@%s, call pthread_cond_signal fails, ret:%d", __func__,
-                     ret);
+    if (Log::isFancyLogEnabled(ST_GPU_TNR)) {
+        struct timespec endTime;
+        clock_gettime(CLOCK_MONOTONIC, &endTime);
+        uint64_t timeUsedUs = (endTime.tv_sec - beginTime.tv_sec) * 1000000 +
+                              (endTime.tv_nsec - beginTime.tv_nsec) / 1000;
+        LOG2(ST_GPU_TNR, "%s time:%lu us", __func__, timeUsedUs);
+    }
 }
 
 CmSurface2DUP* IntelTNR7US::getBufferCMSurface(void* bufAddr) {
