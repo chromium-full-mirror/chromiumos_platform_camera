@@ -38,13 +38,12 @@ GroupDesc globalGroupsDescp[TAGS_MAX_NUM];
 
 namespace icamera {
 int gLogLevel = 0;
-char *gLogModules = nullptr;
+char* gLogModules = nullptr;
 int gPerfLevel = 0;
-int gEnforceDvs = 0;
 int gSlowlyRunRatio = 0;
 bool gIsDumpMediaInfo = false;
 
-const char *cameraDebugLogToString(int level) {
+const char* cameraDebugLogToString(int level) {
     switch (level) {
         case CAMERA_DEBUG_LOG_LEVEL1:
             return "LV1";
@@ -52,36 +51,21 @@ const char *cameraDebugLogToString(int level) {
             return "LV2";
         case CAMERA_DEBUG_LOG_LEVEL3:
             return "LV3";
-        case CAMERA_DEBUG_LOG_REQ_STATE:
-            return "REQ";
-        case CAMERA_DEBUG_LOG_XML:
-            return "XML";
-        case CAMERA_DEBUG_LOG_DBG:
-            return "DBG";
         case CAMERA_DEBUG_LOG_INFO:
             return "INF";
         case CAMERA_DEBUG_LOG_ERR:
             return "ERR";
         case CAMERA_DEBUG_LOG_WARNING:
             return "WAR";
-        case CAMERA_DEBUG_LOG_VERBOSE:
-            return "VER";
-        case CAMERA_DEBUG_LOG_VC_SYNC:
-            return "VCSYNC";
-        case CAMERA_DEBUG_LOG_GRAPH:
-            return "GRAPH";
-        case CAMERA_DEBUG_LOG_SANDBOXING:
-            return "IPC";
         default:
             return "UKN";
     }
 }
 
-__attribute__((__format__(__printf__, 3, 0))) static void printLog(
-    const char *module, int level, const char *fmt, va_list ap) {
+__attribute__((__format__(__printf__, 3, 0))) static void printLog(const char* module, int level,
+                                                                   const char* fmt, va_list ap) {
     char prefix[64] = {};
-    snprintf(prefix, sizeof(prefix),
-             "[%s]: CamHAL_%s:", cameraDebugLogToString(level), module);
+    snprintf(prefix, sizeof(prefix), "[%s]: CamHAL_%s:", cameraDebugLogToString(level), module);
 
     char message[256] = {};
     vsnprintf(message, sizeof(message), fmt, ap);
@@ -101,34 +85,32 @@ __attribute__((__format__(__printf__, 3, 0))) static void printLog(
 
 void doLogBody(int logTag, int level, int grpPosition, const char* fmt, ...) {
     if (!(level & globalGroupsDescp[grpPosition].level)) return;
-    char prefix[64] = {};
-    ::snprintf(prefix, sizeof(prefix),
-               "CamHAL[%s]: ", icamera::cameraDebugLogToString(level));
-    char message[256] = {};
+
+    char message[256];
     va_list ap;
     va_start(ap, fmt);
     vsnprintf(message, sizeof(message), fmt, ap);
     va_end(ap);
-    globalLogSink->sendOffLog(prefix, message, level, tagNames[grpPosition]);
+
+    globalLogSink->sendOffLog({message, level, tagNames[grpPosition]});
 }
 
 void doLogBody(int logTag, int level, const char* fmt, ...) {
     if (!(level & globalGroupsDescp[logTag].level)) return;
 
-    char prefix[64] = {};
-    ::snprintf(prefix, sizeof(prefix), "CamHAL[%s]: ",
-               icamera::cameraDebugLogToString(level));
-    char message[256] = {};
+    char message[256];
     va_list ap;
     va_start(ap, fmt);
     vsnprintf(message, sizeof(message), fmt, ap);
     va_end(ap);
-    globalLogSink->sendOffLog(prefix, message, level, tagNames[logTag]);
+
+    globalLogSink->sendOffLog({message, level, tagNames[logTag]});
 }
 
 namespace Log {
 
 #define DEFAULT_LOG_SINK "GLOG"
+#define FILELOG_SINK     "FILELOG"
 
 static void fancyLogInitSinks() {
     const char* sinkName = ::getenv("LOG_SINK");
@@ -138,14 +120,16 @@ static void fancyLogInitSinks() {
     }
 
     if (!::strcmp(sinkName, "GLOG")) {
-        globalLogSink = new gLogSink();
+        globalLogSink = new GLogSink();
+    } else if (!::strcmp(sinkName, FILELOG_SINK)) {
+        globalLogSink = new FileLogSink;
     } else {
         globalLogSink = new StdconLogSink();
     }
 }
 
 static void fancyLogSetLevel() {
-    static const char* LOG_FILE_TAG = "FANCY_LOG_TAG";
+    static const char* LOG_FILE_TAG = "LOG_TAG";
     char* logFileTag = ::getenv(LOG_FILE_TAG);
 
     if (!logFileTag) return;
@@ -167,8 +151,7 @@ static void fancyLogSetLevel() {
 
         int itemIdx = 0;
         for (; itemIdx < TAGS_MAX_NUM; ++itemIdx) {
-            if (name != tagNames[itemIdx])
-                continue;
+            if (name != tagNames[itemIdx]) continue;
 
             if (levelStr.empty()) {
                 globalGroupsDescp[itemIdx].level = gLogLevel;
@@ -180,16 +163,15 @@ static void fancyLogSetLevel() {
 }
 
 void setDebugLevel(void) {
-    const char *PROP_CAMERA_HAL_DEBUG = "cameraDebug";
-    const char *PROP_CAMERA_HAL_MODULES = "cameraModules";
-    const char *PROP_CAMERA_HAL_PERF = "cameraPerf";
-    const char *PROP_CAMERA_HAL_DVS = "cameraDvs";
-    const char *PROP_CAMERA_RUN_RATIO = "cameraRunRatio";
+    const char* PROP_CAMERA_HAL_DEBUG = "cameraDebug";
+    const char* PROP_CAMERA_HAL_MODULES = "cameraModules";
+    const char* PROP_CAMERA_HAL_PERF = "cameraPerf";
+    const char* PROP_CAMERA_RUN_RATIO = "cameraRunRatio";
 
     fancyLogInitSinks();
 
     // debug
-    char *dbgLevel = getenv(PROP_CAMERA_HAL_DEBUG);
+    char* dbgLevel = getenv(PROP_CAMERA_HAL_DEBUG);
     gLogLevel = CAMERA_DEBUG_LOG_ERR | CAMERA_DEBUG_LOG_WARNING | CAMERA_DEBUG_LOG_INFO;
 
     if (dbgLevel) {
@@ -203,7 +185,7 @@ void setDebugLevel(void) {
 
     fancyLogSetLevel();
 
-    char *slowlyRunRatio = getenv(PROP_CAMERA_RUN_RATIO);
+    char* slowlyRunRatio = getenv(PROP_CAMERA_RUN_RATIO);
     if (slowlyRunRatio) {
         gSlowlyRunRatio = strtoul(slowlyRunRatio, nullptr, 0);
         LOG1("Slow run ratio is 0x%x", gSlowlyRunRatio);
@@ -213,41 +195,41 @@ void setDebugLevel(void) {
     gLogModules = getenv(PROP_CAMERA_HAL_MODULES);
 
     // performance
-    char *perfLevel = getenv(PROP_CAMERA_HAL_PERF);
+    char* perfLevel = getenv(PROP_CAMERA_HAL_PERF);
     if (perfLevel) {
         gPerfLevel = strtoul(perfLevel, nullptr, 0);
-        LOGD("Performance level is 0x%x", gPerfLevel);
+        LOGI("Performance level is 0x%x", gPerfLevel);
 
         // bitmask of tracing categories
         if (gPerfLevel & CAMERA_DEBUG_LOG_PERF_TRACES) {
-            LOGD("Perf KPI start/end trace is not yet supported");
+            LOG1("Perf KPI start/end trace is not yet supported");
         }
         if (gPerfLevel & CAMERA_DEBUG_LOG_PERF_TRACES_BREAKDOWN) {
-            LOGD("Perf KPI breakdown trace is not yet supported");
+            LOG1("Perf KPI breakdown trace is not yet supported");
         }
         if (gPerfLevel & CAMERA_DEBUG_LOG_PERF_IOCTL_BREAKDOWN) {
-            LOGD("Perf IOCTL breakdown trace is not yet supported");
+            LOG1("Perf IOCTL breakdown trace is not yet supported");
         }
         if (gPerfLevel & CAMERA_DEBUG_LOG_PERF_MEMORY) {
-            LOGD("Perf memory breakdown trace is not yet supported");
+            LOG1("Perf memory breakdown trace is not yet supported");
         }
         if (gPerfLevel & CAMERA_DEBUG_LOG_MEDIA_CONTROLLER_LEVEL) {
             gIsDumpMediaInfo = true;
         }
         ScopedAtrace::setTraceLevel(gPerfLevel);
     }
-
-    // Enforce DVS for debugging
-    char *dvs = getenv(PROP_CAMERA_HAL_DVS);
-    if (dvs) {
-        gEnforceDvs = strtoul(dvs, nullptr, 0);
-        LOGD("EnforceDvs level is 0x%x", gEnforceDvs);
-    }
 }
 
-bool isDebugLevelEnable(int level) { return gLogLevel & level; }
+bool isDebugLevelEnable(int level) {
+    return gLogLevel & level;
+}
 
-bool isModulePrintable(const char *module) {
+bool isFancyLogEnabled(int module) {
+    if (module < 0 || module >= TAGS_MAX_NUM) return false;
+    return globalGroupsDescp[module].level > 0;
+}
+
+bool isModulePrintable(const char* module) {
     if (gLogModules == nullptr) {
         return true;
     } else if (strstr(gLogModules, module) != nullptr) {
@@ -257,10 +239,13 @@ bool isModulePrintable(const char *module) {
     }
 }
 
-bool isDumpMediaInfo(void) { return gIsDumpMediaInfo; }
+bool isDumpMediaInfo(void) {
+    return gIsDumpMediaInfo;
+}
 
-__attribute__((__format__(__printf__, 4, 0))) void print_log(
-    bool enable, const char *module, const int level, const char *format, ...) {
+__attribute__((__format__(__printf__, 4, 0))) void print_log(bool enable, const char* module,
+                                                             const int level, const char* format,
+                                                             ...) {
     if (!enable && (level != CAMERA_DEBUG_LOG_ERR)) return;
 
     if (!isModulePrintable(module)) {
@@ -275,24 +260,15 @@ __attribute__((__format__(__printf__, 4, 0))) void print_log(
     va_end(arg);
 }
 
-__attribute__((__format__(__printf__, 1, 0))) void ccaPrintError(
-    const char *fmt, va_list ap) {
+__attribute__((__format__(__printf__, 1, 0))) void ccaPrintError(const char* fmt, va_list ap) {
     if (gLogLevel & CAMERA_DEBUG_LOG_CCA) {
         printLog("CCA_DEBUG", CAMERA_DEBUG_LOG_ERR, fmt, ap);
     }
 }
 
-__attribute__((__format__(__printf__, 1, 0))) void ccaPrintInfo(const char *fmt,
-                                                                va_list ap) {
+__attribute__((__format__(__printf__, 1, 0))) void ccaPrintInfo(const char* fmt, va_list ap) {
     if (gLogLevel & CAMERA_DEBUG_LOG_CCA) {
         printLog("CCA_DEBUG", CAMERA_DEBUG_LOG_INFO, fmt, ap);
-    }
-}
-
-__attribute__((__format__(__printf__, 1, 0))) void ccaPrintDebug(
-    const char *fmt, va_list ap) {
-    if (gLogLevel & CAMERA_DEBUG_LOG_CCA) {
-        printLog("CCA_DEBUG", CAMERA_DEBUG_LOG_DBG, fmt, ap);
     }
 }
 
@@ -300,8 +276,7 @@ __attribute__((__format__(__printf__, 1, 0))) void ccaPrintDebug(
 
 #ifdef HAVE_ANDROID_OS
 
-void __camera_hal_log(bool condition, int prio, const char *tag,
-                      const char *fmt, ...) {
+void __camera_hal_log(bool condition, int prio, const char* tag, const char* fmt, ...) {
     if (condition) {
         va_list ap;
         va_start(ap, fmt);

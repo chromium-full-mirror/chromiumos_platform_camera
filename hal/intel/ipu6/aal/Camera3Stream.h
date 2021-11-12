@@ -57,10 +57,10 @@ class ParameterResult;
  */
 class Camera3Stream : public icamera::Thread {
  public:
-    Camera3Stream(int cameraId, CallbackEventInterface* callback,
-                  ParameterResult* result, uint32_t maxNumReqInProc,
-                  const icamera::stream_t& halStream, const camera3_stream_t& stream,
-                  const camera3_stream_t* inputStream = nullptr, bool isHWStream = false);
+    Camera3Stream(int cameraId, CallbackEventInterface* callback, ParameterResult* result,
+                  uint32_t maxNumReqInProc, const icamera::stream_t& halStream,
+                  const camera3_stream_t& stream, const camera3_stream_t* inputStream = nullptr,
+                  bool isHWStream = false);
     virtual ~Camera3Stream();
 
     virtual bool threadLoop();
@@ -131,9 +131,9 @@ class Camera3Stream : public icamera::Thread {
     camera3_stream_t mStream;
 
     typedef enum {
-        PROCESS_REQUESTS,    // Normal working status.
-        PEND_PROCESS,        // Pending process when stopping camera.
-        DRAIN_REQUESTS       // Draining all requests after stopped camera.
+        PROCESS_REQUESTS,  // Normal working status.
+        PEND_PROCESS,      // Pending process when stopping camera.
+        DRAIN_REQUESTS     // Draining all requests after stopped camera.
     } StreamStatus;
     StreamStatus mStreamStatus;
 

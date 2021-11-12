@@ -39,12 +39,6 @@ static tag_info_t intel_vendor_camera[INTEL_VENDOR_CAMERA_END -
     { "callbackTmCurve",               ICAMERA_TYPE_BYTE   },
     { "toneMapCurve",                  ICAMERA_TYPE_FLOAT  },
     { "powerMode",                     ICAMERA_TYPE_BYTE   },
-    { "icCaps",                        ICAMERA_TYPE_INT32  },
-    { "icPeaceFeatures",               ICAMERA_TYPE_INT32  },
-    { "icEccMode",                     ICAMERA_TYPE_BYTE   },
-    { "icBcMode",                      ICAMERA_TYPE_BYTE   },
-    { "icBrParameters",                ICAMERA_TYPE_INT32  },
-    { "icFfMode",                      ICAMERA_TYPE_BYTE   },
     { "totalExposureTarget",           ICAMERA_TYPE_INT64  },
 };
 
@@ -122,64 +116,6 @@ int vendor_metadata_enum_snprint(uint32_t tag,
                     break;
                 case INTEL_VENDOR_CAMERA_POWER_MODE_HIGH_QUALITY:
                     msg = "HIGH_QUALITY";
-                    ret = 0;
-                    break;
-                default:
-                    msg = "error: enum value out of range";
-            }
-            break;
-        }
-        case INTEL_VENDOR_CAMERA_IC_CAPS: {
-            break;
-        }
-        case INTEL_VENDOR_CAMERA_IC_PEACE_FEATURES: {
-            break;
-        }
-        case INTEL_VENDOR_CAMERA_IC_ECC_MODE: {
-            switch (value) {
-                case INTEL_VENDOR_CAMERA_IC_ECC_MODE_OFF:
-                    msg = "OFF";
-                    ret = 0;
-                    break;
-                case INTEL_VENDOR_CAMERA_IC_ECC_MODE_ON:
-                    msg = "ON";
-                    ret = 0;
-                    break;
-                default:
-                    msg = "error: enum value out of range";
-            }
-            break;
-        }
-        case INTEL_VENDOR_CAMERA_IC_BC_MODE: {
-            switch (value) {
-                case INTEL_VENDOR_CAMERA_IC_BC_MODE_OFF:
-                    msg = "OFF";
-                    ret = 0;
-                    break;
-                case INTEL_VENDOR_CAMERA_IC_BC_MODE_BLUR:
-                    msg = "BLUR";
-                    ret = 0;
-                    break;
-                case INTEL_VENDOR_CAMERA_IC_BC_MODE_REPLACEMENT:
-                    msg = "REPLACEMENT";
-                    ret = 0;
-                    break;
-                default:
-                    msg = "error: enum value out of range";
-            }
-            break;
-        }
-        case INTEL_VENDOR_CAMERA_IC_BR_PARAMETERS: {
-            break;
-        }
-        case INTEL_VENDOR_CAMERA_IC_FF_MODE: {
-            switch (value) {
-                case INTEL_VENDOR_CAMERA_IC_FF_MODE_OFF:
-                    msg = "OFF";
-                    ret = 0;
-                    break;
-                case INTEL_VENDOR_CAMERA_IC_FF_MODE_AUTO:
-                    msg = "AUTO";
                     ret = 0;
                     break;
                 default:

@@ -59,7 +59,7 @@ GPUExecutor::GPUExecutor(int cameraId, const ExecutorPolicy& policy, vector<stri
           mUseInternalTnrBuffer(useTnrOutBuffer),
           mOutBufferSize(0) {
     CLEAR(mStillTnrTriggerInfo);
-    LOG1("Construct %s",  mName.c_str());
+    LOG1("Construct %s", mName.c_str());
 }
 
 GPUExecutor::~GPUExecutor() {
@@ -241,7 +241,7 @@ int GPUExecutor::getStillTnrTriggerInfo(TuningMode mode) {
     ia_err ret = intelCca->getCMC(&cmc);
     CheckAndLogError(ret != OK, BAD_VALUE, "Get cmc data failed");
     mStillTnrTriggerInfo = cmc.tnr7us_trigger_info;
-    LOG2("%s still tnr trigger gain num: %d threshold: %f", mName.c_str(),
+    LOG1("%s still tnr trigger gain num: %d threshold: %f", mName.c_str(),
          mStillTnrTriggerInfo.num_gains, mStillTnrTriggerInfo.tnr7us_threshold_gain);
     return OK;
 }
@@ -411,7 +411,7 @@ int GPUExecutor::updateTnrISPConfig(Tnr7Param* pbuffer, uint32_t sequence) {
         CheckAndLogError(pg == nullptr, UNKNOWN_ERROR, "Can't get IPU program group");
 
         // Get ISP parameters
-        LOG1("Update tnr parameters for sequence %d", sequence);
+        LOG2("Update tnr parameters for sequence %d", sequence);
 
         ia_binary_data* ipuParameters = mAdaptor->getIpuParameter(sequence, mStreamId);
         CheckAndLogError(ipuParameters == nullptr, UNKNOWN_ERROR, "Failed to find ISP parameter");
@@ -554,8 +554,7 @@ int GPUExecutor::runTnrFrame(const std::shared_ptr<CameraBuffer>& inBuf,
                 CameraBuffer::unmapDmaBufferAddr(outPtr, bufferSize);
             }
             mLastSequence = UINT32_MAX;
-            LOG2("Executor name:%s, skip frame sequence: %ld", mName.c_str(),
-                 inBuf->getSequence());
+            LOG2("Executor name:%s, skip frame sequence: %ld", mName.c_str(), inBuf->getSequence());
             return OK;
         } else if (mStreamId == STILL_TNR_STREAM_ID) {
             mGPULock.lock();
@@ -600,8 +599,7 @@ int GPUExecutor::runTnrFrame(const std::shared_ptr<CameraBuffer>& inBuf,
         std::unique_lock<std::mutex> lock(mTnrOutBufMapLock);
         mTnrOutBufMap.erase(tnrOutBuf->first);
         mTnrOutBufMap[sequence] = tnrOutBuf->second;
-        LOG2("outBuf->first %ld, outBuf->second %p", tnrOutBuf->first,
-             tnrOutBuf->second);
+        LOG2("outBuf->first %ld, outBuf->second %p", tnrOutBuf->first, tnrOutBuf->second);
     }
 
     if (memoryType == V4L2_MEMORY_DMABUF) {

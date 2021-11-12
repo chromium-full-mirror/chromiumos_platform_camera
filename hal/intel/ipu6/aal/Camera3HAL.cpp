@@ -66,7 +66,7 @@ static const camera_metadata_t* hal_dev_construct_default_request_settings(
 
 static int hal_dev_process_capture_request(const struct camera3_device* dev,
                                            camera3_capture_request_t* request) {
-    LOG1("@%s", __func__);
+    LOG2("@%s", __func__);
 
     FUNCTION_PREPARED_RETURN
 

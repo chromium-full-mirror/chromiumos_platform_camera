@@ -34,8 +34,8 @@
 #include "HALv3Utils.h"
 #include "ICamera.h"
 #include "MetadataConvert.h"
-#include "Parameters.h"
 #include "ParameterResult.h"
+#include "Parameters.h"
 #include "PlatformData.h"
 #include "Utils.h"
 
@@ -173,7 +173,7 @@ int RequestManager::configureStreams(camera3_stream_configuration_t* stream_list
     uint32_t operationMode = stream_list->operation_mode;
     LOG1("@%s, streamsNum:%d, operationMode:%d", __func__, streamsNum, operationMode);
     CheckAndLogError((operationMode != CAMERA3_STREAM_CONFIGURATION_NORMAL_MODE &&
-                     operationMode != CAMERA3_STREAM_CONFIGURATION_CONSTRAINED_HIGH_SPEED_MODE),
+                      operationMode != CAMERA3_STREAM_CONFIGURATION_CONSTRAINED_HIGH_SPEED_MODE),
                      icamera::BAD_VALUE, "Unknown operation mode %d!", operationMode);
 
     int inputStreamNum = 0;
@@ -226,8 +226,6 @@ int RequestManager::configureStreams(camera3_stream_configuration_t* stream_list
         if (stream_list->streams[i]->stream_type == CAMERA3_STREAM_INPUT) {
             if (stream_list->streams[i]->format == HAL_PIXEL_FORMAT_YCbCr_420_888) {
                 inputStream = stream_list->streams[i];
-                LOG1("@%s, input stream: w:%d, h:%d, f:%d", __func__, inputStream->width,
-                     inputStream->height, inputStream->format);
             } else {
                 stream_list->streams[i]->usage |= GRALLOC_USAGE_HW_CAMERA_ZSL;
             }
@@ -305,7 +303,7 @@ int RequestManager::configureStreams(camera3_stream_configuration_t* stream_list
         LOG1("Face detection is enable");
         fdChooseStream = chooseStreamForFaceDetection(streamsNum, stream_list->streams);
         if (fdChooseStream && isIPUSupportFD) {
-            if (RESOLUTION_VGA_WIDTH * fdChooseStream->height != \
+            if (RESOLUTION_VGA_WIDTH * fdChooseStream->height !=
                 fdChooseStream->width * RESOLUTION_VGA_HEIGHT) {
                 mFDStreamsInfo.height = VGA_360P;
             }
@@ -328,7 +326,8 @@ int RequestManager::configureStreams(camera3_stream_configuration_t* stream_list
         ret = icamera::PlatformData::queryGraphSettings(mCameraId, &streamCfg);
         if (ret != icamera::OK) {
             isIPUSupportFD = false;
-            streamCfg = {--halStreamNum, mHALStream,
+            streamCfg = {
+                --halStreamNum, mHALStream,
                 icamera::camera_stream_configuration_mode_t::CAMERA_STREAM_CONFIGURATION_MODE_AUTO};
         }
     }
@@ -371,10 +370,9 @@ int RequestManager::configureStreams(camera3_stream_configuration_t* stream_list
         bool isHALStream = halStreamFlag[requestStreamNum] == requestStreamNum;
         CheckAndLogError(halStreamIndex < 0 || halStreamIndex >= halStreamNum, icamera::BAD_VALUE,
                          "failed to find hal stream %d", halStreamIndex);
-        Camera3Stream* s =
-            new Camera3Stream(mCameraId, mResultProcessor, mParameterResult,
-                              mHALStream[halStreamIndex].max_buffers, mHALStream[halStreamIndex],
-                              *stream, inputStream, isHALStream);
+        Camera3Stream* s = new Camera3Stream(
+            mCameraId, mResultProcessor, mParameterResult, mHALStream[halStreamIndex].max_buffers,
+            mHALStream[halStreamIndex], *stream, inputStream, isHALStream);
         s->setActive(true);
         stream->priv = s;
         stream->max_buffers = mHALStream[halStreamIndex].max_buffers;
@@ -413,7 +411,7 @@ int RequestManager::configureStreams(camera3_stream_configuration_t* stream_list
     return icamera::OK;
 }
 
-camera3_stream_t *RequestManager::chooseStreamForFaceDetection(uint32_t streamsNum,
+camera3_stream_t* RequestManager::chooseStreamForFaceDetection(uint32_t streamsNum,
                                                                camera3_stream_t** streams) {
     LOG1("@%s", __func__);
     camera3_stream_t* preStream = nullptr;
@@ -426,8 +424,8 @@ camera3_stream_t *RequestManager::chooseStreamForFaceDetection(uint32_t streamsN
     bool isIPUSupportFD = icamera::PlatformData::isIPUSupportFD(mCameraId);
     for (uint32_t i = 0; i < streamsNum; i++) {
         camera3_stream_t* s = streams[i];
-        if (!s || s->stream_type != CAMERA3_STREAM_OUTPUT || ((s->width > maxWidth ||
-            s->height > maxHeight) && (!isIPUSupportFD))) {
+        if (!s || s->stream_type != CAMERA3_STREAM_OUTPUT ||
+            ((s->width > maxWidth || s->height > maxHeight) && (!isIPUSupportFD))) {
             continue;
         }
 
@@ -561,7 +559,7 @@ int RequestManager::processCaptureRequest(camera3_capture_request_t* request) {
     MetadataConvert::requestMetadataToHALMetadata(mLastSettings, &param, forceConvert);
 
     mResultProcessor->registerRequest(request, inputCam3Buf);
-    icamera::camera_buffer_t *faceDetectionBuf = nullptr;
+    icamera::camera_buffer_t* faceDetectionBuf = nullptr;
     if (!inputCam3Buf || opaqueRawInfo.sequence >= 0) {
         icamera::camera_buffer_t* buffer[kMaxStreamNum] = {nullptr};
         int numBuffers = 0;
@@ -588,8 +586,8 @@ int RequestManager::processCaptureRequest(camera3_capture_request_t* request) {
         }
 
         ret = icamera::camera_stream_qbuf(mCameraId, buffer, numBuffers, &param);
-        CheckAndLogError(ret != icamera::OK, ret, "@%s, camera_stream_qbuf fails,ret:%d",
-                         __func__, ret);
+        CheckAndLogError(ret != icamera::OK, ret, "@%s, camera_stream_qbuf fails,ret:%d", __func__,
+                         ret);
     }
 
     increaseRequestCount();
@@ -683,8 +681,6 @@ int RequestManager::waitProcessRequest() {
 }
 
 void RequestManager::increaseRequestCount() {
-    LOG1("@%s", __func__);
-
     std::lock_guard<std::mutex> l(mRequestLock);
     ++mRequestInProgress;
 }
@@ -871,21 +867,21 @@ int RequestManager::chooseHALStreams(const uint32_t requestStreamNum, int* halSt
 
     // 3: Need to sort them if there are multi streams configured to HAL
     if (videoHALStreamOrder.size() > 1) {
-        videoHALStreamOrder.sort([](std::pair<icamera::stream_t*, int>& s1,
-                                    std::pair<icamera::stream_t*, int>& s2) {
-            if (s1.first->width * s1.first->height > s2.first->width * s2.first->height)
-                return true;
-            else
-                return false;
-        });
+        videoHALStreamOrder.sort(
+            [](std::pair<icamera::stream_t*, int>& s1, std::pair<icamera::stream_t*, int>& s2) {
+                if (s1.first->width * s1.first->height > s2.first->width * s2.first->height)
+                    return true;
+                else
+                    return false;
+            });
 
         float baseRatio = static_cast<float>(videoHALStreamOrder.front().first->width) /
                           videoHALStreamOrder.front().first->height;
         for (auto& vs : videoHALStreamOrder) {
             float streamRatio = static_cast<float>(vs.first->width) / vs.first->height;
             if (streamRatio != baseRatio) {
-                LOG1("%s, baseRatio: %f, streamRatio: %f, there is FOV lose", __func__,
-                     baseRatio, streamRatio);
+                LOG1("%s, baseRatio: %f, streamRatio: %f, there is FOV lose", __func__, baseRatio,
+                     streamRatio);
             }
         }
     }
@@ -919,8 +915,7 @@ int RequestManager::chooseHALStreams(const uint32_t requestStreamNum, int* halSt
                 break;
             }
         }
-        if (it != videoHALStreamOrder.end())
-            continue;
+        if (it != videoHALStreamOrder.end()) continue;
 
         // 2: same ratio
         it = videoHALStreamOrder.begin();
@@ -931,8 +926,7 @@ int RequestManager::chooseHALStreams(const uint32_t requestStreamNum, int* halSt
                 break;
             }
         }
-        if (it != videoHALStreamOrder.end())
-            continue;
+        if (it != videoHALStreamOrder.end()) continue;
 
         // 3: bind to the biggest stream
         halStreamFlag[i] = videoHALStreamOrder.front().second;
