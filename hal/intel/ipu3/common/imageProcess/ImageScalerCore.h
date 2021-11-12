@@ -57,12 +57,14 @@ public:
 
         uint8_t* dstI420BufU = static_cast<uint8_t*>(dstI420BufUV.get());
         uint8_t* dstI420BufV = dstI420BufU + dstW * dstH / 4;
+        int left = (srcBuf->width() - dstBuf->width()) / 2;
+        int top = (srcH - dstH) / 2;
         ret = libyuv::ConvertToI420(static_cast<uint8_t*>(srcI420Buf.get()), srcI420BufSize,
                                     static_cast<uint8_t*>(dstBuf->data()), dstW,
                                     dstI420BufU, (dstW + 1) / 2,
                                     dstI420BufV, (dstW + 1) / 2,
-                                    (srcW - dstW) / 2, (srcH - dstH) / 2,
-                                    srcW, srcH, dstW, dstH,
+                                    left, top,
+                                    srcW, srcH, dstBuf->width(), dstH,
                                     libyuv::RotationMode::kRotate0, libyuv::FourCC::FOURCC_I420);
         CheckAndLogError(ret != 0, UNKNOWN_ERROR, "@%s, ConvertToI420 fails",
                          __FUNCTION__);
