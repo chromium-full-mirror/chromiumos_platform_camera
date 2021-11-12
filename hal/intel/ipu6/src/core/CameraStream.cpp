@@ -136,7 +136,7 @@ void CameraStream::waitToReturnAllUserBufffers() {
 }
 
 // Q buffers to the stream processor which should be set by the CameraDevice
-int CameraStream::qbuf(camera_buffer_t* ubuffer, long sequence) {
+int CameraStream::qbuf(camera_buffer_t* ubuffer, int64_t sequence) {
     shared_ptr<CameraBuffer> camBuffer = userBufferToCameraBuffer(ubuffer);
     if (camBuffer) {
         camBuffer->setSettingSequence(sequence);

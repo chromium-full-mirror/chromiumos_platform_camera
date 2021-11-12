@@ -715,7 +715,7 @@ int CameraDevice::dqbuf(int streamId, camera_buffer_t** ubuffer, Parameters* set
     return ret;
 }
 
-int CameraDevice::handleQueueBuffer(int bufferNum, camera_buffer_t** ubuffer, long sequence) {
+int CameraDevice::handleQueueBuffer(int bufferNum, camera_buffer_t** ubuffer, int64_t sequence) {
     LOG2("<id%d:seq%ld>@%s", mCameraId, sequence, __func__);
     CheckAndLogError(mState < DEVICE_CONFIGURE, BAD_VALUE, "@%s: Wrong state id %d", __func__,
                      mState);
@@ -808,7 +808,7 @@ int CameraDevice::qbuf(camera_buffer_t** ubuffer, int bufferNum, const Parameter
     return mRequestThread->processRequest(bufferNum, ubuffer, settings);
 }
 
-int CameraDevice::getParameters(Parameters& param, long sequence) {
+int CameraDevice::getParameters(Parameters& param, int64_t sequence) {
     PERF_CAMERA_ATRACE();
     LOG2("<id%d:seq%ld>@%s", mCameraId, sequence, __func__);
     AutoMutex m(mDeviceLock);

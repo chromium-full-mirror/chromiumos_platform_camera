@@ -451,7 +451,7 @@ bool RequestThread::isReadyForReconfigure() {
 
 bool RequestThread::threadLoop() {
     bool restart = false;
-    long applyingSeq = -1;
+    int64_t applyingSeq = -1;
     {
          ConditionLock lock(mPendingReqLock);
 
@@ -544,8 +544,8 @@ void RequestThread::handleReconfig() {
     return;
 }
 
-void RequestThread::handleRequest(CameraRequest& request, long applyingSeq) {
-    long effectSeq = mLastEffectSeq + 1;
+void RequestThread::handleRequest(CameraRequest& request, int64_t applyingSeq) {
+    int64_t effectSeq = mLastEffectSeq + 1;
     // Raw reprocessing case, don't run 3A.
     if (request.mBuffer[0]->sequence >= 0 && request.mBuffer[0]->timestamp > 0) {
         effectSeq = request.mBuffer[0]->sequence;

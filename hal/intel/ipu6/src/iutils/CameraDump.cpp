@@ -195,7 +195,7 @@ static string getNamePrefix(int cameraId, ModuleType_t type, Port port, int sUsa
     return string(prefix);
 }
 
-static string getAiqSettingAppendix(int cameraId, long sequence) {
+static string getAiqSettingAppendix(int cameraId, int64_t sequence) {
     char settingAppendix[MAX_NAME_LEN] = {'\0'};
 
     AiqResult* aiqResults =
@@ -311,7 +311,7 @@ static string getAiqSettingAppendix(int cameraId, long sequence) {
 }
 
 static string formatFrameFileName(const char* prefix, const char* appendix, const char* suffix,
-                                  long sequence, int width, int height) {
+                                  int64_t sequence, int width, int height) {
     char fileName[MAX_NAME_LEN] = {'\0'};
 
     if (icamera::CameraDump::isDumpFormatEnable(DUMP_FORMAT_IQSTUDIO)) {

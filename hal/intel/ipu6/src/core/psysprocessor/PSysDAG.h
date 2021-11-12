@@ -89,8 +89,8 @@ class PSysDAG {
     void registerListener(EventType eventType, EventListener* eventListener);
     void removeListener(EventType eventType, EventListener* eventListener);
 
-    TuningMode getTuningMode(long sequence);
-    int prepareIpuParams(long sequence, bool forceUpdate = false, TaskInfo* task = nullptr);
+    TuningMode getTuningMode(int64_t sequence);
+    int prepareIpuParams(int64_t sequence, bool forceUpdate = false, TaskInfo* task = nullptr);
 
     bool fetchTnrOutBuffer(int64_t seq, std::shared_ptr<CameraBuffer> buf);
     bool isBypassStillTnr(int64_t seq);

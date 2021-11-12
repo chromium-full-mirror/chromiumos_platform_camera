@@ -107,7 +107,7 @@ Camera3Buffer::Camera3Buffer(int w, int h, int stride, int v4l2fmt, void* usrPtr
 }
 
 Camera3Buffer::~Camera3Buffer() {
-    HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL1);
+    HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL2);
 
     if (mInit) {
         switch (mType) {
@@ -288,7 +288,7 @@ icamera::status_t Camera3Buffer::deregisterBuffer() {
  * \param aBuffer [IN] int flags
  */
 icamera::status_t Camera3Buffer::lock(int flags) {
-    HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL1);
+    HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL2);
     mHalBuffer.addr = nullptr;
     mHalBuffer.s.size = 0;
     int ret = 0;
@@ -329,7 +329,7 @@ icamera::status_t Camera3Buffer::lock(int flags) {
 }
 
 icamera::status_t Camera3Buffer::lock() {
-    HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL1);
+    HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL2);
     CheckAndLogError(!mInit, INVALID_OPERATION,
                      "@%s: Error: Cannot lock now this buffer, not initialized", __func__);
 
@@ -357,7 +357,7 @@ icamera::status_t Camera3Buffer::lock() {
 }
 
 icamera::status_t Camera3Buffer::unlock() {
-    HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL1);
+    HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL2);
     if (mLocked && mType != BUF_TYPE_HANDLE) {
         mLocked = false;
         return icamera::OK;

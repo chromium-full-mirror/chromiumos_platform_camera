@@ -903,7 +903,7 @@ int PGCommon::iterate(CameraBufferMap& inBufs, CameraBufferMap& outBufs, ia_bina
     PERF_CAMERA_ATRACE();
     LOG2("%s:%s ++", getName(), __func__);
 
-    long sequence = 0;
+    int64_t sequence = 0;
     if (!inBufs.empty()) {
         sequence = inBufs.begin()->second->getSequence();
     }
@@ -1098,7 +1098,7 @@ int PGCommon::allocateTnrSimBuffers() {
 
 int PGCommon::prepareTerminalBuffers(const ia_binary_data* ipuParameters,
                                      const CameraBufferMap& inBufs, const CameraBufferMap& outBufs,
-                                     long sequence) {
+                                     int64_t sequence) {
     CIPR::Buffer* ciprBuf = nullptr;
     // Prepare payload
     for (int termIdx = 0; termIdx < mTerminalCount; termIdx++) {
@@ -1162,7 +1162,7 @@ int PGCommon::prepareTerminalBuffers(const ia_binary_data* ipuParameters,
     return mPGParamAdapt->updatePALAndEncode(ipuParameters, mTerminalCount, mParamPayload);
 }
 
-void PGCommon::postTerminalBuffersDone(long sequence) {
+void PGCommon::postTerminalBuffersDone(int64_t sequence) {
     if (!mTnrDataBuffers.empty() && mShareReferIds[mTnrTerminalPair.inId]) {
         mShareReferPool->releaseBuffer(mShareReferIds[mTnrTerminalPair.inId],
                                        mTerminalBuffers[mTnrTerminalPair.inId],
@@ -1521,7 +1521,8 @@ CIPR::Buffer* PGCommon::registerUserBuffer(int size, int fd, bool flush) {
     return ciprBuf;
 }
 
-void PGCommon::dumpTerminalPyldAndDesc(int pgId, long sequence, ia_css_process_group_t* pgGroup) {
+void PGCommon::dumpTerminalPyldAndDesc(int pgId, int64_t sequence,
+                                       ia_css_process_group_t* pgGroup) {
     if (!CameraDump::isDumpTypeEnable(DUMP_PSYS_PG)) return;
 
     char fileName[MAX_NAME_LEN] = {'\0'};

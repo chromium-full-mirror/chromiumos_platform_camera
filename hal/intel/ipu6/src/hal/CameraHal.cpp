@@ -217,7 +217,7 @@ int CameraHal::streamDqbuf(int cameraId, int streamId, camera_buffer_t** ubuffer
     return device->dqbuf(streamId, ubuffer, settings);
 }
 
-int CameraHal::getParameters(int cameraId, Parameters& param, long sequence) {
+int CameraHal::getParameters(int cameraId, Parameters& param, int64_t sequence) {
     LOG2("<id%d> @%s", cameraId, __func__);
     CameraDevice* device = mCameraDevices[cameraId];
     checkCameraDevice(device, BAD_VALUE);

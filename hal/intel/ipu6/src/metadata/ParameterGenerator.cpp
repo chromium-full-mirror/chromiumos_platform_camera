@@ -79,7 +79,7 @@ int ParameterGenerator::reset() {
     return OK;
 }
 
-int ParameterGenerator::saveParameters(long sequence, long requestId, const Parameters* param) {
+int ParameterGenerator::saveParameters(int64_t sequence, long requestId, const Parameters* param) {
     CHECK_REQUEST_ID(requestId);
     CHECK_SEQUENCE(sequence);
 
@@ -103,7 +103,7 @@ int ParameterGenerator::saveParameters(long sequence, long requestId, const Para
     return OK;
 }
 
-void ParameterGenerator::updateParameters(long sequence, const Parameters* param) {
+void ParameterGenerator::updateParameters(int64_t sequence, const Parameters* param) {
     CheckAndLogError(!param, VOID_VALUE, "The param is nullptr!");
 
     LOG2("<seq%ld>%s, sequence %ld", sequence, __func__);
@@ -171,7 +171,8 @@ void ParameterGenerator::updateParameters(long sequence, const Parameters* param
     mRequestParamMap[sequence] = requestParam;
 }
 
-int ParameterGenerator::getParameters(long sequence, Parameters* param, bool setting, bool result) {
+int ParameterGenerator::getParameters(int64_t sequence, Parameters* param, bool setting,
+                                      bool result) {
     CheckAndLogError((param == nullptr), UNKNOWN_ERROR, "nullptr to get param!");
 
     if (setting) {
@@ -200,7 +201,7 @@ int ParameterGenerator::getParameters(long sequence, Parameters* param, bool set
     return OK;
 }
 
-int ParameterGenerator::getUserRequestId(long sequence, int32_t& userRequestId) {
+int ParameterGenerator::getUserRequestId(int64_t sequence, int32_t& userRequestId) {
     CHECK_SEQUENCE(sequence);
 
     AutoMutex l(mParamsLock);
@@ -220,7 +221,7 @@ void ParameterGenerator::setRequestIdMap(long currentRequestId, long requestIdWi
     mRequestIdMap[currentRequestId] = requestIdWithAiq;
 }
 
-int ParameterGenerator::getRequestId(long sequence, long& requestId) {
+int ParameterGenerator::getRequestId(int64_t sequence, long& requestId) {
     CHECK_SEQUENCE(sequence);
     requestId = -1;
 
@@ -252,7 +253,7 @@ int ParameterGenerator::getRequestId(long sequence, long& requestId) {
     return UNKNOWN_ERROR;
 }
 
-int ParameterGenerator::generateParametersL(long sequence, Parameters* params) {
+int ParameterGenerator::generateParametersL(int64_t sequence, Parameters* params) {
     if (PlatformData::isEnableAIQ(mCameraId)) {
         updateWithAiqResultsL(sequence, params);
         updateTonemapCurve(sequence, params);
@@ -260,7 +261,7 @@ int ParameterGenerator::generateParametersL(long sequence, Parameters* params) {
     return OK;
 }
 
-int ParameterGenerator::updateWithAiqResultsL(long sequence, Parameters* params) {
+int ParameterGenerator::updateWithAiqResultsL(int64_t sequence, Parameters* params) {
     const AiqResult* aiqResult = AiqResultStorage::getInstance(mCameraId)->getAiqResult(sequence);
     CheckAndLogError((aiqResult == nullptr), UNKNOWN_ERROR,
                      "%s Aiq result of sequence %ld does not exist", __func__, sequence);
@@ -377,7 +378,7 @@ int ParameterGenerator::updateAwbGainsL(Parameters* params, const cca::cca_awb_r
     return OK;
 }
 
-int ParameterGenerator::updateTonemapCurve(long sequence, Parameters* params) {
+int ParameterGenerator::updateTonemapCurve(int64_t sequence, Parameters* params) {
     if (!mTonemapMaxCurvePoints) return OK;
 
     const AiqResult* aiqResult = AiqResultStorage::getInstance(mCameraId)->getAiqResult(sequence);

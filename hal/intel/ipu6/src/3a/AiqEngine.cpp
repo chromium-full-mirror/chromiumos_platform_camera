@@ -105,7 +105,7 @@ int AiqEngine::stopEngine() {
     return OK;
 }
 
-int AiqEngine::run3A(long requestId, long applyingSeq, long* effectSeq) {
+int AiqEngine::run3A(long requestId, int64_t applyingSeq, int64_t* effectSeq) {
     LOG2("<id%d:req%ld>%s: applying seq %ld", mCameraId, requestId, __func__, applyingSeq);
 
     // Run 3A in call thread
@@ -308,7 +308,7 @@ AiqEngine::AiqState AiqEngine::prepareInputParam(AiqStatistics* aiqStats, AiqRes
     return AIQ_STATE_RUN;
 }
 
-AiqEngine::AiqState AiqEngine::runAiq(long requestId, long applyingSeq, AiqResult* aiqResult,
+AiqEngine::AiqState AiqEngine::runAiq(long requestId, int64_t applyingSeq, AiqResult* aiqResult,
                                       bool* aiqRun) {
     if ((requestId % PlatformData::getAiqRunningInterval(mCameraId) == 0) || mFirstAiqRunning) {
         int ret = mAiqCore->runAe(requestId, aiqResult);
@@ -332,7 +332,7 @@ AiqEngine::AiqState AiqEngine::runAiq(long requestId, long applyingSeq, AiqResul
     return AIQ_STATE_RESULT_SET;
 }
 
-void AiqEngine::setSensorExposure(AiqResult* aiqResult, long applyingSeq) {
+void AiqEngine::setSensorExposure(AiqResult* aiqResult, int64_t applyingSeq) {
     SensorExpGroup sensorExposures;
     for (unsigned int i = 0; i < aiqResult->mAeResults.num_exposures; i++) {
         SensorExposure exposure;

@@ -543,10 +543,10 @@ int GPUExecutor::runTnrFrame(const std::shared_ptr<CameraBuffer>& inBuf,
 
     struct timespec beginTime = {};
     if (mIntelTNR) {
-        if (Log::isFancyLogEnabled(ST_GPU_TNR)) clock_gettime(CLOCK_MONOTONIC, &beginTime);
+        if (Log::isLogTagEnabled(ST_GPU_TNR)) clock_gettime(CLOCK_MONOTONIC, &beginTime);
 
         ret = updateTnrISPConfig(mTnr7usParam, sequence);
-        if (Log::isFancyLogEnabled(ST_GPU_TNR)) {
+        if (Log::isLogTagEnabled(ST_GPU_TNR)) {
             struct timespec endTime = {};
             clock_gettime(CLOCK_MONOTONIC, &endTime);
             uint64_t timeUsedUs = (endTime.tv_sec - beginTime.tv_sec) * 1000000 +
@@ -610,7 +610,7 @@ int GPUExecutor::runTnrFrame(const std::shared_ptr<CameraBuffer>& inBuf,
         dstFd = -1;
     }
 
-    if (Log::isFancyLogEnabled(ST_GPU_TNR)) clock_gettime(CLOCK_MONOTONIC, &beginTime);
+    if (Log::isLogTagEnabled(ST_GPU_TNR)) clock_gettime(CLOCK_MONOTONIC, &beginTime);
     ret = mIntelTNR->runTnrFrame(inBuf->getBufferAddr(), dstBuf, inBuf->getBufferSize(), dstSize,
                                  mTnr7usParam, paramSyncUpdate, dstFd);
     if (ret == OK) {
@@ -621,7 +621,7 @@ int GPUExecutor::runTnrFrame(const std::shared_ptr<CameraBuffer>& inBuf,
         LOG2("Just copy source buffer if run TNR failed");
         MEMCPY_S(outPtr, bufferSize, inBuf->getBufferAddr(), inBuf->getBufferSize());
     }
-    if (Log::isFancyLogEnabled(ST_GPU_TNR)) {
+    if (Log::isLogTagEnabled(ST_GPU_TNR)) {
         struct timespec endTime;
         clock_gettime(CLOCK_MONOTONIC, &endTime);
         uint64_t timeUsedUs = (endTime.tv_sec - beginTime.tv_sec) * 1000000 +

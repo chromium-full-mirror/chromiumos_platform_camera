@@ -181,7 +181,7 @@ class CameraDevice : public EventListener {
      *
      * \return OK if succeed, other value indicates failed
      */
-    int getParameters(Parameters& param, long sequence);
+    int getParameters(Parameters& param, int64_t sequence);
 
     void handleEvent(EventData eventData);
 
@@ -219,10 +219,8 @@ class CameraDevice : public EventListener {
      */
     void unbindListeners();
 
-    long fetchCaptureSettings(const Parameters* params);
-
     // The second phase of qbuf(), done in RequestThread
-    int handleQueueBuffer(int bufferNum, camera_buffer_t** ubuffer, long sequence);
+    int handleQueueBuffer(int bufferNum, camera_buffer_t** ubuffer, int64_t sequence);
 
     // No lock protect for internal usage, should be protected by mDeviceLock from outside
     int configureL(stream_config_t* streamList, bool clean = true);

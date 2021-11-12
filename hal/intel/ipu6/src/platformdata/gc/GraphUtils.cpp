@@ -27,9 +27,7 @@
 namespace icamera {
 
 void GraphUtils::dumpConnections(const std::vector<IGraphType::PipelineConnection>& connections) {
-    if (!Log::isDebugLevelEnable(CAMERA_DEBUG_LOG_LEVEL3)) {
-        return;
-    }
+    if (!Log::isLogTagEnabled(GET_FILE_SHIFT(GraphUtils))) return;
 
     LOG3("Graph connections:");
     for (auto& conn : connections) {
@@ -61,9 +59,7 @@ void GraphUtils::dumpConnections(const std::vector<IGraphType::PipelineConnectio
 }
 
 void GraphUtils::dumpKernelInfo(const ia_isp_bxt_program_group& programGroup) {
-    if (!Log::isDebugLevelEnable(CAMERA_DEBUG_LOG_LEVEL3)) {
-        return;
-    }
+    if (!Log::isLogTagEnabled(GET_FILE_SHIFT(GraphUtils))) return;
 
     LOG3("Kernel info: count %d, opMode %d", programGroup.kernel_count,
          programGroup.operation_mode);

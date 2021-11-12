@@ -2054,7 +2054,7 @@ void CameraParser::getSensorDataFromXmlFile(void) {
 }
 
 void CameraParser::dumpSensorInfo(void) {
-    if (!Log::isDebugLevelEnable(CAMERA_DEBUG_LOG_LEVEL3)) return;
+    if (!Log::isLogTagEnabled(GET_FILE_SHIFT(CameraParser))) return;
 
     LOG3("@%s, sensor number: %d ==================", __func__, getSensorNum());
     for (unsigned i = 0; i < getSensorNum(); i++) {
