@@ -76,6 +76,8 @@ typedef struct
     ia_tnr7_t const* direct_ia_tnr7_t;
     ia_aiq_ir_weight_t const* direct_ia_aiq_ir_weight_grid;
     ia_aiq_rgbir_t const* direct_ia_aiq_rgbir_t;
+    cmc_parsed_cbd_t *direct_cmc_parsed_cbd_t;
+	ia_aiq_gbce_results const* direct_ia_aiq_gbce_results;
 } ia_pal_direct_results;
 
 #endif // IA_PAL_DIRECT_H

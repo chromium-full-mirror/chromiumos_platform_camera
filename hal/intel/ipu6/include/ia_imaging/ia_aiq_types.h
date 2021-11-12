@@ -630,6 +630,7 @@ typedef struct
     ia_aiq_bracket_mode multiframe;                     /*!< AEC may propose to use multiframe for optimal results. */
     ia_aiq_ae_flicker_reduction flicker_reduction_mode; /*!< Flicker reduction mode proposed by the AEC algorithm */
     ia_aiq_aperture_control *aperture_control;          /*!< Aperture control parameters. */
+    bool plc_mode_used;                                 /*!< Indicates the PLC mode usage. */
 } ia_aiq_ae_results;
 
 /*!
