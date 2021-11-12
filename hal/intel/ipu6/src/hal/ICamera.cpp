@@ -30,6 +30,7 @@
  * 2. Transfer HAL API to CameraHal class
  * 3. Implement the HAL static function: get_number_of_cameras and get_camera_info
  */
+extern "C" {
 namespace icamera {
 
 static CameraHal* gCameraHal = nullptr;
@@ -243,28 +244,6 @@ int camera_device_allocate_memory(int camera_id, camera_buffer_t* buffer) {
 }
 
 /**
- * Queue a buffer to a stream (deprecated)
- *
- * \param camera_id The camera ID that opened before
- * \param stream_id the stream ID that add to device before
- * \param camera_buff stream buff
- *
- * \return error code
- **/
-int camera_stream_qbuf(int camera_id, int stream_id, camera_buffer_t* buffer, int num_buffers,
-                       const Parameters* settings) {
-    HAL_TRACE_CALL(2);
-    CheckAndLogError(!gCameraHal, INVALID_OPERATION, "camera hal is NULL.");
-    CheckCameraId(camera_id, BAD_VALUE);
-
-    LOGW("camera_stream_qbuf(int, int, camera_buffer_t*, int, const Parameters*) is deprecated "
-         "and will be removed soon.");
-    LOGW("Please use camera_stream_qbuf(int, camera_buffer_t**, int, const Parameters*)");
-
-    return gCameraHal->streamQbuf(camera_id, &buffer, num_buffers, settings);
-}
-
-/**
  * Queue a buffer(or more buffers) to a stream
  *
  * \param camera_id The camera ID that opened before
@@ -343,3 +322,4 @@ int get_frame_size(int camera_id, int format, int width, int height, int field, 
 }
 
 }  // namespace icamera
+}  // extern "C"

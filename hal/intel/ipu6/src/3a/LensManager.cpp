@@ -30,7 +30,6 @@ LensManager::LensManager(int cameraId, LensHw *lensHw) :
     mDcIrisCommand(ia_aiq_aperture_control_dc_iris_close),
     mFocusPosition(-1),
     mLastSofSequence(-1) {
-    mSeqToPositionMap.clear();
 }
 
 LensManager::~LensManager() {

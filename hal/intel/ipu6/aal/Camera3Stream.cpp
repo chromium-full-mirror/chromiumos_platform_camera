@@ -49,9 +49,9 @@ Camera3Stream::Camera3Stream(int cameraId, CallbackEventInterface* callback,
           mFaceDetection(nullptr),
           mInputPostProcessType(icamera::POST_PROCESS_NONE),
           mIsHALStream(isHALStream) {
-    LOG1("[%p]@%s, buf num:%d, inputStream:%p, stream:%dx%d, format:%d, type:%d", this,
-         __func__, mMaxNumReqInProc, inputStream, mHALStream.width, mHALStream.height,
-         mHALStream.format, mStream.stream_type);
+    LOG1("[%p]@%s, buf num:%d, inputStream:%p, stream:%dx%d, format:%d, type:%d", this, __func__,
+         mMaxNumReqInProc, inputStream, mHALStream.width, mHALStream.height, mHALStream.format,
+         mStream.stream_type);
 
     mPostProcessor = std::unique_ptr<PostProcessor>(new PostProcessor(mCameraId, stream));
     mCaptureRequest.clear();
@@ -155,7 +155,7 @@ void Camera3Stream::drainRequest() {
 }
 
 bool Camera3Stream::threadLoop() {
-    LOG1("[%p] isHALStream: %d @%s", this, mIsHALStream, __func__);
+    LOG2("[%p] isHALStream: %d @%s", this, mIsHALStream, __func__);
 
     if (mStreamStatus == DRAIN_REQUESTS) {
         drainRequest();
@@ -193,9 +193,9 @@ bool Camera3Stream::threadLoop() {
         sequence = buffer->sequence;
         {
             std::unique_lock<std::mutex> lock(mLock);
-            if (mCaptureResultMap.find(static_cast<uint32_t>(buffer->reserved)) !=
+            if (mCaptureResultMap.find(buffer->requestId) !=
                 mCaptureResultMap.end()) {
-                frameNumber = static_cast<uint32_t>(buffer->reserved);
+                frameNumber = buffer->requestId;
                 result = mCaptureResultMap[frameNumber];
             }
         }
@@ -406,11 +406,8 @@ void Camera3Stream::requestExit() {
 
 bool Camera3Stream::isLockUserBufferNeeded(const std::shared_ptr<Camera3Buffer>& inputCam3Buf) {
     return (mHALStream.usage == icamera::CAMERA_STREAM_OPAQUE_RAW ||
-            mPostProcessType != icamera::POST_PROCESS_NONE ||
-            mFaceDetection != nullptr ||
-            inputCam3Buf != nullptr ||
-            !mListeners.empty() ||
-            !mIsHALStream ||
+            mPostProcessType != icamera::POST_PROCESS_NONE || mFaceDetection != nullptr ||
+            inputCam3Buf != nullptr || !mListeners.empty() || !mIsHALStream ||
             icamera::CameraDump::isDumpTypeEnable(icamera::DUMP_AAL_OUTPUT));
 }
 
@@ -593,7 +590,7 @@ bool Camera3Stream::fetchRequestBuffers(icamera::camera_buffer_t* buffer, uint32
     // Fill the specific setting
     buffer->s.usage = mHALStream.usage;
     buffer->s.id = mHALStream.id;
-    buffer->reserved = static_cast<int32_t>(frameNumber);
+    buffer->requestId = frameNumber;
 
     return true;
 }

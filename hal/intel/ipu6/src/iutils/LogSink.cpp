@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
+#include <errno.h>
 #include <fcntl.h>
 #include <signal.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
-#include <errno.h>
 
 #include <base/logging.h>
 
@@ -31,42 +31,44 @@
 
 namespace icamera {
 extern const char* cameraDebugLogToString(int level);
-#define CAMERA_DEBUG_LOG_ERR (1 << 18)
-#define CAMERA_DEBUG_LOG_WARNING (1 << 19)
-#define CAMERA_DEBUG_LOG_VERBOSE (1 << 20)
+#define CAMERA_DEBUG_LOG_ERR (1 << 5)
+#define CAMERA_DEBUG_LOG_WARNING (1 << 3)
 
-const char* gLogSink::getName() const { return "Google gLOG"; }
+const char* GLogSink::getName() const {
+    return "Google gLOG";
+}
 
-void gLogSink::sendOffLog(const char* prefix, const char* logEntry,
-                               int level, const char* logTags) {
-    switch (level) {
+void GLogSink::sendOffLog(LogItem logItem) {
+    char prefix[32];
+    ::snprintf(prefix, sizeof(prefix), "CamHAL[%s]: ",
+            icamera::cameraDebugLogToString(logItem.level));
+
+    switch (logItem.level) {
         case CAMERA_DEBUG_LOG_ERR:
-            ::logging::LogMessage(prefix, 0, -::logging::LOGGING_ERROR)
-                    .stream()
-                << logTags << ':' << logEntry;
+            ::logging::LogMessage(prefix, 0, -::logging::LOGGING_ERROR).stream()
+                << logItem.logTags << ':' << logItem.logEntry;
             break;
         case CAMERA_DEBUG_LOG_WARNING:
-            ::logging::LogMessage(prefix, 0, -::logging::LOGGING_WARNING)
-                    .stream()
-                << logTags << ':'  << logEntry;
+            ::logging::LogMessage(prefix, 0, -::logging::LOGGING_WARNING).stream()
+                << logItem.logTags << ':' << logItem.logEntry;
             break;
         default:
-            ::logging::LogMessage(prefix, 0, -::logging::LOGGING_INFO)
-                    .stream()
-                << logTags << ':'  << logEntry;
+            ::logging::LogMessage(prefix, 0, -::logging::LOGGING_INFO).stream()
+                << logItem.logTags << ':' << logItem.logEntry;
             break;
     }
 }
 
-const char* StdconLogSink::getName() const { return "Stdcon LOG"; }
+const char* StdconLogSink::getName() const {
+    return "Stdcon LOG";
+}
 
-void StdconLogSink::sendOffLog(const char* prefix, const char* logEntry,
-                               int level, const char* logTags) {
-    UNUSED(level);
+void StdconLogSink::sendOffLog(LogItem logItem) {
 #define TIME_BUF_SIZE 128
     char timeInfo[TIME_BUF_SIZE];
     setLogTime(timeInfo);
-    fprintf(stdout, "[%s] %s %s\n", timeInfo, prefix, logEntry);
+    fprintf(stdout, "[%s] CamHAL[%s] %s\n", timeInfo,
+            icamera::cameraDebugLogToString(logItem.level), logItem.logEntry);
 }
 
 void LogOutputSink::setLogTime(char* buf) {
@@ -82,6 +84,26 @@ void LogOutputSink::setLogTime(char* buf) {
         snprintf(buf, TIME_BUF_SIZE, "%.96s.%d", tmbuf,
                  static_cast<int>((tv.tv_usec / 1000) % 1000));
     }
+}
+
+#define DEFALUT_PATH "/run/camera/hal_logs.txt"
+FileLogSink::FileLogSink() {
+    static const char* filePath = ::getenv("FILE_LOG_PATH");
+
+    if (!filePath) filePath = DEFALUT_PATH;
+
+    mFp = fopen(filePath, "w");
+}
+
+const char* FileLogSink::getName() const {
+    return "File LOG";
+}
+
+void FileLogSink::sendOffLog(LogItem logItem) {
+    char timeInfo[TIME_BUF_SIZE];
+    setLogTime(timeInfo);
+    fprintf(mFp, "[%s] CamHAL[%s] %s:%s\n", timeInfo,
+            icamera::cameraDebugLogToString(logItem.level), logItem.logTags, logItem.logEntry);
 }
 
 };  // namespace icamera

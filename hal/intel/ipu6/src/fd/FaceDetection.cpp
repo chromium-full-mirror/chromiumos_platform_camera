@@ -104,7 +104,6 @@ FaceDetection::FaceDetection(int cameraId, unsigned int maxFaceNum, int32_t halS
     gettimeofday(&mRequestRunTime, nullptr);
     CLEAR(mResult);
 
-    /* TODO: we should add CameraOrientationDetector to change the camera orientation */
     camera_info_t info;
     PlatformData::getCameraInfo(mCameraId, info);
     mSensorOrientation = info.orientation;
@@ -186,7 +185,7 @@ bool FaceDetection::faceRunningByCondition() {
 }
 
 void FaceDetection::printfFDRunRate() {
-    if (!Log::isDebugLevelEnable(CAMERA_DEBUG_LOG_FACE_DETECTION_FPS)) return;
+    if (!Log::isFancyLogEnabled(ST_FPS)) return;
 
     mRunCount++;
     if (mRunCount % FPS_FD_COUNT != 0) return;
@@ -196,7 +195,7 @@ void FaceDetection::printfFDRunRate() {
     int duration = static_cast<int>(curTime.tv_usec - mRequestRunTime.tv_usec +
                                     ((curTime.tv_sec - mRequestRunTime.tv_sec) * 1000000));
     float curFps = static_cast<float>(1000000) / static_cast<float>(duration / FPS_FD_COUNT);
-    LOGFDFPS("@%s, face detection fps: %02f", __func__, curFps);
+    LOG2(ST_FPS, "@%s, face detection fps: %02f", __func__, curFps);
     mRequestRunTime = curTime;
 }
 
@@ -225,7 +224,6 @@ void FaceDetection::runFaceDetectionBySync(const std::shared_ptr<camera3::Camera
     params->size = size;
     params->width = buffer.s.width;
     params->height = buffer.s.height;
-    /* TODO: image.rotation is (mSensorOrientation + mCamOriDetector->getOrientation()) % 360 */
     params->rotation = mSensorOrientation % 360;
     params->format = pvl_image_format_nv12;
     params->stride = buffer.s.stride;
@@ -275,7 +273,6 @@ void FaceDetection::runFaceDetectionByAsync(const std::shared_ptr<camera3::Camer
     MEMCPY_S(params->data, MAX_FACE_FRAME_SIZE_ASYNC, buffer.addr, size);
     params->width = buffer.s.width;
     params->height = buffer.s.height;
-    /* TODO: image.rotation is (mSensorOrientation + mCamOriDetector->getOrientation()) % 360 */
     params->rotation = mSensorOrientation % 360;
     params->format = pvl_image_format_gray;
     params->stride = buffer.s.stride;

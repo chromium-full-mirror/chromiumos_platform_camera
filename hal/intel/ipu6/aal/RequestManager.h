@@ -22,10 +22,10 @@
 #include <vector>
 
 #include "Camera3Stream.h"
-#include "PrivateStream.h"
 #include "HALv3Header.h"
 #include "HALv3Interface.h"
 #include "PlatformData.h"
+#include "PrivateStream.h"
 #include "ResultProcessor.h"
 
 namespace camera3 {
@@ -65,7 +65,7 @@ class RequestManager : public RequestManagerCallback, public icamera::camera_cal
     void increaseRequestCount();
     int waitProcessRequest();
     void waitAllRequestsDone();
-    camera3_stream_t *chooseStreamForFaceDetection(uint32_t streamsNum, camera3_stream_t** streams);
+    camera3_stream_t* chooseStreamForFaceDetection(uint32_t streamsNum, camera3_stream_t** streams);
     int checkStreamRotation(camera3_stream_configuration_t* stream_list);
 
     static void callbackNotify(const icamera::camera_callback_ops* cb,

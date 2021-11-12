@@ -114,7 +114,7 @@ void ResultProcessor::callbackNotify(const icamera::camera_msg_data_t& data) {
 
 int ResultProcessor::registerRequest(const camera3_capture_request_t* request,
                                      std::shared_ptr<Camera3Buffer> inputCam3Buf) {
-    LOG1("<req%u>@%s inputCam3Buf:%p", request->frame_number, __func__, inputCam3Buf.get());
+    LOG2("<req%u>@%s inputCam3Buf:%p", request->frame_number, __func__, inputCam3Buf.get());
 
     RequestState req;
     req.frameNumber = request->frame_number;
@@ -428,18 +428,17 @@ void ResultProcessor::returnRequestDone(uint32_t frameNumber) {
     LOG2("<req%u>@%s", frameNumber, __func__);
     TRACE_LOG_POINT("ResultProcessor", __func__, MAKE_COLOR(frameNumber), frameNumber);
 
-    if ((frameNumber % FPS_FRAME_COUNT == 0) &&
-        icamera::Log::isDebugLevelEnable(icamera::CAMERA_DEBUG_LOG_FPS)) {
+    if ((frameNumber % FPS_FRAME_COUNT == 0) && icamera::Log::isFancyLogEnabled(ST_FPS)) {
         struct timeval curTime;
         gettimeofday(&curTime, nullptr);
         int duration = static_cast<int>(curTime.tv_usec - mRequestTime.tv_usec +
                                         ((curTime.tv_sec - mRequestTime.tv_sec) * 1000000));
         if (frameNumber == 0) {
-            LOGFPS("%s, time of launch to preview: %dms", __func__, (duration / 1000));
+            LOG2(ST_FPS, "%s, time of launch to preview: %dms", __func__, (duration / 1000));
         } else {
             float curFps =
                 static_cast<float>(1000000) / static_cast<float>(duration / FPS_FRAME_COUNT);
-            LOGFPS("@%s, fps: %02f", __func__, curFps);
+            LOG2(ST_FPS, "@%s, fps: %02f", __func__, curFps);
         }
         gettimeofday(&mRequestTime, nullptr);
     }
@@ -522,9 +521,8 @@ bool ResultProcessor::ResultThread::threadLoop() {
         }
         // Regards metadata ready as metadata event
         case icamera::CAMERA_METADATA_READY: {
-            icamera::Parameters* parameter
-                = mParameterResult->getParameter(data.data.metadata_ready.frameNumber,
-                                                 data.data.metadata_ready.sequence);
+            icamera::Parameters* parameter = mParameterResult->getParameter(
+                data.data.metadata_ready.frameNumber, data.data.metadata_ready.sequence);
             MetadataEvent metadataEvent = {data.data.metadata_ready.frameNumber, parameter};
             mResultProcessor->metadataDone(metadataEvent);
             break;

@@ -244,6 +244,7 @@ typedef struct {
     int dmafd;    /**< buffer dmafd for DMA import and export mode */
     int flags;    /**< buffer flags, its type is camera_buffer_flags_t, used to specify buffer properties */
     uint64_t timestamp; /**< buffer timestamp, it's a time reference measured in nanosecond */
+    uint32_t requestId; /**< buffer requestId, it's a request id of buffer */
     int reserved; /**< reserved for future */
 } camera_buffer_t;
 
