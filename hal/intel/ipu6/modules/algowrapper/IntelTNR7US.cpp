@@ -27,6 +27,7 @@
 #include "iutils/Utils.h"
 
 #define CM_SURFACE_ALIGN_SIZE 0x1000
+#define CM_SURFACE_ALIGN_HEIGHT(val) ALIGN(val, 64)
 
 namespace icamera {
 
@@ -179,9 +180,9 @@ int IntelTNR7US::runTnrFrame(const void* inBufAddr, void* outBufAddr, uint32_t i
     pthread_mutex_unlock(&mLock);
 
     /* call Tnr api to run tnr for the inSurface and store the result in outSurface */
-    int ret =
-        run_tnr7us_frame(mWidth, mHeight, mWidth, inSurface, outSurface, &tnrParam->scale,
-                         &tnrParam->ims, &tnrParam->bc, &tnrParam->blend, syncUpdate, mTnrType);
+    int ret = run_tnr7us_frame(mWidth, CM_SURFACE_ALIGN_HEIGHT(mHeight), mWidth, inSurface,
+                               outSurface, &tnrParam->scale, &tnrParam->ims, &tnrParam->bc,
+                               &tnrParam->blend, syncUpdate, mTnrType);
     if (fd >= 0) {
         destroyCMSurface(outSurface);
     }
@@ -202,6 +203,17 @@ int IntelTNR7US::asyncParamUpdate(int gain, bool forceUpdate) {
             FROM_HERE,
             base::Bind(&IntelTNR7US::handleParamUpdate, base::Unretained(this), gain, forceUpdate));
     }
+    return OK;
+}
+
+int32_t IntelTNR7US::getSurfaceInfo(int width, int height, uint32_t* size) {
+    uint32_t pitch = 0;
+    uint32_t physicalSize = 0;
+    int ret = getSurface2DInfo(uint32_t(width), uint32_t(CM_SURFACE_ALIGN_HEIGHT(height)),
+                               CM_SURFACE_FORMAT_NV12, pitch, physicalSize);
+    CheckAndLogError(ret != 0, ret, "Failed to get surface info");
+    if (size) *size = physicalSize;
+    LOG1("@%s surface size: %u", __func__, physicalSize);
     return OK;
 }
 
@@ -230,7 +242,8 @@ CmSurface2DUP* IntelTNR7US::getBufferCMSurface(void* bufAddr) {
 CmSurface2DUP* IntelTNR7US::createCMSurface(void* bufAddr) {
     LOG1("%s ", __func__);
     CmSurface2DUP* cmSurface = nullptr;
-    int32_t ret = createCmSurface2DUP(mWidth, mHeight, CM_SURFACE_FORMAT_NV12, bufAddr, cmSurface);
+    int32_t ret = createCmSurface2DUP(mWidth, CM_SURFACE_ALIGN_HEIGHT(mHeight),
+                                      CM_SURFACE_FORMAT_NV12, bufAddr, cmSurface);
     CheckAndLogError(ret != 0, nullptr, "failed to create CmSurface2DUP object");
     return cmSurface;
 }
@@ -239,4 +252,5 @@ int32_t IntelTNR7US::destroyCMSurface(CmSurface2DUP* surface) {
     LOG1("%s ", __func__);
     return destroyCMSurface2DUP(surface);
 }
+
 }  // namespace icamera

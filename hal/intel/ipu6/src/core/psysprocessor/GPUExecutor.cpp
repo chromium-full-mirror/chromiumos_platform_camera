@@ -170,7 +170,13 @@ int GPUExecutor::allocBuffers() {
     int srcFmt = mTerminalsDesc[term].frameDesc.mFormat;
     int srcWidth = mTerminalsDesc[term].frameDesc.mWidth;
     int srcHeight = mTerminalsDesc[term].frameDesc.mHeight;
-    int size = PGCommon::getFrameSize(srcFmt, srcWidth, srcHeight, true);
+    uint32_t size = 0;
+
+    if (mIntelTNR) {
+        int ret = mIntelTNR->getSurfaceInfo(srcWidth, srcHeight, &size);
+        if (ret) size = PGCommon::getFrameSize(srcFmt, srcWidth, srcHeight, true);
+    }
+    LOG1("@%s, Required GPU TNR buffer size %u", __func__, size);
 
     for (int i = 0; i < MAX_BUFFER_COUNT; i++) {
         shared_ptr<CameraBuffer> buf;

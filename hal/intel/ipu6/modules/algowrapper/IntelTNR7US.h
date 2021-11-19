@@ -51,6 +51,8 @@ extern int32_t createCmSurface2DUP(uint32_t width, uint32_t height, CM_SURFACE_F
 extern int32_t destroyCMSurface2DUP(CmSurface2DUP*& surface);
 // update parameters when gain changes
 extern int tnr7usParamUpdate(int gain, bool forceUpdate = false, int type = 0);
+extern int32_t getSurface2DInfo(uint32_t width, uint32_t height, CM_SURFACE_FORMAT format,
+                                uint32_t& pitch, uint32_t& physicalSize);
 
 namespace icamera {
 
@@ -75,6 +77,7 @@ class IntelTNR7US {
     void freeAllBufs();
     int prepareSurface(void* bufAddr, int size);
     int asyncParamUpdate(int gain, bool forceUpdate);
+    int getSurfaceInfo(int width, int height, uint32_t* size);
 
  private:
     /* tnr api use CmSurface2DUP object as data buffer, call this api to create
