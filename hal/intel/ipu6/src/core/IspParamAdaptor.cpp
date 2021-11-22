@@ -921,8 +921,14 @@ void IspParamAdaptor::updateResultFromAlgo(ia_binary_data* binaryData, long sequ
                                                        ALIGN_8(sizeof(ia_pal_record_header)));
         uint32_t tmSize = (reinterpret_cast<char *>(&(TM->prog_shift)) -
                            reinterpret_cast<char *>(TM->tm_lut_gen_lut)) / sizeof(int32_t);
+
+        if (aiqResults->mGbceResults.tone_map_lut_size == 0) {
+            LOG2("%s, gbce running in bypass mode, reset to max value", __func__);
+            aiqResults->mGbceResults.tone_map_lut_size = cca::MAX_TONE_MAP_LUT_SIZE;
+        }
+
         CheckAndLogError(tmSize < aiqResults->mGbceResults.tone_map_lut_size,
-                         VOID_VALUE, "memory is too small to store tone map from algo");
+                         VOID_VALUE, "memory is mismatch to store tone map from algo");
 
         LOG2("%s, Tonemap Curve. enable: %d, prog_shift: %d, table size: %zu",
              __func__, TM->enable, TM->prog_shift, tmSize);
