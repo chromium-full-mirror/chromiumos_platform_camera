@@ -408,11 +408,11 @@ status_t OutputFrameWorker::postRun()
             MEMCPY_S(msg.frame->processBuffer->data(), msg.frame->processBuffer->size(),
                      mWorkingBuffer->data(), mWorkingBuffer->size());
 
-            base::Callback<status_t()> closure =
-                base::Bind(&OutputFrameWorker::handleMessageProcess,
+            base::OnceCallback<status_t()> closure =
+                base::BindOnce(&OutputFrameWorker::handleMessageProcess,
                         base::Unretained(this),
-                        base::Passed(std::move(msg)));
-            mCameraThread.PostTaskAsync(FROM_HERE, closure);
+                        std::move(msg));
+            mCameraThread.PostTaskAsync(FROM_HERE, std::move(closure));
         } else {
             MEMCPY_S(listenerBuf->data(), listenerBuf->size(),
                      mWorkingBuffer->data(), mWorkingBuffer->size());
