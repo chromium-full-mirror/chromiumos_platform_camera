@@ -107,7 +107,8 @@ class GraphConfigImpl {
 
     status_t pipelineGetConnections(const std::vector<std::string>& pgList,
                                     std::vector<IGraphType::ScalerInfo>* scalerInfo,
-                                    std::vector<IGraphType::PipelineConnection>* confVector);
+                                    std::vector<IGraphType::PipelineConnection>* confVector,
+                                    std::vector<IGraphType::PrivPortFormat>* tnrPortFormat);
 
  private:
     status_t prepareGraphConfig();

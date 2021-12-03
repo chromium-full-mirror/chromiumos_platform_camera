@@ -98,6 +98,7 @@ class PlatformData {
                       mEnablePdaf(false),
                       mSensorAwb(false),
                       mSensorAe(false),
+                      mRunIspAlways(false),
                       mAutoSwitchType(AUTO_SWITCH_PSYS),
                       mLtmEnabled(false),
                       mSensorExposureNum(2),
@@ -169,6 +170,7 @@ class PlatformData {
             bool mEnablePdaf;
             bool mSensorAwb;
             bool mSensorAe;
+            bool mRunIspAlways;
             int mAutoSwitchType;
             bool mLtmEnabled;
             int mSensorExposureNum;
@@ -401,6 +403,14 @@ class PlatformData {
      * \return bool: the sensor AE enable
      */
     static bool getSensorAeEnable(int cameraId);
+
+    /**
+     * get the run ISP rate
+     *
+     * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
+     * \return bool: the run ISP rate
+     */
+    static bool getRunIspAlways(int cameraId);
 
     /**
      * get the DVS type

@@ -173,7 +173,7 @@ void PGCommon::deInit() {
     mRoutingBitmap.reset();
 }
 
-void PGCommon::setInputInfo(const TerminalFrameInfoMap& inputInfos) {
+void PGCommon::setInputInfo(const TerminalFrameInfoMap& inputInfos, FrameInfo tnrFrameInfo) {
     mInputMainTerminal = -1;
     int maxFrameSize = 0;
     for (const auto& item : inputInfos) {
@@ -195,23 +195,22 @@ void PGCommon::setInputInfo(const TerminalFrameInfoMap& inputInfos) {
         }
     }
 
-    // Create frame info for tnr terminals (i.e. data terminals)
-    FrameInfo config = mTerminalFrameInfos[mInputMainTerminal];
-    if (config.mHeight % 32) {
-        LOG1("%s: height %d not multiple of 32, rounding up!", __func__, config.mHeight);
-        config.mHeight = ((config.mHeight / 32) + 1) * 32;
+    if (tnrFrameInfo.mHeight % 32) {
+        LOG1("%s: height %d not multiple of 32, rounding up!", __func__, tnrFrameInfo.mHeight);
+        tnrFrameInfo.mHeight = ((tnrFrameInfo.mHeight / 32) + 1) * 32;
     }
 
     for (int i = PAIR_BUFFER_IN_INDEX; i <= PAIR_BUFFER_OUT_INDEX; i++) {
         int tnrId = (i == PAIR_BUFFER_IN_INDEX) ? mTnrTerminalPair.inId : mTnrTerminalPair.outId;
         if (tnrId < 0) continue;
 
-        mFrameFormatType[tnrId] = IA_CSS_DATA_FORMAT_NV12;  // for IPU6
-        // tnr terminal format is NV12, different from main terminal
-        config.mFormat = V4L2_PIX_FMT_NV12;
-        config.mBpp = CameraUtils::getBpp(config.mFormat);
-        config.mStride = CameraUtils::getStride(config.mFormat, config.mWidth);
-        mTerminalFrameInfos[tnrId] = config;
+        mFrameFormatType[tnrId] = PGUtils::getCssFmt(tnrFrameInfo.mFormat);
+        tnrFrameInfo.mBpp = CameraUtils::getBpp(tnrFrameInfo.mFormat);
+        tnrFrameInfo.mStride = CameraUtils::getStride(tnrFrameInfo.mFormat, tnrFrameInfo.mWidth);
+        mTerminalFrameInfos[tnrId] = tnrFrameInfo;
+        LOG2("%s, tnr ref info: %dx%d, stride: %d, bpp: %d, format: %s", __func__,
+             tnrFrameInfo.mWidth, tnrFrameInfo.mHeight, tnrFrameInfo.mStride, tnrFrameInfo.mBpp,
+             CameraUtils::format2string(tnrFrameInfo.mFormat).c_str());
     }
 
     LOG1("%s:%d use input terminal %d as main", __func__, mPGId, mInputMainTerminal);

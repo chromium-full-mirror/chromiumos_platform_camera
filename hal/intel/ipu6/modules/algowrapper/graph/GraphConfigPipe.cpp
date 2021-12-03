@@ -821,9 +821,56 @@ status_t GraphConfigPipe::getProgramGroupsByName(const std::vector<std::string>&
     return OK;
 }
 
+status_t GraphConfigPipe::getPrivatePortFormat(Node* port,
+                                               vector<IGraphType::PrivPortFormat>* tnrPortFormat) {
+    if (!tnrPortFormat) return OK;
+
+    string portName;
+    css_err_t ret = port->getValue(GCSS_KEY_NAME, portName);
+    LOG2("%s, port name: %s", __func__, portName.c_str());
+    // Currently, only get the output format for tnr_ref_out
+    if (ret != css_err_none || portName.compare("tnr_ref_out")) return OK;
+
+    IGraphType::PrivPortFormat format = {};
+    format.streamId = portGetStreamId(port);
+    ret = port->getValue(GCSS_KEY_ENABLED, format.formatSetting.enabled);
+    if (ret != css_err_none) {
+        // if not present by default is enabled
+        format.formatSetting.enabled = 1;
+    }
+
+    ia_uid stageId;
+    status_t status = GCSS::GraphCameraUtil::portGetFourCCInfo(port, stageId,
+                                                               format.formatSetting.terminalId);
+    CheckAndLogError(status != OK, INVALID_OPERATION, "Failed to get port uid", __func__);
+    ret = port->getValue(GCSS_KEY_WIDTH, format.formatSetting.width);
+    CheckAndLogError(ret != css_err_none, BAD_VALUE, "Failed to get port width", __func__);
+    ret = port->getValue(GCSS_KEY_HEIGHT, format.formatSetting.height);
+    CheckAndLogError(ret != css_err_none, BAD_VALUE, "Failed to get port height", __func__);
+
+    string fourccFormat;
+    ret = port->getValue(GCSS_KEY_FORMAT, fourccFormat);
+    CheckAndLogError(ret != css_err_none, BAD_VALUE, "Failed to find port fourcc", __func__);
+
+    format.formatSetting.fourcc = CameraUtils::string2IaFourccCode(fourccFormat.c_str());
+    format.formatSetting.bpl = CameraUtils::getBpl(format.formatSetting.fourcc,
+                                                   format.formatSetting.width);
+    format.formatSetting.bpp = CameraUtils::getBpp(format.formatSetting.fourcc);
+
+    LOG2("%s, Tnr ref out: streamId: %d, %dx%d, terminalId: %d, fmt: %s, bpp: %d, bpl: %d",
+         __func__, format.streamId, format.formatSetting.width, format.formatSetting.height,
+         format.formatSetting.terminalId, fourccFormat.c_str(), format.formatSetting.bpp,
+         format.formatSetting.bpl);
+
+    tnrPortFormat->push_back(format);
+
+    return OK;
+}
+
 status_t GraphConfigPipe::pipelineGetConnections(
     const std::vector<std::string>& pgList, std::vector<IGraphType::ScalerInfo>* scalerInfo,
-    std::vector<IGraphType::PipelineConnection>* confVector) {
+    std::vector<IGraphType::PipelineConnection>* confVector,
+    std::vector<IGraphType::PrivPortFormat>* tnrPortFormat) {
     CheckAndLogError(!confVector, UNKNOWN_ERROR, "%s, the confVector is nullptr", __func__);
 
     NodesPtrVector programGroups;
@@ -846,7 +893,12 @@ status_t GraphConfigPipe::pipelineGetConnections(
             // port for private terminal, no need to connect
             int priv = 0;
             ret = port->getValue(GCSS_KEY_PRIVATE, priv);
-            if (ret == css_err_none && priv) continue;
+            if (ret == css_err_none && priv) {
+                status = getPrivatePortFormat(port, tnrPortFormat);
+                CheckAndLogError(status != OK, status, "%s, failed to get private port format",
+                                 __func__);
+                continue;
+            }
 
             /*
              * Since we are iterating through the ports
@@ -867,10 +919,8 @@ status_t GraphConfigPipe::pipelineGetConnections(
             }
 
             status = portGetFormat(port, &(aConnection.portFormatSettings));
-            if (status != OK) {
-                LOGE("Failed to get port format info in port from PG[%zu]", i);
-                return BAD_VALUE;
-            }
+            CheckAndLogError(status != OK, BAD_VALUE, "Failed to get format info, PG[%zu]", i);
+
             if (aConnection.portFormatSettings.enabled == 0) {
                 LOG2("Port from PG[%zu] disabled", i);
                 status = portGetOwner(port, &(aConnection.connectionConfig));

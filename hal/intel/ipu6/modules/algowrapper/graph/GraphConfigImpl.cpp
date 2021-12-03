@@ -818,14 +818,15 @@ status_t GraphConfigImpl::getPgNames(std::vector<std::string>* pgNames) {
 
 status_t GraphConfigImpl::pipelineGetConnections(
     const std::vector<std::string>& pgList, std::vector<IGraphType::ScalerInfo>* scalerInfo,
-    std::vector<IGraphType::PipelineConnection>* confVector) {
+    std::vector<IGraphType::PipelineConnection>* confVector,
+    std::vector<IGraphType::PrivPortFormat>* tnrPortFormat) {
     CheckAndLogError(!confVector, UNKNOWN_ERROR, "%s, the confVector is nullptr", __func__);
     CheckAndLogError(mGraphConfigPipe.empty(), UNKNOWN_ERROR, "%s, the mGraphConfigPipe is empty",
                      __func__);
 
     if (mGraphConfigPipe.size() == 1) {
         return mGraphConfigPipe.begin()->second->pipelineGetConnections(pgList, scalerInfo,
-                                                                        confVector);
+                                                                        confVector, tnrPortFormat);
     }
 
     vector<IGraphType::PipelineConnection> stillConnVector, videoConnVector;
@@ -833,9 +834,12 @@ status_t GraphConfigImpl::pipelineGetConnections(
     shared_ptr<GraphConfigPipe>& stillGraphPipe = mGraphConfigPipe.at(USE_CASE_STILL_CAPTURE);
 
     std::vector<IGraphType::ScalerInfo> stillScalerInfo, videoScalerInfo;
-    int ret = videoGraphPipe->pipelineGetConnections(pgList, &videoScalerInfo, &videoConnVector);
+    std::vector<IGraphType::PrivPortFormat> stillTnrPortFmt, videoTnrPortFmt;
+    int ret = videoGraphPipe->pipelineGetConnections(pgList, &videoScalerInfo,
+                                                     &videoConnVector, &videoTnrPortFmt);
     CheckAndLogError(ret != OK, UNKNOWN_ERROR, "Failed to get the connetction from video pipe");
-    ret = stillGraphPipe->pipelineGetConnections(pgList, &stillScalerInfo, &stillConnVector);
+    ret = stillGraphPipe->pipelineGetConnections(pgList, &stillScalerInfo,
+                                                 &stillConnVector, &stillTnrPortFmt);
     CheckAndLogError(ret != OK, UNKNOWN_ERROR, "Failed to get the connetction from still pipe");
 
     LOG2("The connetction in video: %zu, in still: %zu; the scalera in video: %zu, in still: %zu",
@@ -848,6 +852,13 @@ status_t GraphConfigImpl::pipelineGetConnections(
         }
     }
     *scalerInfo = videoScalerInfo;
+
+    if (tnrPortFormat) {
+        for (auto& stillPort : stillTnrPortFmt) {
+            videoTnrPortFmt.push_back(stillPort);
+        }
+        *tnrPortFormat = videoTnrPortFmt;
+    }
 
     if (videoConnVector.empty()) {
         videoConnVector = stillConnVector;

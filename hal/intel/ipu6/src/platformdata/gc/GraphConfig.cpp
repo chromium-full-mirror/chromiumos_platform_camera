@@ -179,14 +179,16 @@ int GraphConfig::getProgramGroup(string pgName, ia_isp_bxt_program_group* progra
     return mGraphConfigImpl->getProgramGroup(pgName, programGroupForPG);
 }
 
-status_t GraphConfig::pipelineGetConnections(const vector<string>& pgList,
-                                             vector<IGraphType::PipelineConnection>* confVector) {
+status_t GraphConfig::pipelineGetConnections(
+    const vector<string>& pgList,
+    vector<IGraphType::PipelineConnection>* confVector,
+    std::vector<IGraphType::PrivPortFormat>* tnrPortFormat) {
     CheckAndLogError(!confVector, UNKNOWN_ERROR, "%s, The confVector is nullptr", __func__);
 
     status_t ret;
     std::vector<IGraphType::ScalerInfo> scalerInfo;
 
-    ret = mGraphConfigImpl->pipelineGetConnections(pgList, &scalerInfo, confVector);
+    ret = mGraphConfigImpl->pipelineGetConnections(pgList, &scalerInfo, confVector, tnrPortFormat);
     CheckAndLogError(ret != OK, ret, "%s, Failed to pipelineGetConnections", __func__);
 
     CheckAndLogError(mCameraId == -1, UNKNOWN_ERROR, "%s: mCameraId is -1", __func__);

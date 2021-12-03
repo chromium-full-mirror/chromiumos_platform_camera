@@ -391,6 +391,8 @@ void CameraParser::handleSensor(CameraParser* profiles, const char* name, const 
         pCurrentCam->mSensorAwb = strcmp(atts[1], "true") == 0;
     } else if (strcmp(name, "sensorAe") == 0) {
         pCurrentCam->mSensorAe = strcmp(atts[1], "true") == 0;
+    } else if (strcmp(name, "runIspAlways") == 0) {
+        pCurrentCam->mRunIspAlways = strcmp(atts[1], "true") == 0;
     } else if (strcmp(name, "autoSwitchType") == 0) {
         if (strcmp(atts[1], "full") == 0) {
             pCurrentCam->mAutoSwitchType = AUTO_SWITCH_FULL;

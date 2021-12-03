@@ -734,7 +734,7 @@ int IspParamAdaptor::runIspAdaptL(ia_isp_bxt_program_group *pgPtr, ia_isp_bxt_gd
         dumpCscMatrix(&inputParams->csc_matrix);
     }
 
-    if (VIDEO_STREAM_ID == streamId) {
+    if ((VIDEO_STREAM_ID == streamId) && !PlatformData::getRunIspAlways(mCameraId)) {
         inputParams->call_rate_control.mode = ia_isp_call_rate_never_on_converged;
     } else {
         inputParams->call_rate_control.mode = ia_isp_call_rate_always;

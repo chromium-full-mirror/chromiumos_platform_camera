@@ -75,7 +75,8 @@ class GraphConfig : public IGraphConfig {
 
     virtual status_t pipelineGetConnections(
         const std::vector<std::string>& pgList,
-        std::vector<IGraphType::PipelineConnection>* confVector);
+        std::vector<IGraphType::PipelineConnection>* confVector,
+        std::vector<IGraphType::PrivPortFormat>* tnrPortFormat = nullptr);
 
  private:
     // Disable copy constructor and assignment operator

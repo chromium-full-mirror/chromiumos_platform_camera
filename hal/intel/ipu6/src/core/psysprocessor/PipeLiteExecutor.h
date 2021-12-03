@@ -148,9 +148,9 @@ class PipeLiteExecutor : public BufferQueue {
                         const std::vector<EventType>& eventType);
 
     int createPGs();
-    int configurePGs();
     int allocBuffers();
     void releaseBuffers();
+    int configurePGs(const std::vector<IGraphType::PrivPortFormat>& tnrPortFormat);
     int storeTerminalInfo(const IGraphType::PipelineConnection& connection);
     int getStatKernels(int pgId, std::vector<ia_uid>& kernels);
     int getSisKernels(int pgId, std::vector<ia_uid>& kernels);

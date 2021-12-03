@@ -82,8 +82,9 @@ int PipeLiteExecutor::initPipe() {
 
     NodesPtrVector programGroups;
     vector<IGraphType::PipelineConnection> connVector;
+    vector<IGraphType::PrivPortFormat> tnrPortFormat;
 
-    int ret = mGraphConfig->pipelineGetConnections(mPGNames, &connVector);
+    int ret = mGraphConfig->pipelineGetConnections(mPGNames, &connVector, &tnrPortFormat);
     CheckAndLogError(connVector.empty(), ret, "Failed to get connections for executor:%s",
                      mName.c_str());
 
@@ -94,7 +95,7 @@ int PipeLiteExecutor::initPipe() {
     CheckAndLogError(ret != OK, ret, "Failed to analyze connections for executor: %s, ret = %d",
                      mName.c_str(), ret);
 
-    ret = configurePGs();
+    ret = configurePGs(tnrPortFormat);
     CheckAndLogError(ret != OK, ret, "Failed to configure connections for executor: %s, ret = %d",
                      mName.c_str(), ret);
 
@@ -226,7 +227,17 @@ int PipeLiteExecutor::createPGs() {
     return OK;
 }
 
-int PipeLiteExecutor::configurePGs() {
+int PipeLiteExecutor::configurePGs(const vector<IGraphType::PrivPortFormat>& tnrPortFormat) {
+    FrameInfo tnrFormatInfo = {};
+    for (auto &tnrFormat : tnrPortFormat) {
+        if (tnrFormat.streamId == mStreamId) {
+            tnrFormatInfo.mWidth = tnrFormat.formatSetting.width;
+            tnrFormatInfo.mHeight = tnrFormat.formatSetting.height;
+            tnrFormatInfo.mFormat = CameraUtils::getV4L2Format(tnrFormat.formatSetting.fourcc);
+            break;
+        }
+    }
+
     mkernelsCountWithStats = 0;
     for (auto& unit : mPGExecutors) {
         map<ia_uid, FrameInfo> inputInfos;
@@ -237,7 +248,7 @@ int PipeLiteExecutor::configurePGs() {
         getTerminalFrameInfos(unit.outputTerminals, outputInfos);
         getDisabledTerminalsForPG(unit.stageId, disabledTerminals);
 
-        unit.pg->setInputInfo(inputInfos);
+        unit.pg->setInputInfo(inputInfos, tnrFormatInfo);
         unit.pg->setOutputInfo(outputInfos);
         unit.pg->setDisabledTerminals(disabledTerminals);
 

@@ -105,7 +105,7 @@ class PGCommon {
      * set the input buffers info for terminals.
      * use ia_fourcc
      */
-    virtual void setInputInfo(const TerminalFrameInfoMap& inputInfos);
+    virtual void setInputInfo(const TerminalFrameInfoMap& inputInfos, FrameInfo tnrFormatInfo);
 
     /**
      * set the output buffers info for terminals.
