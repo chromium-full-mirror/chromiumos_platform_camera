@@ -92,7 +92,7 @@ class AiqInitData {
     void saveAiqd(TuningMode mode, const ia_binary_data& data);
 
     // nvm
-    ia_binary_data* getNvm(int cameraId);
+    ia_binary_data* getNvm(int cameraId, const char* overwrittenFile = nullptr, int fileSize = 0);
 
     // maker note
     int initMakernote(int cameraId, TuningMode tuningMode);

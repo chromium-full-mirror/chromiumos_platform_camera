@@ -189,6 +189,7 @@ struct CommonConfig {
     bool isGpuTnrEnabled;
     bool isStillTnrPrior;
     bool isTnrParamForceUpdate;
+    bool useTnrGlobalProtection;
     int cameraNumber;
     int videoStreamNum;
 
@@ -197,6 +198,7 @@ struct CommonConfig {
         isGpuTnrEnabled = false;
         isStillTnrPrior = true;
         isTnrParamForceUpdate = false;
+        useTnrGlobalProtection = false;
         cameraNumber = -1;
         videoStreamNum = DEFAULT_VIDEO_STREAM_NUM;
     }

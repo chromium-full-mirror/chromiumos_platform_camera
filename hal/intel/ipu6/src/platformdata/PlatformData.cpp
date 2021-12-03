@@ -1191,7 +1191,10 @@ ia_binary_data* PlatformData::getNvm(int cameraId) {
     CheckAndLogError(cameraId >= static_cast<int>(getInstance()->mAiqInitData.size()), nullptr,
                      "@%s, bad cameraId:%d", __func__, cameraId);
 
-    return getInstance()->mAiqInitData[cameraId]->getNvm(cameraId);
+    // Allow overwritten nvm file if needed
+    int size = getInstance()->mStaticCfg.mCameras[cameraId].mNvmOverwrittenFileSize;
+    const char* nvmFile = getInstance()->mStaticCfg.mCameras[cameraId].mNvmOverwrittenFile.c_str();
+    return getInstance()->mAiqInitData[cameraId]->getNvm(cameraId, nvmFile, size);
 }
 
 camera_coordinate_system_t PlatformData::getActivePixelArray(int cameraId) {
@@ -1351,6 +1354,10 @@ bool PlatformData::isTnrParamForceUpdate() {
 
 int PlatformData::getTnrExtraFrameCount(int cameraId) {
     return getInstance()->mStaticCfg.mCameras[cameraId].mTnrExtraFrameNum;
+}
+
+bool PlatformData::useTnrGlobalProtection() {
+    return getInstance()->mStaticCfg.mCommonConfig.useTnrGlobalProtection;
 }
 
 void PlatformData::setSensorOrientation(int cameraId, int orientation) {

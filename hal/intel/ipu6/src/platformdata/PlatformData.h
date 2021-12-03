@@ -155,6 +155,7 @@ class PlatformData {
                       mPsysBundleWithAic(false),
                       mSwProcessingAlignWithIsp(false),
                       mMaxNvmDataSize(0),
+                      mNvmOverwrittenFileSize(0),
                       mTnrExtraFrameNum(DEFAULT_TNR_EXTRA_FRAME_NUM),
                       mDummyStillSink(false),
                       mForceFlushIpuBuffer(false),
@@ -254,6 +255,8 @@ class PlatformData {
             std::vector<UserToPslOutputMap> mOutputMap;
             int mMaxNvmDataSize;
             std::string mNvmDirectory;
+            int mNvmOverwrittenFileSize;
+            std::string mNvmOverwrittenFile;  // overwrite NVM data
             /* key: camera module name, value: camera module info */
             std::unordered_map<std::string, CameraMetadata> mCameraModuleInfoMap;
             std::vector<IGraphType::ScalerInfo> mScalerInfo;
@@ -1322,6 +1325,11 @@ class PlatformData {
      * the extra frame count for still stream
      */
     static int getTnrExtraFrameCount(int cameraId);
+
+    /**
+     * Check if global protection is enabled for tnr7us
+     */
+    static bool useTnrGlobalProtection();
 
     /*
      * Set the orientation Info

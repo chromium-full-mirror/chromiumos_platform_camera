@@ -269,6 +269,8 @@ void CameraParser::handleCommon(CameraParser* profiles, const char* name, const 
         cfg->isStillTnrPrior = strcmp(atts[1], "true") == 0;
     } else if (strcmp(name, "tnrParamForceUpdate") == 0) {
         cfg->isTnrParamForceUpdate = strcmp(atts[1], "true") == 0;
+    } else if (strcmp(name, "tnrGlobalProtection") == 0) {
+        cfg->useTnrGlobalProtection = strcmp(atts[1], "true") == 0;
     } else if (strcmp(name, "videoStreamNum") == 0) {
         int val = atoi(atts[1]);
         cfg->videoStreamNum = val > 0 ? val : DEFAULT_VIDEO_STREAM_NUM;
@@ -516,6 +518,16 @@ void CameraParser::handleSensor(CameraParser* profiles, const char* name, const 
         }
     } else if (strcmp(name, "pslOutputMapForRotation") == 0) {
         parseOutputMap(atts[1], pCurrentCam->mOutputMap);
+    } else if (strcmp(name, "nvmOverwrittenFile") == 0) {
+        int size = strlen(atts[1]);
+        char src[size + 1];
+        MEMCPY_S(src, size, atts[1], size);
+        src[size] = '\0';
+        char* savePtr = nullptr;
+        char* tablePtr = strtok_r(src, ",", &savePtr);
+        if (tablePtr) profiles->pCurrentCam->mNvmOverwrittenFile = tablePtr;
+        tablePtr = strtok_r(nullptr, ",", &savePtr);
+        if (tablePtr) profiles->pCurrentCam->mNvmOverwrittenFileSize = atoi(tablePtr);
     } else if (strcmp(name, "nvmDeviceInfo") == 0) {
         int size = strlen(atts[1]);
         char src[size + 1];

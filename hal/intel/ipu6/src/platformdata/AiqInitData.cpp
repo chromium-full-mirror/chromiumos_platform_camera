@@ -290,13 +290,19 @@ int AiqInitData::getCpf(TuningMode mode, ia_binary_data* cpfData) {
     return OK;
 }
 
-ia_binary_data* AiqInitData::getNvm(int cameraId) {
-    if (mNvmPath.length() == 0) return nullptr;
+ia_binary_data* AiqInitData::getNvm(int cameraId, const char* overwrittenFile, int fileSize) {
+    const char* nvmFile = mNvmPath.c_str();
+    int size = mMaxNvmSize;
+    if (overwrittenFile && fileSize) {
+        nvmFile = overwrittenFile;
+        size = fileSize;
+    }
+    if (!nvmFile || !fileSize) return nullptr;
 
     if (!mNvm) {
-        LOG2("NVM data for %s is located in %s", mSensorName.c_str(), mNvmPath.c_str());
+        LOG2("NVM data for %s is located in %s, size %d", mSensorName.c_str(), nvmFile, size);
 
-        mNvm = new AiqData(mNvmPath, mMaxNvmSize);
+        mNvm = new AiqData(nvmFile, size);
 
         if (CameraDump::isDumpTypeEnable(DUMP_NVM_DATA)) {
             ia_binary_data* nvmData = mNvm->getData();
