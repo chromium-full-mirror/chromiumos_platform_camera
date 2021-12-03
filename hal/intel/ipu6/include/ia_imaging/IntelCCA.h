@@ -151,11 +151,9 @@ public:
      *
      * \param[in] params                Mandatory.\n
      *                                  Input parameters containing statistics information about a frame.
-     * \param[out] outStats             Optional.\n
-     *                                  Output the aiq statistics data.
      * \return                          Error code for status. zero on success, non-zero on failure
      */
-    ia_err setStatsParams(const cca_stats_params& params, cca_out_stats *outStats = nullptr);
+    ia_err setStatsParams(const cca_stats_params& params);
 
     /*!
      * \brief AEC calculation based on input parameters and frame statistics.
@@ -356,10 +354,11 @@ public:
     * \param [in]  stats        statistics binary from HW
     * \param [in]  bitmap       select RGBS, HIST, AF ... if needed to decode
     * \param [out] results      statistics type after parsing statistics
+    * \param [out] outStats     output stats
     *
     * \return                   Error code for status. zero on success, non-zero on failure
     */
-    ia_err decodeStats(const cca_stats_bin &stats, uint32_t bitmap, ia_isp_bxt_statistics_query_results_t *results);
+    ia_err decodeStats(const cca_stats_bin &stats, uint32_t bitmap, ia_isp_bxt_statistics_query_results_t *results, cca_out_stats *outStats = nullptr);
 
     /*!
     *
@@ -370,10 +369,11 @@ public:
     * \param [in]  statsSize    statistics size
     * \param [in]  bitmap       select RGBS, HIST, AF ... if needed to decode
     * \param [out] results      statistics type after parsing statistics
+    * \param [out] outStats     output stats
     *
     * \return                   Error code for status. zero on success, non-zero on failure
     */
-    ia_err decodeStats(uint64_t statsPointer, uint32_t statsSize, uint32_t bitmap, ia_isp_bxt_statistics_query_results_t *results);
+    ia_err decodeStats(uint64_t statsPointer, uint32_t statsSize, uint32_t bitmap, ia_isp_bxt_statistics_query_results_t *results, cca_out_stats *outStats = nullptr);
 
     /*!
     *
@@ -442,11 +442,11 @@ private:
     * \param [in]  stats        binary to store the statistics binary from HW
     * \param [in]  bitmap       select RGBS, HIST, AF ... if needed to decode
     * \param [out] results      statistics type after parsing statistics
-    *
+    * \param [out] outStats     output stats
     *
     * return ia_err_none in success. Errorcode on failure
     */
-    ia_err decodeStats(const ia_binary_data &stats, uint32_t bitmap, ia_isp_bxt_statistics_query_results_t *results);
+    ia_err decodeStats(const ia_binary_data &stats, uint32_t bitmap, ia_isp_bxt_statistics_query_results_t *results, cca_out_stats *outStats);
 #endif
 
 private:
