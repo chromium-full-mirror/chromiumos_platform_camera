@@ -237,8 +237,10 @@ int FaceDetection::getResult(int cameraId, cca::cca_face_state* faceState) {
 
     AutoMutex lock(sLock);
     FaceDetection* fdInstance = FaceDetection::getInstance(cameraId);
-    CheckAndLogError(!fdInstance, UNKNOWN_ERROR, "%s, It doesn't have face detection instance",
-                     __func__);
+    if (!fdInstance) {
+        LOG2("%s, It doesn't have face detection instance", __func__);
+        return UNKNOWN_ERROR;
+    }
     fdInstance->getResultFor3A(faceState);
 
     return OK;
@@ -249,8 +251,10 @@ int FaceDetection::getResult(int cameraId, CVFaceDetectionAbstractResult* result
 
     AutoMutex lock(sLock);
     FaceDetection* fdInstance = FaceDetection::getInstance(cameraId);
-    CheckAndLogError(!fdInstance, UNKNOWN_ERROR, "%s, It doesn't have face detection instance",
-                     __func__);
+    if (!fdInstance) {
+        LOG2("%s, It doesn't have face detection instance", __func__);
+        return UNKNOWN_ERROR;
+    }
     fdInstance->getResultForApp(result);
 
     return OK;

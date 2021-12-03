@@ -224,6 +224,8 @@ int RequestManager::configureStreams(camera3_stream_configuration_t* stream_list
          * if format is RAW_OPAQUE, it is for RAW reprocessing.
          */
         if (stream_list->streams[i]->stream_type == CAMERA3_STREAM_INPUT) {
+            stream_list->streams[i]->usage |=
+                GRALLOC_USAGE_HW_CAMERA_WRITE | GRALLOC_USAGE_SW_READ_OFTEN;
             if (stream_list->streams[i]->format == HAL_PIXEL_FORMAT_YCbCr_420_888) {
                 inputStream = stream_list->streams[i];
             } else {
