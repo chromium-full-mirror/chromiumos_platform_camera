@@ -114,7 +114,7 @@ void ResultProcessor::callbackNotify(const icamera::camera_msg_data_t& data) {
 
 int ResultProcessor::registerRequest(const camera3_capture_request_t* request,
                                      std::shared_ptr<Camera3Buffer> inputCam3Buf) {
-    LOG2("<req%u>@%s inputCam3Buf:%p", request->frame_number, __func__, inputCam3Buf.get());
+    LOG2("<fn%u>@%s inputCam3Buf:%p", request->frame_number, __func__, inputCam3Buf.get());
 
     RequestState req;
     req.frameNumber = request->frame_number;
@@ -179,7 +179,7 @@ int ResultProcessor::shutterDone(const ShutterEvent& event) {
 
         mCallbackOps->notify(mCallbackOps, &notifyMsg);
         mRequestStateVector.at(i).isShutterDone = true;
-        LOG2("<req%u>@%s shutter timestamp:%lu", notifyMsg.message.shutter.frame_number, __func__,
+        LOG2("<fn%u>@%s shutter timestamp:%lu", notifyMsg.message.shutter.frame_number, __func__,
              notifyMsg.message.shutter.timestamp);
         if (checkRequestDone(mRequestStateVector.at(i))) {
             returnRequestDone(notifyMsg.message.shutter.frame_number);
@@ -227,7 +227,7 @@ int ResultProcessor::metadataDone(const MetadataEvent& event) {
         result.physcam_metadata = nullptr;
         mCallbackOps->process_capture_result(mCallbackOps, &result);
 
-        LOG2("<req%u>@%s", event.frameNumber, __func__);
+        LOG2("<fn%u>@%s", event.frameNumber, __func__);
     }
 
     bool found = false;
@@ -243,9 +243,9 @@ int ResultProcessor::metadataDone(const MetadataEvent& event) {
         }
     }
     if (!found) {
-        LOGW("<req%u>%s wasn't found!", event.frameNumber, __func__);
+        LOGW("<fn%u>%s wasn't found!", event.frameNumber, __func__);
     } else {
-        LOG2("<req%u>%s was returned", event.frameNumber, __func__);
+        LOG2("<fn%u>%s was returned", event.frameNumber, __func__);
     }
 
     return icamera::OK;
@@ -292,9 +292,9 @@ int ResultProcessor::bufferDone(const BufferEvent& event) {
     }
 
     if (!found) {
-        LOGW("<req%u>%s wasn't found!", event.frameNumber, __func__);
+        LOGW("<fn%u>%s wasn't found!", event.frameNumber, __func__);
     } else {
-        LOG2("<req%u>%s was returned", event.frameNumber, __func__);
+        LOG2("<fn%u>%s was returned", event.frameNumber, __func__);
     }
 
     if (event.timestamp != 0 && event.sequence != -1) {
@@ -390,7 +390,7 @@ void ResultProcessor::returnInputBuffer(uint32_t frameNumber) {
 
     camera3_stream_t* s = inBuf->getStream();
     if (s) {
-        LOG2("<req%u>@%s, w:%d, h:%d, f:%d", frameNumber, __func__, s->width, s->height, s->format);
+        LOG2("<fn%u>@%s, w:%d, h:%d, f:%d", frameNumber, __func__, s->width, s->height, s->format);
     }
 
     camera3_stream_buffer_t buf = {};
@@ -410,7 +410,7 @@ void ResultProcessor::returnInputBuffer(uint32_t frameNumber) {
     result.physcam_ids = nullptr;
     result.physcam_metadata = nullptr;
 
-    LOG2("<req%u>@%s, return the input buffer", frameNumber, __func__);
+    LOG2("<fn%u>@%s, return the input buffer", frameNumber, __func__);
     mCallbackOps->process_capture_result(mCallbackOps, &result);
 
     mInputCam3Bufs.erase(frameNumber);
@@ -425,7 +425,6 @@ bool ResultProcessor::checkRequestDone(const RequestState& requestState) {
 }
 
 void ResultProcessor::returnRequestDone(uint32_t frameNumber) {
-    LOG2("<req%u>@%s", frameNumber, __func__);
     TRACE_LOG_POINT("ResultProcessor", __func__, MAKE_COLOR(frameNumber), frameNumber);
 
     if ((frameNumber % FPS_FRAME_COUNT == 0) && icamera::Log::isLogTagEnabled(ST_FPS)) {
@@ -514,7 +513,7 @@ bool ResultProcessor::ResultThread::threadLoop() {
         case icamera::CAMERA_ISP_BUF_READY: {
             ShutterEvent event = {data.data.buffer_ready.frameNumber,
                                   data.data.buffer_ready.timestamp};
-            LOG2("<req%u>@%s, timestamp %ld, mResultProcessor:%p", event.frameNumber, __func__,
+            LOG2("<fn%u>@%s, timestamp %ld, mResultProcessor:%p", event.frameNumber, __func__,
                  event.timestamp, mResultProcessor);
             mResultProcessor->shutterDone(event);
             break;

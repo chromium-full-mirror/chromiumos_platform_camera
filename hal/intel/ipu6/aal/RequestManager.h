@@ -61,7 +61,7 @@ class RequestManager : public RequestManagerCallback, public icamera::camera_cal
     void returnRequestDone(uint32_t frameNumber);
 
  private:
-    void deleteStreams(bool inactiveOnly);
+    void deleteStreams();
     void increaseRequestCount();
     int waitProcessRequest();
     void waitAllRequestsDone();
@@ -93,6 +93,7 @@ class RequestManager : public RequestManagerCallback, public icamera::camera_cal
 
     std::map<int, android::CameraMetadata> mDefaultRequestSettings;
     std::vector<Camera3Stream*> mCamera3StreamVector;
+    std::vector<Camera3StreamHAL*> mCamera3HALStreams;  // Save HAL streams only
     bool mInputStreamConfigured;
 
     std::condition_variable mRequestCondition;

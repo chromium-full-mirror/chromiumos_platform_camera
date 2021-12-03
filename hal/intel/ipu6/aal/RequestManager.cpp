@@ -62,7 +62,7 @@ RequestManager::RequestManager(int cameraId)
 RequestManager::~RequestManager() {
     LOG1("@%s", __func__);
 
-    deleteStreams(false);
+    deleteStreams();
 
     delete mResultProcessor;
     delete mParameterResult;
@@ -148,7 +148,7 @@ void RequestManager::handleCallbackEvent(const icamera::camera_msg_data_t& data)
 
     if (!icamera::PlatformData::swProcessingAlignWithIsp(mCameraId)) return;
 
-    for (auto& stream : mCamera3StreamVector) {
+    for (auto& stream : mCamera3HALStreams) {
         if (stream->getPostProcessType() != icamera::POST_PROCESS_NONE) {
             stream->sendEvent(data);
         }
@@ -346,11 +346,6 @@ int RequestManager::configureStreams(camera3_stream_configuration_t* stream_list
              s.height, s.format, s.usage);
     }
 
-    // Mark all streams as NOT active
-    for (auto& stream : mCamera3StreamVector) {
-        stream->setActive(false);
-    }
-
     ret = icamera::camera_device_config_streams(mCameraId, &streamCfg);
     if (fdChooseStream && isIPUSupportFD && ret == icamera::OK) {
         requestStreamForFD = mHALStream[halStreamNum - 1];
@@ -359,7 +354,11 @@ int RequestManager::configureStreams(camera3_stream_configuration_t* stream_list
     CheckAndLogError(ret != icamera::OK, ret, "failed to configure stream, ret %d", ret);
 
     // Create Stream for new streams
-    requestStreamNum = 0;
+    deleteStreams();
+    int requestStreamIndex = 0;
+    // <listener stream, owner HAL stream index>
+    std::map<Camera3StreamListener*, int32_t> listenerStreamOwners;
+    std::map<int32_t, Camera3StreamHAL*> halStreams;  // <hal stream index, hal stream>
     for (uint32_t i = 0; i < streamsNum; i++) {
         camera3_stream_t* stream = stream_list->streams[i];
         if (stream->stream_type == CAMERA3_STREAM_INPUT) {
@@ -368,13 +367,27 @@ int RequestManager::configureStreams(camera3_stream_configuration_t* stream_list
 
         /* use halStreamFlag[] to find it's HAL stream index in requestStreams
         ** streamToHALIndex to find it's HAL Stream index in mHALStream[]*/
-        int halStreamIndex = streamToHALIndex[halStreamFlag[requestStreamNum]];
-        bool isHALStream = halStreamFlag[requestStreamNum] == requestStreamNum;
+        int halStreamIndex = streamToHALIndex[halStreamFlag[requestStreamIndex]];
+        bool isHALStream = halStreamFlag[requestStreamIndex] == requestStreamIndex;
         CheckAndLogError(halStreamIndex < 0 || halStreamIndex >= halStreamNum, icamera::BAD_VALUE,
                          "failed to find hal stream %d", halStreamIndex);
-        Camera3Stream* s = new Camera3Stream(
-            mCameraId, mResultProcessor, mParameterResult, mHALStream[halStreamIndex].max_buffers,
-            mHALStream[halStreamIndex], *stream, inputStream, isHALStream);
+        Camera3Stream* s = nullptr;
+        if (isHALStream) {
+            Camera3StreamHAL* hs =
+                new Camera3StreamHAL(mCameraId, mResultProcessor, mParameterResult,
+                                     mHALStream[halStreamIndex].max_buffers,
+                                     mHALStream[halStreamIndex], *stream, inputStream);
+            mCamera3HALStreams.push_back(hs);
+            halStreams[halStreamIndex] = hs;
+            s = reinterpret_cast<Camera3Stream*>(hs);
+        } else {
+            Camera3StreamListener* ls =
+                new Camera3StreamListener(mCameraId, mResultProcessor, mParameterResult,
+                                          mHALStream[halStreamIndex].max_buffers,
+                                          mHALStream[halStreamIndex], *stream, inputStream);
+            listenerStreamOwners[ls] = halStreamIndex;
+            s = reinterpret_cast<Camera3Stream*>(ls);
+        }
         s->setActive(true);
         stream->priv = s;
         stream->max_buffers = mHALStream[halStreamIndex].max_buffers;
@@ -382,7 +395,7 @@ int RequestManager::configureStreams(camera3_stream_configuration_t* stream_list
                          GRALLOC_USAGE_SW_WRITE_NEVER;
         mCamera3StreamVector.push_back(s);
 
-        requestStreamNum++;
+        requestStreamIndex++;
         LOGI("OUTPUT max buffer %d, usage %x, format %x", stream->max_buffers, stream->usage,
              stream->format);
 
@@ -391,13 +404,11 @@ int RequestManager::configureStreams(camera3_stream_configuration_t* stream_list
         }
     }
 
-    // Remove useless Camera3Stream
-    deleteStreams(true);
-
     // bind streams to HAL streams
-    for (int i = 0; i < mCamera3StreamVector.size(); i++) {
-        if (halStreamFlag[i] != i)
-            mCamera3StreamVector[halStreamFlag[i]]->addListener(mCamera3StreamVector[i]);
+    for (auto& iter : listenerStreamOwners) {
+        if (halStreams.find(iter.second) != halStreams.end()) {
+            halStreams[iter.second]->addListener(iter.first);
+        }
     }
 
     if (isFaceAeEnabled && isIPUSupportFD) {
@@ -480,7 +491,7 @@ int RequestManager::constructDefaultRequestSettings(int type, const camera_metad
 
 int RequestManager::processCaptureRequest(camera3_capture_request_t* request) {
     CheckAndLogError(!request, icamera::UNKNOWN_ERROR, "@%s, request is nullptr", __func__);
-    LOG2("<req%u>@%s, input_buffer:%d, num_output_buffers:%d", request->frame_number, __func__,
+    LOG2("<fn%u>@%s, input_buffer:%d, num_output_buffers:%d", request->frame_number, __func__,
          request->input_buffer ? 1 : 0, request->num_output_buffers);
 
     TRACE_LOG_POINT("RequestManager", __func__, MAKE_COLOR(request->frame_number),
@@ -501,7 +512,7 @@ int RequestManager::processCaptureRequest(camera3_capture_request_t* request) {
             break;
         }
     }
-    CheckAndLogError(index < 0, icamera::UNKNOWN_ERROR, "<req%u>no empty CameraBufferInfo!",
+    CheckAndLogError(index < 0, icamera::UNKNOWN_ERROR, "<fn%u>no empty CameraBufferInfo!",
                      request->frame_number);
     CLEAR(mCameraBufferInfo[index]);
 
@@ -565,7 +576,7 @@ int RequestManager::processCaptureRequest(camera3_capture_request_t* request) {
     if (!inputCam3Buf || opaqueRawInfo.sequence >= 0) {
         icamera::camera_buffer_t* buffer[kMaxStreamNum] = {nullptr};
         int numBuffers = 0;
-        for (auto& stream : mCamera3StreamVector) {
+        for (auto& stream : mCamera3HALStreams) {
             if (stream->fetchRequestBuffers(&mCameraBufferInfo[index].halBuffer[numBuffers],
                                             request->frame_number)) {
                 mCameraBufferInfo[index].halBuffer[numBuffers].sequence = opaqueRawInfo.sequence;
@@ -614,7 +625,7 @@ int RequestManager::processCaptureRequest(camera3_capture_request_t* request) {
         mFDStream->queueBufferDone(request->frame_number);
     }
 
-    for (auto& stream : mCamera3StreamVector) {
+    for (auto& stream : mCamera3HALStreams) {
         /* incase the HAL stream is not requested by user request, scan all the HAL
         ** streams check if any one is triggered by listener
         */
@@ -646,19 +657,14 @@ int RequestManager::flush() {
     return icamera::OK;
 }
 
-void RequestManager::deleteStreams(bool inactiveOnly) {
+void RequestManager::deleteStreams() {
     LOG1("@%s", __func__);
 
-    unsigned int i = 0;
-    while (i < mCamera3StreamVector.size()) {
-        Camera3Stream* s = mCamera3StreamVector.at(i);
-
-        if (!inactiveOnly || !s->isActive()) {
-            mCamera3StreamVector.erase(mCamera3StreamVector.begin() + i);
-            delete s;
-        } else {
-            ++i;
-        }
+    mCamera3HALStreams.clear();
+    while (!mCamera3StreamVector.empty()) {
+        Camera3Stream* s = mCamera3StreamVector.front();
+        mCamera3StreamVector.erase(mCamera3StreamVector.begin());
+        delete s;
     }
 
     if (mFDStream) {
@@ -688,7 +694,7 @@ void RequestManager::increaseRequestCount() {
 }
 
 void RequestManager::returnRequestDone(uint32_t frameNumber) {
-    LOG2("<req%u>@%s", frameNumber, __func__);
+    LOG2("<fn%u>@%s", frameNumber, __func__);
 
     std::lock_guard<std::mutex> l(mRequestLock);
 
@@ -702,7 +708,7 @@ void RequestManager::returnRequestDone(uint32_t frameNumber) {
     mRequestInProgress--;
     mRequestCondition.notify_one();
 
-    for (auto& stream : mCamera3StreamVector) {
+    for (auto& stream : mCamera3HALStreams) {
         stream->requestStreamDone(frameNumber);
     }
 
