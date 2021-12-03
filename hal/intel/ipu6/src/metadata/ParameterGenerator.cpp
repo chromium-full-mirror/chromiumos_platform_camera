@@ -420,6 +420,22 @@ int ParameterGenerator::updateCommonMetadata(Parameters* params, const AiqResult
         uint8_t lscFlags = aiqResult->mOutStats.rgbs_grid.shading_correction;
         metadata.update(INTEL_VENDOR_CAMERA_SHADING_CORRECTION, &lscFlags, 1);
 
+        if (Log::isLogTagEnabled(ST_STATS)) {
+            const cca::cca_out_stats *outStats = &aiqResult->mOutStats;
+            const rgbs_grid_block *rgbsPtr = aiqResult->mOutStats.rgbs_blocks;
+            int size = outStats->rgbs_grid.grid_width * outStats->rgbs_grid.grid_height;
+
+            int sumLuma = 0;
+            for (int j = 0; j < size; j++) {
+                sumLuma += (rgbsPtr[j].avg_b + rgbsPtr[j].avg_r +
+                            (rgbsPtr[j].avg_gb + rgbsPtr[j].avg_gr) / 2) / 3;
+            }
+
+            LOG2(ST_STATS, "RGB stat %dx%d, sequence %lld, y_mean %d",
+                 outStats->rgbs_grid.grid_width, outStats->rgbs_grid.grid_height,
+                 aiqResult->mSequence, size > 0 ? sumLuma/size : 0);
+        }
+
         metadata.update(INTEL_VENDOR_CAMERA_RGBS_STATS_BLOCKS,
                         reinterpret_cast<const uint8_t*>(aiqResult->mOutStats.rgbs_blocks),
                         (width * height * 5));

@@ -248,11 +248,9 @@ int AiqCore::updateParameter(const aiq_parameter_t& param) {
     return OK;
 }
 
-int AiqCore::setStatsParams(const cca::cca_stats_params& statsParams, cca::cca_out_stats* outStats,
-                            AiqStatistics* aiqStats) {
+int AiqCore::setStatsParams(const cca::cca_stats_params& statsParams, AiqStatistics* aiqStats) {
     LOG2("<aiq%lu>@%s, frame_timestamp:%lu, mTuningMode:%d", statsParams.frame_id, __func__,
          statsParams.frame_timestamp, mTuningMode);
-    CheckAndLogError(!outStats, BAD_VALUE, "@%s, outStats is nullptr", __func__);
 
     int ret = OK;
     IntelCca* intelCca = getIntelCca(mTuningMode);
@@ -261,8 +259,7 @@ int AiqCore::setStatsParams(const cca::cca_stats_params& statsParams, cca::cca_o
 
     if (aiqStats && aiqStats->mPendingDecode) {
         uint32_t bitmap = 0;
-        bool decodeRgbsStats = !mRgbStatsBypassed || outStats->get_rgbs_stats;
-        if (decodeRgbsStats) bitmap |= cca::CCA_STATS_RGBS | cca::CCA_STATS_HIST;
+        if (!mRgbStatsBypassed) bitmap |= cca::CCA_STATS_RGBS | cca::CCA_STATS_HIST;
         if (!mAfBypassed) {
             bitmap |= cca::CCA_STATS_AF;
 
@@ -270,7 +267,7 @@ int AiqCore::setStatsParams(const cca::cca_stats_params& statsParams, cca::cca_o
         }
         LOG3("<seq%ld> bypass bitmap %x", aiqStats->mSequence, bitmap);
 
-        if (decodeRgbsStats && !mAfBypassed) {
+        if (!mRgbStatsBypassed && !mAfBypassed) {
             aiqStats->mPendingDecode = false;
         }
         unsigned int byteUsed = 0;
@@ -287,7 +284,7 @@ int AiqCore::setStatsParams(const cca::cca_stats_params& statsParams, cca::cca_o
 
     {
         PERF_CAMERA_ATRACE_PARAM1_IMAGING("intelCca->setStatsParams", 1);
-        ia_err iaErr = intelCca->setStatsParams(statsParams, outStats);
+        ia_err iaErr = intelCca->setStatsParams(statsParams);
         ret = AiqUtils::convertError(iaErr);
         CheckAndLogError(ret != OK, ret, "setStatsParams fails, ret: %d", ret);
     }

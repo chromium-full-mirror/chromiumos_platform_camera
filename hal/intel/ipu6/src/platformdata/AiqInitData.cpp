@@ -245,8 +245,8 @@ int AiqInitData::getCameraModuleFromEEPROM(const std::string& nvmPath, std::stri
  * Search the path where CPF files are stored
  */
 int AiqInitData::findConfigFile(const std::string& camCfgDir, std::string* cpfPathName) {
-    LOG1("@%s, cpfPathName:%p", __func__, cpfPathName);
     CheckAndLogError(!cpfPathName, BAD_VALUE, "@%s, cpfPathName is nullptr", __func__);
+    LOG1("@%s, cpfPathName:%s", __func__, cpfPathName->c_str());
 
     std::vector<string> configFilePath;
     configFilePath.push_back("./");

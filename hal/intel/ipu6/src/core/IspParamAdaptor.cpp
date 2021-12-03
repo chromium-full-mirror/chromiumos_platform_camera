@@ -323,12 +323,25 @@ int IspParamAdaptor::decodeStatsData(TuningMode tuningMode,
 
     int64_t sequence = statsBuffer->getSequence();
     LOG2("<seq:%ld>@%s", sequence, __func__);
+    cca::cca_out_stats outStatsTemp;
+    cca::cca_out_stats* outStats = &outStatsTemp;
+    outStats->get_rgbs_stats = false;
+    AiqResult* aiqResult =
+        const_cast<AiqResult*>(AiqResultStorage::getInstance(mCameraId)->getAiqResult(sequence));
+    if (aiqResult && aiqResult->mAiqParam.callbackRgbs) {
+        outStats = &aiqResult->mOutStats;
+        outStats->get_rgbs_stats = true;
+    }
+
     AiqResultStorage *aiqResultStorage = AiqResultStorage::getInstance(mCameraId);
     AiqStatistics *aiqStatistics = aiqResultStorage->acquireAiqStatistics();
     aiqStatistics->mSequence = sequence;
     aiqStatistics->mTimestamp = TIMEVAL2USECS(statsBuffer->getTimestamp());
     aiqStatistics->mTuningMode = tuningMode;
-    aiqStatistics->mPendingDecode = PlatformData::isStatsRunningRateSupport(mCameraId);
+    aiqStatistics->mPendingDecode = false;
+    if (PlatformData::isStatsRunningRateSupport(mCameraId) && !outStats->get_rgbs_stats) {
+        aiqStatistics->mPendingDecode = true;
+    }
     aiqResultStorage->updateAiqStatistics(sequence);
 
     // Pend stats decoding to running 3A
@@ -345,10 +358,11 @@ int IspParamAdaptor::decodeStatsData(TuningMode tuningMode,
     }
 
     CheckAndLogError(!hwStatsData, UNKNOWN_ERROR, "%s, hwStatsData is nullptr", __func__);
+
     ia_isp_bxt_statistics_query_results_t queryResults = {};
     uint32_t bitmap = getRequestedStats();
     ia_err iaErr = mIntelCca->decodeStats(reinterpret_cast<uint64_t>(hwStatsData->data),
-                                          hwStatsData->size, bitmap, &queryResults);
+                                          hwStatsData->size, bitmap, &queryResults, outStats);
     CheckAndLogError(iaErr != ia_err_none, UNKNOWN_ERROR, "%s, Faield convert statistics",
                      __func__);
     LOG2("%s, query results: rgbs_grid(%d), af_grid(%d), dvs_stats(%d), paf_grid(%d)", __func__,

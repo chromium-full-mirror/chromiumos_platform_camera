@@ -752,9 +752,21 @@ status_t PSysProcessor::prepareTask(CameraBufferPortMap *srcBuffers,
         if (PlatformData::isGpuTnrEnabled()) {
             handleStillPipeForTnr(inputSequence, dstBuffers);
         }
-        dispatchTask(*srcBuffers, *dstBuffers);
-        // handle metadata event after running pal(update metadata from pal result)
-        sendPsysRequestEvent(dstBuffers, settingSequence, timestamp, EVENT_REQUEST_METADATA_READY);
+
+        bool callbackRgbs = false;
+        AiqResultStorage* storage = AiqResultStorage::getInstance(mCameraId);
+        AiqResult* aiqResult = const_cast<AiqResult*>(storage->getAiqResult(inputSequence));
+        if (aiqResult && aiqResult->mAiqParam.callbackRgbs) {
+            callbackRgbs = true;
+        }
+
+        dispatchTask(*srcBuffers, *dstBuffers, false, callbackRgbs);
+
+        if (!callbackRgbs) {
+            // handle metadata event after running pal(update metadata from pal result)
+            sendPsysRequestEvent(dstBuffers, settingSequence, timestamp,
+                                 EVENT_REQUEST_METADATA_READY);
+        }
     } else if (!holdOnInput && !isBufferHoldForRawReprocess(inputSequence)) {
         for (const auto& src : *srcBuffers) {
             mBufferProducer->qbuf(src.first, src.second);
@@ -797,7 +809,7 @@ void PSysProcessor::handleStillPipeForTnr(int64_t sequence, CameraBufferPortMap 
             }
             }
             if (!srcBuf.empty()) {
-                dispatchTask(srcBuf, fakeTaskBuffers, true);
+                dispatchTask(srcBuf, fakeTaskBuffers, true, false);
             }
         }
     }
@@ -806,7 +818,7 @@ void PSysProcessor::handleStillPipeForTnr(int64_t sequence, CameraBufferPortMap 
 }
 
 void PSysProcessor::dispatchTask(CameraBufferPortMap &inBuf, CameraBufferPortMap &outBuf,
-                                 bool fakeTask) {
+                                 bool fakeTask, bool callbackRgbs) {
     int64_t currentSequence = inBuf.begin()->second->getSequence();
     TRACE_LOG_POINT("PSysProcessor", "start run PSYS", MAKE_COLOR(currentSequence),
                     currentSequence);
@@ -851,6 +863,7 @@ void PSysProcessor::dispatchTask(CameraBufferPortMap &inBuf, CameraBufferPortMap
     taskParam.mInputBuffers = inBuf;
     taskParam.mOutputBuffers = outBuf;
     taskParam.mFakeTask = fakeTask;
+    taskParam.mCallbackRgbs = callbackRgbs;
 
     int64_t settingSequence = getSettingSequence(outBuf);
     // Handle per-frame settings if output buffer requires
@@ -1000,6 +1013,13 @@ void PSysProcessor::onFrameDone(const PSysTaskData& result) {
     }
 
     returnRawBuffer();
+}
+
+void PSysProcessor::onStatsDone(int64_t sequence, const CameraBufferPortMap& outBuf) {
+    LOG2("<seq%ld> %s", sequence, __func__);
+
+    // handle metadata event after decoding stats
+    sendPsysRequestEvent(&outBuf, sequence, 0, EVENT_REQUEST_METADATA_READY);
 }
 
 void PSysProcessor::outputRawImage(shared_ptr<CameraBuffer> &srcBuf,

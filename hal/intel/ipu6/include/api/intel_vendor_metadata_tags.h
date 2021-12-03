@@ -56,6 +56,7 @@ typedef enum vendor_metadata_tag {
     INTEL_VENDOR_CAMERA_TONE_MAP_CURVE,               // float[]      | public
     INTEL_VENDOR_CAMERA_POWER_MODE,                   // enum         | public
     INTEL_VENDOR_CAMERA_TOTAL_EXPOSURE_TARGET,        // int64        | public
+    INTEL_VENDOR_CAMERA_TOTAL_EXPOSURE_TARGET_RANGE,  // int64[]      | public
     INTEL_VENDOR_CAMERA_END,
 } vendor_metadata_tag_t;
 

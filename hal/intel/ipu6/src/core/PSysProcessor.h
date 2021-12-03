@@ -59,6 +59,7 @@ public:
     void onFrameDone(const PSysTaskData& result);
     void onBufferDone(int64_t sequence, Port port,
                       const std::shared_ptr<CameraBuffer> &camBuffer);
+    void onStatsDone(int64_t sequence, const CameraBufferPortMap& outBuf);
 
 private:
     DISALLOW_COPY_AND_ASSIGN(PSysProcessor);
@@ -69,7 +70,7 @@ private:
 
     status_t prepareTask(CameraBufferPortMap *srcBuffers, CameraBufferPortMap *dstBuffers);
     void dispatchTask(CameraBufferPortMap &inBuf, CameraBufferPortMap &outBuf,
-                      bool fakeTask = false);
+                      bool fakeTask = false, bool callbackRgbs = false);
 
     void handleEvent(EventData eventData);
 

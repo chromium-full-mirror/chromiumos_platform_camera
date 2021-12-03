@@ -62,6 +62,11 @@ Intel3AParameter::Intel3AParameter(int cameraId)
 
     mAfTrigger = AF_TRIGGER_IDLE;
     mAfMode = AF_MODE_OFF;
+
+    CLEAR(mSensitivityRange);
+    camera_info_t info = {};
+    PlatformData::getCameraInfo(mCameraId, info);
+    info.capability->getSupportedSensorSensitivityRange(mSensitivityRange);
 }
 
 Intel3AParameter::~Intel3AParameter() {}
@@ -388,13 +393,17 @@ void Intel3AParameter::updateAeParameter(const aiq_parameter_t& param) {
 
     CLEAR(mAeParams.manual_total_target_exposure);
     if (param.totalExposureTarget > 0) {
-        LOG2("%s, base_iso %d", __func__, mCMC.base_iso);
-        if (mCMC.base_iso > 0) {
-            // Will overwrite total exposure
-            for (unsigned int i = 0; i < mAeParams.num_exposures; i++) {
-                mAeParams.manual_total_target_exposure[i] =
-                    param.totalExposureTarget / mCMC.base_iso;
-            }
+        camera_range_t range = { -1, -1 };
+        int ret = PlatformData::getSupportAeExposureTimeRange(mCameraId, param.sceneMode, range);
+        int64_t tet = param.totalExposureTarget;
+        if (ret == OK && mCMC.base_iso > 0) {
+            int64_t max = static_cast<int64_t>(range.max * mSensitivityRange.max / mCMC.base_iso);
+            int64_t min = static_cast<int64_t>(range.min * mSensitivityRange.min / mCMC.base_iso);
+            tet = CLIP(tet, max, min);
+        }
+        // Will overwrite total exposure
+        for (unsigned int i = 0; i < mAeParams.num_exposures; i++) {
+            mAeParams.manual_total_target_exposure[i] = tet;
         }
     }
 }
@@ -707,6 +716,7 @@ void Intel3AParameter::dumpParameter() {
     LOG3("  manual et %u, ag %f, iso %d",
          mAeParams.manual_exposure_time_us[mAeParams.num_exposures - 1],
          mAeParams.manual_analog_gain[0], mAeParams.manual_iso[0]);
+    LOG3("  manual total et %u", mAeParams.manual_total_target_exposure[0]);
     ia_aiq_ae_manual_limits* limit = &mAeParams.manual_limits[0];
     LOG3("  manual limited ISO-[%d--%d], expo-[%d--%d], frame time-[%d--%d]", limit->manual_iso_min,
          limit->manual_iso_max, limit->manual_exposure_time_min, limit->manual_exposure_time_max,

@@ -41,6 +41,7 @@ struct PSysTaskData {
     TuningMode mTuningMode;
     bool mFakeTask;
     long mRequestId;
+    bool mCallbackRgbs;
 
     CameraBufferPortMap mInputBuffers;
     CameraBufferPortMap mOutputBuffers;
@@ -48,6 +49,7 @@ struct PSysTaskData {
         mTuningMode = TUNING_MODE_MAX;
         mFakeTask = false;
         mRequestId = -1;
+        mCallbackRgbs = false;
     }
 };
 
@@ -66,6 +68,7 @@ class PSysDagCallback {
     virtual void onFrameDone(const PSysTaskData& result) {}
     virtual void onBufferDone(int64_t sequence, Port port,
                               const std::shared_ptr<CameraBuffer>& camBuffer) {}
+    virtual void onStatsDone(int64_t sequence, const CameraBufferPortMap& outBuf) {}
 };
 
 class PSysDAG {
@@ -100,6 +103,7 @@ class PSysDAG {
      * Use to handle the frame done event from the executors.
      */
     int onFrameDone(Port port, const std::shared_ptr<CameraBuffer>& buffer);
+    void onStatsDone(int64_t sequence);
 
  private:
     DISALLOW_COPY_AND_ASSIGN(PSysDAG);

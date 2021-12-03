@@ -99,6 +99,7 @@ int PipeLiteExecutor::initPipe() {
                      mName.c_str(), ret);
 
     assignDefaultPortsForTerminals();
+
     return OK;
 }
 
@@ -611,11 +612,6 @@ int PipeLiteExecutor::processNewFrame() {
         // Notify stats first and then handle frame buffers to make sure the next executor
         // can get this executor's IQ result.
         notifyStatsDone(tuningMode, inV4l2Buf, outStatsBuffers, eventType);
-
-        // After the stats notified, we need to update the IPU parameters as well to get the
-        // latest AIQ result.
-        mPSysDag->prepareIpuParams(inBufSequence, true);
-
         notifyFrameDone(inV4l2Buf, outBuffers);
     } else {
         LOGW("Invalid notify policy:%d, should never happen.", mNotifyPolicy);
@@ -865,6 +861,7 @@ int PipeLiteExecutor::notifyStatsDone(TuningMode tuningMode, const v4l2_buffer_t
     if (mStreamId == VIDEO_STREAM_ID && inV4l2Buf.sequence > mLastStatsSequence) {
         mLastStatsSequence = inV4l2Buf.sequence;
     }
+    mPSysDag->onStatsDone(inV4l2Buf.sequence);
 
     return OK;
 }

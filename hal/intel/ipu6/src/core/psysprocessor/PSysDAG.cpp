@@ -558,6 +558,11 @@ void PSysDAG::addTask(PSysTaskData taskParam) {
     if (taskParam.mTuningMode != mTuningMode) {
         tuningReconfig(taskParam.mTuningMode);
     }
+    if (taskParam.mCallbackRgbs) {
+        for (auto& executor : mExecutorsPool) {
+            executor->setNotifyPolicy(POLICY_STATS_FIRST);
+        }
+    }
 
     TaskInfo task = {};
     {
@@ -683,6 +688,23 @@ int PSysDAG::onFrameDone(Port port, const std::shared_ptr<CameraBuffer>& buffer)
     }
 
     return OK;
+}
+
+void PSysDAG::onStatsDone(int64_t sequence) {
+    LOG2("<seq%ld> %s", sequence, __func__);
+
+    AutoMutex taskLock(mTaskLock);
+    for (auto it = mOngoingTasks.begin(); it != mOngoingTasks.end(); it++) {
+        // Check if the returned buffer belong to the task.
+        if (sequence != it->mTaskData.mInputBuffers.at(mDefaultMainInputPort)->getSequence()) {
+            continue;
+        }
+
+        if (it->mTaskData.mCallbackRgbs) {
+            mPSysDagCB->onStatsDone(sequence, it->mTaskData.mOutputBuffers);
+        }
+        return;
+    }
 }
 
 int PSysDAG::prepareIpuParams(int64_t sequence, bool forceUpdate, TaskInfo* task) {

@@ -290,8 +290,6 @@ AiqEngine::AiqState AiqEngine::prepareInputParam(AiqStatistics* aiqStats, AiqRes
 
     // set Stats
     cca::cca_stats_params statsParams = {};
-    aiqResult->mOutStats.get_rgbs_stats = mAiqParam.callbackRgbs;
-
     ret = prepareStatsParams(&statsParams, aiqStats);
     if (ret != OK) {
         LOG2("%s: no useful stats", __func__);
@@ -303,7 +301,7 @@ AiqEngine::AiqState AiqEngine::prepareInputParam(AiqStatistics* aiqStats, AiqRes
         statsParams.using_rgbs_for_aec = true;
     }
 
-    mAiqCore->setStatsParams(statsParams, &aiqResult->mOutStats, aiqStats);
+    mAiqCore->setStatsParams(statsParams, aiqStats);
 
     return AIQ_STATE_RUN;
 }
