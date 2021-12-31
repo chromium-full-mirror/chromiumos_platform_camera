@@ -44,7 +44,8 @@ IspParamAdaptor::IspParamAdaptor(int cameraId) :
         mIpuOutputFormat(V4L2_PIX_FMT_NV12),
         mGraphConfig(nullptr),
         mIntelCca(nullptr),
-        mGammaTmOffset(-1) {
+        mGammaTmOffset(-1),
+        mIspTuningIndex(-1) {
     LOG1("<id%d>@%s", mCameraId, __func__);
     CLEAR(mLastPalDataForVideoPipe);
 
@@ -242,6 +243,27 @@ int IspParamAdaptor::configure(const stream_t &stream, ConfigMode configMode,
         CheckAndLogError(ret != OK, ret, "%s, Failed to allocate isp parameter buffers", __func__);
     }
 
+    if (PlatformData::supportUpdateTuning()) {
+        for (auto& ispParamIt : mStreamIdToIspParameterMap) {
+            int ispTuningIndex = mGraphConfig->getTuningModeByStreamId(ispParamIt.first);
+            // Use the tuning mode in video pipe to update the isp tuning data
+            if (ispParamIt.first == VIDEO_STREAM_ID &&
+                ispTuningIndex != -1 && ispTuningIndex != mIspTuningIndex) {
+                uint8_t lardTag = cca::CCA_LARD_ISP;
+                ia_lard_input_params lardParam = {};
+                lardParam.isp_mode_index = ispTuningIndex;
+                cca::cca_nvm tmpNvm = {};
+
+                ia_err iaErr = mIntelCca->updateTuning(lardTag, lardParam, tmpNvm);
+                CheckAndLogError(iaErr != ia_err_none, UNKNOWN_ERROR,
+                                 "%s, Failed to update isp tuning data. tuning_mode %d",
+                                 __func__, ispTuningIndex);
+                mIspTuningIndex = ispTuningIndex;
+                LOG2("%s, Update isp tuning data. tuning_mode: %d", __func__, mIspTuningIndex);
+                break;
+            }
+        }
+    }
     /*
      *  IA_ISP_BXT can run without 3A results to produce the defaults for a
      *  given sensor configuration.

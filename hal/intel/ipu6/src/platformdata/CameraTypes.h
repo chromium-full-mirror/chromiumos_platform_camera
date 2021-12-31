@@ -187,6 +187,7 @@ struct CommonConfig {
     bool useTnrGlobalProtection;
     int cameraNumber;
     int videoStreamNum;
+    bool supportIspTuningUpdate;
 
     CommonConfig() {
         xmlVersion = 1.0;
@@ -196,6 +197,7 @@ struct CommonConfig {
         useTnrGlobalProtection = false;
         cameraNumber = -1;
         videoStreamNum = DEFAULT_VIDEO_STREAM_NUM;
+        supportIspTuningUpdate = false;
     }
 };
 

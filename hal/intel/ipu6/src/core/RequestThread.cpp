@@ -243,7 +243,6 @@ int RequestThread::waitFrame(int streamId, camera_buffer_t **ubuffer) {
                 break;
             }
         }
-        CheckAndLogError(!camBuffer, UNKNOWN_ERROR, "%s: camBuffer order isn't correct", __func__);
         *ubuffer = camBuffer->getUserBuffer();
     }
     {

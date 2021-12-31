@@ -144,6 +144,7 @@ private:
     std::shared_ptr<IGraphConfig> mGraphConfig;
     IntelCca *mIntelCca;
     int mGammaTmOffset;
+    int mIspTuningIndex;
 
     struct PalRecord {
         int uuid;

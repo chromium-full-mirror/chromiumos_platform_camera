@@ -275,6 +275,8 @@ void CameraParser::handleCommon(CameraParser* profiles, const char* name, const 
     } else if (strcmp(name, "videoStreamNum") == 0) {
         int val = atoi(atts[1]);
         cfg->videoStreamNum = val > 0 ? val : DEFAULT_VIDEO_STREAM_NUM;
+    } else if (strcmp(name, "supportIspTuningUpdate") == 0) {
+        cfg->supportIspTuningUpdate = strcmp(atts[1], "true") == 0;
     }
 }
 

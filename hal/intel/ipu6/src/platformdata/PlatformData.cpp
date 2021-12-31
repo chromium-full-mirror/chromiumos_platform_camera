@@ -1337,6 +1337,10 @@ int PlatformData::getVideoStreamNum() {
     return getInstance()->mStaticCfg.mCommonConfig.videoStreamNum;
 }
 
+bool PlatformData::supportUpdateTuning() {
+    return getInstance()->mStaticCfg.mCommonConfig.supportIspTuningUpdate;
+}
+
 bool PlatformData::isUsingGpuAlgo() {
     bool enabled = false;
     enabled |= isGpuTnrEnabled();

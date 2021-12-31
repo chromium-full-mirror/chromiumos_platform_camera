@@ -1287,6 +1287,11 @@ class PlatformData {
     static int getVideoStreamNum();
 
     /**
+     * Check if support to update tuning data or not
+     */
+    static bool supportUpdateTuning();
+
+    /**
      * Check should connect gpu algo or not
      * should connect gpu algo service if any gpu algorithm is used
      * \return true if should connect gpu algo.
