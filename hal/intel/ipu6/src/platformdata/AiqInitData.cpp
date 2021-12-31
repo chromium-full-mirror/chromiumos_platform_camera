@@ -297,7 +297,7 @@ ia_binary_data* AiqInitData::getNvm(int cameraId, const char* overwrittenFile, i
         nvmFile = overwrittenFile;
         size = fileSize;
     }
-    if (!nvmFile || !fileSize) return nullptr;
+    if (!nvmFile || !size) return nullptr;
 
     if (!mNvm) {
         LOG2("NVM data for %s is located in %s, size %d", mSensorName.c_str(), nvmFile, size);

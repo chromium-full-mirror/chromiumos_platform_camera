@@ -392,7 +392,8 @@ void Intel3AParameter::updateAeParameter(const aiq_parameter_t& param) {
     }
 
     CLEAR(mAeParams.manual_total_target_exposure);
-    if (param.totalExposureTarget > 0) {
+    // Ignore TET in manual exposure case
+    if (param.totalExposureTarget > 0 && param.manualExpTimeUs <= 0 && param.manualIso <= 0) {
         camera_range_t range = { -1, -1 };
         int ret = PlatformData::getSupportAeExposureTimeRange(mCameraId, param.sceneMode, range);
         int64_t tet = param.totalExposureTarget;

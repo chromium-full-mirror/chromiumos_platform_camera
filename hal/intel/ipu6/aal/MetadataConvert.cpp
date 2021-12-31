@@ -1518,6 +1518,12 @@ int MetadataConvert::convertVendorTagParameter(const icamera::Parameters& parame
         }
     }
 
+    entry = meta.find(INTEL_VENDOR_CAMERA_TOTAL_EXPOSURE_TARGET_RANGE);
+    if (entry.count == 2) {
+        settings->update(INTEL_VENDOR_CAMERA_TOTAL_EXPOSURE_TARGET_RANGE,
+                         entry.data.i64, entry.count);
+    }
+
     entry = meta.find(INTEL_VENDOR_CAMERA_CALLBACK_TM_CURVE);
     if (entry.count == 1 && entry.data.u8[0] == INTEL_VENDOR_CAMERA_CALLBACK_TM_CURVE_TRUE) {
         camera_metadata_entry aEntry = settings->find(ANDROID_TONEMAP_MAX_CURVE_POINTS);

@@ -40,14 +40,17 @@ void AiqUtils::dumpAeResults(const cca::cca_ae_results& aeResult) {
              aeResult.exposures[i].sensor_exposure[0].line_length_pixels,
              aeResult.exposures[i].sensor_exposure[0].frame_length_lines);
 
-        LOG3("AE exp[%d] ag %f dg %f Fn %f time %uus total %u filter[%s] iso %d", i,
-             aeResult.exposures[i].exposure[0].analog_gain,
+        LOG3("AE exp[%d] ag %f dg %f Fn %f time %uus total %u filter[%s] iso %d tet limits[%u,%u]",
+             i, aeResult.exposures[i].exposure[0].analog_gain,
              aeResult.exposures[i].exposure[0].digital_gain,
              aeResult.exposures[i].exposure[0].aperture_fn,
              aeResult.exposures[i].exposure[0].exposure_time_us,
              aeResult.exposures[i].exposure[0].total_target_exposure,
              aeResult.exposures[i].exposure[0].nd_filter_enabled? "YES": "NO",
-             aeResult.exposures[i].exposure[0].iso);
+             aeResult.exposures[i].exposure[0].iso,
+             aeResult.exposures[i].exposure[0].low_limit_total_exposure,
+             aeResult.exposures[i].exposure[0].up_limit_total_exposure);
+
         LOG3("AE distance convergence: %f, AE Converged : %s",
              aeResult.exposures[i].distance_from_convergence,
              aeResult.exposures[i].converged ? "YES" : "NO");

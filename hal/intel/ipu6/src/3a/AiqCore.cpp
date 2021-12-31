@@ -243,7 +243,10 @@ int AiqCore::updateParameter(const aiq_parameter_t& param) {
     mAwbBypassed = bypassAwb(param);
     LOG2("Ae Bypass: %d, Af Bypass: %d, Awb Bypass: %d", mAeBypassed, mAfBypassed, mAwbBypassed);
 
-    mRgbStatsBypassed = mAeBypassed && mAwbBypassed;
+    mRgbStatsBypassed = false;
+    if (param.powerMode == CAMERA_LOW_POWER && mAeBypassed && mAwbBypassed && mAfBypassed) {
+        mRgbStatsBypassed = true;
+    }
 
     return OK;
 }
@@ -682,7 +685,9 @@ bool AiqCore::bypassAe(const aiq_parameter_t& param) {
     if (mAeRunTime == 0 || (mIntel3AParameter->mAeParams.ev_shift != mLastEvShift)) return false;
     if (mAeForceLock || mAeRunTime % mIntel3AParameter->mAePerTicks != 0) return true;
 
-    if (param.aeMode != AE_MODE_AUTO || param.powerMode != CAMERA_LOW_POWER) return false;
+    // run AE if manual AE or total exposure target is set
+    if (param.aeMode != AE_MODE_AUTO || param.powerMode != CAMERA_LOW_POWER ||
+        param.totalExposureTarget > 0) return false;
 
     bool converged = mLastAeResult.exposures[0].converged;
 

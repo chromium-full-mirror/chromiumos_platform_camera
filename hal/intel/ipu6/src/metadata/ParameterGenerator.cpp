@@ -441,6 +441,18 @@ int ParameterGenerator::updateCommonMetadata(Parameters* params, const AiqResult
                         (width * height * 5));
     }
 
+    if (aiqResult->mAiqParam.manualExpTimeUs <= 0 && aiqResult->mAiqParam.manualIso <= 0) {
+        int64_t range[] =
+            { aiqResult->mAeResults.exposures[0].exposure[0].low_limit_total_exposure,
+              aiqResult->mAeResults.exposures[0].exposure[0].up_limit_total_exposure };
+        LOG2("total et limits [%ldx%ld]", range[0], range[1]);
+        entry.tag = INTEL_VENDOR_CAMERA_TOTAL_EXPOSURE_TARGET_RANGE;
+        entry.type = ICAMERA_TYPE_INT64;
+        entry.count = 2;
+        entry.data.i64 = range;
+        ParameterHelper::mergeTag(entry, params);
+    }
+
     if (aiqResult->mAiqParam.callbackTmCurve) {
         const cca::cca_gbce_params& gbceResults = aiqResult->mGbceResults;
         int multiplier = gbceResults.tone_map_lut_size / mTonemapMaxCurvePoints;
