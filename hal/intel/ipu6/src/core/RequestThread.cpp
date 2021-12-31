@@ -70,8 +70,8 @@ void RequestThread::clearRequests() {
     for (int streamId = 0; streamId < MAX_STREAM_NUMBER; streamId++) {
         FrameQueue& frameQueue = mOutputFrames[streamId];
         AutoMutex lock(frameQueue.mFrameMutex);
-        while (!frameQueue.mFrameQueue.empty()) {
-            frameQueue.mFrameQueue.pop();
+        if (!frameQueue.mFrameQueue.empty()) {
+            frameQueue.mFrameQueue.clear();
         }
         frameQueue.mFrameAvailableSignal.broadcast();
     }
@@ -81,7 +81,10 @@ void RequestThread::clearRequests() {
     while (!mPendingRequests.empty()) {
         mPendingRequests.pop_back();
     }
-
+    for (int streamId = 0; streamId < MAX_STREAM_NUMBER; streamId++) {
+        while (!mRequestQueue[streamId].empty())
+            mRequestQueue[streamId].pop();
+    }
     mLastRequestId = -1;
     mLastEffectSeq = -1;
     mLastAppliedSeq = -1;
@@ -156,7 +159,10 @@ int RequestThread::processRequest(int bufferNum, camera_buffer_t **ubuffer,
     bool hasVideoBuffer = false;
 
     for (int id = 0; id < bufferNum; id++) {
+        int streamId = ubuffer[id]->s.id;
         request.mBuffer[id] = ubuffer[id];
+        mRequestQueue[streamId].push(ubuffer[id]);
+
         if (ubuffer[id]->s.usage == CAMERA_STREAM_PREVIEW ||
             ubuffer[id]->s.usage == CAMERA_STREAM_VIDEO_CAPTURE) {
             hasVideoBuffer = true;
@@ -197,25 +203,53 @@ RequestThread::copyRequestParams(const Parameters *srcParams) {
     return sParams;
 }
 
+bool RequestThread::isBufferInQueue(FrameQueue &queue, camera_buffer_t *buffer) {
+    if (queue.mFrameQueue.empty()) return false;
+
+    for (auto& frame : queue.mFrameQueue) {
+        if (frame->getUserBuffer()->addr == buffer->addr) return true;
+    }
+    return false;
+}
+
 int RequestThread::waitFrame(int streamId, camera_buffer_t **ubuffer) {
-    FrameQueue& frameQueue = mOutputFrames[streamId];
-    ConditionLock lock(frameQueue.mFrameMutex);
-
-    if (!mActive) return NO_INIT;
-    while (frameQueue.mFrameQueue.empty()) {
-        int ret = frameQueue.mFrameAvailableSignal.waitRelative(
-                      lock,
-                      kWaitFrameDuration * SLOWLY_MULTIPLIER);
-        if (!mActive) return NO_INIT;
-
-        CheckWarning(ret == TIMED_OUT, ret, "<id%d>@%s, time out happens, wait recovery",
-                     mCameraId, __func__);
+    camera_buffer_t* bufferWait = nullptr;
+    {
+        AutoMutex l(mPendingReqLock);
+        bufferWait = mRequestQueue[streamId].front();
     }
 
-    shared_ptr<CameraBuffer> camBuffer = frameQueue.mFrameQueue.front();
-    frameQueue.mFrameQueue.pop();
-    *ubuffer = camBuffer->getUserBuffer();
+    {
+        FrameQueue& frameQueue = mOutputFrames[streamId];
+        ConditionLock lock(frameQueue.mFrameMutex);
+        if (!mActive || bufferWait == nullptr) return NO_INIT;
 
+        // wait until the requested buffer is ready
+        while (!isBufferInQueue(frameQueue, bufferWait)) {
+            int ret = frameQueue.mFrameAvailableSignal.waitRelative(
+                lock, kWaitFrameDuration * SLOWLY_MULTIPLIER);
+            if (!mActive) return NO_INIT;
+
+            CheckWarning(ret == TIMED_OUT, ret, "<id%d>@%s, time out happens, wait recovery",
+                         mCameraId, __func__);
+        }
+
+        shared_ptr<CameraBuffer> camBuffer = nullptr;
+        for (auto frame = frameQueue.mFrameQueue.begin(); frame != frameQueue.mFrameQueue.end();
+             frame++) {
+            if ((*frame)->getUserBuffer()->addr == bufferWait->addr) {
+                camBuffer = *frame;
+                frameQueue.mFrameQueue.erase(frame);
+                break;
+            }
+        }
+        CheckAndLogError(!camBuffer, UNKNOWN_ERROR, "%s: camBuffer order isn't correct", __func__);
+        *ubuffer = camBuffer->getUserBuffer();
+    }
+    {
+        AutoMutex l(mPendingReqLock);
+        mRequestQueue[streamId].pop();
+    }
     LOG2("@%s, frame returned. camera id:%d, stream id:%d", __func__, mCameraId, streamId);
 
     return OK;
@@ -286,11 +320,8 @@ void RequestThread::handleEvent(EventData eventData) {
                     FrameQueue& frameQueue = mOutputFrames[streamId];
 
                     AutoMutex lock(frameQueue.mFrameMutex);
-                    bool needSignal = frameQueue.mFrameQueue.empty();
-                    frameQueue.mFrameQueue.push(eventData.buffer);
-                    if (needSignal) {
-                        frameQueue.mFrameAvailableSignal.signal();
-                    }
+                    frameQueue.mFrameQueue.push_back(eventData.buffer);
+                    frameQueue.mFrameAvailableSignal.signal();
                 } else {
                     LOG2("%s: fake request return %u", __func__, eventData.buffer->getSequence());
                 }
