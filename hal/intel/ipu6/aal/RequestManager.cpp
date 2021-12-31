@@ -285,14 +285,13 @@ int RequestManager::createHALStreams(camera3_stream_configuration_t* stream_list
     }
 
     /* If it supports one more video output to process face detection */
-    icamera::stream_t requestStreamForFD = {};
     camera3_stream_t* fdStream = nullptr;
-    bool isFaceAeEnabled = icamera::PlatformData::isFaceAeEnabled(mCameraId);
-    bool isIPUSupportFD = icamera::PlatformData::isIPUSupportFD(mCameraId);
+    bool isFaceEngineEnabled = icamera::PlatformData::isFaceDetectionSupported(mCameraId);
     // Mark one camera3Stream run face detection
-    if (isFaceAeEnabled) {
+    if (isFaceEngineEnabled) {
         LOG1("Face detection is enable");
         fdStream = choosePreviewStream(streamsNum, stream_list->streams);
+        bool isIPUSupportFD = icamera::PlatformData::isIPUSupportFD(mCameraId);
         if (fdStream && isIPUSupportFD) {
             if (RESOLUTION_VGA_WIDTH * fdStream->height !=
                 fdStream->width * RESOLUTION_VGA_HEIGHT) {
@@ -300,6 +299,7 @@ int RequestManager::createHALStreams(camera3_stream_configuration_t* stream_list
             }
             mFDStreamsInfo.usage = fdStream->usage;
             mFDStreamsInfo.format = fdStream->format;
+            icamera::stream_t requestStreamForFD = {};
             ret = HalV3Utils::fillHALStreams(mCameraId, mFDStreamsInfo, &requestStreamForFD);
             CheckAndLogError(ret != icamera::OK, ret, "failed to fill requestStreamForFD ret:%d",
                              ret);

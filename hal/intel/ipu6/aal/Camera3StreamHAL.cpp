@@ -23,6 +23,7 @@
 
 #include "CameraLog.h"
 #include "PlatformData.h"
+#include "HALv3Utils.h"
 #include "Utils.h"
 
 namespace camera3 {
@@ -51,7 +52,8 @@ void Camera3StreamHAL::sendEvent(const icamera::camera_msg_data_t& data) {
 
 int Camera3StreamHAL::setActive(bool state) {
     if (!mStreamState && state) {
-        mBufferPool->createBufferPool(mCameraId, mMaxNumReqInProc, mHALStream);
+        mBufferPool->createBufferPool(mCameraId, mMaxNumReqInProc, mHALStream.width,
+            mHALStream.height, HalV3Utils::V4l2FormatToHALFormat(mHALStream.format), mStream.usage);
         LOG2("@%s, HAL stream create BufferPool", __func__);
     } else if (mStreamState && !state) {
         if (mBufferPool) {

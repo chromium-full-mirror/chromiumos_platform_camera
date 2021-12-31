@@ -236,8 +236,20 @@ bool PlatformData::isEnableLtmThread(int cameraId) {
     return getInstance()->mStaticCfg.mCameras[cameraId].mEnableLtmThread;
 }
 
+bool PlatformData::isFaceDetectionSupported(int cameraId) {
+    Parameters *source = &(getInstance()->mStaticCfg.mCameras[cameraId].mCapability);
+    const icamera::CameraMetadata& meta = icamera::ParameterHelper::getMetadata(*source);
+    auto entry = meta.find(CAMERA_STATISTICS_INFO_AVAILABLE_FACE_DETECT_MODES);
+    for (size_t i = 0; i < entry.count; i++) {
+        if (entry.data.u8[i] != CAMERA_STATISTICS_FACE_DETECT_MODE_OFF) return true;
+    }
+
+    return false;
+}
+
 bool PlatformData::isFaceAeEnabled(int cameraId) {
-    return getInstance()->mStaticCfg.mCameras[cameraId].mFaceAeEnabled;
+    return (isFaceDetectionSupported(cameraId) &&
+            getInstance()->mStaticCfg.mCameras[cameraId].mFaceAeEnabled);
 }
 
 int PlatformData::faceEngineVendor(int cameraId) {

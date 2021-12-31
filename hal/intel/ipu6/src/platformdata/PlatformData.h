@@ -143,7 +143,7 @@ class PlatformData {
                       mISYSCompression(false),
                       mPSACompression(false),
                       mOFSCompression(false),
-                      mFaceAeEnabled(false),
+                      mFaceAeEnabled(true),
                       mFaceEngineVendor(FACE_ENGINE_INTEL_PVL),
                       mFaceEngineRunningInterval(FACE_ENGINE_DEFAULT_RUNNING_INTERVAL),
                       mFaceEngineRunningIntervalNoFace(FACE_ENGINE_DEFAULT_RUNNING_INTERVAL),
@@ -616,10 +616,18 @@ class PlatformData {
     static bool isEnableLtmThread(int cameraId);
 
     /**
-     * Check face detection is enabled or not
+     * Check face engine is enabled or not
      *
      * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
-     * \return if face detection is enabled or not.
+     * \return if face engine is enabled or not.
+     */
+    static bool isFaceDetectionSupported(int cameraId);
+
+    /**
+     * Check face AE is enabled or not, only for debug
+     *
+     * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
+     * \return if face ae is enabled or not.
      */
     static bool isFaceAeEnabled(int cameraId);
 

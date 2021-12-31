@@ -339,7 +339,7 @@ void ResultProcessor::updateMetadata(const icamera::Parameters& parameter,
      *  if we support face ae and the face detection mode is not off,
      *  set face detect to request metadata, then the face area will be drawn.
      */
-    if (icamera::PlatformData::isFaceAeEnabled(mCameraId)) {
+    if (icamera::PlatformData::isFaceDetectionSupported(mCameraId)) {
         uint8_t faceDetectMode;
         int ret = parameter.getFaceDetectMode(faceDetectMode);
         if (ret == icamera::OK && faceDetectMode != icamera::FD_MODE_OFF) {

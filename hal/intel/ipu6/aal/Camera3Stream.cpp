@@ -165,8 +165,16 @@ bool Camera3Stream::handleNewFrame(std::shared_ptr<StreamComInfo> hCapture,
     }
     CheckAndLogError(ret != icamera::OK, true, "doPostProcessing fails");
 
+    // Face only run in preview stream, so parameter mustn't be nullptr in this Camera3Stream
     if (mFaceDetection) {
-        mFaceDetection->runFaceDetection(ccBuf);
+        uint8_t faceDetectMode = icamera::FD_MODE_OFF;
+        if (parameter) {
+            parameter->getFaceDetectMode(faceDetectMode);
+        }
+        if (icamera::PlatformData::isFaceAeEnabled(mCameraId) ||
+            faceDetectMode != icamera::FD_MODE_OFF) {
+            mFaceDetection->runFaceDetection(ccBuf);
+        }
     }
 
     if (mHALStream.usage != icamera::CAMERA_STREAM_OPAQUE_RAW) {

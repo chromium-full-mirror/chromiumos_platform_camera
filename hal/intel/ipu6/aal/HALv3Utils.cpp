@@ -72,6 +72,19 @@ int HALFormatToV4l2Format(int cameraId, int halFormat, int usage) {
     return format;
 }
 
+int V4l2FormatToHALFormat(int v4l2Format) {
+    int format = HAL_PIXEL_FORMAT_IMPLEMENTATION_DEFINED;
+    switch (v4l2Format) {
+        case V4L2_PIX_FMT_P010:
+            format = HAL_PIXEL_FORMAT_YCBCR_P010;
+            break;
+        default:
+            break;
+    }
+
+    return format;
+}
+
 int getRotationDegrees(const camera3_stream_t& stream) {
     if (stream.stream_type != CAMERA3_STREAM_OUTPUT) {
         LOG2("%s, no need rotation for stream type %d", __func__, stream.stream_type);

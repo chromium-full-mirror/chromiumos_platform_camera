@@ -40,6 +40,7 @@ struct CrosCameraInfo {
 
 const char* getCamera3StreamType(int type);
 int HALFormatToV4l2Format(int cameraId, int halFormat, int usage);
+int V4l2FormatToHALFormat(int v4l2Format);
 int getRotationDegrees(const camera3_stream_t& stream);
 bool isSameRatioWithSensor(const icamera::stream_t* stream, int cameraId);
 int fillHALStreams(int cameraId, const camera3_stream_t& camera3Stream, icamera::stream_t* stream);
