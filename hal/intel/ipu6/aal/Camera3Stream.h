@@ -25,7 +25,6 @@
 #include <utility>
 #include <vector>
 
-#include "Camera3BufferPool.h"
 #include "FaceDetection.h"
 #include "PostProcessor.h"
 #include "ResultProcessor.h"
@@ -33,18 +32,21 @@
 
 namespace camera3 {
 
-struct CaptureResult {
-    uint32_t frameNumber;
-    camera3_stream_buffer_t outputBuffer;
-    buffer_handle_t handle;
-    std::shared_ptr<Camera3Buffer> inputCam3Buf;
-    icamera::Parameters param;
-};
-
 struct StreamComInfo {
     std::shared_ptr<Camera3Buffer> cam3Buf;
     uint32_t frameNumber;
     int64_t sequence;
+};
+
+struct CaptureResult {
+    uint32_t frameNumber;
+    std::shared_ptr<Camera3Buffer> outputCam3Buf;
+    camera3_stream_buffer_t outputBuffer;
+    buffer_handle_t handle;
+    std::shared_ptr<Camera3Buffer> inputCam3Buf;
+    icamera::Parameters param;
+
+    std::shared_ptr<StreamComInfo> hCapture;  // Related device capture info
 };
 
 class ParameterResult;
@@ -66,12 +68,11 @@ class Camera3Stream : public icamera::Thread {
     virtual bool threadLoop() { return false; }
     virtual void requestExit();
 
-    int processRequest(const std::shared_ptr<Camera3Buffer>& inputCam3Buf,
-                       const camera3_stream_buffer_t& outputBuffer, uint32_t frameNumber);
+    int processRequest(uint32_t frameNumber, const std::shared_ptr<Camera3Buffer>& inputCam3Buf,
+                       const camera3_stream_buffer_t& outputBuffer,
+                       const icamera::Parameters& param);
 
-    void queueBufferDone(uint32_t frameNumber, const std::shared_ptr<Camera3Buffer>& inputCam3Buf,
-                         const camera3_stream_buffer_t& outputBuffer,
-                         const icamera::Parameters& param);
+    void queueBufferDone(uint32_t frameNumber);
     virtual int setActive(bool state);
     bool isActive() { return mStreamState; }
     void activateFaceDetection(unsigned int maxFaceNum);
@@ -80,10 +81,11 @@ class Camera3Stream : public icamera::Thread {
     // drain all pending requests
     void drainAllPendingRequests();
 
-    /* get the request status anf Camera3Buf of this stream
-    ** return nullptr if stream not requested the frame
-    */
-    std::shared_ptr<StreamComInfo> getCaptureRequest(uint32_t frameNumber);
+    /* Get the device capture info of this stream for requests
+     * Return false if this request doesn't request device capture for this stream.
+     * Otherwise, valid cam3Buf will return alternative buffer that can be enqueued to device.
+     */
+    bool requestHALCapture(uint32_t frameNumber, std::shared_ptr<Camera3Buffer>* cam3Buf);
 
  protected:
     bool handleNewFrame(std::shared_ptr<StreamComInfo> hCapture,
@@ -106,9 +108,6 @@ class Camera3Stream : public icamera::Thread {
     std::condition_variable mBufferDoneCondition;
     std::mutex mLock;
 
-    std::condition_variable mSofCondition;
-    std::mutex mSofLock;
-
     CallbackEventInterface* mEventCallback;
     ParameterResult* mParameterResult;
 
@@ -118,7 +117,6 @@ class Camera3Stream : public icamera::Thread {
     bool mStreamState;
     icamera::stream_t mHALStream;
     uint32_t mMaxNumReqInProc;
-    std::unique_ptr<Camera3BufferPool> mBufferPool;
 
     camera3_stream_t mStream;
 
@@ -130,79 +128,15 @@ class Camera3Stream : public icamera::Thread {
     StreamStatus mStreamStatus;
 
     /* key is frame number, value is CaptureResult */
+    // Save received requests temporarily util the related buffers are queued to device for capture
+    std::map<uint32_t, std::shared_ptr<CaptureResult>> mPendingRequests;
+    // Save requests that wait for device capture
     std::map<uint32_t, std::shared_ptr<CaptureResult>> mCaptureResultMap;
-    std::map<buffer_handle_t, std::shared_ptr<Camera3Buffer>> mBuffers;
 
     icamera::FaceDetection* mFaceDetection;
     int mInputPostProcessType;
     std::unique_ptr<PostProcessor> mInputPostProcessor;
     std::unique_ptr<camera3_stream_t> mInputStream;
-
-    /* save output info, each stream can accept maxNumReqInProc
-     ** requests. used by HAL stream to get listener request status
-     */
-    std::unordered_map<uint32_t, std::shared_ptr<StreamComInfo>> mCaptureRequest;
-    // HAL streams output result, listener stream will wait on it before process
-    std::unordered_map<uint32_t, std::shared_ptr<StreamComInfo>> mHALStreamOutput;
-
-    // save buffer obj when HAL choose buffer from pool to do qbuf/dqbuf
-    std::unordered_map<uint32_t, std::shared_ptr<Camera3Buffer>> mQueuedBuffer;
-};
-
-class Camera3StreamListener : public Camera3Stream {
- public:
-    Camera3StreamListener(int cameraId, CallbackEventInterface* callback,
-                          ParameterResult* result, uint32_t maxNumReqInProc,
-                          const icamera::stream_t& halStream, const camera3_stream_t& stream,
-                          const camera3_stream_t* inputStream = nullptr);
-    virtual ~Camera3StreamListener();
-
-    virtual bool threadLoop();
-
-    void notifyListenerBufferReady(uint32_t frameNumber,
-                                   const std::shared_ptr<StreamComInfo>& halOutput);
-
- private:
-    /**
-     * Wait capture buffer result ready, called in ThreadLoop, return false if need to wait,
-     * return true to continue the threadloop.
-     */
-    bool waitCaptureResultReady();
-    virtual bool isLockUserBufferNeeded(const std::shared_ptr<Camera3Buffer>& inputCam3Buf);
-};
-
-class Camera3StreamHAL : public Camera3Stream {
- public:
-    Camera3StreamHAL(int cameraId, CallbackEventInterface* callback,
-                     ParameterResult* result, uint32_t maxNumReqInProc,
-                     const icamera::stream_t& halStream, const camera3_stream_t& stream,
-                     const camera3_stream_t* inputStream = nullptr);
-    virtual ~Camera3StreamHAL();
-
-    virtual bool threadLoop();
-
-    int setActive(bool state);
-    void sendEvent(const icamera::camera_msg_data_t& data);
-    void addListener(Camera3StreamListener* listener);
-    // fetch the buffers will be queued to Hal, HAL stream only
-    bool fetchRequestBuffers(icamera::camera_buffer_t* buffer, uint32_t frameNumber);
-    // check if the HW stream should be enabled by listener request
-    void checkListenerRequest(uint32_t frameNumber);
-    // called by RequestManager indicates the frame is done, release buffers
-    void requestStreamDone(uint32_t frameNumber);
-
- private:
-    void handleSofAlignment(uint32_t frameNumber);
-
-    /**
-     * Wait capture buffer result ready, called in ThreadLoop, return false if need to wait,
-     * return true to continue the threadloop.
-     */
-    bool waitCaptureResultReady();
-    virtual bool isLockUserBufferNeeded(const std::shared_ptr<Camera3Buffer>& inputCam3Buf);
-
- private:
-    std::vector<Camera3StreamListener*> mListeners;
 };
 
 }  // namespace camera3

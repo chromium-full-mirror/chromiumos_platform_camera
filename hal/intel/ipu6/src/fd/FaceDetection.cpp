@@ -44,8 +44,8 @@ FaceDetection* FaceDetection::getInstance(int cameraId) {
 FaceDetection* FaceDetection::createInstance(int cameraId, unsigned int maxFaceNum,
                                              int32_t halStreamId, int width, int height, int gfxFmt,
                                              int usage) {
-    LOG1("<id%d> @%s, maxFaceNum:%u, halStreamId:%u, width:%d, height:%d", cameraId, __func__,
-         maxFaceNum, halStreamId, width, height);
+    LOG1("<id%d> @%s, maxFaceNum:%u, halStreamId:%u, width:%d, height:%d, gfxFmt:%d, usage:%d",
+         cameraId, __func__, maxFaceNum, halStreamId, width, height, gfxFmt, usage);
     CheckAndLogError(maxFaceNum > MAX_FACES_DETECTABLE, nullptr, "maxFaceNum %d is error",
                      maxFaceNum);
 

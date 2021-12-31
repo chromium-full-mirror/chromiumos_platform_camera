@@ -609,8 +609,9 @@ int RequestManager::processCaptureRequest(camera3_capture_request_t* request) {
             param.setMakernoteMode(icamera::MAKERNOTE_MODE_JPEG);
         }
 
-        ret = lStream->processRequest(opaqueRawInfo.sequence >= 0 ? nullptr : inputCam3Buf,
-                                      request->output_buffers[i], request->frame_number);
+        ret = lStream->processRequest(request->frame_number,
+                                      opaqueRawInfo.sequence >= 0 ? nullptr : inputCam3Buf,
+                                      request->output_buffers[i], param);
         CheckAndLogError(ret != icamera::OK, ret, "Failed to process request, ret:%d", ret);
     }
 
@@ -662,21 +663,12 @@ int RequestManager::processCaptureRequest(camera3_capture_request_t* request) {
     mCameraBufferInfo[index].frameInProcessing = true;
     mCameraBufferInfo[index].frameNumber = request->frame_number;
 
-    for (uint32_t i = 0; i < request->num_output_buffers; i++) {
-        Camera3Stream* s = static_cast<Camera3Stream*>(request->output_buffers[i].stream->priv);
-        s->queueBufferDone(request->frame_number,
-                           opaqueRawInfo.sequence >= 0 ? nullptr : inputCam3Buf,
-                           request->output_buffers[i], param);
+    // Check all streams because the HAL stream might be triggered by listener request
+    for (auto& stream : mCamera3StreamVector) {
+        stream->queueBufferDone(request->frame_number);
     }
     if (mFDStream && faceDetectionBuf) {
         mFDStream->queueBufferDone(request->frame_number);
-    }
-
-    for (auto& stream : mCamera3HALStreams) {
-        /* incase the HAL stream is not requested by user request, scan all the HAL
-        ** streams check if any one is triggered by listener
-        */
-        stream->checkListenerRequest(request->frame_number);
     }
 
     return ret;
@@ -841,6 +833,7 @@ int RequestManager::chooseHALStreams(const uint32_t requestStreamNum, int* halSt
 
     // Save the video stream with different resolution
     std::vector<icamera::stream_t*> videoHALStream;
+    // where to insert a new mediam priority stream
     auto anchor = videoHALStreamOrder.end();
 
     for (uint32_t i = 0; i < requestStreamNum; i++) {
@@ -889,8 +882,14 @@ int RequestManager::chooseHALStreams(const uint32_t requestStreamNum, int* halSt
                 } else {
                     if (selectedVideoNum < avaVideoSlot &&
                         HalV3Utils::isSameRatioWithSensor(s, mCameraId)) {
-                        // Same ratio is the highest priority, push_back of the list
-                        videoHALStreamOrder.push_back(std::make_pair(s, index));
+                        // Same ratio is the highest priority, push_back of the list, before other
+                        // same ratio stream
+                        videoHALStreamOrder.insert(
+                            std::prev(videoHALStreamOrder.end(), selectedVideoNum),
+                            std::make_pair(s, index));
+                        selectedVideoNum++;
+                        if (HalV3Utils::isSameRatioWithSensor(anchor->first, mCameraId))
+                            anchor = std::prev(anchor);
                     } else {
                         // Other small streams are second priority,
                         // insert them before the biggest stream by ascending
@@ -920,16 +919,7 @@ int RequestManager::chooseHALStreams(const uint32_t requestStreamNum, int* halSt
         activeHALNum++;
     }
 
-    // 3: Need to sort them if there are multi streams configured to HAL
     if (videoHALStreamOrder.size() > 1) {
-        videoHALStreamOrder.sort(
-            [](std::pair<icamera::stream_t*, int>& s1, std::pair<icamera::stream_t*, int>& s2) {
-                if (s1.first->width * s1.first->height > s2.first->width * s2.first->height)
-                    return true;
-                else
-                    return false;
-            });
-
         float baseRatio = static_cast<float>(videoHALStreamOrder.front().first->width) /
                           videoHALStreamOrder.front().first->height;
         for (auto& vs : videoHALStreamOrder) {

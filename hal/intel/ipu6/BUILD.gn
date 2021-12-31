@@ -33,6 +33,8 @@ shared_library("libcamhal") {
     "aal/Camera3HAL.cpp",
     "aal/Camera3HALModule.cpp",
     "aal/Camera3Stream.cpp",
+    "aal/Camera3StreamHAL.cpp",
+    "aal/Camera3StreamListener.cpp",
     "aal/PrivateStream.cpp",
     "aal/HALv3Utils.cpp",
     "aal/IntelAEStateMachine.cpp",

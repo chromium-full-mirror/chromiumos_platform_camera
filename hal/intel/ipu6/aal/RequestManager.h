@@ -22,6 +22,8 @@
 #include <vector>
 
 #include "Camera3Stream.h"
+#include "Camera3StreamHAL.h"
+#include "Camera3StreamListener.h"
 #include "HALv3Header.h"
 #include "HALv3Interface.h"
 #include "PlatformData.h"
