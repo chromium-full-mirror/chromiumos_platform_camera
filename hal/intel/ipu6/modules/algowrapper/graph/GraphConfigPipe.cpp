@@ -339,28 +339,6 @@ ia_isp_bxt_program_group* GraphConfigPipe::getProgramGroup(int32_t streamId) {
     return &(mProgramGroup[streamId]);
 }
 
-int GraphConfigPipe::getProgramGroup(string pgName, ia_isp_bxt_program_group* programGroupForPG) {
-    GCSS::NodeIterator iter(mSettings);
-    GCSS::IGraphConfig* pg = iter.iterateByType(GCSS_KEY_PROGRAM_GROUP);
-    std::string name;
-    for (; pg != nullptr; pg = iter.iterateByType(GCSS_KEY_PROGRAM_GROUP)) {
-        css_err_t ret = pg->getValue(GCSS_KEY_NAME, name);
-        CheckAndLogError(ret != css_err_none, BAD_VALUE,
-                         "Failed to get the name of an existing PG node, BUG");
-        if (name == pgName) {
-            break;
-        }
-    }
-    CheckAndLogError(pg == nullptr, UNKNOWN_ERROR, "Failed to get program groups, BUG");
-
-    mGCSSAicUtil.getProgramGroup(pg, *programGroupForPG);
-
-    LOG3("Dump kernel info for %s", pgName.c_str());
-    GraphUtils::dumpKernelInfo(*programGroupForPG);
-
-    return OK;
-}
-
 status_t GraphConfigPipe::getPgRbmValue(string pgName, IGraphType::StageAttr* stageAttr) {
     std::string name;
     GCSS::NodeIterator iter(mSettings);

@@ -68,8 +68,6 @@ class GraphConfig : public IGraphConfig {
     virtual status_t getPgRbmValue(std::string pgName, IGraphType::StageAttr* stageAttr);
     virtual status_t getMBRData(int32_t streamId, ia_isp_bxt_gdc_limits* data);
     virtual status_t getPgNames(std::vector<std::string>* pgNames);
-
-    virtual int getProgramGroup(std::string pgName, ia_isp_bxt_program_group* programGroupForPG);
     virtual status_t getPgIdForKernel(const uint32_t streamId, const int32_t kernelId,
                                       int32_t* pgId);
 

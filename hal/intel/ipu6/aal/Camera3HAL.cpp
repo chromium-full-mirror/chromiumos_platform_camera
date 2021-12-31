@@ -86,9 +86,8 @@ static void hal_dev_dump(const struct camera3_device* dev, int fd) {
 static int hal_dev_flush(const struct camera3_device* dev) {
     LOG1("@%s", __func__);
 
-    if (!dev) return -EINVAL;
+    FUNCTION_PREPARED_RETURN
 
-    Camera3HAL* camera_priv = (Camera3HAL*)(dev->priv);
     return camera_priv->flush();
 }
 

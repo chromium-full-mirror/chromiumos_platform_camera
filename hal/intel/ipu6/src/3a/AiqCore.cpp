@@ -500,11 +500,11 @@ void AiqCore::focusDistanceResult(const cca::cca_af_results* afResults, float* a
                 afResults->current_focus_distance)) {
         // Don't need to calculate diopter in manual mode
         *afDistanceDiopters = mIntel3AParameter->mManualFocusDistance;
-    } else if (afResults->current_focus_distance != 0) {
-        // In AIQ, 'current_focus_distance' is in millimeters
+    } else if (afResults->next_focus_distance != 0) {
+        // In AIQ, 'next_focus_distance' is in millimeters
         // For rounding multiply by extra 100.
         // This allows the diopters to have 2 decimal values
-        *afDistanceDiopters = 100 * 1000 * (1.0 / afResults->current_focus_distance);
+        *afDistanceDiopters = 100 * 1000 * (1.0 / afResults->next_focus_distance);
         *afDistanceDiopters = ceil(*afDistanceDiopters);
         // Divide by 100 for final result.
         *afDistanceDiopters = *afDistanceDiopters / 100;

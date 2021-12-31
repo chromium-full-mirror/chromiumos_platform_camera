@@ -756,20 +756,6 @@ ia_isp_bxt_program_group* GraphConfigImpl::getProgramGroup(int32_t streamId) {
     return stillGraphPipe->getProgramGroup(streamId);
 }
 
-int GraphConfigImpl::getProgramGroup(std::string pgName,
-                                     ia_isp_bxt_program_group* programGroupForPG) {
-    for (auto& graph : mGraphConfigPipe) {
-        vector<string> pgNames;
-        graph.second->getPgNames(&pgNames);
-        if (std::find(pgNames.begin(), pgNames.end(), pgName) != pgNames.end()) {
-            return graph.second->getProgramGroup(pgName, programGroupForPG);
-        }
-    }
-
-    LOGE("There isn't this pg: %s in all graph config pipes", pgName.c_str());
-    return UNKNOWN_ERROR;
-}
-
 status_t GraphConfigImpl::getMBRData(int32_t streamId, ia_isp_bxt_gdc_limits* data) {
     CheckAndLogError(mGraphConfigPipe.empty(), UNKNOWN_ERROR, "%s, the mGraphConfigPipe is empty",
                      __func__);

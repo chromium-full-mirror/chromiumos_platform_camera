@@ -230,6 +230,7 @@ void FaceSSD::getResultForApp(CVFaceDetectionAbstractResult* result) {
     int verticalCrop = mRatioInfo.verticalCrop;
     int horizontalCrop = mRatioInfo.horizontalCrop;
     bool imageRotationChanged = mRatioInfo.imageRotationChanged;
+    camera_coordinate_t srcCoord = {0, 0};
     camera_coordinate_t destCoord = {0, 0};
     const camera_coordinate_system_t fillFrameCoord = {0, 0, mWidth + horizontalCrop,
                                                        mHeight + verticalCrop};
@@ -259,6 +260,16 @@ void FaceSSD::getResultForApp(CVFaceDetectionAbstractResult* result) {
             pointCoord.x = result->faceRect[i * 4 + 2] + (horizontalCrop / 2);
             pointCoord.y = result->faceRect[i * 4 + 3] + (verticalCrop / 2);
             destCoord = AiqUtils::convertCoordinateSystem(fillFrameCoord, sysCoord, pointCoord);
+            result->faceRect[i * 4 + 2] = destCoord.x;  // rect.right
+            result->faceRect[i * 4 + 3] = destCoord.y;  // rect.bottom
+        } else {
+            srcCoord = {result->faceRect[i * 4], result->faceRect[i * 4 + 1]};
+            destCoord = AiqUtils::convertCoordinateSystem(fillFrameCoord, sysCoord, srcCoord);
+            result->faceRect[i * 4] = destCoord.x;      // rect.left
+            result->faceRect[i * 4 + 1] = destCoord.y;  // rect.top
+
+            srcCoord = {result->faceRect[i * 4 + 2], result->faceRect[i * 4 + 3]};
+            destCoord = AiqUtils::convertCoordinateSystem(fillFrameCoord, sysCoord, srcCoord);
             result->faceRect[i * 4 + 2] = destCoord.x;  // rect.right
             result->faceRect[i * 4 + 3] = destCoord.y;  // rect.bottom
         }

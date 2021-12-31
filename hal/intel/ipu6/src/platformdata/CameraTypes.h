@@ -53,11 +53,6 @@ enum {
 };
 
 enum {
-    AUTO_SWITCH_FULL = 0,
-    AUTO_SWITCH_PSYS
-};
-
-enum {
     SENSOR_EXPOSURE_SINGLE = 0,        /* sensor is single exposure */
     SENSOR_FIX_EXPOSURE_RATIO,         /* Fix exposure ratio between long and short exposure */
     SENSOR_RELATIVE_MULTI_EXPOSURES,   /* AE output exposures are converted to Shutter and

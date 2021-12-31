@@ -175,10 +175,6 @@ status_t GraphConfig::getPgRbmValue(string pgName, IGraphType::StageAttr* stageA
     return BAD_VALUE;
 }
 
-int GraphConfig::getProgramGroup(string pgName, ia_isp_bxt_program_group* programGroupForPG) {
-    return mGraphConfigImpl->getProgramGroup(pgName, programGroupForPG);
-}
-
 status_t GraphConfig::pipelineGetConnections(
     const vector<string>& pgList,
     vector<IGraphType::PipelineConnection>* confVector,

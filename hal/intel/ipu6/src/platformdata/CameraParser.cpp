@@ -369,8 +369,6 @@ void CameraParser::handleSensor(CameraParser* profiles, const char* name, const 
         pCurrentCam->mUseIspDigitalGain = strcmp(atts[1], "true") == 0;
     } else if (strcmp(name, "preRegisterBuffer") == 0) {
         pCurrentCam->mNeedPreRegisterBuffers = strcmp(atts[1], "true") == 0;
-    } else if (strcmp(name, "enableFrameSyncCheck") == 0) {
-        pCurrentCam->mFrameSyncCheckEnabled = strcmp(atts[1], "true") == 0;
     } else if (strcmp(name, "lensName") == 0) {
         string vcmName = atts[1];
         if (!profiles->mI2CBus.empty()) {
@@ -396,12 +394,6 @@ void CameraParser::handleSensor(CameraParser* profiles, const char* name, const 
         pCurrentCam->mSensorAe = strcmp(atts[1], "true") == 0;
     } else if (strcmp(name, "runIspAlways") == 0) {
         pCurrentCam->mRunIspAlways = strcmp(atts[1], "true") == 0;
-    } else if (strcmp(name, "autoSwitchType") == 0) {
-        if (strcmp(atts[1], "full") == 0) {
-            pCurrentCam->mAutoSwitchType = AUTO_SWITCH_FULL;
-        } else {
-            pCurrentCam->mAutoSwitchType = AUTO_SWITCH_PSYS;
-        }
     } else if (strcmp(name, "lensCloseCode") == 0) {
         pCurrentCam->mLensCloseCode = atoi(atts[1]);
     } else if (strcmp(name, "cITMaxMargin") == 0) {
@@ -464,8 +456,6 @@ void CameraParser::handleSensor(CameraParser* profiles, const char* name, const 
         pCurrentCam->mPsysContinueStats = strcmp(atts[1], "true") == 0;
     } else if (strcmp(name, "preferredBufQSize") == 0) {
         pCurrentCam->mPreferredBufQSize = atoi(atts[1]);
-    } else if (strcmp(name, "pipeSwitchDelayFrame") == 0) {
-        pCurrentCam->mPipeSwitchDelayFrame = atoi(atts[1]);
     } else if (strcmp(name, "supportedTuningConfig") == 0) {
         parseSupportedTuningConfig(atts[1], pCurrentCam->mSupportedTuningConfig);
     } else if (strcmp(name, "enableAiqd") == 0) {
@@ -591,6 +581,8 @@ void CameraParser::handleSensor(CameraParser* profiles, const char* name, const 
         pCurrentCam->mForceFlushIpuBuffer = strcmp(atts[1], "true") == 0;
     } else if (!strcmp(name, "isPLCEnable")) {
         pCurrentCam->mPLCEnable = strcmp(atts[1], "true") == 0;
+    } else if (strcmp(name, "stillOnlyPipe") == 0) {
+        pCurrentCam->mStillOnlyPipe = strcmp(atts[1], "true") == 0;
     }
 }
 
@@ -1423,7 +1415,6 @@ void CameraParser::parseSizesList(const char* sizesStr, vector<camera_resolution
     }
 
     char* sizeStartPtr = const_cast<char*>(sizesStr);
-
     while (true) {
         camera_resolution_t r;
         int success = parsePair(sizeStartPtr, &r.width, &r.height, 'x', &sizeStartPtr);

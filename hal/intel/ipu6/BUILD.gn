@@ -89,7 +89,6 @@ shared_library("libcamhal") {
     "src/core/SensorHwCtrl.cpp",
     "src/core/SofSource.cpp",
     "src/core/SwImageProcessor.cpp",
-    "src/core/SyncManager.cpp",
     "src/core/psysprocessor/PGCommon.cpp",
     "src/core/psysprocessor/PGUtils.cpp",
     "src/core/psysprocessor/PSysDAG.cpp",

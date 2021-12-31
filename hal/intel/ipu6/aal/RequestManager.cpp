@@ -429,6 +429,7 @@ void RequestManager::createCamera3Stream(camera3_stream_configuration_t* stream_
         faceDetectionOwner->activateFaceDetection(maxFacesNum);
         LOG1("@%s, Create Camera3Stream for face detection", __func__);
     }
+
 }
 
 int RequestManager::configureStreams(camera3_stream_configuration_t* stream_list) {

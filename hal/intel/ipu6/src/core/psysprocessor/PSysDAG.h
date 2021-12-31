@@ -40,7 +40,6 @@ struct PSysTaskData {
     IspSettings mIspSettings;
     TuningMode mTuningMode;
     bool mFakeTask;
-    long mRequestId;
     bool mCallbackRgbs;
     bool mNextSeqUsed;
 
@@ -49,7 +48,6 @@ struct PSysTaskData {
     PSysTaskData() {
         mTuningMode = TUNING_MODE_MAX;
         mFakeTask = false;
-        mRequestId = -1;
         mCallbackRgbs = false;
         mNextSeqUsed = false;
     }

@@ -193,8 +193,6 @@ public:
     virtual int getStreamIdByPgName(std::string pgName) = 0;
     virtual int getPgIdByPgName(std::string pgName) = 0;
     virtual ia_isp_bxt_program_group *getProgramGroup(int32_t streamId) = 0;
-    virtual int getProgramGroup(std::string pgName,
-                                ia_isp_bxt_program_group* programGroupForPG) {return OK;}
     virtual status_t getMBRData(int32_t streamId, ia_isp_bxt_gdc_limits *data) = 0;
     virtual status_t getPgRbmValue(std::string pgName,
                                    IGraphType::StageAttr *stageAttr) {return OK;}

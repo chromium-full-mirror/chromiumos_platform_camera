@@ -28,8 +28,7 @@
 
 namespace icamera {
 
-AiqUnit::AiqUnit(int cameraId, SensorHwCtrl *sensorHw, LensHw *lensHw,
-                 ParameterGenerator* paramGen) :
+AiqUnit::AiqUnit(int cameraId, SensorHwCtrl *sensorHw, LensHw *lensHw) :
     mCameraId(cameraId),
     // LOCAL_TONEMAP_S
     mLtm(nullptr),
@@ -40,7 +39,7 @@ AiqUnit::AiqUnit(int cameraId, SensorHwCtrl *sensorHw, LensHw *lensHw,
     // INTEL_DVS_S
     mCcaInitialized(false) {
     mAiqSetting = new AiqSetting(cameraId);
-    mAiqEngine = new AiqEngine(cameraId, sensorHw, lensHw, mAiqSetting, paramGen);
+    mAiqEngine = new AiqEngine(cameraId, sensorHw, lensHw, mAiqSetting);
 
     // INTEL_DVS_S
     if (PlatformData::isDvsSupported(mCameraId)) {

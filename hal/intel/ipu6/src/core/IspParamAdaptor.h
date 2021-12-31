@@ -52,25 +52,14 @@ extern "C" {
 #include "IspSettings.h"
 
 namespace icamera {
-
-enum PgParamType {
-    PG_PARAM_VIDEO = 0,
-    PG_PARAM_PSYS_ISA,
-    PG_PARAM_ISYS,
-    PG_PARAM_STILL_4k,
-    PG_PARAM_STILL_8m
-};
-
 /**
  * This class is for isp parameter converting including:
  * 1. Convert hw statistics to aiq statistics
- * 2. Convert aiq result to isa config
- * 3. Run isp config
- * 4. Provide p2p handle
+ * 2. Run isp config
  */
 class IspParamAdaptor {
 public:
-    IspParamAdaptor(int cameraId, PgParamType type);
+    explicit IspParamAdaptor(int cameraId);
     virtual ~IspParamAdaptor();
 
     int init();
@@ -82,7 +71,7 @@ public:
                         std::shared_ptr<CameraBuffer> statsBuffer,
                         std::shared_ptr<IGraphConfig> graphConfig = nullptr);
 
-    int runIspAdapt(const IspSettings* ispSettings, long requestId, int64_t settingSequence = -1, int32_t streamId = -1);
+    int runIspAdapt(const IspSettings* ispSettings, int64_t settingSequence = -1, int32_t streamId = -1);
     //Get ISP param from mult-stream ISP param adaptation
     ia_binary_data* getIpuParameter(int64_t sequence = -1, int streamId = -1);
     int getPalOutputDataSize(const ia_isp_bxt_program_group* programGroup);
@@ -94,7 +83,6 @@ private:
                              cca::cca_program_group *programGroup);
     int getDataFromProgramGroup();
     int initProgramGroupForAllStreams(ConfigMode configMode);
-    int postConfigure(int width, int height, ia_binary_data *binaryData);
     void initInputParams(cca::cca_pal_input_params *params);
 
     void updatePalDataForVideoPipe(ia_binary_data dest);
@@ -112,7 +100,7 @@ private:
     void updateIspParameterMap(IspParameter* ispParam, int64_t dataSeq,
                                int64_t settingSeq, ia_binary_data curIpuParam);
     int runIspAdaptL(ia_isp_bxt_program_group *pgPtr, ia_isp_bxt_gdc_limits* mbrData,
-                     const IspSettings* ispSettings, long requestId, int64_t settingSequence,
+                     const IspSettings* ispSettings, int64_t settingSequence,
                      ia_binary_data *binaryData, int32_t streamId = -1);
 
     //Allocate memory for mIspParameters
@@ -122,7 +110,6 @@ private:
 
     // Dumping methods for debugging purposes.
     void dumpIspParameter(int streamId, int64_t sequence, ia_binary_data binaryData);
-
     // Enable or disable kernels according to environment variables for debug purpose.
     void updateKernelToggles(cca::cca_program_group *programGroup);
     void dumpProgramGroup(ia_isp_bxt_program_group *pgPtr);
@@ -141,7 +128,6 @@ private:
     } mIspAdaptorState;
 
     int mCameraId;
-    PgParamType mPgParamType;
     TuningMode mTuningMode;
     int mIpuOutputFormat;
 
@@ -155,7 +141,6 @@ private:
     //Guard lock for ipu parameter
     Mutex mIpuParamLock;
     std::unordered_map<int, cca::cca_pal_input_params*> mStreamIdToPalInputParamsMap;
-
     std::shared_ptr<IGraphConfig> mGraphConfig;
     IntelCca *mIntelCca;
     int mGammaTmOffset;
@@ -166,5 +151,4 @@ private:
     };
     std::vector<PalRecord> mPalRecords;  // Save PAL offset info for overwriting PAL
 };
-
 } // namespace icamera

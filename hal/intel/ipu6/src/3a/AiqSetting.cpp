@@ -28,8 +28,7 @@
 namespace icamera {
 
 AiqSetting::AiqSetting(int cameraId) :
-    mCameraId(cameraId),
-    mPipeSwitchFrameCount(0) {
+    mCameraId(cameraId) {
 }
 
 AiqSetting::~AiqSetting() {
@@ -37,8 +36,6 @@ AiqSetting::~AiqSetting() {
 
 int AiqSetting::init(void) {
     AutoWMutex wlock(mParamLock);
-
-    mPipeSwitchFrameCount = 0;
 
     mAiqParam.reset();
 

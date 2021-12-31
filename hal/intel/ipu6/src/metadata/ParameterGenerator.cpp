@@ -74,7 +74,6 @@ int ParameterGenerator::reset() {
     LOG1("<id%d>%s", mCameraId, __func__);
     AutoMutex l(mParamsLock);
     mRequestParamMap.clear();
-    mRequestIdMap.clear();
 
     return OK;
 }
@@ -212,40 +211,12 @@ int ParameterGenerator::getUserRequestId(int64_t sequence, int32_t& userRequestI
     return UNKNOWN_ERROR;
 }
 
-void ParameterGenerator::setRequestIdMap(long currentRequestId, long requestIdWithAiq) {
-    AutoMutex l(mParamsLock);
-    if (mRequestIdMap.size() >= kStorageSize) {
-        mRequestIdMap.erase(mRequestIdMap.begin());
-    }
-    mRequestIdMap[currentRequestId] = requestIdWithAiq;
-}
-
 int ParameterGenerator::getRequestId(int64_t sequence, long& requestId) {
     CHECK_SEQUENCE(sequence);
-    requestId = -1;
 
     AutoMutex l(mParamsLock);
     if (mRequestParamMap.find(sequence) != mRequestParamMap.end()) {
-        requestId = mRequestParamMap[sequence]->requestId;
-    }
-
-    if (requestId == -1) {
-        // Find nearest request id
-        for (auto it = mRequestParamMap.crbegin(); it != mRequestParamMap.crend(); ++it) {
-            if (it->first <= sequence) {
-                requestId = mRequestParamMap[it->first]->requestId;
-            }
-        }
-    }
-
-    if (mRequestIdMap.find(requestId) != mRequestIdMap.end()) {
-        // find the real request id of running AIQ
-        requestId = mRequestIdMap[requestId];
-    }
-
-    if (requestId != -1) {
-        LOG2("<req%ld:seq%ld>%s", requestId, sequence, __func__);
-        return OK;
+        return mRequestParamMap[sequence]->requestId;
     }
 
     LOGE("<seq%ld>Can't find requestId", sequence);
@@ -404,20 +375,38 @@ int ParameterGenerator::updateTonemapCurve(int64_t sequence, Parameters* params)
 }
 
 int ParameterGenerator::updateCommonMetadata(Parameters* params, const AiqResult* aiqResult) {
-    CameraMetadata metadata;
+    icamera_metadata_ro_entry entry;
+    CLEAR(entry);
 
-    metadata.update(CAMERA_SENSOR_ROLLING_SHUTTER_SKEW, &aiqResult->mRollingShutter, 1);
+    entry.tag = CAMERA_SENSOR_ROLLING_SHUTTER_SKEW;
+    entry.type = ICAMERA_TYPE_INT64;
+    entry.count = 1;
+    entry.data.i64 = &aiqResult->mRollingShutter;
+    ParameterHelper::mergeTag(entry, params);
+
     int64_t frameDuration = aiqResult->mFrameDuration * 1000;  // us -> ns
-    metadata.update(CAMERA_SENSOR_FRAME_DURATION, &frameDuration, 1);
+    entry.tag = CAMERA_SENSOR_FRAME_DURATION;
+    entry.type = ICAMERA_TYPE_INT64;
+    entry.count = 1;
+    entry.data.i64 = &frameDuration;
+    ParameterHelper::mergeTag(entry, params);
 
     if (aiqResult->mAiqParam.callbackRgbs) {
         int32_t width = aiqResult->mOutStats.rgbs_grid.grid_width;
         int32_t height = aiqResult->mOutStats.rgbs_grid.grid_height;
         int32_t gridSize[] = {width, height};
-        metadata.update(INTEL_VENDOR_CAMERA_RGBS_GRID_SIZE, gridSize, ARRAY_SIZE(gridSize));
+        entry.tag = INTEL_VENDOR_CAMERA_RGBS_GRID_SIZE;
+        entry.type = ICAMERA_TYPE_INT32;
+        entry.count = ARRAY_SIZE(gridSize);
+        entry.data.i32 = gridSize;
+        ParameterHelper::mergeTag(entry, params);
 
         uint8_t lscFlags = aiqResult->mOutStats.rgbs_grid.shading_correction;
-        metadata.update(INTEL_VENDOR_CAMERA_SHADING_CORRECTION, &lscFlags, 1);
+        entry.tag = INTEL_VENDOR_CAMERA_SHADING_CORRECTION;
+        entry.type = ICAMERA_TYPE_BYTE;
+        entry.count = 1;
+        entry.data.u8 = &lscFlags;
+        ParameterHelper::mergeTag(entry, params);
 
         if (Log::isLogTagEnabled(ST_STATS)) {
             const cca::cca_out_stats *outStats = &aiqResult->mOutStats;
@@ -435,9 +424,11 @@ int ParameterGenerator::updateCommonMetadata(Parameters* params, const AiqResult
                  aiqResult->mSequence, size > 0 ? sumLuma/size : 0);
         }
 
-        metadata.update(INTEL_VENDOR_CAMERA_RGBS_STATS_BLOCKS,
-                        reinterpret_cast<const uint8_t*>(aiqResult->mOutStats.rgbs_blocks),
-                        (width * height * 5));
+        entry.tag = INTEL_VENDOR_CAMERA_RGBS_STATS_BLOCKS;
+        entry.type = ICAMERA_TYPE_BYTE;
+        entry.count = width * height * 5;
+        entry.data.u8 = reinterpret_cast<const uint8_t*>(aiqResult->mOutStats.rgbs_blocks);
+        ParameterHelper::mergeTag(entry, params);
     }
 
     if (aiqResult->mAiqParam.manualExpTimeUs <= 0 && aiqResult->mAiqParam.manualIso <= 0) {
@@ -461,10 +452,13 @@ int ParameterGenerator::updateCommonMetadata(Parameters* params, const AiqResult
             tmCurve[i * 2] = static_cast<float>(i) / (mTonemapMaxCurvePoints - 1);
             tmCurve[i * 2 + 1] = gbceResults.tone_map_lut[i * multiplier];
         }
-        metadata.update(INTEL_VENDOR_CAMERA_TONE_MAP_CURVE, tmCurve.data(), tmCurve.size());
+        entry.tag = INTEL_VENDOR_CAMERA_TONE_MAP_CURVE;
+        entry.type = ICAMERA_TYPE_FLOAT;
+        entry.count = tmCurve.size();
+        entry.data.f = tmCurve.data();
+        ParameterHelper::mergeTag(entry, params);
     }
 
-    ParameterHelper::merge(metadata, params);
     return OK;
 }
 

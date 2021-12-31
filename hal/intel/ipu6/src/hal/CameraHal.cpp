@@ -23,7 +23,6 @@
 #include "ICamera.h"
 #include "Parameters.h"
 #include "PlatformData.h"
-#include "SyncManager.h"
 #include "iutils/CameraLog.h"
 
 namespace icamera {
@@ -78,9 +77,6 @@ int CameraHal::deinit() {
         return OK;
     }
 
-    // SyncManager is used to do synchronization with multi-devices.
-    // Release it when the last device exit
-    SyncManager::releaseInstance();
     // Release the PlatformData instance here due to it was
     // created in init() period
     PlatformData::releaseInstance();

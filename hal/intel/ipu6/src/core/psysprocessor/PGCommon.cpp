@@ -77,7 +77,6 @@ PGCommon::PGCommon(int cameraId, int pgId, const std::string& pgName, TuningMode
           mPGBuffer(nullptr),
           mProcessGroup(nullptr),
           mCmdExtBuffer(nullptr),
-          mPPG(false),
           mPPGStarted(false),
           mPPGBuffer(nullptr),
           mPPGProcessGroup(nullptr),
@@ -352,9 +351,7 @@ ia_css_process_group_t* PGCommon::createPG(CIPR::Buffer** pgBuffer) {
         (ia_css_program_group_param_t*)getCiprBufferPtr(mPGParamsBuffer));
     CheckAndLogError(!pg, nullptr, "Create process group failed.");
 
-    if (mPPG) {
-        ia_css_process_group_set_num_queues(pg, 1);
-    }
+    ia_css_process_group_set_num_queues(pg, 1);
 
     if (mRoutingBitmap.get()) {
         ia_css_process_group_set_routing_bitmap(pg, *mRoutingBitmap.get());
@@ -366,14 +363,12 @@ int PGCommon::createCommands() {
     int bufCount = ia_css_process_group_get_terminal_count(mProcessGroup);
     int ret = createCommand(mPGBuffer, &mCmd, &mCmdExtBuffer, bufCount);
     CheckAndLogError(ret, NO_MEMORY, "create cmd fail!");
-    if (mPPG) {
-        ret = createCommand(mPPGBuffer, &mPPGCmd[PPG_CMD_TYPE_START],
-                            &mPPGCmdExtBuffer[PPG_CMD_TYPE_START], bufCount);
-        CheckAndLogError(ret, NO_MEMORY, "create ppg start buffer fail");
-        ret = createCommand(mPPGBuffer, &mPPGCmd[PPG_CMD_TYPE_STOP],
-                            &mPPGCmdExtBuffer[PPG_CMD_TYPE_STOP], 0);
-        CheckAndLogError(ret, NO_MEMORY, "create ppg stop fail");
-    }
+    ret = createCommand(mPPGBuffer, &mPPGCmd[PPG_CMD_TYPE_START],
+                        &mPPGCmdExtBuffer[PPG_CMD_TYPE_START], bufCount);
+    CheckAndLogError(ret, NO_MEMORY, "create ppg start buffer fail");
+    ret = createCommand(mPPGBuffer, &mPPGCmd[PPG_CMD_TYPE_STOP],
+                        &mPPGCmdExtBuffer[PPG_CMD_TYPE_STOP], 0);
+    CheckAndLogError(ret, NO_MEMORY, "create ppg stop fail");
 
     CIPR::PSysEventConfig eventCfg = {};
     eventCfg.timeout = kEventTimeout * SLOWLY_MULTIPLIER;
@@ -425,7 +420,7 @@ int PGCommon::createCommand(CIPR::Buffer* pg, CIPR::Command** cmd, CIPR::Buffer*
     // Update setting and set back to command
     cmdCfg.id = mPGId;
     cmdCfg.priority = 1;
-    cmdCfg.pgParamsBuf = mPPG ? nullptr : mPGParamsBuffer;
+    cmdCfg.pgParamsBuf = nullptr;
     cmdCfg.pgManifestBuf = mManifestBuffer;
     cmdCfg.pg = pg;
     cmdCfg.extBuf = *extBuffer;
@@ -572,12 +567,10 @@ int PGCommon::handlePGParams(const ia_css_frame_format_type* frameFormatTypes) {
                                               mFragmentCount, frameFormatTypes);
     CheckAndLogError((ret != OK), ret, "%s, call ia_css_program_group_param_init fail", __func__);
 
-    if (mPPG) {
-        ret = ia_css_program_group_param_set_protocol_version(pgParamsBuf,
-                                                              IA_CSS_PROCESS_GROUP_PROTOCOL_PPG);
-        CheckAndLogError((ret != OK), ret,
-                         "%s, call ia_css_program_group_param_set_protocol_version fail", __func__);
-    }
+    ret = ia_css_program_group_param_set_protocol_version(pgParamsBuf,
+                                                          IA_CSS_PROCESS_GROUP_PROTOCOL_PPG);
+    CheckAndLogError((ret != OK), ret,
+                     "%s, call ia_css_program_group_param_set_protocol_version fail", __func__);
     return ret;
 }
 
@@ -897,7 +890,7 @@ int PGCommon::iterate(CameraBufferMap& inBufs, CameraBufferMap& outBufs, ia_bina
     CheckAndLogError((ret != OK), ret, "%s, prepareTerminalBuffers fail with %d", getName(), ret);
 
     // Create PPG & PPG start/stop commands at the beginning
-    if (mPPG && !mPPGBuffer) {
+    if (!mPPGBuffer) {
         ia_css_program_group_param_t* pgParamsBuf =
             (ia_css_program_group_param_t*)getCiprBufferPtr(mPGParamsBuffer);
         ia_css_program_group_manifest_t* manifestBuf =
@@ -916,7 +909,7 @@ int PGCommon::iterate(CameraBufferMap& inBufs, CameraBufferMap& outBufs, ia_bina
         CheckAndLogError((ret != OK), ret, "%s, call createCommands fail", __func__);
     }
 
-    if (mPPG && !mPPGStarted) {
+    if (!mPPGStarted) {
         ret = startPPG();
         CheckAndLogError((ret != OK), ret, "%s, startPPG fail", getName());
         mPPGStarted = true;
@@ -1172,7 +1165,7 @@ int PGCommon::executePG() {
     int bufferCount = ia_css_process_group_get_terminal_count(mProcessGroup);
     mCmdCfg.id = mPGId;
     mCmdCfg.priority = 1;
-    mCmdCfg.pgParamsBuf = mPPG ? nullptr : mPGParamsBuffer;
+    mCmdCfg.pgParamsBuf = nullptr;
     mCmdCfg.pgManifestBuf = mManifestBuffer;
     mCmdCfg.pg = mPGBuffer;
     mCmdCfg.extBuf = mCmdExtBuffer;
@@ -1183,9 +1176,7 @@ int PGCommon::executePG() {
         CheckAndLogError(!terminal, UNKNOWN_ERROR, "failed to get terminal");
         mCmdCfg.buffers[i] = mTerminalBuffers[terminal->tm_index];
     }
-    if (mPPG) {
-        ia_css_process_group_set_token(mProcessGroup, mToken);
-    }
+    ia_css_process_group_set_token(mProcessGroup, mToken);
 
     for (int fragIdx = 0; fragIdx < mFragmentCount; fragIdx++) {
         int ret = ia_css_process_group_set_fragment_state(mProcessGroup, (uint16_t)fragIdx);
@@ -1209,7 +1200,7 @@ int PGCommon::startPPG() {
     // Update config
     cmdCfg.id = mPGId;
     cmdCfg.priority = 1;
-    cmdCfg.pgParamsBuf = mPPG ? nullptr : mPGParamsBuffer;
+    cmdCfg.pgParamsBuf = nullptr;
     cmdCfg.pgManifestBuf = mManifestBuffer;
     cmdCfg.pg = mPPGBuffer;
     cmdCfg.extBuf = mPPGCmdExtBuffer[PPG_CMD_TYPE_START];
@@ -1291,7 +1282,6 @@ int PGCommon::getCapability() {
 
     if (strncmp(reinterpret_cast<char*>(cap.devModel), "ipu6", 4) == 0) {
         mPlatform = IA_P2P_PLATFORM_IPU6;
-        mPPG = true;
     } else {
         LOGE("%s: unsupported psys device model : %s", __func__, cap.devModel);
         ret = BAD_VALUE;

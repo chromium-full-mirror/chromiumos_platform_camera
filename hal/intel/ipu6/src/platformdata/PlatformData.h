@@ -101,7 +101,6 @@ class PlatformData {
                       mSensorAwb(false),
                       mSensorAe(false),
                       mRunIspAlways(false),
-                      mAutoSwitchType(AUTO_SWITCH_PSYS),
                       mLtmEnabled(false),
                       mSensorExposureNum(2),
                       mSensorExposureType(SENSOR_EXPOSURE_SINGLE),
@@ -120,7 +119,6 @@ class PlatformData {
                       mPsysContinueStats(false),
                       mMaxRequestsInflight(0),
                       mPreferredBufQSize(MAX_BUFFER_COUNT),
-                      mPipeSwitchDelayFrame(0),
                       mDigitalGainLag(-1),
                       mExposureLag(MAX_BUFFER_COUNT),
                       mAnalogGainLag(0),
@@ -138,7 +136,6 @@ class PlatformData {
                       mUseSensorDigitalGain(false),
                       mUseIspDigitalGain(false),
                       mNeedPreRegisterBuffers(false),
-                      mFrameSyncCheckEnabled(false),
                       mEnableAiqd(false),
                       mCurrentMcConf(nullptr),
                       mGraphSettingsType(COUPLED),
@@ -161,7 +158,8 @@ class PlatformData {
                       mTnrExtraFrameNum(DEFAULT_TNR_EXTRA_FRAME_NUM),
                       mDummyStillSink(false),
                       mForceFlushIpuBuffer(false),
-                      mPLCEnable(false) {
+                      mPLCEnable(false),
+                      mStillOnlyPipe(false) {
             }
 
             std::vector<MediaCtlConf> mMediaCtlConfs;
@@ -174,7 +172,6 @@ class PlatformData {
             bool mSensorAwb;
             bool mSensorAe;
             bool mRunIspAlways;
-            int mAutoSwitchType;
             bool mLtmEnabled;
             int mSensorExposureNum;
             int mSensorExposureType;
@@ -195,7 +192,6 @@ class PlatformData {
             bool mPsysContinueStats;
             int mMaxRequestsInflight;
             unsigned int mPreferredBufQSize;
-            unsigned int mPipeSwitchDelayFrame;
             int mDigitalGainLag;
             int mExposureLag;
             int mAnalogGainLag;
@@ -223,7 +219,6 @@ class PlatformData {
             bool mUseSensorDigitalGain;
             bool mUseIspDigitalGain;
             bool mNeedPreRegisterBuffers;
-            bool mFrameSyncCheckEnabled;
             bool mEnableAiqd;
             MediaCtlConf* mCurrentMcConf;
             std::map<int, stream_array_t> mStreamToMcMap;
@@ -266,6 +261,7 @@ class PlatformData {
             bool mDummyStillSink;
             bool mForceFlushIpuBuffer;
             bool mPLCEnable;
+            bool mStillOnlyPipe;
         };
 
         std::vector<CameraInfo> mCameras;
@@ -523,28 +519,12 @@ class PlatformData {
     static bool isNeedToPreRegisterBuffer(int cameraId);
 
     /**
-     * Get auto switch type
-     *
-     * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
-     * \return the value of auto switch type
-     */
-    static int getAutoSwitchType(int cameraId);
-
-    /**
      * Check Defog(LTM) is enabled or not
      *
      * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
      * \return if Defog is enabled or not.
      */
     static bool isEnableDefog(int cameraId);
-
-    /**
-     * Check Frame Sync is enabled or not
-     *
-     * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
-     * \return if Frame Sync is enabled or not.
-     */
-    static bool isEnableFrameSyncCheck(int cameraId);
 
     /**
      * Get exposure number
@@ -618,14 +598,6 @@ class PlatformData {
      * \return the value of preferred buffer queue size
      */
     static unsigned int getPreferredBufQSize(int cameraId);
-
-    /**
-     * Get pipe switch delay frame
-     *
-     * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
-     * \return the value of delay frame
-     */
-    static unsigned int getPipeSwitchDelayFrame(int cameraId);
 
     /**
      * Get Ltm Gain lag
@@ -1373,5 +1345,11 @@ class PlatformData {
      */
     static bool getPLCEnable(int cameraId);
 
+    /**
+     * Check support of still-only pipe is enabled or not
+     *
+     * \return true if is enabled.
+     */
+    static bool isStillOnlyPipeEnabled(int cameraId);
 };
 } /* namespace icamera */

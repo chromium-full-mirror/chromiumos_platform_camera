@@ -26,11 +26,9 @@
 
 namespace icamera {
 
-AiqEngine::AiqEngine(int cameraId, SensorHwCtrl* sensorHw, LensHw* lensHw, AiqSetting* setting,
-                     ParameterGenerator* paramGen)
+AiqEngine::AiqEngine(int cameraId, SensorHwCtrl* sensorHw, LensHw* lensHw, AiqSetting* setting)
         : mCameraId(cameraId),
           mAiqSetting(setting),
-          mParamGen(paramGen),
           mFirstAiqRunning(true) {
     LOG1("<id%d>%s", mCameraId, __func__);
 
@@ -194,9 +192,8 @@ int AiqEngine::prepareStatsParams(cca::cca_stats_params* statsParams,
             timestamp = aiqStatistics->mTimestamp;
         }
 
-        int64_t requestId = -1;
-        mParamGen->getRequestId(aiqStatistics->mSequence, requestId);
-        statsParams->frame_id = requestId;
+        const AiqResult* aiqResult = mAiqResultStorage->getAiqResult(aiqStatistics->mSequence);
+        statsParams->frame_id = aiqResult ? aiqResult->mFrameId : -1;
         statsParams->frame_timestamp = timestamp;
         statsParams->camera_orientation = ia_aiq_camera_orientation_unknown;
     } while (0);
@@ -321,10 +318,10 @@ AiqEngine::AiqState AiqEngine::runAiq(long requestId, int64_t applyingSeq, AiqRe
             return AIQ_STATE_ERROR;
         }
         *aiqRun = true;
+        aiqResult->mFrameId = requestId;
     } else {
         *aiqResult = *(mAiqRunningHistory.aiqResult);
         setSensorExposure(aiqResult, applyingSeq);
-        mParamGen->setRequestIdMap(requestId, mAiqRunningHistory.requestId);
     }
 
     return AIQ_STATE_RESULT_SET;

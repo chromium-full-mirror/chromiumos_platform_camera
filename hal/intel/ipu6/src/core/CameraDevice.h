@@ -187,15 +187,6 @@ class CameraDevice : public EventListener {
 
     void callbackRegister(const camera_callback_ops_t* callback);
 
-    /**
-     * \brief Reconfigure the streams, devices and post processor.
-     *
-     * \param streamList: all the streams info
-     *
-     * \return OK if succeed and BAD_VALUE if failed
-     */
-    int reconfigure(stream_config_t* streamList);
-
     int startLocked();
     int stopLocked();
     int initDefaultParameters();
@@ -222,10 +213,7 @@ class CameraDevice : public EventListener {
     // The second phase of qbuf(), done in RequestThread
     int handleQueueBuffer(int bufferNum, camera_buffer_t** ubuffer, int64_t sequence);
 
-    // No lock protect for internal usage, should be protected by mDeviceLock from outside
-    int configureL(stream_config_t* streamList, bool clean = true);
     int setParametersL(const Parameters& param);
-
     int registerBuffer(camera_buffer_t** ubuffer, int bufferNum);
 
  private:
@@ -262,7 +250,6 @@ class CameraDevice : public EventListener {
     int mStreamNum;
     Parameters mParameter;
     bool mPerframeControlSupport;
-    camera_scene_mode_t mLastSceneMode;
 
     RequestThread* mRequestThread;
     IGraphConfigManager* mGCM;

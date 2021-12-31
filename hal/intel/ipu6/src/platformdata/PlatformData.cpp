@@ -304,14 +304,6 @@ bool PlatformData::isNeedToPreRegisterBuffer(int cameraId) {
     return getInstance()->mStaticCfg.mCameras[cameraId].mNeedPreRegisterBuffers;
 }
 
-int PlatformData::getAutoSwitchType(int cameraId) {
-    return getInstance()->mStaticCfg.mCameras[cameraId].mAutoSwitchType;
-}
-
-bool PlatformData::isEnableFrameSyncCheck(int cameraId) {
-    return getInstance()->mStaticCfg.mCameras[cameraId].mFrameSyncCheckEnabled;
-}
-
 bool PlatformData::isEnableDefog(int cameraId) {
     return getInstance()->mStaticCfg.mCameras[cameraId].mEnableLtmDefog;
 }
@@ -361,10 +353,6 @@ bool PlatformData::isPsysContinueStats(int cameraId) {
 
 unsigned int PlatformData::getPreferredBufQSize(int cameraId) {
     return getInstance()->mStaticCfg.mCameras[cameraId].mPreferredBufQSize;
-}
-
-unsigned int PlatformData::getPipeSwitchDelayFrame(int cameraId) {
-    return getInstance()->mStaticCfg.mCameras[cameraId].mPipeSwitchDelayFrame;
 }
 
 int PlatformData::getLtmGainLag(int cameraId) {
@@ -704,11 +692,10 @@ int PlatformData::getDevNameByType(int cameraId, VideoNodeType videoNodeType, st
             break;
         }
         case VIDEO_ISYS_RECEIVER_BACKEND:
-        case VIDEO_ISYS_RECEIVER:
-            {
-                isSubDev = true;
-                break;
-            }
+        case VIDEO_ISYS_RECEIVER: {
+            isSubDev = true;
+            break;
+        }
         default:
             break;
     }
@@ -1380,4 +1367,7 @@ bool PlatformData::getPLCEnable(int cameraId) {
     return getInstance()->mStaticCfg.mCameras[cameraId].mPLCEnable;
 }
 
+bool PlatformData::isStillOnlyPipeEnabled(int cameraId) {
+    return getInstance()->mStaticCfg.mCameras[cameraId].mStillOnlyPipe;
+}
 }  // namespace icamera

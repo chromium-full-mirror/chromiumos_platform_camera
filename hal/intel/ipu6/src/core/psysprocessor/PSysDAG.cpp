@@ -43,7 +43,7 @@ PSysDAG::PSysDAG(int cameraId, PSysDagCallback* psysDagCB)
     LOG1("<id%d>@%s", mCameraId, __func__);
 
     mPolicyManager = new PolicyManager(mCameraId);
-    mIspParamAdaptor = new IspParamAdaptor(mCameraId, PG_PARAM_PSYS_ISA);
+    mIspParamAdaptor = new IspParamAdaptor(mCameraId);
 }
 
 PSysDAG::~PSysDAG() {
@@ -759,8 +759,7 @@ int PSysDAG::prepareIpuParams(int64_t sequence, bool forceUpdate, TaskInfo* task
             }
         }
 
-        ret = mIspParamAdaptor->runIspAdapt(&task->mTaskData.mIspSettings,
-                                            task->mTaskData.mRequestId, sequence, id);
+        ret = mIspParamAdaptor->runIspAdapt(&task->mTaskData.mIspSettings, sequence, id);
         CheckAndLogError(ret != OK, UNKNOWN_ERROR, "%s, <seq%ld> Failed to run AIC: streamId: %d",
                          __func__, sequence, id);
 
@@ -801,7 +800,7 @@ void PSysDAG::tuningReconfig(TuningMode newTuningMode) {
     if (mIspParamAdaptor) {
         mIspParamAdaptor->deinit();
     } else {
-        mIspParamAdaptor = new IspParamAdaptor(mCameraId, PG_PARAM_PSYS_ISA);
+        mIspParamAdaptor = new IspParamAdaptor(mCameraId);
     }
 
     int ret = mIspParamAdaptor->init();

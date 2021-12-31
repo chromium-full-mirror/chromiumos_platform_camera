@@ -21,7 +21,6 @@
 
 #include "CameraBuffer.h"
 #include "DeviceBase.h"
-#include "IspParamAdaptor.h"
 #include "StreamSource.h"
 #include "iutils/Thread.h"
 
@@ -140,10 +139,7 @@ class CaptureUnit : public StreamSource, public DeviceCallback {
 
     int streamOn();
     void streamOff();
-
     int poll();
-
-    bool isNewConfiguration(const std::map<Port, stream_t>& outputFrames);
 
     int processPendingBuffers();
     int queueAllBuffers();
@@ -172,7 +168,7 @@ class CaptureUnit : public StreamSource, public DeviceCallback {
 
     std::vector<ConfigMode> mConfigModes;
     std::map<Port, stream_t> mOutputFrameInfo;
-    DeviceBase* mDevice;
+    std::vector<DeviceBase*> mDevices;
     uint32_t mMaxBufferNum;
 
     enum {

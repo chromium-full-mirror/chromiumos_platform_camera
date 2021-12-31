@@ -74,8 +74,8 @@ void AiqUtils::dumpAeResults(const cca::cca_ae_results& aeResult) {
 void AiqUtils::dumpAfResults(const cca::cca_af_results& afResult) {
     if (!Log::isLogTagEnabled(GET_FILE_SHIFT(AiqUtils))) return;
 
-    LOG3("AF results: current distance %d, next position %d, final_position_reached %s, status %d",
-         afResult.current_focus_distance, afResult.next_lens_position,
+    LOG3("AF results: current/next dis %d/%d, next pos %d, final_position_reached %s, status %d",
+         afResult.current_focus_distance, afResult.next_focus_distance, afResult.next_lens_position,
          afResult.final_lens_position_reached ? "TRUE":"FALSE", afResult.status);
 
     switch (afResult.status) {

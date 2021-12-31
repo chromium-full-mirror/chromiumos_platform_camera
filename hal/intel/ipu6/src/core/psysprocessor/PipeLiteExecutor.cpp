@@ -21,7 +21,6 @@
 #include <algorithm>
 
 #include "PSysDAG.h"
-#include "SyncManager.h"
 #include "iutils/CameraDump.h"
 
 // CIPF backends
@@ -579,31 +578,8 @@ int PipeLiteExecutor::processNewFrame() {
 
     LOG2("%s:Id:%d run pipe start for buffer:%ld", mName.c_str(), mCameraId, inBufSequence);
 
-    if (PlatformData::isEnableFrameSyncCheck(mCameraId)) {
-        shared_ptr<CameraBuffer> cInBuffer = inBuffers[MAIN_PORT];
-        int vc = cInBuffer->getVirtualChannel();
-
-        while ((!SyncManager::getInstance()->vcSynced(vc)) && mThreadRunning) usleep(1);
-
-        int seq = cInBuffer->getSequence();
-        SyncManager::getInstance()->printVcSyncCount();
-        LOG2("<seq%d> [start runPipe], CPU-timestamp:%lu, vc:%d, kernel-timestamp:%.3l", seq,
-             CameraUtils::systemTime(), cInBuffer->getVirtualChannel(),
-             cInBuffer->getTimestamp().tv_sec * 1000.0 +
-             cInBuffer->getTimestamp().tv_usec / 1000.0);
-
-        SyncManager::getInstance()->updateVcSyncCount(vc);
-
         // Run pipe with buffers
         ret = runPipe(inBuffers, outBuffers, outStatsBuffers, eventType);
-        LOG2("<seq%u> [done runPipe], CPU-timestamp:%lu, vc:%d, kernel-timestamp:%.3lf",
-             cInBuffer->getSequence(), CameraUtils::systemTime(), cInBuffer->getVirtualChannel(),
-             cInBuffer->getTimestamp().tv_sec * 1000.0 +
-             cInBuffer->getTimestamp().tv_usec / 1000.0);
-    } else {
-        // Run pipe with buffers
-        ret = runPipe(inBuffers, outBuffers, outStatsBuffers, eventType);
-    }
     CheckAndLogError((ret != OK), UNKNOWN_ERROR, "@%s: failed to run pipe", __func__);
     LOG2("%s:Id:%d run pipe end for buffer:%ld", mName.c_str(), mCameraId, inBufSequence);
 
@@ -824,9 +800,11 @@ int PipeLiteExecutor::notifyStatsDone(TuningMode tuningMode, const v4l2_buffer_t
         if (!statsBuf) continue;
 
         if (mStreamId != VIDEO_STREAM_ID) {
-            LOG2("%s: No statistics data for still pipe in buffer", __func__);
-            releaseStatsBuffer(statsBuf);
-            continue;
+            if (!PlatformData::isStillOnlyPipeEnabled(mCameraId)) {
+                LOG2("%s: Drop still pipe statistics data", __func__);
+                releaseStatsBuffer(statsBuf);
+                continue;
+            }
         } else if (inV4l2Buf.sequence <= mLastStatsSequence) {
             // Ignore old statistics for Raw reprocessing
             LOG2("%s: <seq%d> is less than last sequence %ld", __func__, inV4l2Buf.sequence,
@@ -836,7 +814,7 @@ int PipeLiteExecutor::notifyStatsDone(TuningMode tuningMode, const v4l2_buffer_t
         }
 
         ia_binary_data* hwStatsData = (ia_binary_data*)(statsBuf->getBufferAddr());
-        if (hwStatsData->data == nullptr || hwStatsData->size == 0) {
+        if (hwStatsData == nullptr || hwStatsData->data == nullptr || hwStatsData->size == 0) {
             LOGW("%s: No statistics data in buffer", __func__);
             releaseStatsBuffer(statsBuf);
             continue;
