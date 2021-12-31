@@ -42,6 +42,7 @@ struct PSysTaskData {
     bool mFakeTask;
     long mRequestId;
     bool mCallbackRgbs;
+    bool mNextSeqUsed;
 
     CameraBufferPortMap mInputBuffers;
     CameraBufferPortMap mOutputBuffers;
@@ -50,6 +51,7 @@ struct PSysTaskData {
         mFakeTask = false;
         mRequestId = -1;
         mCallbackRgbs = false;
+        mNextSeqUsed = false;
     }
 };
 

@@ -209,7 +209,6 @@ int ParameterGenerator::getUserRequestId(int64_t sequence, int32_t& userRequestI
         return mRequestParamMap[sequence]->param.getUserRequestId(userRequestId);
     }
 
-    LOGE("<seq%ld>Can't find user requestId", sequence);
     return UNKNOWN_ERROR;
 }
 

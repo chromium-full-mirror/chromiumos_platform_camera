@@ -1036,10 +1036,6 @@ void CameraDevice::handleEvent(EventData eventData) {
         case EVENT_PROCESS_REQUEST: {
             const EventRequestData& request = eventData.data.request;
             if (request.param) {
-                for (auto& item : mProcessors) {
-                    item->setParameters(*request.param);
-                }
-
                 // Set test pattern mode
                 camera_test_pattern_mode_t testPatternMode = TEST_PATTERN_OFF;
                 if (PlatformData::isTestPatternSupported(mCameraId) &&

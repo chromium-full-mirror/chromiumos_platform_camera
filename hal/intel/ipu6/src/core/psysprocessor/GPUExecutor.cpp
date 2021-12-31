@@ -525,22 +525,6 @@ int GPUExecutor::runTnrFrame(const std::shared_ptr<CameraBuffer>& inBuf,
     CheckAndLogError(!inBuf->getBufferAddr(), UNKNOWN_ERROR, "Invalid input buffer");
     int ret = OK;
     uint32_t sequence = inBuf->getSequence();
-    bool paramSyncUpdate = (mStreamId == VIDEO_STREAM_ID) ? false : true;
-
-    if (!paramSyncUpdate) {
-        // request update tnr parameters before wait
-        float totalGain = 0.0f;
-        ret = getTotalGain(sequence, &totalGain);
-        CheckAndLogError(ret, UNKNOWN_ERROR, "Failed to get total gain");
-        // update tnr param when total gain changes
-        bool isTnrParamForceUpdate = icamera::PlatformData::isTnrParamForceUpdate();
-        // multiply totalGain by 100, to avoid lose accuracy
-        ret = mIntelTNR->asyncParamUpdate(static_cast<int>(totalGain * 100), isTnrParamForceUpdate);
-    }
-    if (mPolicyManager) {
-        // Check if need to wait other executors.
-        mPolicyManager->wait(mName);
-    }
     LOG2("Enter executor name:%s, sequence: %u", mName.c_str(), inBuf->getSequence());
     TRACE_LOG_PROCESS(mName.c_str(), __func__, MAKE_COLOR(inBuf->getSequence()),
                       inBuf->getSequence());
@@ -559,6 +543,25 @@ int GPUExecutor::runTnrFrame(const std::shared_ptr<CameraBuffer>& inBuf,
                  mName.c_str(), inBuf->getSequence(), timeUsedUs);
         }
         CheckAndLogError(ret != OK, UNKNOWN_ERROR, "Failed to update TNR parameters");
+    }
+
+    // wait other executors after parameters update finished, sync the main computing stage only
+    if (mPolicyManager && sequence > 0) {
+        // Check if need to wait other executors.
+        mPolicyManager->wait(mName);
+    }
+
+    bool paramSyncUpdate = (mStreamId == VIDEO_STREAM_ID) ? false : true;
+
+    if (!paramSyncUpdate && mIntelTNR) {
+        // request update tnr parameters before wait
+        float totalGain = 0.0f;
+        ret = getTotalGain(sequence, &totalGain);
+        CheckAndLogError(ret, UNKNOWN_ERROR, "Failed to get total gain");
+        // update tnr param when total gain changes
+        bool isTnrParamForceUpdate = icamera::PlatformData::isTnrParamForceUpdate();
+        // multiply totalGain by 100, to avoid lose accuracy
+        ret = mIntelTNR->asyncParamUpdate(static_cast<int>(totalGain * 100), isTnrParamForceUpdate);
     }
 
     int fd = outBuf->getFd();

@@ -134,7 +134,6 @@ class Camera3Stream : public icamera::Thread {
     std::map<buffer_handle_t, std::shared_ptr<Camera3Buffer>> mBuffers;
 
     icamera::FaceDetection* mFaceDetection;
-
     int mInputPostProcessType;
     std::unique_ptr<PostProcessor> mInputPostProcessor;
     std::unique_ptr<camera3_stream_t> mInputStream;

@@ -262,6 +262,7 @@ void Camera3Stream::requestExit() {
         icamera::FaceDetection::destoryInstance(mCameraId);
         mFaceDetection = nullptr;
     }
+
 }
 
 bool Camera3Stream::isLockUserBufferNeeded(const std::shared_ptr<Camera3Buffer>& inputCam3Buf) {

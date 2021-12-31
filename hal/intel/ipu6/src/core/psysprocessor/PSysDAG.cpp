@@ -593,7 +593,7 @@ void PSysDAG::addTask(PSysTaskData taskParam) {
 
     queueBuffers(taskParam);
 
-    if (runIspAdaptor && mRunAicAfterQbuf) {
+    if (runIspAdaptor && mRunAicAfterQbuf && taskParam.mNextSeqUsed) {
         LOG2("%s, <seq%ld> run AIC bundle with execute psys", __func__, sequence + 1);
         // if running psys bundle with aic, current aic result is for next sequence
         prepareIpuParams((sequence + 1), false, &task);

@@ -657,7 +657,8 @@ int PipeLiteExecutor::runPipe(map<Port, shared_ptr<CameraBuffer>>& inBuffers,
                      "Error in pipe iteration input/output bufs");
 
     int ret = OK;
-    if (mPolicyManager) {
+    int64_t sequence = inBuffers.begin()->second ? inBuffers.begin()->second->getSequence() : -1;
+    if (mPolicyManager && sequence > 0) {
         // Check if need to wait other executors.
         ret = mPolicyManager->wait(mName);
     }
@@ -670,7 +671,6 @@ int PipeLiteExecutor::runPipe(map<Port, shared_ptr<CameraBuffer>>& inBuffers,
 
     // Get ISP parameters
     const ia_binary_data* ipuParameters = nullptr;
-    int64_t sequence = inBuffers.begin()->second ? inBuffers.begin()->second->getSequence() : -1;
     TRACE_LOG_PROCESS(mName.c_str(), "runPipe", MAKE_COLOR(sequence), sequence);
     if (mAdaptor) {
         ipuParameters = mAdaptor->getIpuParameter(sequence, mStreamId);

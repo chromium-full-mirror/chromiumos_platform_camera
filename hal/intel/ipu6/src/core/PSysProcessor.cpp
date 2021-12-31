@@ -864,6 +864,7 @@ void PSysProcessor::dispatchTask(CameraBufferPortMap &inBuf, CameraBufferPortMap
     taskParam.mOutputBuffers = outBuf;
     taskParam.mFakeTask = fakeTask;
     taskParam.mCallbackRgbs = callbackRgbs;
+    taskParam.mNextSeqUsed = false;
 
     int64_t settingSequence = getSettingSequence(outBuf);
     // Handle per-frame settings if output buffer requires
@@ -879,6 +880,12 @@ void PSysProcessor::dispatchTask(CameraBufferPortMap &inBuf, CameraBufferPortMap
                 CameraDump::isDumpTypeEnable(DUMP_JPEG_BUFFER)) {
                 CameraDump::dumpImage(mCameraId, inBuf[MAIN_PORT], M_PSYS, MAIN_PORT);
             }
+        }
+
+        // Check if next sequence is used or not
+        int32_t userRequestId = -1;
+        if (mParameterGenerator->getUserRequestId(currentSequence + 1, userRequestId) == OK) {
+            taskParam.mNextSeqUsed = true;
         }
     }
     {
