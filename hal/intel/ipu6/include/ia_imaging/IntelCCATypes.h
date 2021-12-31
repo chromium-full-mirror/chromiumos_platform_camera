@@ -259,6 +259,7 @@ typedef struct
 {
     ia_aiq_af_status status;                           /*!< Focus status */
     uint32_t next_lens_position;                       /*!< Next lens position */
+    int32_t next_focus_distance;                      /*!< Next focusing distance [mm] between the lens and object plane */
     uint16_t current_focus_distance;                   /*!< Current focusing distance [mm] between the lens and object plane */
     bool final_lens_position_reached;                  /*!< Lens has reached the final lens position */
 } cca_af_results;

@@ -339,6 +339,22 @@ ia_aiq_af_run(ia_aiq *ia_aiq_ptr,
               ia_aiq_af_results **af_results);
 
 /*!
+ * \brief calcualte the object focus distance based on the lens position.
+ *
+ * \param[in] ia_aiq_ptr            Mandatory.\n
+ *                                  AIQ instance handle.
+ * \param[in] lens_position         Mandatory.\n
+ *                                  vcm position.
+ * \param[out] focus_distance       Mandatory.\n
+ *                                  pointer to calculated object focus distance Results from AF calculations.
+ * \return                          Error code.
+ */
+LIBEXPORT ia_err
+ia_aiq_calculate_focus_distance(ia_aiq *ia_aiq_ptr,
+                                int32_t lens_position,
+                                int32_t *focus_distance);
+
+/*!
  *  \brief Input parameter structure for AWB algorithm.
  */
 typedef struct
