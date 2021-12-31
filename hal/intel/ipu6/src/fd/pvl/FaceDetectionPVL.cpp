@@ -263,6 +263,9 @@ void FaceDetectionPVL::getResultFor3A(cca::cca_face_state* faceState) {
             static_cast<int>(pvlResult->mouthResults[i].mouth.y * fovRatioHTmp + offsetH);
 
         faceState->faces[i].eye_validity = 0;
+        LOG2("@%s, face info, id:%d, left:%d, top:%d, right:%d, bottom:%d", __func__, i,
+             faceState->faces[i].face_area.left, faceState->faces[i].face_area.top,
+             faceState->faces[i].face_area.right, faceState->faces[i].face_area.bottom);
     }
 }
 
@@ -361,6 +364,9 @@ void FaceDetectionPVL::getResultForApp(CVFaceDetectionAbstractResult* result) {
             result->faceLandmarks[i * 6 + 4] = destCoord.x;  // mouth.x;
             result->faceLandmarks[i * 6 + 5] = destCoord.y;  // mouth.y;
         }
+        LOG2("@%s, face info, id:%d, left:%d, top:%d, right:%d, bottom:%d", __func__, i,
+             result->faceRect[i * 4], result->faceRect[i * 4 + 1], result->faceRect[i * 4 + 2],
+             result->faceRect[i * 4 + 3]);
     }
     result->faceNum = pvlResult->faceNum;
 }

@@ -155,20 +155,11 @@ void RequestManager::handleCallbackEvent(const icamera::camera_msg_data_t& data)
     }
 }
 
-int RequestManager::configureStreams(camera3_stream_configuration_t* stream_list) {
-    LOG1("@%s", __func__);
-
+int RequestManager::analysisStreamList(camera3_stream_configuration_t* stream_list,
+                                       camera3_stream_t** inputStream) {
     int ret = checkStreamRotation(stream_list);
-
     CheckAndLogError(ret != icamera::OK, icamera::BAD_VALUE, "Unsupport rotation degree!");
 
-    if (mCameraDeviceStarted) {
-        ret = icamera::camera_device_stop(mCameraId);
-        CheckAndLogError(ret != icamera::OK, ret, "failed to stop camera device, ret %d", ret);
-        mCameraDeviceStarted = false;
-    }
-
-    icamera::stream_t requestStreams[kMaxStreamNum];  // not include CAMERA3_STREAM_INPUT stream
     uint32_t streamsNum = stream_list->num_streams;
     uint32_t operationMode = stream_list->operation_mode;
     LOG1("@%s, streamsNum:%d, operationMode:%d", __func__, streamsNum, operationMode);
@@ -179,41 +170,12 @@ int RequestManager::configureStreams(camera3_stream_configuration_t* stream_list
     int inputStreamNum = 0;
     int outStreamNum = 0;
     camera3_stream_t* stream = nullptr;
+
     for (uint32_t i = 0; i < streamsNum; i++) {
         stream = stream_list->streams[i];
         LOG1("@%s, Config stream (%s):%dx%d, f:%d, u:%d, buf num:%d, priv:%p", __func__,
              HalV3Utils::getCamera3StreamType(stream->stream_type), stream->width, stream->height,
              stream->format, stream->usage, stream->max_buffers, stream->priv);
-        if (stream->stream_type == CAMERA3_STREAM_OUTPUT) {
-            outStreamNum++;
-        } else if (stream->stream_type == CAMERA3_STREAM_INPUT) {
-            inputStreamNum++;
-            mInputStreamConfigured = true;
-        } else if (stream->stream_type == CAMERA3_STREAM_BIDIRECTIONAL) {
-            inputStreamNum++;
-            outStreamNum++;
-            mInputStreamConfigured = true;
-        } else {
-            LOGE("@%s, Unknown stream type %d!", __func__, stream->stream_type);
-            return icamera::BAD_VALUE;
-        }
-        // In ZSL case, RAW input and YUV input will be configured together.
-        CheckAndLogError(inputStreamNum > 2, icamera::BAD_VALUE, "Too many input streams : %d !",
-                         inputStreamNum);
-    }
-    CheckAndLogError(outStreamNum == 0, icamera::BAD_VALUE, "No output streams!");
-
-    /*
-     * Configure stream
-     */
-    mResultProcessor->clearRawBufferInfoMap();
-    int requestStreamNum = 0;
-    camera3_stream_t* inputStream = nullptr;
-    // Enable video pipe if yuv stream exists (for 3A stats data)
-    bool needAssignPreviewStream = true;
-    icamera::stream_t* yuvStream = nullptr;
-    icamera::stream_t* blobStream = nullptr;
-    for (uint32_t i = 0; i < streamsNum; i++) {
         /*
          * 1, for CAMERA3_STREAM_INPUT stream, format YCbCr_420_888 is for YUV
          * reprocessing, other formats (like IMPLEMENTATION_DEFINED, RAW_OPAQUE) are
@@ -224,20 +186,25 @@ int RequestManager::configureStreams(camera3_stream_configuration_t* stream_list
          * if format is RAW_OPAQUE, it is for RAW reprocessing.
          */
         if (stream_list->streams[i]->stream_type == CAMERA3_STREAM_INPUT) {
+            inputStreamNum++;
+            mInputStreamConfigured = true;
             stream_list->streams[i]->usage |=
                 GRALLOC_USAGE_HW_CAMERA_WRITE | GRALLOC_USAGE_SW_READ_OFTEN;
             if (stream_list->streams[i]->format == HAL_PIXEL_FORMAT_YCbCr_420_888) {
-                inputStream = stream_list->streams[i];
+                *inputStream = stream_list->streams[i];
             } else {
                 stream_list->streams[i]->usage |= GRALLOC_USAGE_HW_CAMERA_ZSL;
             }
             stream_list->streams[i]->max_buffers = 2;
-            continue;
         } else if (stream_list->streams[i]->stream_type == CAMERA3_STREAM_BIDIRECTIONAL) {
+            inputStreamNum++;
+            outStreamNum++;
+            mInputStreamConfigured = true;
             stream_list->streams[i]->usage |= GRALLOC_USAGE_HW_CAMERA_ZSL;
-        } else {
+        } else if (stream->stream_type == CAMERA3_STREAM_OUTPUT) {
+            outStreamNum++;
             if (stream_list->streams[i]->format == HAL_PIXEL_FORMAT_IMPLEMENTATION_DEFINED &&
-                inputStreamNum > 0) {
+                mInputStreamConfigured) {
                 if (!(stream_list->streams[i]->usage &
                       (GRALLOC_USAGE_HW_COMPOSER | GRALLOC_USAGE_HW_TEXTURE))) {
                     stream_list->streams[i]->usage |= GRALLOC_USAGE_HW_CAMERA_ZSL;
@@ -245,24 +212,50 @@ int RequestManager::configureStreams(camera3_stream_configuration_t* stream_list
             } else if (stream_list->streams[i]->format == HAL_PIXEL_FORMAT_RAW_OPAQUE) {
                 stream_list->streams[i]->usage |= GRALLOC_USAGE_HW_CAMERA_ZSL;
             }
+        } else {
+            LOGE("@%s, Unknown stream type %d!", __func__, stream->stream_type);
+            return icamera::BAD_VALUE;
         }
+        // In ZSL case, RAW input and YUV input will be configured together.
+        CheckAndLogError(inputStreamNum > 2, icamera::BAD_VALUE, "Too many input streams : %d !",
+                         inputStreamNum);
+    }
+    CheckAndLogError(outStreamNum == 0, icamera::BAD_VALUE, "No output streams!");
+
+    return icamera::OK;
+}
+
+int RequestManager::createHALStreams(camera3_stream_configuration_t* stream_list,
+                                     int* halStreamFlag, int* halStreamNum,
+                                     std::map<int, int>& streamToHALIndex,
+                                     camera3_stream_t** fdChooseStream) {
+    int ret;
+    int outputStreamNum = 0;
+    // Enable video pipe if yuv stream exists (for 3A stats data)
+    bool needAssignPreviewStream = true;
+    icamera::stream_t* yuvStream = nullptr;
+    icamera::stream_t* blobStream = nullptr;
+    uint32_t streamsNum = stream_list->num_streams;
+    icamera::stream_t outputReqStreams[kMaxStreamNum];
+    for (uint32_t i = 0; i < streamsNum; i++) {
+        if (stream_list->streams[i]->stream_type == CAMERA3_STREAM_INPUT) continue;
 
         ret = HalV3Utils::fillHALStreams(mCameraId, *stream_list->streams[i],
-                                         &requestStreams[requestStreamNum]);
+                                         &outputReqStreams[outputStreamNum]);
         CheckAndLogError(ret != icamera::OK, ret, "failed to fill requestStreams[%d], ret:%d", ret,
-                         requestStreamNum);
+                         outputStreamNum);
 
         if (stream_list->streams[i]->format == HAL_PIXEL_FORMAT_BLOB) {
-            blobStream = &requestStreams[requestStreamNum];
+            blobStream = &outputReqStreams[outputStreamNum];
         } else if (!yuvStream && !IS_ZSL_USAGE(stream_list->streams[i]->usage)) {
-            yuvStream = &requestStreams[requestStreamNum];
+            yuvStream = &outputReqStreams[outputStreamNum];
         }
 
-        if (requestStreams[requestStreamNum].usage == icamera::CAMERA_STREAM_PREVIEW ||
-            requestStreams[requestStreamNum].usage == icamera::CAMERA_STREAM_VIDEO_CAPTURE)
+        if (outputReqStreams[outputStreamNum].usage == icamera::CAMERA_STREAM_PREVIEW ||
+            outputReqStreams[outputStreamNum].usage == icamera::CAMERA_STREAM_VIDEO_CAPTURE)
             needAssignPreviewStream = false;
 
-        requestStreamNum++;
+        outputStreamNum++;
     }
     if (needAssignPreviewStream) {
         if (yuvStream) {
@@ -274,92 +267,108 @@ int RequestManager::configureStreams(camera3_stream_configuration_t* stream_list
 
     CLEAR(mHALStream);
 
-    int halStreamFlag[kMaxStreamNum];
-    int halStreamNum = chooseHALStreams(requestStreamNum, halStreamFlag, requestStreams);
+    int halStreamNumTmp = chooseHALStreams(outputStreamNum, halStreamFlag, outputReqStreams);
     // halStreamNum should not exceed videoNum + 2 (1 opaque raw and 1 still)
     int maxSupportStreamNum = icamera::PlatformData::getVideoStreamNum() + 2;
-    CheckAndLogError(halStreamNum > maxSupportStreamNum || halStreamNum <= 0, icamera::BAD_VALUE,
-                     "failed to find HAL stream");
+    CheckAndLogError(halStreamNumTmp > maxSupportStreamNum || halStreamNumTmp <= 0,
+                     icamera::BAD_VALUE, "failed to find HAL stream");
 
     // index of stream in mHALStream
     int halStreamIndex = 0;
-    // first:stream index in requestStreams[], second:HAL stream index in mHALStream[]
-    std::map<int, int> streamToHALIndex;
-    for (int i = 0; i < requestStreamNum; i++) {
+    for (int i = 0; i < outputStreamNum; i++) {
         // fill HAL stream with right requestStreams object
         if (halStreamFlag[i] == i) {
-            mHALStream[halStreamIndex] = requestStreams[i];
+            mHALStream[halStreamIndex] = outputReqStreams[i];
             streamToHALIndex[i] = halStreamIndex;
             halStreamIndex++;
         }
     }
 
     /* If it supports one more video output to process face detection */
-    bool isIPUSupportFD = icamera::PlatformData::isIPUSupportFD(mCameraId);
-    Camera3Stream* faceDetectionOwner = nullptr;
-    camera3_stream_t* fdChooseStream = nullptr;
     icamera::stream_t requestStreamForFD = {};
+    camera3_stream_t* fdStream = nullptr;
     bool isFaceAeEnabled = icamera::PlatformData::isFaceAeEnabled(mCameraId);
+    bool isIPUSupportFD = icamera::PlatformData::isIPUSupportFD(mCameraId);
     // Mark one camera3Stream run face detection
     if (isFaceAeEnabled) {
         LOG1("Face detection is enable");
-        fdChooseStream = chooseStreamForFaceDetection(streamsNum, stream_list->streams);
-        if (fdChooseStream && isIPUSupportFD) {
-            if (RESOLUTION_VGA_WIDTH * fdChooseStream->height !=
-                fdChooseStream->width * RESOLUTION_VGA_HEIGHT) {
+        fdStream = choosePreviewStream(streamsNum, stream_list->streams);
+        if (fdStream && isIPUSupportFD) {
+            if (RESOLUTION_VGA_WIDTH * fdStream->height !=
+                fdStream->width * RESOLUTION_VGA_HEIGHT) {
                 mFDStreamsInfo.height = VGA_360P;
             }
-            mFDStreamsInfo.usage = fdChooseStream->usage;
-            mFDStreamsInfo.format = fdChooseStream->format;
+            mFDStreamsInfo.usage = fdStream->usage;
+            mFDStreamsInfo.format = fdStream->format;
             ret = HalV3Utils::fillHALStreams(mCameraId, mFDStreamsInfo, &requestStreamForFD);
             CheckAndLogError(ret != icamera::OK, ret, "failed to fill requestStreamForFD ret:%d",
                              ret);
-            mHALStream[halStreamNum] = requestStreamForFD;
-            halStreamNum++;
+            mHALStream[halStreamNumTmp] = requestStreamForFD;
+            halStreamNumTmp++;
             LOG1("@%s, mStreamsVGA: w:%d, h:%d, f:%d, u:%d", __func__, mFDStreamsInfo.width,
                  mFDStreamsInfo.height, mFDStreamsInfo.format, mFDStreamsInfo.usage);
         }
     }
 
+    for (int i = 0; i < outputStreamNum; i++) {
+        const icamera::stream_t& s = outputReqStreams[i];
+        LOG1("@%s, requestStreams[%d]: w:%d, h:%d, f:%d, u:%d", __func__, i, s.width, s.height,
+             s.format, s.usage);
+    }
+
+    for (int i = 0; i < halStreamNumTmp; i++) {
+        const icamera::stream_t& s = mHALStream[i];
+        LOG1("@%s, configured mHALStream[%d]: w:%d, h:%d, f:%d, u:%d", __func__, i, s.width,
+             s.height, s.format, s.usage);
+    }
+
+    *halStreamNum = halStreamNumTmp;
+    *fdChooseStream = fdStream;
+
+    return icamera::OK;
+}
+
+int RequestManager::deviceConfigHALStreams(camera3_stream_t* fdChooseStream, int* halStreamNum,
+                                           icamera::stream_t** requestStreamForFD) {
+    int ret;
+    int halStreamNumTmp = *halStreamNum;
+    bool isIPUSupportFD = icamera::PlatformData::isIPUSupportFD(mCameraId);
     icamera::stream_config_t streamCfg = {
-        halStreamNum, mHALStream,
+        halStreamNumTmp, mHALStream,
         icamera::camera_stream_configuration_mode_t::CAMERA_STREAM_CONFIGURATION_MODE_AUTO};
     if (fdChooseStream && isIPUSupportFD) {
         ret = icamera::PlatformData::queryGraphSettings(mCameraId, &streamCfg);
         if (ret != icamera::OK) {
             isIPUSupportFD = false;
             streamCfg = {
-                --halStreamNum, mHALStream,
+                --halStreamNumTmp, mHALStream,
                 icamera::camera_stream_configuration_mode_t::CAMERA_STREAM_CONFIGURATION_MODE_AUTO};
         }
     }
 
-    for (int i = 0; i < requestStreamNum; i++) {
-        const icamera::stream_t& s = requestStreams[i];
-        LOG1("@%s, requestStreams[%d]: w:%d, h:%d, f:%d, u:%d", __func__, i, s.width, s.height,
-             s.format, s.usage);
-    }
-
-    for (int i = 0; i < halStreamNum; i++) {
-        const icamera::stream_t& s = mHALStream[i];
-        LOG1("@%s, configured mHALStream[%d]: w:%d, h:%d, f:%d, u:%d", __func__, i, s.width,
-             s.height, s.format, s.usage);
-    }
-
     ret = icamera::camera_device_config_streams(mCameraId, &streamCfg);
     if (fdChooseStream && isIPUSupportFD && ret == icamera::OK) {
-        requestStreamForFD = mHALStream[halStreamNum - 1];
-        halStreamNum--;
+        *requestStreamForFD = &mHALStream[halStreamNumTmp - 1];
+        halStreamNumTmp--;
     }
     CheckAndLogError(ret != icamera::OK, ret, "failed to configure stream, ret %d", ret);
 
-    // Create Stream for new streams
+    *halStreamNum = halStreamNumTmp;
+    return icamera::OK;
+}
+
+void RequestManager::createCamera3Stream(camera3_stream_configuration_t* stream_list,
+                                         std::map<int, int>& streamToHALIndex, int* halStreamFlag,
+                                         camera3_stream_t* inputReqStream,
+                                         camera3_stream_t* fdChooseStream,
+                                         icamera::stream_t* requestStreamForFD) {
     deleteStreams();
     int requestStreamIndex = 0;
+    Camera3Stream* faceDetectionOwner = nullptr;
     // <listener stream, owner HAL stream index>
     std::map<Camera3StreamListener*, int32_t> listenerStreamOwners;
     std::map<int32_t, Camera3StreamHAL*> halStreams;  // <hal stream index, hal stream>
-    for (uint32_t i = 0; i < streamsNum; i++) {
+    for (uint32_t i = 0; i < stream_list->num_streams; i++) {
         camera3_stream_t* stream = stream_list->streams[i];
         if (stream->stream_type == CAMERA3_STREAM_INPUT) {
             continue;
@@ -369,14 +378,12 @@ int RequestManager::configureStreams(camera3_stream_configuration_t* stream_list
         ** streamToHALIndex to find it's HAL Stream index in mHALStream[]*/
         int halStreamIndex = streamToHALIndex[halStreamFlag[requestStreamIndex]];
         bool isHALStream = halStreamFlag[requestStreamIndex] == requestStreamIndex;
-        CheckAndLogError(halStreamIndex < 0 || halStreamIndex >= halStreamNum, icamera::BAD_VALUE,
-                         "failed to find hal stream %d", halStreamIndex);
         Camera3Stream* s = nullptr;
         if (isHALStream) {
             Camera3StreamHAL* hs =
                 new Camera3StreamHAL(mCameraId, mResultProcessor, mParameterResult,
                                      mHALStream[halStreamIndex].max_buffers,
-                                     mHALStream[halStreamIndex], *stream, inputStream);
+                                     mHALStream[halStreamIndex], *stream, inputReqStream);
             mCamera3HALStreams.push_back(hs);
             halStreams[halStreamIndex] = hs;
             s = reinterpret_cast<Camera3Stream*>(hs);
@@ -384,7 +391,7 @@ int RequestManager::configureStreams(camera3_stream_configuration_t* stream_list
             Camera3StreamListener* ls =
                 new Camera3StreamListener(mCameraId, mResultProcessor, mParameterResult,
                                           mHALStream[halStreamIndex].max_buffers,
-                                          mHALStream[halStreamIndex], *stream, inputStream);
+                                          mHALStream[halStreamIndex], *stream, inputReqStream);
             listenerStreamOwners[ls] = halStreamIndex;
             s = reinterpret_cast<Camera3Stream*>(ls);
         }
@@ -401,6 +408,8 @@ int RequestManager::configureStreams(camera3_stream_configuration_t* stream_list
 
         if (fdChooseStream == stream) {
             faceDetectionOwner = static_cast<Camera3Stream*>(stream->priv);
+            LOG1("@%s, FD chooses stream information:format=%d, width=%d, height=%d", __func__,
+                 stream->format, stream->width, stream->height);
         }
     }
 
@@ -411,21 +420,59 @@ int RequestManager::configureStreams(camera3_stream_configuration_t* stream_list
         }
     }
 
-    if (isFaceAeEnabled && isIPUSupportFD) {
+    if (fdChooseStream && requestStreamForFD) {
         /* create Camera3Stream for face detection */
-        mFDStream = new PrivateStreamFD(mCameraId, requestStreamForFD, mFDStreamsInfo);
+        mFDStream = new PrivateStreamFD(mCameraId, *requestStreamForFD, mFDStreamsInfo);
         LOG1("@%s, Create PrivateStreamFD for face detection", __func__);
     } else if (faceDetectionOwner != nullptr) {
         unsigned int maxFacesNum = icamera::PlatformData::getMaxFaceDetectionNumber(mCameraId);
         faceDetectionOwner->activateFaceDetection(maxFacesNum);
         LOG1("@%s, Create Camera3Stream for face detection", __func__);
     }
+}
+
+int RequestManager::configureStreams(camera3_stream_configuration_t* stream_list) {
+    LOG1("@%s", __func__);
+
+    camera3_stream_t* inputReqStream = nullptr;
+    int ret = analysisStreamList(stream_list, &inputReqStream);
+    CheckAndLogError(ret != icamera::OK, ret, "stream list are not invalid");
+
+    if (mCameraDeviceStarted) {
+        ret = icamera::camera_device_stop(mCameraId);
+        CheckAndLogError(ret != icamera::OK, ret, "failed to stop camera device, ret %d", ret);
+        mCameraDeviceStarted = false;
+    }
+
+    mResultProcessor->clearRawBufferInfoMap();
+
+    /*
+     * Configure stream
+     * 1.create HAL streams
+     * 2.config HAL streams
+     * 3.create camera3Stream
+     */
+    int halStreamFlag[kMaxStreamNum];
+    int halStreamNum;
+    camera3_stream_t* fdChooseStream = nullptr;
+    // first:stream index in requestStreams[], second:HAL stream index in mHALStream[]
+    std::map<int, int> streamToHALIndex;
+    ret = createHALStreams(stream_list, halStreamFlag, &halStreamNum, streamToHALIndex,
+                           &fdChooseStream);
+    CheckAndLogError(ret != icamera::OK, ret, "Failed to create HAL stream");
+
+    icamera::stream_t* requestStreamForFD = nullptr;
+    ret = deviceConfigHALStreams(fdChooseStream, &halStreamNum, &requestStreamForFD);
+    CheckAndLogError(ret != icamera::OK, ret, "Failed to config HAL stream");
+
+    createCamera3Stream(stream_list, streamToHALIndex, halStreamFlag, inputReqStream,
+                        fdChooseStream, requestStreamForFD);
 
     return icamera::OK;
 }
 
-camera3_stream_t* RequestManager::chooseStreamForFaceDetection(uint32_t streamsNum,
-                                                               camera3_stream_t** streams) {
+camera3_stream_t* RequestManager::choosePreviewStream(uint32_t streamsNum,
+                                                      camera3_stream_t** streams) {
     LOG1("@%s", __func__);
     camera3_stream_t* preStream = nullptr;
     camera3_stream_t* yuvStream = nullptr;
@@ -434,11 +481,10 @@ camera3_stream_t* RequestManager::chooseStreamForFaceDetection(uint32_t streamsN
     int preStreamNum = -1;
     int yuvStreamNum = -1;
 
-    bool isIPUSupportFD = icamera::PlatformData::isIPUSupportFD(mCameraId);
     for (uint32_t i = 0; i < streamsNum; i++) {
         camera3_stream_t* s = streams[i];
         if (!s || s->stream_type != CAMERA3_STREAM_OUTPUT ||
-            ((s->width > maxWidth || s->height > maxHeight) && (!isIPUSupportFD))) {
+            ((s->width > maxWidth || s->height > maxHeight))) {
             continue;
         }
 

@@ -61,11 +61,22 @@ class RequestManager : public RequestManagerCallback, public icamera::camera_cal
     void returnRequestDone(uint32_t frameNumber);
 
  private:
+    int analysisStreamList(camera3_stream_configuration_t* stream_list,
+                           camera3_stream_t** inputStream);
+    int createHALStreams(camera3_stream_configuration_t* stream_list, int* halStreamFlag,
+                         int* halStreamNum, std::map<int, int>& streamToHALIndex,
+                         camera3_stream_t** fdChooseStream);
+    int deviceConfigHALStreams(camera3_stream_t* fdChooseStream, int* halStreamNum,
+                               icamera::stream_t** requestStreamForFD);
+    void createCamera3Stream(camera3_stream_configuration_t* stream_list,
+                             std::map<int, int>& streamToHALIndex, int* halStreamFlag,
+                             camera3_stream_t* inputReqStream, camera3_stream_t* fdChooseStream,
+                             icamera::stream_t* requestStreamForFD);
     void deleteStreams();
     void increaseRequestCount();
     int waitProcessRequest();
     void waitAllRequestsDone();
-    camera3_stream_t* chooseStreamForFaceDetection(uint32_t streamsNum, camera3_stream_t** streams);
+    camera3_stream_t* choosePreviewStream(uint32_t streamsNum, camera3_stream_t** streams);
     int checkStreamRotation(camera3_stream_configuration_t* stream_list);
 
     static void callbackNotify(const icamera::camera_callback_ops* cb,
