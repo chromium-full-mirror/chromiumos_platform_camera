@@ -21,6 +21,7 @@
 #include <dirent.h>
 #include <expat.h>
 #include <string.h>
+#include <sys/stat.h>
 
 #include <algorithm>
 #include <memory>
@@ -1949,6 +1950,7 @@ void CameraParser::getNVMDirectory(CameraParser* profiles) {
             fwNodePath += direntPtr->d_name;
             fwNodePath += "/path";
 
+            bool found = false;
             FILE* fp = fopen(fwNodePath.c_str(), "rb");
             if (fp) {
                 fseek(fp, 0, SEEK_END);
@@ -1962,13 +1964,25 @@ void CameraParser::getNVMDirectory(CameraParser* profiles) {
                 if (readSize > 0) {
                     for (auto& nvm : profiles->mNvmDeviceInfo) {
                         if (strstr(ptr.get(), nvm.nodeName.c_str()) != nullptr) {
-                            nvm.directory = "i2c-";
-                            nvm.directory += direntPtr->d_name;
-                            break;
+                            std::string nvmPath(NVM_DATA_PATH);
+                            nvmPath.append("i2c-");
+                            nvmPath.append(direntPtr->d_name);
+                            nvmPath.append("/eeprom");
+                            // Check if eeprom file exists
+                            struct stat buf;
+                            int ret = stat(nvmPath.c_str(), &buf);
+                            LOG1("%s, nvmPath %s, ret %d", __func__, nvmPath.c_str(), ret);
+                            if (ret == 0) {
+                                nvm.directory = "i2c-";
+                                nvm.directory += direntPtr->d_name;
+                                found = true;
+                                break;
+                            }
                         }
                     }
                 }
             }
+            if (found) break;
         }
         closedir(dir);
     }
