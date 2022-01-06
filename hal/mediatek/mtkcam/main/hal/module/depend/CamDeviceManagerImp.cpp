@@ -103,6 +103,9 @@ int32_t CamDeviceManagerImp::enumDeviceLocked() {
   pHalDeviceList = MAKE_HalLogicalDeviceList();
   size_t const deviceNum = pHalDeviceList->searchDevices();
   ///
+  if (deviceNum == 0) {
+    return i4DeviceNum;
+  }
   CAM_LOGI("pLogicHalDeviceList:%p searchDevices:%zu queryNumberOfDevices:%d",
            pHalDeviceList, deviceNum, pHalDeviceList->queryNumberOfDevices());
 
@@ -117,7 +120,10 @@ int32_t CamDeviceManagerImp::enumDeviceLocked() {
   }
 
   size_t const sensorNum = pHalDeviceList->queryNumberOfSensors();
-  CAM_LOGI("sensorNum:%d", sensorNum);
+  if (sensorNum != deviceNum) {
+    CAM_LOGW("sensorNum:%d, deviceNum:%d", sensorNum, deviceNum);
+    return i4DeviceNum;
+  }
   mEnumMap.reserve(sensorNum + 1);
   for (size_t sensorId = 0; sensorId < sensorNum; sensorId++) {
     std::shared_ptr<EnumInfo> pInfo = std::make_shared<EnumInfo>();
