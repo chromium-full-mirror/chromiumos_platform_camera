@@ -117,14 +117,10 @@ private:
     struct FrameQueue {
         Mutex mFrameMutex;
         Condition mFrameAvailableSignal;
-        CameraBufVector mFrameQueue;
+        CameraBufQ mFrameQueue;
     };
     FrameQueue mOutputFrames[MAX_STREAM_NUMBER];
     std::atomic<bool> mActive;
-    // requested frame queue for each stream, protected by mPendingReqLock
-    std::queue<camera_buffer_t *> mRequestQueue[MAX_STREAM_NUMBER];
-    // check if the requested buffer already in the FrameQueue
-    bool isBufferInQueue(FrameQueue &queue, camera_buffer_t *buffer);
 
     enum RequestTriggerEvent {
         NONE_EVENT  = 0,
