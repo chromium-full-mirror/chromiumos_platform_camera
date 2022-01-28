@@ -1379,8 +1379,8 @@ bool PlatformData::isDummyStillSink(int cameraId) {
     return getInstance()->mStaticCfg.mCameras[cameraId].mDummyStillSink;
 }
 
-bool PlatformData::getForceFlushIpuBuffer(int cameraId) {
-    return getInstance()->mStaticCfg.mCameras[cameraId].mForceFlushIpuBuffer;
+bool PlatformData::removeCacheFlushOutputBuffer(int cameraId) {
+    return getInstance()->mStaticCfg.mCameras[cameraId].mRemoveCacheFlushOutputBuffer;
 }
 
 bool PlatformData::getPLCEnable(int cameraId) {
