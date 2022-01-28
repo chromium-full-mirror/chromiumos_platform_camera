@@ -81,9 +81,18 @@ bool Camera3StreamHAL::threadLoop() {
         return true;
     }
 
-    auto captureResult = mCaptureResultMap.begin();
-    std::shared_ptr<CaptureResult> result = captureResult->second;
-    uint32_t frameNumber = captureResult->first;
+    std::shared_ptr<CaptureResult> result = nullptr;
+    uint32_t frameNumber;
+
+    {
+        std::unique_lock<std::mutex> lock(mLock);
+        if (!mCaptureResultMap.empty()) {
+            auto captureResult = mCaptureResultMap.begin();
+            result = captureResult->second;
+            frameNumber = captureResult->first;
+        }
+    }
+    CheckAndLogError(!result, true, "no valid capture request");
 
     std::shared_ptr<Camera3Buffer> inputCam3Buf = result->inputCam3Buf;
     std::shared_ptr<StreamComInfo> halOutput = nullptr;
@@ -106,6 +115,11 @@ bool Camera3StreamHAL::threadLoop() {
 
         {
             std::unique_lock<std::mutex> lock(mLock);
+            if (buffer->requestId != frameNumber &&
+                mCaptureResultMap.find(buffer->requestId) != mCaptureResultMap.end()) {
+                result = mCaptureResultMap[buffer->requestId];
+                frameNumber = buffer->requestId;
+            }
             CheckAndLogError(buffer->addr != result->hCapture->cam3Buf->data(), true,
                              "can't identify the buffer source");
             halOutput = result->hCapture;
