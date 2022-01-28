@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2021 Intel Corporation
+ * Copyright (C) 2017-2022 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -505,6 +505,7 @@ int MetadataConvert::requestMetadataToHALMetadata(const android::CameraMetadata&
     convertLensMetadata(settings, parameter);
 
     // ANDROID_SCALER
+    convertScalerMetadata(settings, parameter);
 
     // ANDROID_SENSOR
     convertSensorMetadata(settings, parameter, forceConvert);
@@ -2286,6 +2287,25 @@ int MetadataConvert::convertToHalWindow(const int32_t* data, int dataCount,
         window.weight = data[i + 4];
         windows->push_back(window);
     }
+    return icamera::OK;
+}
+
+int MetadataConvert::convertScalerMetadata(const android::CameraMetadata& settings,
+                                           icamera::Parameters* parameter) {
+    uint32_t tag = ANDROID_SCALER_CROP_REGION;
+    camera_metadata_ro_entry entry = settings.find(tag);
+
+    if (entry.count == 4) {
+        int32_t left = entry.data.i32[0];
+        int32_t top = entry.data.i32[1];
+        int32_t right = entry.data.i32[2];
+        int32_t bottom = entry.data.i32[3];
+
+        parameter->setZoomRegion({left, top, right, bottom});
+    } else {
+        parameter->setZoomRegion({0, 0, 0, 0});
+    }
+
     return icamera::OK;
 }
 
