@@ -2329,7 +2329,7 @@ int MetadataConvert::convertToMetadataRegion(const icamera::camera_window_list_t
 void MetadataConvert::dumpMetadata(const camera_metadata_t* meta) {
     if (!meta || !icamera::Log::isLogTagEnabled(GET_FILE_SHIFT(MetadataConvert))) return;
 
-    LOG2("%s", __func__);
+    LOG3("%s", __func__);
     int entryCount = get_camera_metadata_entry_count(meta);
 
     for (int i = 0; i < entryCount; i++) {
@@ -2354,7 +2354,7 @@ void MetadataConvert::dumpMetadata(const camera_metadata_t* meta) {
         } else {
             typeName = camera_metadata_type_names[entry.type];
         }
-        LOG2("(%d)%s.%s (%05x): %s[%zu], type: %d", i, tagSection, tagName, entry.tag, typeName,
+        LOG3("(%d)%s.%s (%05x): %s[%zu], type: %d", i, tagSection, tagName, entry.tag, typeName,
              entry.count, entry.type);
 
         // Print data
@@ -2397,7 +2397,7 @@ void MetadataConvert::dumpMetadata(const camera_metadata_t* meta) {
         }
         stringStream << "]";
         std::string str = stringStream.str();
-        LOG2("%s", str.c_str());
+        LOG3("%s", str.c_str());
     }
 }
 

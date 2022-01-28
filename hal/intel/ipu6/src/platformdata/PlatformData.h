@@ -157,7 +157,7 @@ class PlatformData {
                       mNvmOverwrittenFileSize(0),
                       mTnrExtraFrameNum(DEFAULT_TNR_EXTRA_FRAME_NUM),
                       mDummyStillSink(false),
-                      mForceFlushIpuBuffer(false),
+                      mRemoveCacheFlushOutputBuffer(false),
                       mPLCEnable(false),
                       mStillOnlyPipe(false) {
             }
@@ -259,7 +259,7 @@ class PlatformData {
             std::vector<IGraphType::ScalerInfo> mScalerInfo;
             int mTnrExtraFrameNum;
             bool mDummyStillSink;
-            bool mForceFlushIpuBuffer;
+            bool mRemoveCacheFlushOutputBuffer;
             bool mPLCEnable;
             bool mStillOnlyPipe;
         };
@@ -1348,12 +1348,12 @@ class PlatformData {
     static bool isDummyStillSink(int cameraId);
 
     /*
-     * check if forcing flushing IPU buffer is enabled
+     * check if removing cache flush output buffer
      *
      * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
-     * \return true if forcing flush IPU buffer.
+     * \return true if removing cache flush output buffer.
      */
-    static bool getForceFlushIpuBuffer(int cameraId);
+    static bool removeCacheFlushOutputBuffer(int cameraId);
 
     /*
      * Get PLC Enable status
