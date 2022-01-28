@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2021 Intel Corporation
+ * Copyright (C) 2017-2022 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -135,6 +135,8 @@ class MetadataConvert {
                                   icamera::camera_window_list_t* windows);
     static int convertToMetadataRegion(const icamera::camera_window_list_t& windows, int dataCount,
                                        int32_t* data);
+    static int convertScalerMetadata(const android::CameraMetadata& settings,
+                                     icamera::Parameters* parameter);
 };
 
 class StaticCapability {

@@ -82,7 +82,7 @@ bool Camera3StreamHAL::threadLoop() {
     }
 
     std::shared_ptr<CaptureResult> result = nullptr;
-    uint32_t frameNumber;
+    uint32_t frameNumber = 0;
 
     {
         std::unique_lock<std::mutex> lock(mLock);
