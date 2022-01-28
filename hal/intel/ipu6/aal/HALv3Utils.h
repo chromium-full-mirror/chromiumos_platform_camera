@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2021 Intel Corporation
+ * Copyright (C) 2017-2022 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,11 +25,7 @@
 
 namespace camera3 {
 
-#define IS_NO_FLUSH_USAGE(usage) \
-    (((usage)&GRALLOC_USAGE_HW_VIDEO_ENCODER) && ((usage)&GRALLOC_USAGE_HW_COMPOSER))
 #define IS_ZSL_USAGE(usage) (((usage)&GRALLOC_USAGE_HW_CAMERA_ZSL) == GRALLOC_USAGE_HW_CAMERA_ZSL)
-#define IS_HW_USAGE(usage) \
-    (((usage)&GRALLOC_USAGE_HW_VIDEO_ENCODER) || ((usage)&GRALLOC_USAGE_HW_COMPOSER))
 
 namespace HalV3Utils {
 
