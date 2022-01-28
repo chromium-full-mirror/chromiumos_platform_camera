@@ -231,6 +231,20 @@ int AiqUnit::initIntelCcaHandle(const std::vector<ConfigMode> &configModes) {
         }
         // INTEL_DVS_E
 
+        if (PlatformData::supportUpdateTuning()) {
+            std::shared_ptr<IGraphConfig> graphConfig =
+                IGraphConfigManager::getInstance(mCameraId)->getGraphConfig(cfg);
+            if (graphConfig != nullptr) {
+                std::vector<int32_t> streamIds;
+                graphConfig->graphGetStreamIds(streamIds);
+                params.aic_stream_ids.count = streamIds.size();
+                CheckAndLogError(streamIds.size() > cca::MAX_STREAM_NUM, UNKNOWN_ERROR,
+                        "%s, Too many streams: %zu in graph", __func__, streamIds.size());
+                for (size_t i = 0; i < streamIds.size(); ++i) {
+                    params.aic_stream_ids.ids[i] = streamIds[i];
+                }
+            }
+        }
         IntelCca *intelCca = IntelCca::getInstance(mCameraId, tuningMode);
         CheckAndLogError(!intelCca, UNKNOWN_ERROR,
                          "Failed to get cca. mode:%d cameraId:%d", tuningMode, mCameraId);
@@ -373,7 +387,7 @@ int AiqUnit::setParameters(const Parameters &params) {
 }
 
 void AiqUnit::dumpCcaInitParam(const cca::cca_init_params params) {
-    if (!Log::isLogTagEnabled(GET_FILE_SHIFT(AiqUnit))) return;
+    if (!Log::isLogTagEnabled(GET_FILE_SHIFT(AiqUnit), CAMERA_DEBUG_LOG_LEVEL3)) return;
 
     LOG3("aiqStorageLen:%d", params.aiqStorageLen);
     LOG3("aecFrameDelay:%d", params.aecFrameDelay);
