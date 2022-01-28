@@ -264,9 +264,29 @@ public:
      *                                  lard data.
      * \param[in] nvm                   Mandatory.\n
      *                                  sensor nvm data.
+     * \param[in] streamId              Optional.\n
+     *                                  the stream id for aic handle
      * \return                          Error code for status. zero on success, non-zero on failure
      */
-    ia_err updateTuning(uint8_t tag, const ia_lard_input_params &lardParams, const cca_nvm &nvm);
+    ia_err updateTuning(uint8_t tag, const ia_lard_input_params &lardParams, const cca_nvm &nvm, int32_t streamId = -1);
+
+    /*!
+     * \brief Update tuning data in run time.
+     *  Update the tuning data to CCA flow, the new tuning data will be taken effect immediately.
+     *  For different use cases, the tuning data should be different, the function is used for the scenario.
+     *
+     * \param[in] tag                   Mandatory.\n
+     *                                  the tag for updated group in tuning file.
+     * \param[in] lardParams            Mandatory.\n
+     *                                  lard data.
+     * \param[in] nvm                   Mandatory.\n
+     *                                  sensor nvm data.
+     * \param[out] pLardResults         Mandatory.\n
+     *                                  lard results
+     * \return                          Error code for status. zero on success, non-zero on failure
+    */
+    ia_err updateTuning(uint8_t tag, const ia_lard_input_params &lardParams, const cca_nvm &nvm, ia_lard_results **pLardResults);
+
     /*!
      * \brief De-initialize CCA Flow and its submodules.
      * All memory allocated by algoriths are freed. CCA Flow handle can no longer be used.
@@ -275,7 +295,7 @@ public:
      */
     ia_err deinit();
 
-	/*!
+    /*!
      * \brief query the current CCA Flow version.
      *
      * \return                          version.
@@ -408,9 +428,9 @@ private:
     ia_binary_data* getOthersData();
     ia_err initCpfParse();
     void initSaResults();
-    ia_err initIspAic();
+    ia_err initIspAic(const cca_stream_ids& aic_stream_ids);
     void deInitIspAic();
-    ia_err reInitIspAic();
+    ia_err reInitIspAic(const cca_stream_ids& aic_stream_ids);
     ia_err initAiq();
     void deinitAiq();
     void deleteSaResultsGrids();
@@ -471,6 +491,7 @@ private:
     /*
      * AIQ structs and params
      */
+    bool mCCAIsEnabled;
     ia_aiq* mAiqHandle;
     uint8_t mAECFrameDelay;
     uint64_t mFrameTimestamp;
