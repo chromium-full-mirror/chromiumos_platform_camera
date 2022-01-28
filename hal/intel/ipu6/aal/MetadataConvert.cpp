@@ -711,7 +711,8 @@ int MetadataConvert::convertColorCorrectionParameter(const icamera::Parameters& 
     if (parameter.getColorTransform(transform) == 0) {
         camera_metadata_rational_t matrix[9];
         for (int i = 0; i < 9; i++) {
-            matrix[i].numerator = round(transform.color_transform[i / 3][i % 3] * 1000);
+            // accuracy 0.01
+            matrix[i].numerator = floor(transform.color_transform[i / 3][i % 3] * 100) * 10;
             matrix[i].denominator = 1000;
         }
         settings->update(ANDROID_COLOR_CORRECTION_TRANSFORM, &matrix[0], 9);
