@@ -136,7 +136,7 @@ void AiqUtils::dumpPaResults(const cca::cca_pa_params& paResult) {
     if (!Log::isLogTagEnabled(GET_FILE_SHIFT(AiqUtils), CAMERA_DEBUG_LOG_LEVEL3)) return;
 
     for (int i = 0; i < 3; i++) {
-        LOG3("color_conversion_matrix  [%.3f %.3f %.3f] ",
+        LOG3("color_conversion_matrix  [%.4f %.4f %.4f] ",
              paResult.color_conversion_matrix[i][0],
              paResult.color_conversion_matrix[i][1],
              paResult.color_conversion_matrix[i][2]);
