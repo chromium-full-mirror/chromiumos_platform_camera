@@ -2069,7 +2069,7 @@ void CameraParser::getSensorDataFromXmlFile(void) {
             sensorName.append(sensor);
         }
         sensorName.append(".xml");
-        LOG1("%s: parse sensor name %s", sensorName.c_str());
+        LOG1("%s: parse sensor name %s", __func__, sensorName.c_str());
         int ret = getDataFromXmlFile(sensorName);
         CheckAndLogError(ret != OK, VOID_VALUE, "Failed to get sensor profile data from %s",
                          sensorName.c_str());
