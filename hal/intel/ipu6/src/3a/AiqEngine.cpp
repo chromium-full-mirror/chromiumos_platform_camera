@@ -206,6 +206,7 @@ int AiqEngine::prepareStatsParams(cca::cca_stats_params* statsParams,
                 gc = GCM->getGraphConfig(CAMERA_STREAM_CONFIGURATION_MODE_NORMAL);
             }
 
+            CheckAndLogError(!gc, UNKNOWN_ERROR, "%s, Failed to get graph config", __func__);
             ia_isp_bxt_resolution_info_t resolution;
             uint32_t gdcKernelId;
             int status = gc->getGdcKernelSetting(&gdcKernelId, &resolution);

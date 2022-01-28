@@ -184,7 +184,7 @@ void Dvs::handleEvent(EventData eventData) {
 }
 
 void Dvs::dumpDvsConfiguration(const cca::cca_init_params &config) {
-    if (!Log::isLogTagEnabled(GET_FILE_SHIFT(Dvs))) return;
+    if (!Log::isLogTagEnabled(GET_FILE_SHIFT(Dvs), CAMERA_DEBUG_LOG_LEVEL3)) return;
 
     LOG3("config.dvsOutputType %d", config.dvsOutputType);
     LOG3("config.enableVideoStablization %d", config.enableVideoStablization);
