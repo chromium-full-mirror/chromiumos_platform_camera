@@ -277,6 +277,8 @@ void CameraParser::handleCommon(CameraParser* profiles, const char* name, const 
         cfg->videoStreamNum = val > 0 ? val : DEFAULT_VIDEO_STREAM_NUM;
     } else if (strcmp(name, "supportIspTuningUpdate") == 0) {
         cfg->supportIspTuningUpdate = strcmp(atts[1], "true") == 0;
+    } else if (strcmp(name, "supportHwJpegEncode") == 0) {
+        cfg->supportHwJpegEncode = strcmp(atts[1], "true") == 0;
     }
 }
 

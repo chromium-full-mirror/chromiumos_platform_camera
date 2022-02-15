@@ -1341,6 +1341,10 @@ bool PlatformData::supportUpdateTuning() {
     return getInstance()->mStaticCfg.mCommonConfig.supportIspTuningUpdate;
 }
 
+bool PlatformData::supportHwJpegEncode() {
+    return getInstance()->mStaticCfg.mCommonConfig.supportHwJpegEncode;
+}
+
 bool PlatformData::isUsingGpuAlgo() {
     bool enabled = false;
     enabled |= isGpuTnrEnabled();

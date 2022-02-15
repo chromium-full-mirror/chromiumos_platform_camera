@@ -24,6 +24,7 @@
 #include "iutils/CameraLog.h"
 #include "iutils/Errors.h"
 #include "iutils/Utils.h"
+#include "PlatformData.h"
 
 namespace icamera {
 
@@ -61,7 +62,8 @@ bool JpegEncoderCore::doJpegEncode(EncodePackage* pa) {
     nsecs_t startTime = CameraUtils::systemTime();
 
     bool ret = false;
-    if (pa->inputBufferHandle && pa->outputBufferHandle) {
+    if (pa->inputBufferHandle && pa->outputBufferHandle &&
+        PlatformData::supportHwJpegEncode()) {
         LOG1("%s, use buffer handle to do jpeg encode input: %p, output: %p", __func__,
              pa->inputBufferHandle, pa->outputBufferHandle);
         ret = mJpegCompressor->CompressImageFromHandle(

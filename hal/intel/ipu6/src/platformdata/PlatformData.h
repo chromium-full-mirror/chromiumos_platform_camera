@@ -1292,6 +1292,11 @@ class PlatformData {
     static bool supportUpdateTuning();
 
     /**
+     * Check if support hardware jpeg encode or not
+     */
+    static bool supportHwJpegEncode();
+
+    /**
      * Check should connect gpu algo or not
      * should connect gpu algo service if any gpu algorithm is used
      * \return true if should connect gpu algo.

@@ -188,6 +188,7 @@ struct CommonConfig {
     int cameraNumber;
     int videoStreamNum;
     bool supportIspTuningUpdate;
+    bool supportHwJpegEncode;
 
     CommonConfig() {
         xmlVersion = 1.0;
@@ -198,6 +199,7 @@ struct CommonConfig {
         cameraNumber = -1;
         videoStreamNum = DEFAULT_VIDEO_STREAM_NUM;
         supportIspTuningUpdate = false;
+        supportHwJpegEncode = true;
     }
 };
 
