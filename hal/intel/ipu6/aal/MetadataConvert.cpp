@@ -711,8 +711,7 @@ int MetadataConvert::convertColorCorrectionParameter(const icamera::Parameters& 
     if (parameter.getColorTransform(transform) == 0) {
         camera_metadata_rational_t matrix[9];
         for (int i = 0; i < 9; i++) {
-            // accuracy 0.01
-            matrix[i].numerator = floor(transform.color_transform[i / 3][i % 3] * 100) * 10;
+            matrix[i].numerator = round(transform.color_transform[i / 3][i % 3] * 1000);
             matrix[i].denominator = 1000;
         }
         settings->update(ANDROID_COLOR_CORRECTION_TRANSFORM, &matrix[0], 9);
@@ -2355,8 +2354,6 @@ void MetadataConvert::dumpMetadata(const camera_metadata_t* meta) {
         } else {
             typeName = camera_metadata_type_names[entry.type];
         }
-        LOG3("(%d)%s.%s (%05x): %s[%zu], type: %d", i, tagSection, tagName, entry.tag, typeName,
-             entry.count, entry.type);
 
         // Print data
         size_t j;
@@ -2367,7 +2364,8 @@ void MetadataConvert::dumpMetadata(const camera_metadata_t* meta) {
         const double* d;
         const camera_metadata_rational_t* r;
         std::ostringstream stringStream;
-        stringStream << "[";
+        stringStream << "(" << i << ")" << tagSection << "." << tagName;
+        stringStream << ": " << typeName << "(" << entry.count << "), [";
 
         switch (entry.type) {
             case TYPE_BYTE:
