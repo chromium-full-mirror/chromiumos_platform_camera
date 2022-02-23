@@ -158,6 +158,7 @@ struct ExecutorPolicy {
 struct ExecutorDepth {
     std::vector<std::string> bundledExecutors;
     std::vector<int> depths;
+    int64_t startSequence;
 };
 
 // <pgname, port of input refer terminal>
