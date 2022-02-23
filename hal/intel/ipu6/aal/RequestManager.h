@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2021 Intel Corporation
+ * Copyright (C) 2017-2022 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,13 +67,11 @@ class RequestManager : public RequestManagerCallback, public icamera::camera_cal
                            camera3_stream_t** inputStream);
     int createHALStreams(camera3_stream_configuration_t* stream_list, int* halStreamFlag,
                          int* halStreamNum, std::map<int, int>& streamToHALIndex,
-                         camera3_stream_t** fdChooseStream);
-    int deviceConfigHALStreams(camera3_stream_t* fdChooseStream, int* halStreamNum,
-                               icamera::stream_t** requestStreamForFD);
+                         camera3_stream_t** userStreamForFd);
+    int deviceConfigHALStreams(int halStreamNum);
     void createCamera3Stream(camera3_stream_configuration_t* stream_list,
                              std::map<int, int>& streamToHALIndex, int* halStreamFlag,
-                             camera3_stream_t* inputReqStream, camera3_stream_t* fdChooseStream,
-                             icamera::stream_t* requestStreamForFD);
+                             camera3_stream_t* inputReqStream, camera3_stream_t* userStreamForFd);
     void deleteStreams();
     void increaseRequestCount();
     int waitProcessRequest();
@@ -119,6 +117,7 @@ class RequestManager : public RequestManagerCallback, public icamera::camera_cal
     icamera::stream_t mHALStream[kMaxStreamNum];
     PrivateStream* mFDStream;
     camera3_stream_t mFDStreamsInfo;
+    int mFDStreamIndex;
 
     /* choose HAL stream to do qbuf/dqbuf from stream list.
      * halStreamFlag: array keeps the result.
