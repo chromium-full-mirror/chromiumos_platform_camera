@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Intel Corporation
+ * Copyright (C) 2021-2022 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -150,10 +150,6 @@ bool PrivateStream::threadLoop() {
          mHALStream.id);
     int ret = icamera::camera_stream_dqbuf(mCameraId, mHALStream.id, &buffer, nullptr);
     if (ret == icamera::NO_INIT) {
-        std::unique_lock<std::mutex> lock(mLock);
-        if (mQueuedBuffer.find(frameNumber) != mQueuedBuffer.end()) {
-            returnBuffer(frameNumber);
-        }
         LOG2("<fn%u>[%p] stream exiting", frameNumber, this);
         return true;
     }
@@ -164,12 +160,9 @@ bool PrivateStream::threadLoop() {
     std::shared_ptr<Camera3Buffer> outCam3Buf = nullptr;
     {
         std::unique_lock<std::mutex> lock(mLock);
-        if (mQueuedBuffer.find(frameNumber) != mQueuedBuffer.end()) {
-            if (mQueuedBuffer[frameNumber]->data() == buffer->addr) {
-                outCam3Buf = mQueuedBuffer[frameNumber];
-            } else {
-                returnBuffer(frameNumber);
-            }
+        if (mQueuedBuffer.find(frameNumber) != mQueuedBuffer.end() &&
+            mQueuedBuffer[frameNumber]->data() == buffer->addr) {
+            outCam3Buf = mQueuedBuffer[frameNumber];
         }
         CheckAndLogError(!outCam3Buf, true, "<fn%u>can't identify the buffer source", frameNumber);
     }
