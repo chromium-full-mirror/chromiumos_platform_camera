@@ -28,7 +28,6 @@
 #include "ia_cmc_parser.h"
 #include "Metadata.h"
 #include "Intel3aCmc.h"
-#include "base/macros.h"
 
 namespace cros {
 namespace intel {
@@ -43,6 +42,9 @@ class AiqConf
 {
 public:
     explicit AiqConf(const int cameraId, const int size = 0);
+    AiqConf(const AiqConf&) = delete;
+    AiqConf& operator=(const AiqConf&) = delete;
+
     ~AiqConf();
     const Intel3aCmc* getCMC() const { return &mCmc; }
     status_t fillStaticMetadataFromCMC(camera_metadata_t * metadata);
@@ -59,7 +61,6 @@ private:
     status_t fillLightSourceStaticMetadata(camera_metadata_t * metadata);
     status_t fillSensorStaticMetadata(camera_metadata_t * metadata);
     status_t fillLscSizeStaticMetadata(camera_metadata_t * metadata);
-    DISALLOW_IMPLICIT_CONSTRUCTORS(AiqConf);
 private:
     Intel3aCmc mCmc; /* CameraConf owns mCmc */
     camera_metadata_t* mMetadata; /* CameraConf doesn't own mMetadata */

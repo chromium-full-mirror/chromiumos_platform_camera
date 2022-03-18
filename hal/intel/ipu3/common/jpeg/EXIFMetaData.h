@@ -18,7 +18,6 @@
 #include "Camera3V4l2Format.h"
 #include "UtilityMacros.h"
 #include <utils/Errors.h>
-#include "base/macros.h"
 
 #ifndef _EXIFMETADATA_H_
 #define _EXIFMETADATA_H_

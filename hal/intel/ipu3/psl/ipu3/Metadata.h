@@ -28,6 +28,9 @@ class Metadata
 {
 public:
     Metadata(int cameraId, Intel3aPlus *a3aWrapper);
+    Metadata(const Metadata&) = delete;
+    Metadata& operator=(const Metadata&) = delete;
+
     virtual ~Metadata();
     status_t init();
 
@@ -44,7 +47,6 @@ public:
 
 private:
     status_t initTonemaps();
-    DISALLOW_IMPLICIT_CONSTRUCTORS(Metadata);
 
 
 private:

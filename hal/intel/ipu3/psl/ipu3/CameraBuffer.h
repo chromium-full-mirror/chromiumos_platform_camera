@@ -20,7 +20,6 @@
 #include <memory>
 #include <utils/Errors.h>
 #include <hardware/camera3.h>
-#include "base/macros.h"
 #include <cros-camera/camera_buffer_manager.h>
 
 namespace cros {

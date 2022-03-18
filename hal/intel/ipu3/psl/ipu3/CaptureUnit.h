@@ -141,6 +141,9 @@ class CaptureUnit : public IISysObserver,
 // public methods
 public:
     CaptureUnit(int camId, IStreamConfigProvider &aStreamCfgProv, std::shared_ptr<MediaController> mc);
+    CaptureUnit(const CaptureUnit&) = delete;
+    CaptureUnit& operator=(const CaptureUnit&) = delete;
+
     ~CaptureUnit();
 
     status_t init();
@@ -239,7 +242,6 @@ private:
     status_t issueSkips(int count, bool buffers, bool settings, bool isys);
     status_t applyAeParams(std::shared_ptr<CaptureUnitSettings> &aiqCaptureSettings);
     status_t initStaticMetadata();
-    DISALLOW_IMPLICIT_CONSTRUCTORS(CaptureUnit);
 
 private:
     friend class std::shared_ptr<InflightRequestState>;

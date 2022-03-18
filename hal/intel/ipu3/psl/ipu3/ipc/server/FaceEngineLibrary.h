@@ -17,7 +17,6 @@
 #ifndef FACE_ENGINE_LIBRARY_H_
 #define FACE_ENGINE_LIBRARY_H_
 
-#include "base/macros.h"
 #include "IPCCommon.h"
 #include "IPCFaceEngine.h"
 #include <memory>

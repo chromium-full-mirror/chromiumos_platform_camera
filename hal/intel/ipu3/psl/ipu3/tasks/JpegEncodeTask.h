@@ -37,6 +37,8 @@ namespace intel {
 class JpegEncodeTask {
 public:
     explicit JpegEncodeTask(int cameraId);
+    JpegEncodeTask(const JpegEncodeTask&) = delete;
+    JpegEncodeTask& operator=(const JpegEncodeTask&) = delete;
     virtual ~JpegEncodeTask();
 
     virtual status_t handleMessageNewJpegInput(ITaskEventListener::PUTaskEvent &msg);
@@ -56,7 +58,6 @@ private:
     status_t handleFlashData(ExifMetaData& exifData, const ExifDataCache &exifCache) const;
     status_t handleMakernote(ExifMetaData& exifData, ExifDataCache &exifCache) const;
     status_t handleJpegSettings(ExifMetaData& exifData, ExifDataCache &exifCache) const;
-    DISALLOW_IMPLICIT_CONSTRUCTORS(JpegEncodeTask);
 
 // Types
 private:

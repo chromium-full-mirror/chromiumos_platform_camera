@@ -34,6 +34,9 @@ class AAARunner
 public:
     AAARunner(int cameraId, Intel3aPlus *aaaWrapper, SettingsProcessor *settingsProcessor, LensHw *lensController);
     status_t init(bool digiGainOnSensor);
+    AAARunner(const AAARunner&) = delete;
+    AAARunner& operator=(const AAARunner&) = delete;
+
     virtual ~AAARunner();
 
     void reset();
@@ -59,7 +62,6 @@ private:
 
     float interpolate(float pos, const float *src, int srcSize) const;
     void interpolateArray(const float *src, int srcSize, float *dst, int dstSize) const;
-    DISALLOW_IMPLICIT_CONSTRUCTORS(AAARunner);
 
 private:
     int mCameraId;
