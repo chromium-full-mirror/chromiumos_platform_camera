@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2018 Intel Corporation
+ * Copyright (C) 2014-2021 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -316,7 +316,6 @@ RequestThread::handleProcessCaptureRequest(MessageProcessCaptureRequest msg)
     //   1. The count of requests in process reached the PSL capacity.
     //   2. When the request requires reconfiguring the ISP in a manner which
     //      requires stopping the pipeline and emptying the driver from buffers
-    //   3. when any of the streams has all buffers in HAL
 
     // Send for capture
     status = captureRequest(request);
@@ -330,10 +329,6 @@ RequestThread::handleProcessCaptureRequest(MessageProcessCaptureRequest msg)
         goto badRequest;
     }
 
-    if (!areAllStreamsUnderMaxBuffers()) {
-        // Request Q is full
-        mBlockAction = REQBLK_WAIT_ONE_REQUEST_COMPLETED;
-    }
     return NO_ERROR;
 
 badRequest:
