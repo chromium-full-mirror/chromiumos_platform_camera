@@ -195,6 +195,7 @@ shared_library("libcamhal") {
     "FACE_DETECTION",
   ]
   lib_dirs = [ "${sysroot}/build/share/cros_camera" ]
+  ldflags = [ "-Wl,-rpath=/usr/share/cros-camera/libfs/" ]
   libs = [
     "jpeg",
     "dl",
@@ -363,7 +364,6 @@ shared_library("libcam_algo") {
     "ENABLE_SANDBOXING",
     "FACE_DETECTION",
   ]
-  lib_dirs = [ "${sysroot}/build/share/cros_camera" ]
   libs = [
     "ia_cca",
     "ia_cmc_parser",
@@ -376,7 +376,6 @@ shared_library("libcam_algo") {
     "gcss",
     "ia_aiqb_parser",
     "rt",
-    "facessd_cros",
   ]
   pkg_deps = [
     "libcros_camera",

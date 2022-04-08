@@ -159,7 +159,10 @@ class PlatformData {
                       mDummyStillSink(false),
                       mRemoveCacheFlushOutputBuffer(false),
                       mPLCEnable(false),
-                      mStillOnlyPipe(false) {
+                      mStillOnlyPipe(false),
+                      mDisableBLCByAGain(false),
+                      mDisableBLCAGainLow(-1),
+                      mDisableBLCAGainHigh(-1) {
             }
 
             std::vector<MediaCtlConf> mMediaCtlConfs;
@@ -262,6 +265,10 @@ class PlatformData {
             bool mRemoveCacheFlushOutputBuffer;
             bool mPLCEnable;
             bool mStillOnlyPipe;
+
+            bool mDisableBLCByAGain;
+            int mDisableBLCAGainLow;
+            int mDisableBLCAGainHigh;
         };
 
         std::vector<CameraInfo> mCameras;
@@ -1369,5 +1376,12 @@ class PlatformData {
      * \return true if is enabled.
      */
     static bool isStillOnlyPipeEnabled(int cameraId);
+
+    /**
+     * Check if BLC needs to be disabled in specific analog gain range.
+     *
+     * \return true if BLC needs to be disabled by analog gain.
+     */
+    static bool getDisableBLCByAGain(int cameraId, int& low, int& high);
 };
 } /* namespace icamera */

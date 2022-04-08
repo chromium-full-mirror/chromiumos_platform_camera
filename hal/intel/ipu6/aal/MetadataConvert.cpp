@@ -154,6 +154,11 @@ static const ValuePair<uint8_t> powerModesTable[] = {
     {icamera::CAMERA_HIGH_QUALITY, INTEL_VENDOR_CAMERA_POWER_MODE_HIGH_QUALITY},
 };
 
+static const ValuePair<uint8_t> rawDataOutputTable[] = {
+    {icamera::CAMERA_RAW_DATA_OUTPUT_OFF, INTEL_VENDOR_CAMERA_RAW_DATA_OUTPUT_OFF},
+    {icamera::CAMERA_RAW_DATA_OUTPUT_ON, INTEL_VENDOR_CAMERA_RAW_DATA_OUTPUT_ON},
+};
+
 static bool isValueSupported(uint8_t mode, const icamera::CameraMetadata* caps, uint32_t tag) {
     icamera_metadata_ro_entry entry = caps->find(tag);
     if (entry.count > 0) {
@@ -1264,6 +1269,17 @@ int MetadataConvert::convertVendorControlMetadata(const android::CameraMetadata&
                               &halPowerMode);
         if (ret == icamera::OK) {
             parameter->setPowerMode(static_cast<icamera::camera_power_mode_t>(halPowerMode));
+        }
+    }
+
+    tag = INTEL_VENDOR_CAMERA_RAW_DATA_OUTPUT;
+    entry = settings.find(tag);
+    if (entry.count == 1) {
+        int rawDataOutput = icamera::CAMERA_RAW_DATA_OUTPUT_OFF;
+        int ret = getHalValue(entry.data.u8[0], rawDataOutputTable, ARRAY_SIZE(rawDataOutputTable),
+                              &rawDataOutput);
+        if (ret == icamera::OK) {
+            parameter->setRawDataOutput(static_cast<icamera::raw_data_output_t>(rawDataOutput));
         }
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2021 Intel Corporation
+ * Copyright (C) 2017-2022 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -309,7 +309,7 @@ int ResultProcessor::bufferDone(const BufferEvent& event) {
         if (mOpaqueRawInfoMap.size() >= securityRawBufNum)
             mOpaqueRawInfoMap.erase(mOpaqueRawInfoMap.begin());
         // Only save Raw buffer info matching with saved Raw bufer Queue in PSYS
-        mOpaqueRawInfoMap[event.sequence] = event.timestamp;
+        mOpaqueRawInfoMap[event.timestamp] = event.sequence;
     }
     return icamera::OK;
 }
@@ -324,12 +324,14 @@ void ResultProcessor::checkAndChangeRawbufferInfo(long* sequence, uint64_t* time
 
     std::lock_guard<std::mutex> lock(mmOpaqueRawInfoMapLock);
     if (mOpaqueRawInfoMap.empty()) return;
-    if (mOpaqueRawInfoMap.find(*sequence) != mOpaqueRawInfoMap.end()) return;
-
-    // Raw buffer is too old and can't be handled, just use oldest buffer
-    auto it = mOpaqueRawInfoMap.cbegin();
-    *sequence = (*it).first;
-    *timestamp = (*it).second;
+    if (mOpaqueRawInfoMap.find(*timestamp) != mOpaqueRawInfoMap.end()) {
+        *sequence = mOpaqueRawInfoMap[*timestamp];
+    } else {
+        // Raw buffer is too old and can't be handled, just use oldest buffer
+        auto it = mOpaqueRawInfoMap.cbegin();
+        *sequence = (*it).second;
+        *timestamp = (*it).first;
+    }
     LOG2("%s, update raw info sequence %ld, timestamp %ld", __func__, *sequence, *timestamp);
 }
 

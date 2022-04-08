@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2020 Intel Corporation
+ * Copyright (C) 2017-2022 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -193,8 +193,8 @@ class ResultProcessor : public CallbackEventInterface {
     timeval mRequestTime;
     ReferenceParam mLastParams;
 
-    // first key is sequence from HAL, second key is timestamp of RAW buffer
-    std::map<int64_t, uint64_t> mOpaqueRawInfoMap;
+    // first key is timestamp of RAW buffer, second key is sequence from HAL
+    std::map<uint64_t, int64_t> mOpaqueRawInfoMap;
     std::mutex mmOpaqueRawInfoMapLock;  // used to protect mOpaqueRawInfoMap
 };
 

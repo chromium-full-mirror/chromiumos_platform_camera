@@ -404,8 +404,8 @@ void RequestManager::createCamera3Stream(camera3_stream_configuration_t* stream_
         mCamera3StreamVector.push_back(s);
 
         requestStreamIndex++;
-        LOGI("OUTPUT max buffer %d, usage %x, format %x", stream->max_buffers, stream->usage,
-             stream->format);
+        LOGI("OUTPUT max buffer %d, usage %x, format %x, %dx%d", stream->max_buffers, stream->usage,
+             stream->format, stream->width, stream->height);
 
         if (userStreamForFd == stream) {
             faceDetectionOwner = static_cast<Camera3Stream*>(stream->priv);
@@ -590,11 +590,10 @@ int RequestManager::processCaptureRequest(camera3_capture_request_t* request) {
         camera_metadata_entry entry = mLastSettings.find(ANDROID_SENSOR_TIMESTAMP);
         if (entry.count == 1) {
             inputCam3Buf->setTimeStamp(entry.data.i64[0]);
+            opaqueRawInfo.timestamp = entry.data.i64[0];
         }
 
         if (IS_ZSL_USAGE(request->input_buffer->stream->usage)) {
-            MEMCPY_S(&opaqueRawInfo, sizeof(opaqueRawInfo), inputCam3Buf->data(),
-                     inputCam3Buf->size());
             mResultProcessor->checkAndChangeRawbufferInfo(&opaqueRawInfo.sequence,
                                                           &opaqueRawInfo.timestamp);
             LOG2("%s, sequence id %ld, timestamp %ld", __func__, opaqueRawInfo.sequence,
@@ -665,6 +664,7 @@ int RequestManager::processCaptureRequest(camera3_capture_request_t* request) {
     increaseRequestCount();
 
     if (!mCameraDeviceStarted) {
+        LOGI("Start camera device in processCaptureRequest");
         ret = icamera::camera_device_start(mCameraId);
         CheckAndLogError(ret != icamera::OK, ret, "failed to start device, ret %d", ret);
 
