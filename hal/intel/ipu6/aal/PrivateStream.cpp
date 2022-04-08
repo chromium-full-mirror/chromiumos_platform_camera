@@ -73,9 +73,11 @@ icamera::camera_buffer_t* PrivateStream::fetchRequestBuffers(uint32_t frameNumbe
 
     LOG2("<fn%u>[%p]@%s", frameNumber, this, __func__);
 
+    std::unique_lock<std::mutex> lock(mLock);
+    if (mQueuedBuffer.size() == MAX_PRIVATE_STREAM_BUF_NUM) return nullptr;
+
     std::shared_ptr<Camera3Buffer> buf = mBufferPool->acquireBuffer();
     CheckAndLogError(buf == nullptr, nullptr, "@%s no available internal buffer", __func__);
-    std::unique_lock<std::mutex> lock(mLock);
     // using buffer pool, store the buffer, then can return it when frame done
     mQueuedBuffer[frameNumber] = buf;
     icamera::camera_buffer_t buffer = buf->getHalBuffer();
