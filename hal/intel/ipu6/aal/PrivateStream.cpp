@@ -206,7 +206,7 @@ void PrivateStreamFD::processFrame(uint32_t frameNumber,
     LOG2("<fn%u>@%s", frameNumber, __func__);
 
     if (mFaceDetection) {
-        mFaceDetection->runFaceDetectionBySync(ccBuf);
+        mFaceDetection->runFaceDetection(ccBuf);
     }
 }
 }  // namespace camera3

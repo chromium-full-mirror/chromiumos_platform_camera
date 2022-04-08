@@ -317,9 +317,12 @@ int RequestManager::createHALStreams(camera3_stream_configuration_t* stream_list
                 (*halStreamNum) + 1, mHALStream,
                 icamera::camera_stream_configuration_mode_t::CAMERA_STREAM_CONFIGURATION_MODE_AUTO};
             ret = icamera::PlatformData::queryGraphSettings(mCameraId, &streamCfg);
+            // Check if stream is supported or not
+            bool isValid = icamera::PlatformData::isSupportedStream(mCameraId,
+                                                                    mHALStream[*halStreamNum]);
             // Use mFDStreamIndex and userStreamForFd to indicate IPU output or user stream
             // for face detection
-            if (ret == icamera::OK) {
+            if (ret == icamera::OK && isValid) {
                 mFDStreamIndex = *halStreamNum;
                 *userStreamForFd = nullptr;
                 (*halStreamNum)++;
