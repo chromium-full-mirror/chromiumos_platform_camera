@@ -464,7 +464,7 @@ exif_status ExifCreater::makeExif (void *exifOut,
 
     LOG1("makeExif End");
 
-    return EXIF_SUCCESS;
+    return status;
 }
 
 void ExifCreater::writeMarkerSizeToBuf(unsigned char *ptrTo, unsigned int size)

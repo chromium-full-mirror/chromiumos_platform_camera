@@ -812,7 +812,7 @@ status_t GraphConfig::portGetPeerIdByName(string name,
     }
 
     retErr = portGetPeer(portNode, &peerNode);
-    if (ret != OK || peerNode == nullptr) {
+    if (retErr != OK || peerNode == nullptr) {
         LOGE("Failed to find peer for port %s.", name.c_str());
         return INVALID_OPERATION;
     }

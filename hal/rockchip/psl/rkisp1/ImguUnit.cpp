@@ -59,14 +59,13 @@ ImguUnit::ImguUnit(int cameraId,
 ImguUnit::~ImguUnit()
 {
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL1);
-    status_t status = NO_ERROR;
 
     if (mPollerThread) {
-        status |= mPollerThread->requestExitAndWait();
+        mPollerThread->requestExitAndWait();
         mPollerThread.reset();
     }
     if (mPollerThreadMeta) {
-        status |= mPollerThreadMeta->requestExitAndWait();
+        mPollerThreadMeta->requestExitAndWait();
         mPollerThreadMeta.reset();
     }
 

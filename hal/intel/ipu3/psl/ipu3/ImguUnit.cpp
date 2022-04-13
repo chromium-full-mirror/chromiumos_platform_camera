@@ -381,10 +381,8 @@ ImguUnit::ImguPipe::~ImguPipe()
     if (ret != 0)
         LOGE("@%s, call pthread_cond_destroy fails, ret: %d", __FUNCTION__, ret);
 
-    status_t status = NO_ERROR;
-
     if (mPollerThread) {
-        status |= mPollerThread->requestExitAndWait();
+        mPollerThread->requestExitAndWait();
         mPollerThread.reset();
     }
 
