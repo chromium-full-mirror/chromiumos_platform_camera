@@ -121,8 +121,6 @@ private:
                                RequestCtrlState &reqAiqCfg);
     status_t processIspSettings(const android::CameraMetadata &settings,
                                 RequestCtrlState &reqAiqCfg);
-    status_t processImageEnhancementSettings(const android::CameraMetadata &settings,
-                                             RequestCtrlState &reqAiqCfg);
     status_t processStabilizationSettings(const android::CameraMetadata &settings,
                                           RequestCtrlState &reqAiqCfg);
     status_t processHotPixelSettings(const android::CameraMetadata &settings,

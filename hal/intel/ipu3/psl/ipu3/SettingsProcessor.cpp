@@ -93,7 +93,6 @@ SettingsProcessor::processRequestSettings(const android::CameraMetadata &setting
     if ((status = processIspSettings(settings, reqAiqCfg)) != OK)
         return status;
 
-    processImageEnhancementSettings(settings, reqAiqCfg);
     processStabilizationSettings(settings, reqAiqCfg);
 
     status = processHotPixelSettings(settings, reqAiqCfg);
@@ -371,32 +370,6 @@ SettingsProcessor::processAfSettings(const android::CameraMetadata  &settings,
         reqAiqCfg.captureSettings->afRegion = reqAiqCfg.captureSettings->cropRegion;
     }
     return status;
-}
-
-/**
- * This function fills ISP settings with manual image enhancement settings
- * (brightness, contrast, hue, saturation and sharpness) coming from the app,
- * in case they are supported by HAL.
- *
- * \param settings [IN] settings from the request
- * \param reqAiqCfg [OUT] AIQ configuration
- */
-status_t SettingsProcessor::processImageEnhancementSettings(const android::CameraMetadata &settings,
-                                                      RequestCtrlState &reqAiqCfg)
-{
-    HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL2, LOG_TAG);
-    camera_metadata_ro_entry entry;
-    CLEAR(entry);
-    IspSettings *ispSettings = nullptr;
-
-    if (reqAiqCfg.captureSettings) {
-        ispSettings = &reqAiqCfg.captureSettings->ispSettings;
-    } else {
-        LOGE("Capture Settings is nullptr!, bug");
-        return UNKNOWN_ERROR;
-    }
-
-    return OK;
 }
 
 /**
