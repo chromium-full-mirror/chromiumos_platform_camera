@@ -980,6 +980,7 @@ void PSysProcessor::sendPsysRequestEvent(const CameraBufferPortMap* dstBuffers, 
             event.data.requestReady.timestamp =
                 timestamp > 0 ? timestamp : output.second->getUserBuffer()->timestamp;
             event.data.requestReady.sequence = sequence;
+            event.data.requestReady.requestId = output.second->getUserBuffer()->requestId;
 
             notifyListeners(event);
             break;

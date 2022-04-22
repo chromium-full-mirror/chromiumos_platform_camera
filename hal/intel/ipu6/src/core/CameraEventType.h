@@ -76,6 +76,7 @@ struct EventFrameAvailable {
 struct EventRequestReady {
     int64_t timestamp;
     int64_t sequence;
+    uint32_t requestId;
 };
 
 struct EventData {
