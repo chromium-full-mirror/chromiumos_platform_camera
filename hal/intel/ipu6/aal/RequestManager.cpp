@@ -626,19 +626,25 @@ int RequestManager::processCaptureRequest(camera3_capture_request_t* request) {
     if (!inputCam3Buf || opaqueRawInfo.sequence >= 0) {
         icamera::camera_buffer_t* buffer[kMaxStreamNum] = {nullptr};
         int numBuffers = 0;
+        bool hasNotRaw = false;
         for (auto& stream : mCamera3HALStreams) {
             if (stream->fetchRequestBuffers(&mCameraBufferInfo[index].halBuffer[numBuffers],
                                             request->frame_number)) {
                 mCameraBufferInfo[index].halBuffer[numBuffers].sequence = opaqueRawInfo.sequence;
                 mCameraBufferInfo[index].halBuffer[numBuffers].timestamp = opaqueRawInfo.timestamp;
                 buffer[numBuffers] = &mCameraBufferInfo[index].halBuffer[numBuffers];
+                if (mCameraBufferInfo[index].halBuffer[numBuffers].s.usage !=
+                    icamera::CAMERA_STREAM_OPAQUE_RAW) {
+                    hasNotRaw = true;
+                }
                 numBuffers++;
             }
         }
 
         // it supports one more video output to process face detection, it should trigger
         // the corresponding camera3Stream run. Only when bufferFd is not null, it will be processed
-        if (mFDStream) {
+        // Don't set FD buffer in cases, like Raw reprocessing or only Raw output.
+        if (mFDStream && opaqueRawInfo.sequence < 0 && hasNotRaw) {
             faceDetectionBuf = mFDStream->fetchRequestBuffers(request->frame_number);
             if (faceDetectionBuf) {
                 buffer[numBuffers] = faceDetectionBuf;

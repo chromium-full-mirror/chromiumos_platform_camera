@@ -82,6 +82,7 @@ icamera::camera_buffer_t* PrivateStream::fetchRequestBuffers(uint32_t frameNumbe
     // Fill the specific setting
     buffer.s.usage = mHALStream.usage;
     buffer.s.id = mHALStream.id;
+    buffer.requestId = frameNumber;
     mBuffers[frameNumber] = buffer;
 
     LOG2("<id%d:req%u>@%s, mHALStream.id:%d, fetch buf addr:%p will run fd", mCameraId, frameNumber,
