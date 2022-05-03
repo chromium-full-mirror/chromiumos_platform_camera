@@ -1738,7 +1738,6 @@ ia_css_program_control_init_terminal_init(
 	unsigned int load_index = 0;
 	unsigned int connect_index = 0;
 	unsigned int load_section_count = 0;
-	unsigned int connect_section_count = 0;
 
 	ia_css_program_control_init_manifest_program_desc_t *man_progs;
 	ia_css_program_manifest_t *prog_manifest;
@@ -1756,7 +1755,6 @@ ia_css_program_control_init_terminal_init(
 			continue;
 		}
 		load_section_count += man_progs[i].load_section_count;
-		connect_section_count += man_progs[i].connect_section_count;
 	}
 
 	terminal->program_count = manifest->program_count;
