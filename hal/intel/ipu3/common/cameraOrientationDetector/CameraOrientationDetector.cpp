@@ -23,6 +23,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <system/camera.h>
+#include <unistd.h>
 
 namespace cros {
 namespace intel {

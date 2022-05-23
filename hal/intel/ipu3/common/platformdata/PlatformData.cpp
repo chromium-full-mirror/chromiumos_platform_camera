@@ -29,6 +29,7 @@
 #include <sys/ioctl.h>
 #include <fstream>
 #include <fcntl.h>
+#include <unistd.h>
 
 // TODO this should come from the crl header file
 // crl is a common code module in sensor driver, which contains
