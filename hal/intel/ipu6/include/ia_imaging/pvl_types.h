@@ -161,6 +161,7 @@ struct pvl_image {
     int32_t stride;            /**< The stride that represents the number of bytes per row. */
     int32_t rotation;          /**< The rotation of the image. (in degree, [0..360])
                                      It rotates in a clockwise direction. */
+    bool skip_run_full_fd;     /**< skip to run full face detection, just run face tracking part*/
 };
 typedef struct pvl_image pvl_image;
 

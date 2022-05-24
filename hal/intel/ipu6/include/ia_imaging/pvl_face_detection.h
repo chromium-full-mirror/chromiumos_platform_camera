@@ -64,6 +64,8 @@ struct pvl_face_detection_parameters {
     uint16_t search_mode;              /**< The mode of searching face. If search_mode=1, then it will only search the face bigger than the one tracked. */
 
     uint32_t num_faces_avoid_full_run; /**< The number of faces that avoid full run to save time. */
+
+    bool isTrackDetectAsync;            /**< The flag about whether track and detect run sync*/
 };
 typedef struct pvl_face_detection_parameters pvl_face_detection_parameters;
 

@@ -23,7 +23,7 @@
 #define IA_CMC_TYPES_H_
 
 #include "ia_mkn_types.h"
-
+#include "ia_types.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -1545,6 +1545,7 @@ typedef struct
     cmc_parsed_sensor_decompand_t *cmc_parsed_sensor_decompand;
     cmc_parsed_cbd_t *cmc_parsed_cbd;
     tnr7us_trigger_info_t *tnr7us_trigger_info;
+    const ia_binary_data *a_aiqb_binary;
 } ia_cmc_t;
 
 #ifdef __cplusplus

@@ -58,7 +58,7 @@ typedef struct {
     uint16_t ir_weight_g[MAX_IR_WEIGHT_GRID_SIZE];
     uint16_t ir_weight_b[MAX_IR_WEIGHT_GRID_SIZE];
     ia_aiq_rgbir_t rgbir;
-    ia_aiq_rgbir_model_t models;
+    ia_aiq_rgbir_model_t models[MAX_RGBIR_MODELS];
     /*LDRA_INSPECTED 67 X */
     ia_aiq_pa_results_v1 pa_results;
     ia_aiq_awb_results awb_results;
