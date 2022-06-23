@@ -188,9 +188,7 @@ int getCrosConfigCameraNumber(const std::vector<CrosCameraInfo>& infos) {
 // cros camera info vector, otherwise it returns empty vector.
 std::vector<CrosCameraInfo> getCrosCameraInfo() {
     brillo::CrosConfig crosConfigReader;
-    bool status = crosConfigReader.Init();
     std::vector<CrosCameraInfo> infos;
-    CheckWarning(!status, infos, "@%s, Failed to initialize CROS config", __func__);
     int cameraIdx = 0;
 
     // Get MIPI camera info from "devices" array in Chrome OS config. The structure looks like:
