@@ -78,6 +78,7 @@ typedef struct
     ia_aiq_rgbir_t const* direct_ia_aiq_rgbir_t;
     cmc_parsed_cbd_t *direct_cmc_parsed_cbd_t;
 	ia_aiq_gbce_results const* direct_ia_aiq_gbce_results;
+    ia_aiq_scd_results const* direct_ia_aiq_scd_results;
 } ia_pal_direct_results;
 
 #endif // IA_PAL_DIRECT_H

@@ -118,7 +118,7 @@ typedef struct
     ia_view_rotation_t          view_rotation;       /*!< View rotation configuration */
     float translation[IA_VIEW_3D_TRANSLATION_SIZE];  /*!< Translation3D vector for Bowl projection*/
     ia_view_fine_adjustments_t  fine_adjustments;    /*!< Fine adjustment configuration */
-} ia_view_config_t, *ia_isp_bxt_view_params_t;
+} ia_view_config_t, ia_isp_bxt_view_params_t;
 
 /*!< ia_view_mbr_limits_t: Set mbr limits for view parameters*/
 typedef struct
