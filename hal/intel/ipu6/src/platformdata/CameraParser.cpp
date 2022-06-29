@@ -279,6 +279,8 @@ void CameraParser::handleCommon(CameraParser* profiles, const char* name, const 
         cfg->supportIspTuningUpdate = strcmp(atts[1], "true") == 0;
     } else if (strcmp(name, "supportHwJpegEncode") == 0) {
         cfg->supportHwJpegEncode = strcmp(atts[1], "true") == 0;
+    } else if (strcmp(name, "maxIsysTimeoutValue") == 0) {
+        cfg->maxIsysTimeoutValue = atoi(atts[1]);
     }
 }
 

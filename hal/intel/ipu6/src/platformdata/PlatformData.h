@@ -1304,6 +1304,11 @@ class PlatformData {
     static bool supportHwJpegEncode();
 
     /**
+     * get the max ISYS timeout value
+     */
+    static int getMaxIsysTimeout();
+
+    /**
      * Check should connect gpu algo or not
      * should connect gpu algo service if any gpu algorithm is used
      * \return true if should connect gpu algo.

@@ -1345,6 +1345,10 @@ bool PlatformData::supportHwJpegEncode() {
     return getInstance()->mStaticCfg.mCommonConfig.supportHwJpegEncode;
 }
 
+int PlatformData::getMaxIsysTimeout() {
+    return getInstance()->mStaticCfg.mCommonConfig.maxIsysTimeoutValue;
+}
+
 bool PlatformData::isUsingGpuAlgo() {
     bool enabled = false;
     enabled |= isGpuTnrEnabled();

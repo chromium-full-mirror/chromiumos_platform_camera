@@ -199,6 +199,7 @@ void CameraDevice::bindListeners() {
         }
     }
 
+    mProducer->registerListener(EVENT_ISYS_ERROR, this);
     if (mPerframeControlSupport || !PlatformData::isIsysEnabled(mCameraId)) {
         mProcessors.back()->registerListener(EVENT_PSYS_FRAME, mRequestThread);
     } else {
@@ -241,6 +242,7 @@ void CameraDevice::unbindListeners() {
         mProcessors.front()->removeListener(EVENT_REQUEST_METADATA_READY, this);
     }
 
+    mProducer->removeListener(EVENT_ISYS_ERROR, this);
     if (mPerframeControlSupport || !PlatformData::isIsysEnabled(mCameraId)) {
         mProcessors.back()->removeListener(EVENT_PSYS_FRAME, mRequestThread);
     } else {
@@ -923,6 +925,13 @@ void CameraDevice::handleEvent(EventData eventData) {
 
                 data.data.metadata_ready.sequence = eventData.data.requestReady.sequence;
                 data.data.metadata_ready.frameNumber = eventData.data.requestReady.requestId;
+                mCallback->notify(mCallback, data);
+            }
+            break;
+        }
+        case EVENT_ISYS_ERROR: {
+            if (mCallback) {
+                camera_msg_data_t data = {CAMERA_DEVICE_ERROR, {}};
                 mCallback->notify(mCallback, data);
             }
             break;

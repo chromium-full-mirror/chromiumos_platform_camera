@@ -190,6 +190,7 @@ struct CommonConfig {
     int videoStreamNum;
     bool supportIspTuningUpdate;
     bool supportHwJpegEncode;
+    int maxIsysTimeoutValue;
 
     CommonConfig() {
         xmlVersion = 1.0;
@@ -201,6 +202,7 @@ struct CommonConfig {
         videoStreamNum = DEFAULT_VIDEO_STREAM_NUM;
         supportIspTuningUpdate = false;
         supportHwJpegEncode = true;
+        maxIsysTimeoutValue = 0;
     }
 };
 

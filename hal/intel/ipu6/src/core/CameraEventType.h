@@ -35,6 +35,7 @@ enum EventType {
     EVENT_FRAME_AVAILABLE,
     EVENT_PSYS_REQUEST_BUF_READY,
     EVENT_REQUEST_METADATA_READY,
+    EVENT_ISYS_ERROR,
 };
 
 struct EventDataStatsReady {

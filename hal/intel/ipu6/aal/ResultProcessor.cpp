@@ -145,8 +145,8 @@ void ResultProcessor::notifyError() {
     notifyMsg.type = CAMERA3_MSG_ERROR;
     notifyMsg.message.error = {0, nullptr, CAMERA3_MSG_ERROR_DEVICE};
 
-    mCallbackOps->notify(mCallbackOps, &notifyMsg);
     LOGW("%s, Camera error happened", __func__);
+    mCallbackOps->notify(mCallbackOps, &notifyMsg);
 }
 
 int ResultProcessor::shutterDone(const ShutterEvent& event) {
@@ -528,7 +528,8 @@ bool ResultProcessor::ResultThread::threadLoop() {
             mResultProcessor->metadataDone(metadataEvent);
             break;
         }
-        case icamera::CAMERA_IPC_ERROR: {
+        case icamera::CAMERA_IPC_ERROR:
+        case icamera::CAMERA_DEVICE_ERROR: {
             mResultProcessor->notifyError();
             break;
         }
