@@ -600,6 +600,8 @@ void CameraParser::handleSensor(CameraParser* profiles, const char* name, const 
         tablePtr = strtok_r(nullptr, ",", &savePtr);
         if (tablePtr) profiles->pCurrentCam->mDisableBLCAGainHigh = atoi(tablePtr);
         profiles->pCurrentCam->mDisableBLCByAGain = true;
+    } else if (strcmp(name, "resetLinkRoute") == 0) {
+        pCurrentCam->mResetLinkRoute = strcmp(atts[1], "true") == 0;
     }
 }
 

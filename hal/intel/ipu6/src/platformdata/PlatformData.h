@@ -162,7 +162,8 @@ class PlatformData {
                       mStillOnlyPipe(false),
                       mDisableBLCByAGain(false),
                       mDisableBLCAGainLow(-1),
-                      mDisableBLCAGainHigh(-1) {
+                      mDisableBLCAGainHigh(-1),
+                      mResetLinkRoute(true) {
             }
 
             std::vector<MediaCtlConf> mMediaCtlConfs;
@@ -269,6 +270,7 @@ class PlatformData {
             bool mDisableBLCByAGain;
             int mDisableBLCAGainLow;
             int mDisableBLCAGainHigh;
+            bool mResetLinkRoute;
         };
 
         std::vector<CameraInfo> mCameras;
@@ -1388,5 +1390,13 @@ class PlatformData {
      * \return true if BLC needs to be disabled by analog gain.
      */
     static bool getDisableBLCByAGain(int cameraId, int& low, int& high);
+
+    /**
+     * Check if reset links and routes
+     *
+     * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
+     * \return if reset links and routes
+     */
+    static bool isResetLinkRoute(int cameraId);
 };
 } /* namespace icamera */

@@ -1400,4 +1400,8 @@ bool PlatformData::getDisableBLCByAGain(int cameraId, int& low, int& high) {
     high = getInstance()->mStaticCfg.mCameras[cameraId].mDisableBLCAGainHigh;
     return getInstance()->mStaticCfg.mCameras[cameraId].mDisableBLCByAGain;
 }
+
+bool PlatformData::isResetLinkRoute(int cameraId) {
+    return getInstance()->mStaticCfg.mCameras[cameraId].mResetLinkRoute;
+}
 }  // namespace icamera
