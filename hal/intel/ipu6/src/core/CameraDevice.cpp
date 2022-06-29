@@ -212,6 +212,13 @@ void CameraDevice::bindListeners() {
     }
 
     mSofSource->registerListener(EVENT_ISYS_SOF, mRequestThread);
+
+    // INTEL_DVS_S
+    auto dvsListener = m3AControl->getDVSEventListener();
+    for (auto lis : dvsListener)
+        for (auto& item : mProcessors)
+            item->registerListener(EVENT_DVS_READY, lis);
+    // INTEL_DVS_E
 }
 
 void CameraDevice::unbindListeners() {
@@ -250,6 +257,13 @@ void CameraDevice::unbindListeners() {
     }
 
     mSofSource->removeListener(EVENT_ISYS_SOF, mRequestThread);
+
+    // INTEL_DVS_S
+    auto dvsListener = m3AControl->getDVSEventListener();
+    for (auto lis : dvsListener)
+        for (auto& item : mProcessors)
+            item->removeListener(EVENT_DVS_READY, lis);
+    // INTEL_DVS_E
 }
 
 int CameraDevice::configureInput(const stream_t* inputConfig) {
