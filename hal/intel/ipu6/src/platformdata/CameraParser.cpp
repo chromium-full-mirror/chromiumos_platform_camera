@@ -1995,6 +1995,8 @@ void CameraParser::getNVMDirectory(CameraParser* profiles) {
             if (found) break;
         }
         closedir(dir);
+    } else {
+        LOGE("Failed to open dir %s", nvmPath.c_str());
     }
 
     for (auto nvm : profiles->mNvmDeviceInfo) {
@@ -2004,6 +2006,8 @@ void CameraParser::getNVMDirectory(CameraParser* profiles) {
             profiles->pCurrentCam->mMaxNvmDataSize = nvm.dataSize;
             LOG2("NVM dir %s", profiles->pCurrentCam->mNvmDirectory.c_str());
             break;
+        } else {
+            LOGE("Failed to find NVM directory");
         }
     }
 }

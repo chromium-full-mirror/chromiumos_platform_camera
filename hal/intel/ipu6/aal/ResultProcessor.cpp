@@ -196,56 +196,59 @@ int ResultProcessor::shutterDone(const ShutterEvent& event) {
 int ResultProcessor::metadataDone(const MetadataEvent& event) {
     std::lock_guard<std::mutex> l(mLock);
 
-    MetadataMemory* metaMem = nullptr;
     for (auto& reqStat : mRequestStateVector) {
         if (reqStat.frameNumber == event.frameNumber &&
             reqStat.partialResultReturned < reqStat.partialResultCount) {
             reqStat.partialResultReturned = 1;
-            metaMem = reqStat.metaResult;
+            reqStat.isMetadataReady = true;
+
+            LOG2("<fn%u>@%s, metadataReady", reqStat.frameNumber, __func__);
+            if (mInputCam3Bufs.find(reqStat.frameNumber) == mInputCam3Bufs.end()) {
+                android::CameraMetadata* metaResult = reqStat.metaResult->getMetadata();
+                MetadataConvert::HALMetadataToRequestMetadata(*(event.parameter), metaResult,
+                                                              mCameraId);
+                updateMetadata(*(event.parameter), metaResult);
+                mCamera3AMetadata->process3Astate(*(event.parameter), metaResult);
+            }
+            break;
         }
     }
 
-    if (metaMem) {
+    /**
+     * Return metadata in request order, because metadata event from device might be not in FIFO.
+     * (video/still stream return metadata separately).
+     */
+    for (int32_t i = 0; i < mRequestStateVector.size(); i++) {
+        RequestState& reqStat = mRequestStateVector[i];
+
+        if (!reqStat.isShutterDone) return icamera::OK;
+        if (!reqStat.isMetadataReady) return icamera::OK;
+        if (reqStat.isMetadataDone) continue;
+
         camera3_capture_result_t result;
         CLEAR(result);
-        result.frame_number = event.frameNumber;
+        result.frame_number = reqStat.frameNumber;
         result.output_buffers = nullptr;
         result.num_output_buffers = 0;
-
-        if (mInputCam3Bufs.find(result.frame_number) == mInputCam3Bufs.end()) {
-            android::CameraMetadata* metaResult = metaMem->getMetadata();
-            MetadataConvert::HALMetadataToRequestMetadata(*(event.parameter), metaResult,
-                                                          mCameraId);
-            updateMetadata(*(event.parameter), metaResult);
-            mCamera3AMetadata->process3Astate(*(event.parameter), metaResult);
-        }
-
-        result.result = metaMem->getMemory();
+        result.result = reqStat.metaResult->getMemory();
         result.partial_result = 1;
         result.num_physcam_metadata = 0;
         result.physcam_ids = nullptr;
         result.physcam_metadata = nullptr;
         mCallbackOps->process_capture_result(mCallbackOps, &result);
+        if (reqStat.partialResultCount == reqStat.partialResultReturned)
+            reqStat.isMetadataDone = true;
 
-        LOG2("<fn%u>@%s", event.frameNumber, __func__);
-    }
+        LOG2("<fn%u>@%s, return @ %u", result.frame_number, __func__, event.frameNumber);
 
-    bool found = false;
-    for (uint32_t i = 0; i < mRequestStateVector.size(); i++) {
-        if (mRequestStateVector.at(i).frameNumber == event.frameNumber) {
-            if (checkRequestDone(mRequestStateVector.at(i))) {
-                returnInputBuffer(event.frameNumber);
-                returnRequestDone(event.frameNumber);
-                releaseMetadataMemory(mRequestStateVector.at(i).metaResult);
-                mRequestStateVector.erase(mRequestStateVector.begin() + i);
-            }
-            found = true;
+        if (checkRequestDone(reqStat)) {
+            returnInputBuffer(reqStat.frameNumber);
+            returnRequestDone(reqStat.frameNumber);
+            releaseMetadataMemory(reqStat.metaResult);
+            mRequestStateVector.erase(mRequestStateVector.begin() + i);
+            // The element i + 1 will be element i after erase, so reset i
+            i--;
         }
-    }
-    if (!found) {
-        LOGW("<fn%u>%s wasn't found!", event.frameNumber, __func__);
-    } else {
-        LOG2("<fn%u>%s was returned", event.frameNumber, __func__);
     }
 
     return icamera::OK;
@@ -273,6 +276,7 @@ int ResultProcessor::bufferDone(const BufferEvent& event) {
             if (reqStat.frameNumber == event.frameNumber) {
                 reqStat.partialResultReturned = 1;
                 reqStat.isShutterDone = true;
+                reqStat.isMetadataDone = true;
             }
         }
     }
@@ -288,6 +292,7 @@ int ResultProcessor::bufferDone(const BufferEvent& event) {
                 mRequestStateVector.erase(mRequestStateVector.begin() + i);
             }
             found = true;
+            break;
         }
     }
 
@@ -421,8 +426,7 @@ void ResultProcessor::returnInputBuffer(uint32_t frameNumber) {
 bool ResultProcessor::checkRequestDone(const RequestState& requestState) {
     LOG2("@%s", __func__);
 
-    return (requestState.isShutterDone &&
-            requestState.partialResultCount == requestState.partialResultReturned &&
+    return (requestState.isShutterDone && requestState.isMetadataDone &&
             requestState.buffersToReturn == requestState.buffersReturned);
 }
 

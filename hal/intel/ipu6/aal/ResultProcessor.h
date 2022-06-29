@@ -67,6 +67,8 @@ struct RequestState {
     unsigned int buffersReturned;
     unsigned int buffersToReturn;
 
+    bool isMetadataDone;
+    bool isMetadataReady;
     MetadataMemory* metaResult;
 
     RequestState() {
@@ -76,6 +78,8 @@ struct RequestState {
         partialResultCount = 0;
         buffersReturned = 0;
         buffersToReturn = 0;
+        isMetadataDone = false;
+        isMetadataReady = false;
         metaResult = nullptr;
     }
 };
