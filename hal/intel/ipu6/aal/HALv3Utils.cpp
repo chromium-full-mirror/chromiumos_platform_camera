@@ -169,8 +169,11 @@ int fillHALStreams(int cameraId, const camera3_stream_t& camera3Stream, icamera:
             } else {
                 stream->usage = icamera::CAMERA_STREAM_STILL_CAPTURE;
             }
+        } else if (camera3Stream.format == HAL_PIXEL_FORMAT_YCbCr_420_888) {
+            // Check if it is STILL capture
+            stream->usage = IS_STILL_USAGE(camera3Stream.usage) ?
+                icamera::CAMERA_STREAM_STILL_CAPTURE : icamera::CAMERA_STREAM_VIDEO_CAPTURE;
         } else {
-            // Always bind other format(IMPLEMENTATION_DEFINED and YCbCr_420_888) to video pipe
             stream->usage = icamera::CAMERA_STREAM_VIDEO_CAPTURE;
         }
     }
