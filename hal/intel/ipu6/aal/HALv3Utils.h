@@ -27,6 +27,8 @@ namespace camera3 {
 
 #define IS_ZSL_USAGE(usage) (((usage)&GRALLOC_USAGE_HW_CAMERA_ZSL) == GRALLOC_USAGE_HW_CAMERA_ZSL)
 
+#define IS_STILL_USAGE(usage) (((usage)&GRALLOC_USAGE_PRIVATE_1) == GRALLOC_USAGE_PRIVATE_1)
+
 namespace HalV3Utils {
 
 struct CrosCameraInfo {
