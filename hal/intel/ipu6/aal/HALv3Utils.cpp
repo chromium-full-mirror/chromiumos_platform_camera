@@ -155,7 +155,10 @@ int fillHALStreams(int cameraId, const camera3_stream_t& camera3Stream, icamera:
     stream->streamType = icamera::CAMERA_STREAM_OUTPUT;
     // CAMERA_STREAM_PREVIEW is for user preview stream
     // CAMERA_STREAM_VIDEO_CAPTURE is for other yuv stream
-    if (camera3Stream.usage & (GRALLOC_USAGE_HW_TEXTURE | GRALLOC_USAGE_HW_COMPOSER)) {
+    if (camera3Stream.format == HAL_PIXEL_FORMAT_YCbCr_420_888 &&
+        IS_STILL_USAGE(camera3Stream.usage)) {
+        stream->usage = icamera::CAMERA_STREAM_STILL_CAPTURE;
+    } else if (camera3Stream.usage & (GRALLOC_USAGE_HW_TEXTURE | GRALLOC_USAGE_HW_COMPOSER)) {
         stream->usage = icamera::CAMERA_STREAM_PREVIEW;
     } else if (IS_ZSL_USAGE(camera3Stream.usage)) {
         stream->usage = icamera::CAMERA_STREAM_OPAQUE_RAW;
@@ -169,10 +172,6 @@ int fillHALStreams(int cameraId, const camera3_stream_t& camera3Stream, icamera:
             } else {
                 stream->usage = icamera::CAMERA_STREAM_STILL_CAPTURE;
             }
-        } else if (camera3Stream.format == HAL_PIXEL_FORMAT_YCbCr_420_888) {
-            // Check if it is STILL capture
-            stream->usage = IS_STILL_USAGE(camera3Stream.usage) ?
-                icamera::CAMERA_STREAM_STILL_CAPTURE : icamera::CAMERA_STREAM_VIDEO_CAPTURE;
         } else {
             stream->usage = icamera::CAMERA_STREAM_VIDEO_CAPTURE;
         }
