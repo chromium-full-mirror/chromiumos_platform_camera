@@ -164,6 +164,8 @@ int RequestManager::analysisStreamList(camera3_stream_configuration_t* stream_li
     uint32_t streamsNum = stream_list->num_streams;
     uint32_t operationMode = stream_list->operation_mode;
     LOG1("@%s, streamsNum:%d, operationMode:%d", __func__, streamsNum, operationMode);
+    CheckAndLogError(streamsNum > kMaxStreamNum, icamera::BAD_VALUE,
+                     "Number of streams %u exceeds limit %d", streamsNum, kMaxStreamNum);
     CheckAndLogError((operationMode != CAMERA3_STREAM_CONFIGURATION_NORMAL_MODE &&
                       operationMode != CAMERA3_STREAM_CONFIGURATION_CONSTRAINED_HIGH_SPEED_MODE),
                      icamera::BAD_VALUE, "Unknown operation mode %d!", operationMode);
