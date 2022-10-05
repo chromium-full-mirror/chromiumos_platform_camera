@@ -1,9 +1,12 @@
-# Copyright 2019 The Chromium OS Authors. All rights reserved.
+# Copyright 2019 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 action("gen_config_metadata") {
   script = "run_script.py"
+  metapath =
+    "${sysroot}/usr/include/cros-camera/custom/imgsensor_metadata/common"
+  sources = [ "${metapath}/config_request_metadata__.h" ]
   outputs = [ "$target_gen_dir/custgen.config_static.h" ]
   args = [
     rebase_path("./metadataprovider/custom/gen_config_metadata.sh",
@@ -15,6 +18,9 @@ action("gen_config_metadata") {
 
 action("gen_request_metadata") {
   script = "run_script.py"
+  metapath =
+    "${sysroot}/usr/include/cros-camera/custom/imgsensor_metadata/common"
+  sources = [ "${metapath}/config_request_metadata__.h" ]
   outputs = [ "$target_gen_dir/custgen.config_request.h" ]
   args = [
     rebase_path("./templateRequest/custom/gen_request_metadata.sh",
