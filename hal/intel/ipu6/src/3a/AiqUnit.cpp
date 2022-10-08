@@ -227,7 +227,7 @@ int AiqUnit::initIntelCcaHandle(const std::vector<ConfigMode>& configModes) {
         }
 
         std::shared_ptr<IGraphConfig> graphConfig =
-                IGraphConfigManager::getInstance(mCameraId)->getGraphConfig(cfg);
+            IGraphConfigManager::getInstance(mCameraId)->getGraphConfig(cfg);
 
         // LOCAL_TONEMAP_S
         bool hasLtm = PlatformData::isLtmEnabled(mCameraId);

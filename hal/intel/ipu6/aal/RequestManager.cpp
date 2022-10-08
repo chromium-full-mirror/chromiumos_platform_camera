@@ -579,6 +579,9 @@ int RequestManager::processCaptureRequest(camera3_capture_request_t* request) {
     std::shared_ptr<Camera3Buffer> inputCam3Buf = nullptr;
     icamera::sensor_raw_info_t opaqueRawInfo = {-1, 0};
     if (request->input_buffer) {
+        CheckAndLogError(request->input_buffer->status == CAMERA3_BUFFER_STATUS_ERROR,
+                         icamera::BAD_VALUE, "Error status for input camera3 buffer");
+
         inputCam3Buf = std::make_shared<Camera3Buffer>();
         icamera::status_t status = inputCam3Buf->init(request->input_buffer, mCameraId);
         CheckAndLogError(status != icamera::OK, icamera::BAD_VALUE, "Failed to init CameraBuffer");
@@ -606,6 +609,10 @@ int RequestManager::processCaptureRequest(camera3_capture_request_t* request) {
     param.setUserRequestId(static_cast<int32_t>(request->frame_number));
 
     for (uint32_t i = 0; i < request->num_output_buffers; i++) {
+        CheckAndLogError(request->output_buffers[i].status == CAMERA3_BUFFER_STATUS_ERROR,
+                         icamera::BAD_VALUE, "%s, Error status for output camera3 buffer: %u",
+                         __func__, i);
+
         camera3_stream_t* aStream = request->output_buffers[i].stream;        // app stream
         Camera3Stream* lStream = static_cast<Camera3Stream*>(aStream->priv);  // local stream
         if (icamera::PlatformData::isEnableMkn(mCameraId) &&

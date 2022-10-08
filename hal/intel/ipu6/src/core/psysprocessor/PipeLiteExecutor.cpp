@@ -528,8 +528,8 @@ bool PipeLiteExecutor::hasValidBuffers(const CameraBufferPortMap& buffers) {
     return false;
 }
 
-bool PipeLiteExecutor::fetchBuffersInQueue(map<Port, shared_ptr<CameraBuffer> >& cInBuffer,
-                                           map<Port, shared_ptr<CameraBuffer> >& cOutBuffer) {
+bool PipeLiteExecutor::fetchBuffersInQueue(map<Port, shared_ptr<CameraBuffer>>& cInBuffer,
+                                           map<Port, shared_ptr<CameraBuffer>>& cOutBuffer) {
     for (auto& input : mInputQueue) {
         Port port = input.first;
         CameraBufQ& inputQueue = input.second;

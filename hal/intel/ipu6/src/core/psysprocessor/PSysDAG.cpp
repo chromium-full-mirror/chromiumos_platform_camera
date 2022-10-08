@@ -427,17 +427,46 @@ int PSysDAG::registerInternalBufs(std::map<Port, CameraBufVector>& internalBufs)
     return OK;
 }
 
+int PSysDAG::getActiveStreamIds(const PSysTaskData& taskData,
+                                std::vector<int32_t>* activeStreamIds) {
+    // According to the output port to filter the valid executor stream Ids, and then run AIC
+    for (auto& outputFrame : taskData.mOutputBuffers) {
+        if (outputFrame.second.get() == nullptr) continue;
+
+        std::map<Port, std::vector<int32_t> >::iterator it =
+            mOutputPortToStreamIds.find(outputFrame.first);
+        CheckAndLogError(it == mOutputPortToStreamIds.end(), UNKNOWN_ERROR,
+                         "%s, failed to find streamIds for output port: %d", __func__,
+                         outputFrame.first);
+
+        for (auto& streamId : it->second) {
+            if (isInactiveStillStream(streamId, &taskData, outputFrame.first)) continue;
+            if (std::find(activeStreamIds->begin(), activeStreamIds->end(), streamId) ==
+                activeStreamIds->end()) {
+                activeStreamIds->push_back(streamId);
+            }
+        }
+    }
+    LOG2("%s, The active streamId size for current task: %zu", __func__, activeStreamIds->size());
+
+    return OK;
+}
+
 /**
  * Queue the buffers in PSysTaskData to the cooresponding executors.
  */
 int PSysDAG::queueBuffers(const PSysTaskData& task) {
     LOG2("<id%d>@%s", mCameraId, __func__);
+
+    std::vector<int32_t> activeStreamIds;
+    getActiveStreamIds(task, &activeStreamIds);
+
     // Provide the input buffers for the input edge executor.
     for (auto& inputFrame : task.mInputBuffers) {
         for (auto& inputMap : mInputMaps) {
             if (inputMap.mDagPort == inputFrame.first) {
-                if (isInactiveStillStream(mExecutorStreamId[inputMap.mExecutor], &task,
-                                          inputFrame.first))
+                if (std::find(activeStreamIds.begin(), activeStreamIds.end(),
+                              mExecutorStreamId[inputMap.mExecutor]) == activeStreamIds.end())
                     continue;
                 inputMap.mExecutor->onFrameAvailable(inputMap.mExecutorPort, inputFrame.second);
                 LOG2("%s, queue input buffer: dagPort: %d, executorPort: %d, name: %s", __func__,
@@ -450,8 +479,8 @@ int PSysDAG::queueBuffers(const PSysTaskData& task) {
     for (auto& outputFrame : task.mOutputBuffers) {
         for (auto& outputMap : mOutputMaps) {
             if (outputMap.mDagPort == outputFrame.first) {
-                if (isInactiveStillStream(mExecutorStreamId[outputMap.mExecutor], &task,
-                                          outputFrame.first))
+                if (std::find(activeStreamIds.begin(), activeStreamIds.end(),
+                              mExecutorStreamId[outputMap.mExecutor]) == activeStreamIds.end())
                     continue;
                 outputMap.mExecutor->qbuf(outputMap.mExecutorPort, outputFrame.second);
                 LOG2("%s, queue output buffer, dagPort: %d, executorPort: %d, name: %s", __func__,
@@ -720,6 +749,7 @@ void PSysDAG::onStatsDone(int64_t sequence) {
 
 int PSysDAG::prepareIpuParams(int64_t sequence, bool forceUpdate, TaskInfo* task) {
     TRACE_LOG_PROCESS("PSysDAG", __func__, MAKE_COLOR(sequence), sequence);
+
     if (task == nullptr) {
         AutoMutex taskLock(mTaskLock);
         for (size_t i = 0; i < mOngoingTasks.size(); i++) {
@@ -733,29 +763,8 @@ int PSysDAG::prepareIpuParams(int64_t sequence, bool forceUpdate, TaskInfo* task
     CheckAndLogError(!task, UNKNOWN_ERROR, "%s, <seq%ld> Failed to find the task", __func__,
                      sequence);
 
-    // According to the output port to filter the valid executor stream Ids, and then run AIC
     std::vector<int32_t> activeStreamIds;
-    for (auto& outputFrame : task->mTaskData.mOutputBuffers) {
-        if (outputFrame.second.get() == nullptr) continue;
-
-        std::map<Port, std::vector<int32_t> >::iterator it =
-            mOutputPortToStreamIds.find(outputFrame.first);
-        CheckAndLogError(it == mOutputPortToStreamIds.end(), UNKNOWN_ERROR,
-                         "%s, failed to find streamIds for output port: %d", __func__,
-                         outputFrame.first);
-
-        for (auto& streamId : it->second) {
-            if (isInactiveStillStream(streamId, &(task->mTaskData), outputFrame.first)) continue;
-            if (std::find(activeStreamIds.begin(), activeStreamIds.end(), streamId) ==
-                activeStreamIds.end()) {
-                activeStreamIds.push_back(streamId);
-            }
-        }
-    }
-    LOG2("%s, <seq%ld> the active streamId size for aic is %zu", __func__, sequence,
-         activeStreamIds.size());
-
-    int ret = OK;
+    getActiveStreamIds(task->mTaskData, &activeStreamIds);
     for (auto& id : activeStreamIds) {
         // Make sure the AIC is executed once.
         if (!forceUpdate) {
@@ -770,7 +779,7 @@ int PSysDAG::prepareIpuParams(int64_t sequence, bool forceUpdate, TaskInfo* task
             }
         }
 
-        ret = mIspParamAdaptor->runIspAdapt(&task->mTaskData.mIspSettings, sequence, id);
+        int ret = mIspParamAdaptor->runIspAdapt(&task->mTaskData.mIspSettings, sequence, id);
         CheckAndLogError(ret != OK, UNKNOWN_ERROR, "%s, <seq%ld> Failed to run AIC: streamId: %d",
                          __func__, sequence, id);
 

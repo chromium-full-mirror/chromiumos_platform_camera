@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2021 Intel Corporation
+ * Copyright (C) 2017-2022 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -256,8 +256,7 @@ void Camera3Stream::requestExit() {
 }
 
 bool Camera3Stream::isLockUserBufferNeeded(const std::shared_ptr<Camera3Buffer>& inputCam3Buf) {
-    return (mHALStream.usage == icamera::CAMERA_STREAM_OPAQUE_RAW ||
-            mPostProcessType != icamera::POST_PROCESS_NONE || mFaceDetection != nullptr ||
+    return (mPostProcessType != icamera::POST_PROCESS_NONE || mFaceDetection != nullptr ||
             inputCam3Buf != nullptr ||
             icamera::CameraDump::isDumpTypeEnable(icamera::DUMP_AAL_OUTPUT));
 }

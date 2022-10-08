@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Intel Corporation
+ * Copyright (C) 2021-2022 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,14 +51,16 @@ void Camera3StreamHAL::sendEvent(const icamera::camera_msg_data_t& data) {
 }
 
 int Camera3StreamHAL::setActive(bool state) {
-    if (!mStreamState && state) {
-        mBufferPool->createBufferPool(
-            mCameraId, mMaxNumReqInProc, mHALStream.width, mHALStream.height,
-            HalV3Utils::V4l2FormatToHALFormat(mHALStream.format), mStream.usage);
-        LOG2("@%s, HAL stream create BufferPool", __func__);
-    } else if (mStreamState && !state) {
-        if (mBufferPool) {
-            mBufferPool->destroyBufferPool();
+    if (mHALStream.usage != icamera::CAMERA_STREAM_OPAQUE_RAW) {
+        if (!mStreamState && state) {
+            mBufferPool->createBufferPool(
+                mCameraId, mMaxNumReqInProc, mHALStream.width, mHALStream.height,
+                HalV3Utils::V4l2FormatToHALFormat(mHALStream.format), mStream.usage);
+            LOG2("@%s, HAL stream create BufferPool", __func__);
+        } else if (mStreamState && !state) {
+            if (mBufferPool) {
+                mBufferPool->destroyBufferPool();
+            }
         }
     }
 

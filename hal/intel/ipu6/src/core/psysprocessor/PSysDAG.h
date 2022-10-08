@@ -124,6 +124,7 @@ class PSysDAG {
     int queueBuffers(const PSysTaskData& task);
     int returnBuffers(PSysTaskData& result);
     bool isInactiveStillStream(int streamId, const PSysTaskData* task, Port port);
+    int getActiveStreamIds(const PSysTaskData& taskData, std::vector<int32_t>* activeStreamIds);
 
     void dumpExternalPortMap();
 
