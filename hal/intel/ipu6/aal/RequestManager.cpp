@@ -272,8 +272,8 @@ int RequestManager::createHALStreams(camera3_stream_configuration_t* stream_list
     *halStreamNum = chooseHALStreams(outputStreamNum, halStreamFlag, outputReqStreams);
     // halStreamNum should not exceed videoNum + 2 (1 opaque raw and 1 still)
     int maxSupportStreamNum = icamera::PlatformData::getVideoStreamNum() + 2;
-    CheckAndLogError(*halStreamNum > maxSupportStreamNum || *halStreamNum <= 0,
-                     icamera::BAD_VALUE, "failed to find HAL stream");
+    CheckAndLogError(*halStreamNum > maxSupportStreamNum || *halStreamNum <= 0, icamera::BAD_VALUE,
+                     "failed to find HAL stream");
 
     // index of stream in mHALStream
     int halStreamIndex = 0;
@@ -309,8 +309,7 @@ int RequestManager::createHALStreams(camera3_stream_configuration_t* stream_list
             mFDStreamsInfo.usage = (*userStreamForFd)->usage;
             mFDStreamsInfo.format = (*userStreamForFd)->format;
             CLEAR(mHALStream[*halStreamNum]);
-            ret = HalV3Utils::fillHALStreams(mCameraId, mFDStreamsInfo,
-                                             &mHALStream[*halStreamNum]);
+            ret = HalV3Utils::fillHALStreams(mCameraId, mFDStreamsInfo, &mHALStream[*halStreamNum]);
             CheckAndLogError(ret != icamera::OK, ret, "failed to fill stream for fd ret:%d", ret);
             // Always bind ipu face detection to video pipe
             mHALStream[*halStreamNum].usage = icamera::CAMERA_STREAM_PREVIEW;
@@ -320,8 +319,8 @@ int RequestManager::createHALStreams(camera3_stream_configuration_t* stream_list
                 icamera::camera_stream_configuration_mode_t::CAMERA_STREAM_CONFIGURATION_MODE_AUTO};
             ret = icamera::PlatformData::queryGraphSettings(mCameraId, &streamCfg);
             // Check if stream is supported or not
-            bool isValid = icamera::PlatformData::isSupportedStream(mCameraId,
-                                                                    mHALStream[*halStreamNum]);
+            bool isValid =
+                icamera::PlatformData::isSupportedStream(mCameraId, mHALStream[*halStreamNum]);
             // Use mFDStreamIndex and userStreamForFd to indicate IPU output or user stream
             // for face detection
             if (ret == icamera::OK && isValid) {
@@ -427,8 +426,7 @@ void RequestManager::createCamera3Stream(camera3_stream_configuration_t* stream_
     if (isFaceEngineEnabled) {
         if (mFDStreamIndex > 0) {
             // Use ipu output for face detection
-            mFDStream = new PrivateStreamFD(mCameraId, mHALStream[mFDStreamIndex],
-                                            mFDStreamsInfo);
+            mFDStream = new PrivateStreamFD(mCameraId, mHALStream[mFDStreamIndex], mFDStreamsInfo);
             LOG1("@%s, Create PrivateStreamFD for face detection", __func__);
         } else if (faceDetectionOwner) {
             // Use user stream for face detection

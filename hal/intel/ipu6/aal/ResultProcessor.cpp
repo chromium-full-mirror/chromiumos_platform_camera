@@ -373,9 +373,9 @@ void ResultProcessor::updateMetadata(const icamera::Parameters& parameter,
     if (entry.count == 1 && (entry.data.u8[0] == ANDROID_BLACK_LEVEL_LOCK_ON)) {
         lockMode =
             ((exposure == mLastParams.sensorExposure && sensorIso == mLastParams.sensorIso) ||
-             (-1 == mLastParams.sensorExposure && -1 == mLastParams.sensorIso))
-                ? ANDROID_BLACK_LEVEL_LOCK_ON
-                : ANDROID_BLACK_LEVEL_LOCK_OFF;
+             (-1 == mLastParams.sensorExposure && -1 == mLastParams.sensorIso)) ?
+                ANDROID_BLACK_LEVEL_LOCK_ON :
+                ANDROID_BLACK_LEVEL_LOCK_OFF;
     }
     LOG2("@%s, the black level lock metadata: %d", __func__, lockMode);
     settings->update(ANDROID_BLACK_LEVEL_LOCK, &lockMode, 1);

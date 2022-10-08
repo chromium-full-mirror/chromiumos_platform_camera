@@ -360,19 +360,18 @@ int MetadataConvert::updateDefaultRequestSettings(int32_t cameraId, int type,
                                                   android::CameraMetadata* settings) {
     const icamera::CameraMetadata* caps = StaticCapability::getInstance(cameraId)->getCapability();
 
-    uint8_t intent = (type == CAMERA3_TEMPLATE_PREVIEW)
-                         ? ANDROID_CONTROL_CAPTURE_INTENT_PREVIEW
-                         : (type == CAMERA3_TEMPLATE_STILL_CAPTURE)
-                               ? ANDROID_CONTROL_CAPTURE_INTENT_STILL_CAPTURE
-                               : (type == CAMERA3_TEMPLATE_VIDEO_RECORD)
-                                     ? ANDROID_CONTROL_CAPTURE_INTENT_VIDEO_RECORD
-                                     : (type == CAMERA3_TEMPLATE_VIDEO_SNAPSHOT)
-                                           ? ANDROID_CONTROL_CAPTURE_INTENT_VIDEO_SNAPSHOT
-                                           : (type == CAMERA3_TEMPLATE_ZERO_SHUTTER_LAG)
-                                                 ? ANDROID_CONTROL_CAPTURE_INTENT_ZERO_SHUTTER_LAG
-                                                 : (type == CAMERA3_TEMPLATE_MANUAL)
-                                                       ? ANDROID_CONTROL_CAPTURE_INTENT_MANUAL
-                                                       : ANDROID_CONTROL_CAPTURE_INTENT_CUSTOM;
+    uint8_t intent = (type == CAMERA3_TEMPLATE_PREVIEW) ?
+                         ANDROID_CONTROL_CAPTURE_INTENT_PREVIEW :
+                         (type == CAMERA3_TEMPLATE_STILL_CAPTURE) ?
+                         ANDROID_CONTROL_CAPTURE_INTENT_STILL_CAPTURE :
+                         (type == CAMERA3_TEMPLATE_VIDEO_RECORD) ?
+                         ANDROID_CONTROL_CAPTURE_INTENT_VIDEO_RECORD :
+                         (type == CAMERA3_TEMPLATE_VIDEO_SNAPSHOT) ?
+                         ANDROID_CONTROL_CAPTURE_INTENT_VIDEO_SNAPSHOT :
+                         (type == CAMERA3_TEMPLATE_ZERO_SHUTTER_LAG) ?
+                         ANDROID_CONTROL_CAPTURE_INTENT_ZERO_SHUTTER_LAG :
+                         (type == CAMERA3_TEMPLATE_MANUAL) ? ANDROID_CONTROL_CAPTURE_INTENT_MANUAL :
+                                                             ANDROID_CONTROL_CAPTURE_INTENT_CUSTOM;
     settings->update(ANDROID_CONTROL_CAPTURE_INTENT, &intent, 1);
 
     uint8_t ctrlMode = ANDROID_CONTROL_MODE_AUTO;
@@ -1537,8 +1536,8 @@ int MetadataConvert::convertVendorTagParameter(const icamera::Parameters& parame
 
     entry = meta.find(INTEL_VENDOR_CAMERA_TOTAL_EXPOSURE_TARGET_RANGE);
     if (entry.count == 2) {
-        settings->update(INTEL_VENDOR_CAMERA_TOTAL_EXPOSURE_TARGET_RANGE,
-                         entry.data.i64, entry.count);
+        settings->update(INTEL_VENDOR_CAMERA_TOTAL_EXPOSURE_TARGET_RANGE, entry.data.i64,
+                         entry.count);
     }
 
     entry = meta.find(INTEL_VENDOR_CAMERA_CALLBACK_TM_CURVE);
@@ -1603,9 +1602,9 @@ void MetadataConvert::fillControlStaticMetadata(const icamera::Parameters& param
         LOGW("No ae modes provided!");
     }
 
-    uint8_t aeLockAvailable = parameter.getAeLockAvailable()
-                                  ? ANDROID_CONTROL_AE_LOCK_AVAILABLE_TRUE
-                                  : ANDROID_CONTROL_AE_LOCK_AVAILABLE_FALSE;
+    uint8_t aeLockAvailable = parameter.getAeLockAvailable() ?
+                                  ANDROID_CONTROL_AE_LOCK_AVAILABLE_TRUE :
+                                  ANDROID_CONTROL_AE_LOCK_AVAILABLE_FALSE;
     settings->update(ANDROID_CONTROL_AE_LOCK_AVAILABLE, &aeLockAvailable, 1);
 
     icamera::camera_range_array_t fpsRanges;
@@ -1711,9 +1710,9 @@ void MetadataConvert::fillControlStaticMetadata(const icamera::Parameters& param
         LOGW("No awb modes provided!");
     }
 
-    uint8_t awbLockAvailable = parameter.getAwbLockAvailable()
-                                   ? ANDROID_CONTROL_AWB_LOCK_AVAILABLE_TRUE
-                                   : ANDROID_CONTROL_AWB_LOCK_AVAILABLE_FALSE;
+    uint8_t awbLockAvailable = parameter.getAwbLockAvailable() ?
+                                   ANDROID_CONTROL_AWB_LOCK_AVAILABLE_TRUE :
+                                   ANDROID_CONTROL_AWB_LOCK_AVAILABLE_FALSE;
     settings->update(ANDROID_CONTROL_AWB_LOCK_AVAILABLE, &awbLockAvailable, 1);
 
     int32_t rawSensitivity = 100;

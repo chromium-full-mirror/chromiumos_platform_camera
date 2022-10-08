@@ -52,8 +52,9 @@ void Camera3StreamHAL::sendEvent(const icamera::camera_msg_data_t& data) {
 
 int Camera3StreamHAL::setActive(bool state) {
     if (!mStreamState && state) {
-        mBufferPool->createBufferPool(mCameraId, mMaxNumReqInProc, mHALStream.width,
-            mHALStream.height, HalV3Utils::V4l2FormatToHALFormat(mHALStream.format), mStream.usage);
+        mBufferPool->createBufferPool(
+            mCameraId, mMaxNumReqInProc, mHALStream.width, mHALStream.height,
+            HalV3Utils::V4l2FormatToHALFormat(mHALStream.format), mStream.usage);
         LOG2("@%s, HAL stream create BufferPool", __func__);
     } else if (mStreamState && !state) {
         if (mBufferPool) {
@@ -184,8 +185,7 @@ bool Camera3StreamHAL::fetchRequestBuffers(icamera::camera_buffer_t* buffer, uin
         LOG2("[%p]@%s get buffer from pool", this, __func__);
         CheckAndLogError(!mBufferPool, false, "no buffer pool for StreamComInfo");
         buf = mBufferPool->acquireBuffer();
-        CheckAndLogError(buf == nullptr, false, "<fn%u>no available internal buffer",
-                         frameNumber);
+        CheckAndLogError(buf == nullptr, false, "<fn%u>no available internal buffer", frameNumber);
         // using buffer pool, store the buffer, then can return it when frame done
         mQueuedBuffer[frameNumber] = buf;
     }

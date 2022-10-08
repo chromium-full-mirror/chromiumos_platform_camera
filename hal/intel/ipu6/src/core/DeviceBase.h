@@ -89,8 +89,9 @@ class DeviceBase : public EventSource {
     /**
      * Pre-process the buffer which to be queued to the device.
      */
-    virtual int onQueueBuffer(int64_t sequence,
-                              std::shared_ptr<CameraBuffer>& buffer) { return OK; }
+    virtual int onQueueBuffer(int64_t sequence, std::shared_ptr<CameraBuffer>& buffer) {
+        return OK;
+    }
 
     /**
      * Post-process the buffer after it's dequeued from the device.
@@ -123,10 +124,10 @@ class DeviceBase : public EventSource {
     VideoNodeType mNodeType;
     VideoNodeDirection mNodeDirection;
     const char* mName;
-    V4L2VideoNode* mDevice;  // The device used to queue/dequeue buffers.
-    int64_t mLatestSequence;    // Track the latest bufffer sequence from driver.
-    bool mNeedSkipFrame;     // True if the frame/buffer needs to be skipped.
-    int mFrameSkipNum;       // How many frames need to be skipped after stream on.
+    V4L2VideoNode* mDevice;   // The device used to queue/dequeue buffers.
+    int64_t mLatestSequence;  // Track the latest bufffer sequence from driver.
+    bool mNeedSkipFrame;      // True if the frame/buffer needs to be skipped.
+    int mFrameSkipNum;        // How many frames need to be skipped after stream on.
     DeviceCallback* mDeviceCB;
     std::set<BufferConsumer*> mConsumers;
 

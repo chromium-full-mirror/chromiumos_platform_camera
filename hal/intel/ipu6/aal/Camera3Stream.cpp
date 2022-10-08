@@ -212,8 +212,7 @@ int Camera3Stream::handleCaptureRequest(std::shared_ptr<Camera3Buffer> inBuf,
     }
     // handle normal postprocess
     if (mPostProcessType != icamera::POST_PROCESS_NONE) {
-        icamera::status_t status =
-            mPostProcessor->doPostProcessing(inBuf, *parameter, outBuf);
+        icamera::status_t status = mPostProcessor->doPostProcessing(inBuf, *parameter, outBuf);
         CheckAndLogError(status != icamera::OK, status,
                          "<seq%ld>@%s, doPostProcessing fails, mPostProcessType:%d",
                          inBufHandle.sequence, __func__, mPostProcessType);
@@ -231,8 +230,7 @@ int Camera3Stream::handleReprocessRequest(std::shared_ptr<Camera3Buffer> inBuf,
     }
 
     if (mInputPostProcessType != icamera::POST_PROCESS_NONE) {
-        icamera::status_t status =
-            mInputPostProcessor->doPostProcessing(inBuf, *parameter, outBuf);
+        icamera::status_t status = mInputPostProcessor->doPostProcessing(inBuf, *parameter, outBuf);
         CheckAndLogError(status != icamera::OK, status,
                          "@%s, doPostProcessing fails, mInputPostProcessType:%d", __func__,
                          mInputPostProcessType);
@@ -349,9 +347,9 @@ int Camera3Stream::setActive(bool state) {
 void Camera3Stream::activateFaceDetection(unsigned int maxFaceNum) {
     LOG1("<id%d>[%p]@%s maxFaceNum %d", mCameraId, this, __func__, maxFaceNum);
 
-    mFaceDetection = icamera::FaceDetection::createInstance(mCameraId, maxFaceNum, mHALStream.id,
-                                                            mStream.width, mStream.height,
-                                                            mStream.format, mStream.usage);
+    mFaceDetection =
+        icamera::FaceDetection::createInstance(mCameraId, maxFaceNum, mHALStream.id, mStream.width,
+                                               mStream.height, mStream.format, mStream.usage);
 }
 
 bool Camera3Stream::requestHALCapture(uint32_t frameNumber,

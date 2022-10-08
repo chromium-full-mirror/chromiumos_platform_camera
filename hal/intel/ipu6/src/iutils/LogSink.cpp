@@ -25,7 +25,6 @@
 
 #include <sys/time.h>
 #include <time.h>
-
 #include "iutils/LogSink.h"
 #include "iutils/Utils.h"
 
@@ -40,8 +39,8 @@ const char* GLogSink::getName() const {
 
 void GLogSink::sendOffLog(LogItem logItem) {
     char prefix[32];
-    ::snprintf(prefix, sizeof(prefix), "CamHAL[%s]: ",
-            icamera::cameraDebugLogToString(logItem.level));
+    ::snprintf(prefix, sizeof(prefix),
+               "CamHAL[%s]: ", icamera::cameraDebugLogToString(logItem.level));
 
     switch (logItem.level) {
         case CAMERA_DEBUG_LOG_ERR:

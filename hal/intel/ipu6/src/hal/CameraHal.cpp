@@ -104,8 +104,7 @@ int CameraHal::deviceOpen(int cameraId) {
     if (mCameraOpenNum == 1) {
         MediaControl* mc = MediaControl::getInstance();
         CheckAndLogError(!mc, UNKNOWN_ERROR, "MediaControl init failed");
-        if (PlatformData::isResetLinkRoute(cameraId))
-            mc->resetAllLinks();
+        if (PlatformData::isResetLinkRoute(cameraId)) mc->resetAllLinks();
     }
 
     return mCameraDevices[cameraId]->init();

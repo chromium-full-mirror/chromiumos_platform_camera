@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2021 Intel Corporation.
+ * Copyright (C) 2015-2022 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -109,7 +109,7 @@ void doLogBody(int logTag, int level, const char* fmt, ...) {
 namespace Log {
 
 #define DEFAULT_LOG_SINK "GLOG"
-#define FILELOG_SINK     "FILELOG"
+#define FILELOG_SINK "FILELOG"
 
 static void initLogSinks() {
     const char* sinkName = ::getenv("logSink");
@@ -125,6 +125,7 @@ static void initLogSinks() {
     } else {
         globalLogSink = new StdconLogSink();
     }
+
 }
 
 static void setLogTagLevel() {
@@ -217,8 +218,7 @@ bool isDebugLevelEnable(int level) {
 
 bool isLogTagEnabled(int tag, int level) {
     if (tag < 0 || tag >= TAGS_MAX_NUM) return false;
-    return level ? (globalGroupsDescp[tag].level & level)
-                 : (globalGroupsDescp[tag].level > 0);
+    return level ? (globalGroupsDescp[tag].level & level) : (globalGroupsDescp[tag].level > 0);
 }
 
 bool isDumpMediaInfo(void) {

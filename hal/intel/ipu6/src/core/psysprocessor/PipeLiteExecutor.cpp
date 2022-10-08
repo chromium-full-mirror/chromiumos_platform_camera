@@ -60,7 +60,8 @@ PipeLiteExecutor::PipeLiteExecutor(int cameraId, const ExecutorPolicy& policy,
           mLastStatsSequence(-1),
           mExclusivePGs(exclusivePGs),
           mPSysDag(psysDag),
-          mkernelsCountWithStats(0) {}
+          mkernelsCountWithStats(0) {
+}
 
 PipeLiteExecutor::~PipeLiteExecutor() {
     while (!mPGExecutors.empty()) {
@@ -228,7 +229,7 @@ int PipeLiteExecutor::createPGs() {
 
 int PipeLiteExecutor::configurePGs(const vector<IGraphType::PrivPortFormat>& tnrPortFormat) {
     FrameInfo tnrFormatInfo = {};
-    for (auto &tnrFormat : tnrPortFormat) {
+    for (auto& tnrFormat : tnrPortFormat) {
         if (tnrFormat.streamId == mStreamId) {
             tnrFormatInfo.mWidth = tnrFormat.formatSetting.width;
             tnrFormatInfo.mHeight = tnrFormat.formatSetting.height;
@@ -899,9 +900,9 @@ int PipeLiteExecutor::allocBuffers() {
         bool isCompression = PlatformData::getPSACompression(mCameraId) &&
                              PGUtils::isCompressionTerminal(termDesc.terminal);
 
-        int size = isCompression
-                       ? PGCommon::getFrameSize(srcFmt, srcWidth, srcHeight, false, true, true)
-                       : PGCommon::getFrameSize(srcFmt, srcWidth, srcHeight, true);
+        int size = isCompression ?
+                       PGCommon::getFrameSize(srcFmt, srcWidth, srcHeight, false, true, true) :
+                       PGCommon::getFrameSize(srcFmt, srcWidth, srcHeight, true);
 
         shared_ptr<CameraBuffer> buf =
             CameraBuffer::create(mCameraId, BUFFER_USAGE_PSYS_INPUT, V4L2_MEMORY_USERPTR, size, 0,
@@ -957,9 +958,9 @@ int PipeLiteExecutor::allocBuffers() {
             bool isCompression = PlatformData::getPSACompression(mCameraId) &&
                                  PGUtils::isCompressionTerminal(terminal);
 
-            int size = isCompression
-                           ? PGCommon::getFrameSize(srcFmt, srcWidth, srcHeight, false, true, true)
-                           : PGCommon::getFrameSize(srcFmt, srcWidth, srcHeight, true);
+            int size = isCompression ?
+                           PGCommon::getFrameSize(srcFmt, srcWidth, srcHeight, false, true, true) :
+                           PGCommon::getFrameSize(srcFmt, srcWidth, srcHeight, true);
 
             for (int i = 0; i < MAX_BUFFER_COUNT; i++) {
                 // Prepare internal frame buffer for its producer.

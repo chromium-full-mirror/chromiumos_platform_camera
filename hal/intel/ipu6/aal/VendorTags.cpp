@@ -104,11 +104,11 @@ int VendorTags::getTagType(const vendor_tag_ops_t* v, uint32_t tag) {
 void VendorTags::getVendorTagOps(vendor_tag_ops_t* ops) {
     CheckAndLogError(ops == nullptr, VOID_VALUE, "@%s: vendor tag ops is nullptr", __func__);
 
-    ops->get_tag_count    = getTagCount;
-    ops->get_all_tags     = getAllTags;
+    ops->get_tag_count = getTagCount;
+    ops->get_all_tags = getAllTags;
     ops->get_section_name = getSectionName;
-    ops->get_tag_name     = getTagName;
-    ops->get_tag_type     = getTagType;
+    ops->get_tag_name = getTagName;
+    ops->get_tag_type = getTagType;
 }
 
 }  // namespace camera3

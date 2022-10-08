@@ -37,7 +37,7 @@ typedef enum vendor_metadata_section {
  * Hierarchy positions in enum space.
  */
 typedef enum vendor_metadata_section_start {
-    INTEL_VENDOR_CAMERA_START      = uint32_t(INTEL_VENDOR_CAMERA              << 16),
+    INTEL_VENDOR_CAMERA_START = uint32_t(INTEL_VENDOR_CAMERA << 16),
 } vendor_metadata_section_start_t;
 
 /**
@@ -47,8 +47,8 @@ typedef enum vendor_metadata_section_start {
  * src/metadata/vendor_metadata_tag_info.c
  */
 typedef enum vendor_metadata_tag {
-    INTEL_VENDOR_CAMERA_CALLBACK_RGBS =               // enum         | public
-            INTEL_VENDOR_CAMERA_START,
+    INTEL_VENDOR_CAMERA_CALLBACK_RGBS =  // enum         | public
+    INTEL_VENDOR_CAMERA_START,
     INTEL_VENDOR_CAMERA_RGBS_GRID_SIZE,               // int32[]      | public
     INTEL_VENDOR_CAMERA_SHADING_CORRECTION,           // enum         | public
     INTEL_VENDOR_CAMERA_RGBS_STATS_BLOCKS,            // byte[]       | public
@@ -94,4 +94,3 @@ typedef enum vendor_metadata_enum_intel_vendor_camera_raw_data_output {
     INTEL_VENDOR_CAMERA_RAW_DATA_OUTPUT_OFF,
     INTEL_VENDOR_CAMERA_RAW_DATA_OUTPUT_ON,
 } vendor_metadata_enum_intel_vendor_camera_raw_data_output_t;
-

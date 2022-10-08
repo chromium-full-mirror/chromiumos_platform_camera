@@ -91,8 +91,7 @@ class Camera3Stream : public icamera::Thread {
     bool handleNewFrame(std::shared_ptr<StreamComInfo> hCapture,
                         std::shared_ptr<CaptureResult> result);
     int handleCaptureRequest(std::shared_ptr<Camera3Buffer> inBuf,
-                             std::shared_ptr<Camera3Buffer> outBuf,
-                             icamera::Parameters* parameter);
+                             std::shared_ptr<Camera3Buffer> outBuf, icamera::Parameters* parameter);
     int handleReprocessRequest(std::shared_ptr<Camera3Buffer> inBuf,
                                std::shared_ptr<Camera3Buffer> outBuf,
                                icamera::Parameters* parameter);
