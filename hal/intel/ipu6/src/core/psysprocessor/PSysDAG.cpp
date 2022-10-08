@@ -25,10 +25,12 @@
 #ifdef TNR7_CM
 #include "GPUExecutor.h"
 #endif
+#include "CameraScheduler.h"
 
 namespace icamera {
-PSysDAG::PSysDAG(int cameraId, PSysDagCallback* psysDagCB)
+PSysDAG::PSysDAG(int cameraId, CameraScheduler* scheduler, PSysDagCallback* psysDagCB)
         : mCameraId(cameraId),
+          mScheduler(scheduler),
           mPSysDagCB(psysDagCB),
           mConfigMode(CAMERA_STREAM_CONFIGURATION_MODE_AUTO),
           mTuningMode(TUNING_MODE_MAX),
@@ -74,6 +76,7 @@ void PSysDAG::setFrameInfo(const std::map<Port, stream_t>& inputInfo,
 
 void PSysDAG::releasePipeExecutors() {
     for (auto& executor : mExecutorsPool) {
+        if (mScheduler) mScheduler->unregisterNode(executor);
         delete executor;
     }
     mExecutorsPool.clear();
@@ -100,6 +103,7 @@ int PSysDAG::createPipeExecutors(bool useTnrOutBuffer) {
     int graphId = gc->getGraphId();
     PolicyConfig* cfg = PlatformData::getExecutorPolicyConfig(graphId);
     CheckAndLogError(!cfg, UNKNOWN_ERROR, "Failed to get PolicyConfig in PSysDAG!");
+    if (mScheduler) mScheduler->configurate(graphId);
 
 #ifdef USE_PG_LITE_PIPE
     configShareReferPool(gc);
@@ -147,12 +151,18 @@ int PSysDAG::createPipeExecutors(bool useTnrOutBuffer) {
             executor = new PipeExecutor(mCameraId, item, cfg->exclusivePgs, this, gc);
             if (streamId == STILL_STREAM_ID) mStillExecutor = executor;
         }
+        executor->setPolicyManager(mPolicyManager);
 #else
         PipeExecutor* executor = new PipeExecutor(mCameraId, item, cfg->exclusivePgs, this, gc);
+        if (mScheduler) {
+            mScheduler->registerNode(executor);
+        } else {
+            // Use PolicyManager to sync iteration if no scheduler
+            executor->setPolicyManager(mPolicyManager);
+        }
 #endif
         executor->setIspParamAdaptor(mIspParamAdaptor);
         executor->setStreamId(streamId);
-        executor->setPolicyManager(mPolicyManager);
         executor->setNotifyPolicy(item.notifyPolicy);
 #ifdef USE_PG_LITE_PIPE
         executor->setShareReferPool(mShareReferPool);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2021 Intel Corporation
+ * Copyright (C) 2017-2022 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@
 #include <unordered_map>
 
 #include "CameraBuffer.h"
+#include "CameraScheduler.h"
 #include "IspParamAdaptor.h"
 #include "Parameters.h"
 #include "PlatformData.h"
@@ -73,7 +74,7 @@ class PSysDagCallback {
 
 class PSysDAG {
  public:
-    PSysDAG(int cameraId, PSysDagCallback* psysDagCB);
+    PSysDAG(int cameraId, CameraScheduler* scheduler, PSysDagCallback* psysDagCB);
     virtual ~PSysDAG();
     void setFrameInfo(const std::map<Port, stream_t>& inputInfo,
                       const std::map<Port, stream_t>& outputInfo);
@@ -128,6 +129,7 @@ class PSysDAG {
 
  private:
     int mCameraId;
+    CameraScheduler* mScheduler;
     PSysDagCallback* mPSysDagCB;  // Used to callback notify frame done handling
     PolicyManager* mPolicyManager;
     ConfigMode mConfigMode;  // It is actually real config mode.
