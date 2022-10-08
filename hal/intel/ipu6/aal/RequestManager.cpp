@@ -304,6 +304,8 @@ int RequestManager::createHALStreams(camera3_stream_configuration_t* stream_list
             if (RESOLUTION_VGA_WIDTH * (*userStreamForFd)->height !=
                 (*userStreamForFd)->width * RESOLUTION_VGA_HEIGHT) {
                 mFDStreamsInfo.height = VGA_360P;
+            } else {
+                mFDStreamsInfo.height = RESOLUTION_VGA_HEIGHT;
             }
             // Try to add hal stream for face in the back of mHALStream
             mFDStreamsInfo.usage = (*userStreamForFd)->usage;
