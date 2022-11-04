@@ -92,11 +92,11 @@ int PlatformData::init() {
 
     StaticCfg* staticCfg = &(getInstance()->mStaticCfg);
     for (size_t i = 0; i < staticCfg->mCameras.size(); i++) {
-        std::string camModuleName;
+        const std::string& camModuleName = staticCfg->mCameras[i].mCamModuleName;
         AiqInitData* aiqInitData = new AiqInitData(
             staticCfg->mCameras[i].sensorName, getCameraCfgPath(),
             staticCfg->mCameras[i].mSupportedTuningConfig, staticCfg->mCameras[i].mNvmDirectory,
-            staticCfg->mCameras[i].mMaxNvmDataSize, staticCfg->mCameras[i].mCamModuleName);
+            staticCfg->mCameras[i].mMaxNvmDataSize, camModuleName);
         getInstance()->mAiqInitData.push_back(aiqInitData);
 
         if (!camModuleName.empty() &&
