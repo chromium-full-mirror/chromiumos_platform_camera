@@ -15,14 +15,14 @@
  */
 #define LOG_TAG Camera3HALModule
 
-#include <cros-camera/cros_camera_hal.h>
+#include <mutex>
 
+#include <cros-camera/cros_camera_hal.h>
 #include <hardware/camera3.h>
 #include <hardware/hardware.h>
 
-#include <mutex>
-
 #include "Camera3HAL.h"
+#include "FaceDetectionResultCallbackManager.h"
 #include "HALv3Utils.h"
 #include "ICamera.h"
 #include "MetadataConvert.h"
@@ -173,6 +173,7 @@ static int hal_dev_close(hw_device_t* device) {
         delete camera_priv;
         sInstanceCount--;
         sInstances[id] = false;
+        FaceDetectionResultCallbackManager::getInstance().unsetCallback(id);
     }
 
     LOG1("%s, instance count %d", __func__, sInstanceCount);
@@ -267,6 +268,12 @@ static void hal_tear_down() {
 #endif
 }
 
+void set_face_detection_result_callback(int camera_id,
+                                        cros::FaceDetectionResultCallback callback) {
+    FaceDetectionResultCallbackManager::getInstance().setCallback(camera_id,
+                                                                  std::move(callback));
+}
+
 static struct hw_module_methods_t hal_module_methods = {.open = hal_dev_open};
 
 static hw_module_t camera_common = {.tag = HARDWARE_MODULE_TAG,
@@ -295,6 +302,7 @@ camera_module_t VISIBILITY_PUBLIC HAL_MODULE_INFO_SYM = {
 cros::cros_camera_hal_t VISIBILITY_PUBLIC CROS_CAMERA_HAL_INFO_SYM = {
     .set_up = hal_set_up,
     .tear_down = hal_tear_down,
+    .set_face_detection_result_callback = set_face_detection_result_callback
 };
 }
 
