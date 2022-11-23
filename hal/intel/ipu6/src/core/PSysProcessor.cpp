@@ -113,7 +113,7 @@ int PSysProcessor::configure(const std::vector<ConfigMode>& configModes) {
     }
 
     // Only enable psys bundle with aic when has video pipe only
-    if (stillStream.width > 0 && PlatformData::psysBundleWithAic(mCameraId)) {
+    if (stillStream.width <= 0 && PlatformData::psysBundleWithAic(mCameraId)) {
         mRunAicAfterQTask = true;
     }
 
@@ -471,7 +471,12 @@ int PSysProcessor::processNewFrame() {
         }
 
         // Trigger when there are tasks (new or existing)
-        if (mScheduler && !mSequencesInflight.empty()) {
+        bool trigger = false;
+        {
+            AutoMutex l(mBufferQueueLock);
+            trigger = !mSequencesInflight.empty();
+        }
+        if (trigger) {
             std::string source;
             mScheduler->executeNode(source, inputSequence);
         }
@@ -560,7 +565,11 @@ int PSysProcessor::processNewFrame() {
 }
 
 void PSysProcessor::prepareIpuForNextFrame(int64_t sequence) {
-    if (!mRunAicAfterQTask || mSequencesInflight.find(sequence) == mSequencesInflight.end()) return;
+    {
+        AutoMutex l(mBufferQueueLock);
+        if (sequence < 0 || !mRunAicAfterQTask ||
+            mSequencesInflight.find(sequence) == mSequencesInflight.end()) return;
+    }
 
     int32_t userRequestId = -1;
     // Check if next sequence is used or not

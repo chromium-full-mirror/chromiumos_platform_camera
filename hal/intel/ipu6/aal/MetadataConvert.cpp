@@ -1735,14 +1735,17 @@ void MetadataConvert::fillScalerStaticMetadata(const icamera::Parameters& parame
 // duration: fmt, w, h, ns
 #define DURATION_SIZE 4
 
+    uint32_t tag = CAMERA_SCALER_AVAILABLE_MAX_DIGITAL_ZOOM;
     float maxDigitalZoom = 1.0;
+    icamera_metadata_ro_entry entry = meta.find(tag);
+    if (entry.count > 0) maxDigitalZoom = *entry.data.f;
     settings->update(ANDROID_SCALER_AVAILABLE_MAX_DIGITAL_ZOOM, &maxDigitalZoom, 1);
 
     uint8_t type = ANDROID_SCALER_CROPPING_TYPE_CENTER_ONLY;
     settings->update(ANDROID_SCALER_CROPPING_TYPE, &type, 1);
 
-    uint32_t tag = CAMERA_SCALER_AVAILABLE_INPUT_OUTPUT_FORMATS_MAP;
-    icamera_metadata_ro_entry entry = meta.find(tag);
+    tag = CAMERA_SCALER_AVAILABLE_INPUT_OUTPUT_FORMATS_MAP;
+    entry = meta.find(tag);
     if (entry.count > 0) {
         settings->update(ANDROID_SCALER_AVAILABLE_INPUT_OUTPUT_FORMATS_MAP, entry.data.i32,
                          entry.count);
@@ -2313,8 +2316,8 @@ int MetadataConvert::convertScalerMetadata(const android::CameraMetadata& settin
     if (entry.count == 4) {
         int32_t left = entry.data.i32[0];
         int32_t top = entry.data.i32[1];
-        int32_t right = entry.data.i32[2];
-        int32_t bottom = entry.data.i32[3];
+        int32_t right = left + entry.data.i32[2];
+        int32_t bottom = top + entry.data.i32[3];
 
         parameter->setZoomRegion({left, top, right, bottom});
     } else {

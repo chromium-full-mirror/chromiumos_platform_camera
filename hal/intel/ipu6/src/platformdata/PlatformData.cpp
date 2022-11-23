@@ -289,8 +289,13 @@ bool PlatformData::isDvsSupported(int cameraId) {
     for (auto it : videoStabilizationList) {
         if (it == VIDEO_STABILIZATION_MODE_ON) {
             supported = true;
+            break;
         }
     }
+
+    const icamera::CameraMetadata& meta = icamera::ParameterHelper::getMetadata(*param);
+    auto entry = meta.find(CAMERA_SCALER_AVAILABLE_MAX_DIGITAL_ZOOM);
+    if (entry.count > 0 && *entry.data.f > 1) supported = true;
 
     LOG2("@%s, dvs supported:%d", __func__, supported);
     return supported;
