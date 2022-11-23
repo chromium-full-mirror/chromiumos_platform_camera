@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2021 Intel Corporation
+ * Copyright (C) 2017-2022 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
 #include <mutex>
 
 #include <cros-camera/cros_camera_hal.h>
+
 #include <hardware/camera3.h>
 #include <hardware/hardware.h>
 

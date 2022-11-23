@@ -66,6 +66,7 @@ class FaceDetection : public Thread {
     virtual void runFaceDetectionByAsync(const std::shared_ptr<camera3::Camera3Buffer>& ccBuf) = 0;
     static int getResult(int cameraId, cca::cca_face_state* faceState);
     static int getResult(int cameraId, CVFaceDetectionAbstractResult* result);
+    bool faceRunningByCondition();
 
  protected:
     void printfFDRunRate();
@@ -93,7 +94,6 @@ class FaceDetection : public Thread {
 
  private:
     bool isInitialized() { return mInitialized; }
-    bool faceRunningByCondition();
     void getCurrentFrameWidthAndHight(int* frameWidth, int* frameHigth);
     void getHalStreamId(int32_t* halStreamId);
     void initRatioInfo(struct RatioInfo* ratioInfo);
@@ -128,6 +128,7 @@ class FaceDetection {
     }
     static void destoryInstance(int cameraId) {}
     void runFaceDetection(const std::shared_ptr<camera3::Camera3Buffer> ccBuf) {}
+    bool faceRunningByCondition() { return false; }
 };
 #endif
 

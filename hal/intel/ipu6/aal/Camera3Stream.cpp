@@ -171,8 +171,10 @@ bool Camera3Stream::handleNewFrame(std::shared_ptr<StreamComInfo> hCapture,
         if (parameter) {
             parameter->getFaceDetectMode(faceDetectMode);
         }
-        if (icamera::PlatformData::isFaceAeEnabled(mCameraId) ||
-            faceDetectMode != icamera::FD_MODE_OFF) {
+        if ((icamera::PlatformData::isFaceAeEnabled(mCameraId) ||
+             faceDetectMode != icamera::FD_MODE_OFF) &&
+            mFaceDetection->faceRunningByCondition() &&
+            (ccBuf->isLocked() || ccBuf->lock() == icamera::OK)) {
             mFaceDetection->runFaceDetection(ccBuf);
         }
     }
@@ -256,8 +258,7 @@ void Camera3Stream::requestExit() {
 }
 
 bool Camera3Stream::isLockUserBufferNeeded(const std::shared_ptr<Camera3Buffer>& inputCam3Buf) {
-    return (mPostProcessType != icamera::POST_PROCESS_NONE || mFaceDetection != nullptr ||
-            inputCam3Buf != nullptr ||
+    return (mPostProcessType != icamera::POST_PROCESS_NONE || inputCam3Buf != nullptr ||
             icamera::CameraDump::isDumpTypeEnable(icamera::DUMP_AAL_OUTPUT));
 }
 

@@ -207,7 +207,7 @@ void PrivateStreamFD::processFrame(uint32_t frameNumber,
                                    const std::shared_ptr<Camera3Buffer>& ccBuf) {
     LOG2("<fn%u>@%s", frameNumber, __func__);
 
-    if (mFaceDetection) {
+    if (mFaceDetection && mFaceDetection->faceRunningByCondition()) {
         mFaceDetection->runFaceDetection(ccBuf, true);
     }
 }
