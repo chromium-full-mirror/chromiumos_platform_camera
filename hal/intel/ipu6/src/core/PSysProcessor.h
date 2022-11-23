@@ -47,6 +47,7 @@ class PSysProcessor : public BufferQueue, public PSysDagCallback {
     virtual int getParameters(Parameters& param);
 
     virtual int registerUserOutputBufs(Port port, const std::shared_ptr<CameraBuffer>& camBuffer);
+    virtual void stopProcessing();
 
     // Overwrite event source API to delegate related functions
     void registerListener(EventType eventType, EventListener* eventListener);
@@ -67,6 +68,7 @@ class PSysProcessor : public BufferQueue, public PSysDagCallback {
     int processNewFrame();
     std::shared_ptr<CameraBuffer> allocStatsBuffer(int index);
 
+    void prepareIpuForNextFrame(int64_t sequence);
     status_t prepareTask(CameraBufferPortMap* srcBuffers, CameraBufferPortMap* dstBuffers);
     void dispatchTask(CameraBufferPortMap& inBuf, CameraBufferPortMap& outBuf,
                       bool fakeTask = false, bool callbackRgbs = false);
@@ -97,6 +99,7 @@ class PSysProcessor : public BufferQueue, public PSysDagCallback {
     static const nsecs_t kWaitDuration = 1000000000;  // 1000ms
     ParameterGenerator* mParameterGenerator;
     CameraScheduler* mScheduler;
+    bool mRunAicAfterQTask;
 
     IspSettings mIspSettings;
     RWLock mIspSettingsLock;

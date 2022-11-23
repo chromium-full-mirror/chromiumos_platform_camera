@@ -129,6 +129,11 @@ class BufferQueue : public BufferConsumer, public BufferProducer, public EventLi
     }
 
     /**
+     * \brief Set stoping status
+     */
+    virtual void stopProcessing() {}
+
+    /**
      * \brief Common Interface
      */
     virtual int start() = 0;

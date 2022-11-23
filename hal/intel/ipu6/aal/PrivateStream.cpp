@@ -30,14 +30,14 @@
 #include "PlatformData.h"
 
 namespace camera3 {
-#define MAX_PRIVATE_STREAM_BUF_NUM 8
 
 PrivateStream::PrivateStream(int cameraId, const icamera::stream_t& halStream,
                              const camera3_stream_t& stream)
         : mCameraId(cameraId),
           mStreamState(false),
           mHALStream(halStream),
-          mInitialized(false) {
+          mInitialized(false),
+          mCurrentBufIdx(-1) {
     LOG1("[%p]@%s, stream:%dx%d, format:%d, type:%d", this, __func__, mHALStream.width,
          mHALStream.height, mHALStream.format, stream.stream_type);
 
@@ -51,7 +51,7 @@ PrivateStream::PrivateStream(int cameraId, const icamera::stream_t& halStream,
 
     mBufferPool = std::unique_ptr<Camera3BufferPool>(new Camera3BufferPool());
     // Create the buffer pool with DMA handle buffer
-    ret = mBufferPool->createBufferPool(mCameraId, MAX_PRIVATE_STREAM_BUF_NUM, stream.width,
+    ret = mBufferPool->createBufferPool(mCameraId, mBuffers.size(), stream.width,
                                         stream.height, stream.format, stream.usage);
     CheckAndLogError(ret != icamera::OK, VOID_VALUE, "[%p]@%s Failed to createBufferPool.", this,
                      __func__);
@@ -74,23 +74,24 @@ icamera::camera_buffer_t* PrivateStream::fetchRequestBuffers(uint32_t frameNumbe
     LOG2("<fn%u>[%p]@%s", frameNumber, this, __func__);
 
     std::unique_lock<std::mutex> lock(mLock);
-    if (mQueuedBuffer.size() == MAX_PRIVATE_STREAM_BUF_NUM) return nullptr;
+    if (mQueuedBuffer.size() == mBuffers.size()) return nullptr;
 
     std::shared_ptr<Camera3Buffer> buf = mBufferPool->acquireBuffer();
     CheckAndLogError(buf == nullptr, nullptr, "@%s no available internal buffer", __func__);
     // using buffer pool, store the buffer, then can return it when frame done
     mQueuedBuffer[frameNumber] = buf;
-    icamera::camera_buffer_t buffer = buf->getHalBuffer();
+
+    mCurrentBufIdx = (mCurrentBufIdx  + 1) % mBuffers.size();
+    mBuffers[mCurrentBufIdx] = buf->getHalBuffer();
     // Fill the specific setting
-    buffer.s.usage = mHALStream.usage;
-    buffer.s.id = mHALStream.id;
-    buffer.requestId = frameNumber;
-    mBuffers[frameNumber] = buffer;
+    mBuffers[mCurrentBufIdx].s.usage = mHALStream.usage;
+    mBuffers[mCurrentBufIdx].s.id = mHALStream.id;
+    mBuffers[mCurrentBufIdx].requestId = frameNumber;
 
     LOG2("<id%d:req%u>@%s, mHALStream.id:%d, fetch buf addr:%p will run fd", mCameraId, frameNumber,
          __func__, mHALStream.id, buf->data());
 
-    return &mBuffers[frameNumber];
+    return &mBuffers[mCurrentBufIdx];
 }
 
 void PrivateStream::returnBuffer(uint32_t frameNumber) {
@@ -104,10 +105,6 @@ void PrivateStream::returnBuffer(uint32_t frameNumber) {
         // if HAL stream using buffer from pool to qbuf/dqbuf, return it
         mBufferPool->returnBuffer(mQueuedBuffer[frameNumber]);
         mQueuedBuffer.erase(frameNumber);
-    }
-
-    if (mBuffers.find(frameNumber) != mBuffers.end()) {
-        mBuffers.erase(frameNumber);
     }
 }
 

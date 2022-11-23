@@ -60,7 +60,8 @@ class PrivateStream : public icamera::Thread {
     std::unique_ptr<Camera3BufferPool> mBufferPool;
 
     std::queue<uint32_t> mPrivateResult;
-    std::map<uint32_t, icamera::camera_buffer_t> mBuffers;
+    static const size_t kMaxPrivateStreamBufferNum = 8;
+    std::array<icamera::camera_buffer_t, kMaxPrivateStreamBufferNum> mBuffers;
 
     // save buffer obj when HAL choose buffer from pool to do qbuf/dqbuf
     std::unordered_map<uint32_t, std::shared_ptr<Camera3Buffer>> mQueuedBuffer;
@@ -68,6 +69,7 @@ class PrivateStream : public icamera::Thread {
 
  private:
     bool mInitialized;
+    int mCurrentBufIdx;
 };
 
 class PrivateStreamFD : public PrivateStream {
