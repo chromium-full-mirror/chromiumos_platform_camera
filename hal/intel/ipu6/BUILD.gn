@@ -18,6 +18,7 @@ group("all") {
   deps = [
     ":libcam_algo",
     ":libcamhal",
+    ":install_intel_ipu6_so"
   ]
   if (use.ipu6se) {
     deps += [
@@ -404,6 +405,7 @@ shared_library("libcam_algo") {
     "ia_aiqb_parser",
     "rt",
   ]
+  install_path = "lib"
   pkg_deps = [
     "libcros_camera",
     "libcros_camera_android_deps",
@@ -505,6 +507,7 @@ if (use.ipu6se) {
       "tnr7_cm",
       "rt",
     ]
+    install_path = "lib"
     pkg_deps = [
       "libcros_camera",
       "libcros_camera_android_deps",
@@ -514,3 +517,9 @@ if (use.ipu6se) {
   }
 }
 
+install_config("install_intel_ipu6_so") {
+  sources = [ "${root_out_dir}/lib/libcamhal.so" ]
+  outputs = [ "intel-ipu6.so" ]
+  install_path = "${libdir}/camera_hal"
+  deps = [ ":libcamhal" ]
+}

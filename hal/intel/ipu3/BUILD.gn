@@ -6,6 +6,7 @@ group("all") {
   deps = [
     ":libcam_algo",
     ":libcamera_hal",
+    ":install_intel_ipu3_so"
   ]
 }
 
@@ -188,10 +189,18 @@ shared_library("libcam_algo") {
     "pvl_face_detection",
     "pvl_mouth_detection",
   ]
+  install_path = "lib"
   pkg_deps = [
     "libchrome",
     "libcros_camera",
     "libcros_camera_android_deps",
     "libmojo",
   ]
+}
+
+install_config("install_intel_ipu3_so") {
+  sources = [ "${root_out_dir}/lib/libcamera_hal.so" ]
+  outputs = [ "intel-ipu3.so" ]
+  install_path = "${libdir}/camera_hal"
+  deps = [ ":libcamera_hal" ]
 }

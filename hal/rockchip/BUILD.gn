@@ -3,7 +3,10 @@
 # found in the LICENSE file.
 
 group("all") {
-  deps = [ ":libcamera_hal" ]
+  deps = [
+    ":libcamera_hal",
+    ":install_rockchip_isp1_so"
+  ]
 }
 
 shared_library("libcamera_hal") {
@@ -164,9 +167,17 @@ shared_library("libcam_algo") {
     "USING_DECLARED_NAMESPACE=using namespace android::camera2",
   ]
   libs = [ "rk_aiq" ]
+  install_path = "lib"
   pkg_deps = [
     "libcros_camera",
     "libcros_camera_android_deps",
     "libmojo",
   ]
+}
+
+install_config("install_rockchip_isp1_so") {
+  sources = [ "${root_out_dir}/lib/libcamera_hal.so" ]
+  outputs = [ "rockchip-isp1.so" ]
+  install_path = "${libdir}/camera_hal"
+  deps = [ ":libcamera_hal" ]
 }
