@@ -500,8 +500,8 @@ IMetadata::IEntry::Implementor& IMetadata::IEntry::Implementor::operator=(
     IMetadata::IEntry::Implementor const& other) {
   if (this != &other) {
     std::lock(mResourceMtx, other.mResourceMtx);
-    std::lock_guard<std::mutex>(mResourceMtx, std::adopt_lock);
-    std::lock_guard<std::mutex>(other.mResourceMtx, std::adopt_lock);
+    std::lock_guard<std::mutex> lk1(mResourceMtx, std::adopt_lock);
+    std::lock_guard<std::mutex> lk2(other.mResourceMtx, std::adopt_lock);
     mTag = other.mTag;
     mType = other.mType;
     SRC_DST_OPERATOR(get_mtk_metadata_tag_type(mTag), =, other);
@@ -884,8 +884,8 @@ IMetadata::Implementor& IMetadata::Implementor::operator+=(
     IMetadata::Implementor const& other) {
   if (this != &other) {
     std::lock(mResourceMtx, other.mResourceMtx);
-    std::lock_guard<std::mutex>(mResourceMtx, std::adopt_lock);
-    std::lock_guard<std::mutex>(other.mResourceMtx, std::adopt_lock);
+    std::lock_guard<std::mutex> lk1(mResourceMtx, std::adopt_lock);
+    std::lock_guard<std::mutex> lk2(other.mResourceMtx, std::adopt_lock);
     //
     for (const auto& item : other.mMap) {
       mMap[item.first] = item.second;
@@ -906,8 +906,8 @@ IMetadata::Implementor& IMetadata::Implementor::operator=(
     IMetadata::Implementor const& other) {
   if (this != &other) {
     std::lock(mResourceMtx, other.mResourceMtx);
-    std::lock_guard<std::mutex>(mResourceMtx, std::adopt_lock);
-    std::lock_guard<std::mutex>(other.mResourceMtx, std::adopt_lock);
+    std::lock_guard<std::mutex> lk1(mResourceMtx, std::adopt_lock);
+    std::lock_guard<std::mutex> lk2(other.mResourceMtx, std::adopt_lock);
     // release mMap'storage
     // assign other.mMap's storage pointer to mMap
     // add 1 to storage's sharebuffer
