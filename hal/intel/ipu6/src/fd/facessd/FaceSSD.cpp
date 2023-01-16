@@ -17,11 +17,10 @@
 #define LOG_TAG FaceSSD
 #include "src/fd/facessd/FaceSSD.h"
 
+#include <cros-camera/cros_camera_hal.h>
 #include <algorithm>
 #include <fstream>
 #include <vector>
-
-#include <cros-camera/cros_camera_hal.h>
 
 #include "AiqUtils.h"
 #include "PlatformData.h"
@@ -91,7 +90,8 @@ void FaceSSD::runFaceDetectionBySync(const std::shared_ptr<camera3::Camera3Buffe
 
     nsecs_t startTime = CameraUtils::systemTime();
     std::optional<cros::FaceDetectionResult> face_detection_result =
-        camera3::FaceDetectionResultCallbackManager::getInstance().getFaceDetectionResult(mCameraId);
+        camera3::FaceDetectionResultCallbackManager::getInstance().
+        getFaceDetectionResult(mCameraId);
 
     cros::FaceDetectResult ret = cros::FaceDetectResult::kDetectOk;
     std::vector<human_sensing::CrosFace> faces;

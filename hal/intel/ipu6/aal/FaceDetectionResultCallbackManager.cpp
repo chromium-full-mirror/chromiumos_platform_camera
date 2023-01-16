@@ -15,7 +15,7 @@
  */
 #define LOG_TAG FaceDetectionResultCallbackManager
 
-#include "FaceDetectionResultCallbackManager.h"
+#include "aal/FaceDetectionResultCallbackManager.h"
 
 #include <base/no_destructor.h>
 #include <base/synchronization/lock.h>
@@ -55,4 +55,4 @@ void FaceDetectionResultCallbackManager::unsetCallback(int cameraId) {
     }
 }
 
-}
+}  // namespace camera3

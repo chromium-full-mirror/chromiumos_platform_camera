@@ -16,6 +16,7 @@
 #define LOG_TAG Camera3HALModule
 
 #include <mutex>
+#include <utility>
 
 #include <cros-camera/cros_camera_hal.h>
 

@@ -18,7 +18,7 @@ group("all") {
   deps = [
     ":libcam_algo",
     ":libcamhal",
-    ":install_intel_ipu6_so"
+    ":install_intel_ipu6_so",
   ]
   if (use.ipu6se) {
     deps += [
