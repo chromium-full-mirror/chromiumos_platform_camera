@@ -123,44 +123,45 @@ typedef struct
     unsigned int grid_height;                   /*! Height of the grid. */
     float data[IA_RGBS_GRID_SIZE];              /*! Grid data in floating point format. */
 } ia_ccat_grid_float;
-#if defined IA_CCAT_IR_GRID_ENABLED
+
 typedef struct
 {
     ia_ccat_grid_char grid_data;
     float i_per_y;
     float out_ir_compgain_isp;
 } ia_ccat_ir_grid;
-#endif
+
 #endif
 
 typedef struct
 {
-    bool frame_parameters_available;                                         /*!< Mandatory. Flag indicating that frame parameters can be used by CCAT. Set to false to invalidate frame parameters. */
-    bool shading_corrected;                                                  /*!< Mandatory. Flag indicating if statistics were calculated using lens shading corrected data. */
-    ia_ccat_frame_type frame_type;                                           /*!< Mandatory. Indicates if statistics were captured from non-flash or flash illuminated frame. */
-    uint64_t frame_id;                                             /*!< Mandatory. ID for the captured frame. */
-    uint64_t frame_timestamp;                                      /*!< Mandatory. Time stamp for captured frame. */
-    ia_rectangle statistics_crop_area;                                       /*!< Mandatory. RGBS and AF grid area crop with respect to full field of view of sensor output using (relative)ranges from ia_coordinate.h. */
+    bool frame_parameters_available;                                            /*!< Mandatory. Flag indicating that frame parameters can be used by CCAT. Set to false to invalidate frame parameters. */
+    bool shading_corrected;                                                     /*!< Mandatory. Flag indicating if statistics were calculated using lens shading corrected data. */
+    bool stitched_stats;                                                        /*!< RGBS stats for multi-exposures in stitched stats. */
+    ia_ccat_frame_type frame_type;                                              /*!< Mandatory. Indicates if statistics were captured from non-flash or flash illuminated frame. */
+    uint64_t frame_id;                                                          /*!< Mandatory. ID for the captured frame. */
+    uint64_t frame_timestamp;                                                   /*!< Mandatory. Time stamp for captured frame. */
+    ia_rectangle statistics_crop_area;                                          /*!< Mandatory. RGBS and AF grid area crop with respect to full field of view of sensor output using (relative)ranges from ia_coordinate.h. */
 #ifdef IA_CCAT_EXTERNAL_RGB_HISTOGRAMS_ENABLED
-    ia_ccat_histograms rgb_histograms[IA_CCAT_STATISTICS_MAX_NUM];           /*!< Optional. RGB histograms pointer for each exposure statistics. */
+    ia_ccat_histograms rgb_histograms[IA_CCAT_STATISTICS_MAX_NUM];              /*!< Optional. RGB histograms pointer for each exposure statistics. */
 #endif
 #ifdef IA_CCAT_EXTERNAL_LUMINANCE_HISTOGRAM_ENABLED
-    ia_histogram y_histogram[IA_CCAT_STATISTICS_MAX_NUM];                    /*!< Optional. Luminance histogram. */
+    ia_histogram y_histogram[IA_CCAT_STATISTICS_MAX_NUM];                       /*!< Optional. Luminance histogram. */
 #endif
 #ifdef IA_CCAT_RGBS_GRID_ENABLED
-    ia_rgbs_grid rgbs_grids[IA_CCAT_STATISTICS_MAX_NUM];                     /*!< Optional. RGBS grids for each exposure statistics. */
+    ia_rgbs_grid rgbs_grids[IA_CCAT_STATISTICS_MAX_NUM];                        /*!< Optional. RGBS grids for each exposure statistics. */
 #endif
 #ifdef IA_CCAT_CONVOLUTION_FILTER_GRID_ENABLED
-    ia_filter_response_grid af_grids[IA_CCAT_STATISTICS_MAX_NUM];            /*!< Optional. AF grids for each exposure statistics. */
+    ia_filter_response_grid af_grids[IA_CCAT_STATISTICS_MAX_NUM];               /*!< Optional. AF grids for each exposure statistics. */
 #endif
 #ifdef IA_CCAT_EXTERNAL_LUMINANCE_GRID_ENABLED
-    ia_ccat_grid_char y_grid[IA_CCAT_STATISTICS_MAX_NUM];                    /*!< Optional. Luminance (LSC and color corrected) grids for each exposure statistics. */
+    ia_ccat_grid_char y_grid[IA_CCAT_STATISTICS_MAX_NUM];                       /*!< Optional. Luminance (LSC and color corrected) grids for each exposure statistics. */
 #endif
 #ifdef IA_CCAT_IR_GRID_ENABLED
-    ia_ccat_ir_grid ir_grid;                                               /*!< Optional. Ir grid (Non LSC corrected grid). */
+    ia_ccat_ir_grid ir_grid;                                                    /*!< Optional. Ir grid (Non LSC corrected grid). */
 #endif
 #ifdef IA_CCAT_DEPTH_GRID_ENABLED
-    ia_depth_grid depth_grid;                                                /*!< Optional. Depth grid. */
+    ia_depth_grid depth_grid;                                                   /*!< Optional. Depth grid. */
 #endif
 } ia_ccat_frame_statistics;
 
@@ -171,6 +172,7 @@ typedef struct
     ia_aiq_sa_results_v1 sa_results;                                         /*!< Optional. */
     ia_aiq_awb_results awb_results;                                          /*!< Optional. */
     ia_aiq_af_results af_results;                                            /*!< Optional. */
+    bool bAssitLightOn;                                                      /*!< True if the af assist light is on, false otherwise .*/
 #ifdef IA_CCAT_FACE_ANALYSIS_ENABLED
     ia_face_roi faces[IA_CCAT_FACES_MAX_NUM];                                /*!< Optional. Face coordinates from external face detector. NULL if not available. */
     bool updated;                                                            /*!< The update status of face. true is the real statistics, and false is the false statistics that have not been updated.*/

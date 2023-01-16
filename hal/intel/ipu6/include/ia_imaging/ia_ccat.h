@@ -166,12 +166,35 @@ ia_ccat_get_frame_filtered_lux_level_estimate(
     uint32_t a_exposure_index,
     float32_t *a_filtered_lux_level_estimate);
 
+
+LIBEXPORT ia_err
+ia_ccat_calculate_luminance_scaling_coeff(
+    int32_t a_luminance,
+    float32_t* lux_diff_coeff);
+
+LIBEXPORT ia_err
+ia_ccat_is_lux_level_scene_changed(
+    ia_ccat_frame_info* a_frame_info_ptr,
+    uint32_t a_exposure_index,
+    bool is_scene_change_prev,
+    float32_t reference_lux_level,
+    float32_t diff_ratio_thr,
+    bool* is_sc_lux);
+
 LIBEXPORT ia_err
 ia_ccat_hold_frame_histogram(
     ia_ccat_frame_info *a_frame_info_ptr,
     uint32_t a_exposure_index,
     ia_ccat_histogram_type a_histogram_type,
     const ia_histogram **a_histogram_ptr);
+
+#ifdef IA_CCAT_EXTERNAL_RGB_HISTOGRAMS_ENABLED
+LIBEXPORT ia_err
+ia_ccat_hold_frame_rgb_histogram(
+    ia_ccat_frame_info *a_frame_info_ptr,
+    uint32_t a_exposure_index,
+    const ia_ccat_histograms **a_rgb_histogram_ptr);
+#endif
 
 LIBEXPORT ia_err
 ia_ccat_get_frame_camera_orientation(
@@ -182,6 +205,11 @@ LIBEXPORT ia_err
 ia_ccat_get_frame_ccat(
     ia_ccat_frame_info *a_frame_info_ptr,
     ia_ccat **ccat_ptr);
+
+LIBEXPORT ia_err
+ia_ccat_get_frame_bAssitLightOn(
+    ia_ccat_frame_info *a_frame_info_ptr,
+    bool *bAssitLightOn);
 
 LIBEXPORT ia_err
 ia_ccat_estimate_percentile_with_saturation_frame(
@@ -279,6 +307,55 @@ ia_ccat_get_frame_statistics_grid_changed(
     ia_ccat_frame_info *a_frame_info_ptr,
     bool *statistics_grid_changed);
 
+LIBEXPORT ia_err
+ia_ccat_get_global_luma_change(
+    ia_ccat_frame_info *a_frame_info_ptr,
+    bool *global_luma_change
+);
+
+LIBEXPORT ia_err
+ia_ccat_set_global_luma_change(
+    ia_ccat_frame_info *a_frame_info_ptr,
+    bool global_luma_change
+);
+
+/*!
+ * \brief Low light or not
+ * This function should act as the threshold between what is considered to be low light and what is not. The decision can be
+ * connected in part to the SNR10 of the used camera sensor. The SNR10 lux level correlates with sensor noise and reduced image
+ * quality, which is one of the key reasons to treat low light images differently than bright condition images. On the other hand,
+ * if the sensor has very good noise performance then alternative threshold should be used. This is because otherwise the low-
+ * light decision would not correlate with human visual system. Until more research is done, let that alternative threshold be 50lux.
+ * Output:
+ * - isLowLight (Boolean value)
+ * Input:
+ * - Current lux level estimate (luxEst)
+ * Camera module characterization:
+ * - SNR10 lux level (SNR10); 100lux can be used as a fixed default value until passing of camera module characterization information
+ *   for different algorithms is built into the system
+ *
+ * @param[in] a_frame_info_ptr Structure containing required input parameters.
+ * @param[out] is_low_light    Is low light decision..
+ */
+LIBEXPORT ia_err
+ia_ccat_is_low_light(
+    ia_ccat_frame_info *a_frame_info_ptr,
+    uint32_t exp_index,
+    bool *is_low_light
+);
+
+LIBEXPORT ia_err
+ia_ccat_get_next_focus_distance(
+    ia_ccat_frame_info *a_frame_info_ptr,
+    int32_t *next_focus_distance
+);
+
+LIBEXPORT ia_err
+ia_ccat_set_next_focus_distance(
+    ia_ccat_frame_info *a_frame_info_ptr,
+    int32_t next_focus_distance
+);
+
 #ifdef IA_AEC_FEATURE_WEIGHT_GRID
 LIBEXPORT ia_err
 ia_ccat_get_frame_histogram_weight_map(
@@ -305,17 +382,23 @@ ia_ccat_get_frame_color_gains(
 LIBEXPORT ia_err
 ia_ccat_get_frame_color_correction_matrix(
     ia_ccat_frame_info *a_frame_info_ptr,
+    /*LDRA_INSPECTED 63 X */
     float32_t(*a_matrix_ptr)[3][3]);
 
 LIBEXPORT ia_err
 ia_ccat_get_frame_timestamp(
-    ia_ccat_frame_info *a_frame_info_ptr,
+    const ia_ccat_frame_info *a_frame_info_ptr,
     uint64_t *a_frame_timestamp_ptr);
 
 LIBEXPORT ia_err
 ia_ccat_get_frame_id(
     ia_ccat_frame_info *a_frame_info_ptr,
     uint64_t *frame_id_ptr);
+
+LIBEXPORT ia_err
+ia_ccat_is_stitched_stats(
+    ia_ccat_frame_info *a_frame_info_ptr,
+    bool *is_stitched);
 
 /*!
  * \brief Get information about number of exposures and which of them is the center (in case of multi exposure frame) exposure index.
@@ -437,6 +520,12 @@ ia_ccat_get_frame_depth_grid(
     const ia_depth_grid **a_depth_grid_ptr);
 #endif
 
+LIBEXPORT ia_err
+ia_ccat_get_frame_af_grid(
+    ia_ccat_frame_info *a_frame_info_ptr,
+    uint32_t a_exposure_index,
+    const ia_filter_response_grid **a_af_grid_ptr);
+
 #ifdef IA_CCAT_RGBS_GRID_ENABLED
 LIBEXPORT ia_err
 ia_ccat_get_frame_rgbs_grid(
@@ -444,12 +533,6 @@ ia_ccat_get_frame_rgbs_grid(
     bool a_shading_corrected,
     uint32_t a_exposure_index,
     const ia_rgbs_grid **a_rgbs_grid_ptr);
-
-LIBEXPORT ia_err
-ia_ccat_get_frame_af_grid(
-    ia_ccat_frame_info *a_frame_info_ptr,
-    uint32_t a_exposure_index,
-    const ia_filter_response_grid **a_af_grid_ptr);
 
 #ifdef IA_CCAT_HSV_GRID_ENABLED
 LIBEXPORT ia_err
@@ -556,6 +639,11 @@ ia_ccat_get_analyzed_face_area(
     const ia_rectangle **area);
 
 LIBEXPORT ia_err
+ia_ccat_get_frame_analyzable_faces_num(
+    ia_ccat_frame_info* a_frame_info_ptr,
+    uint32_t *num_analyzable_faces);
+
+LIBEXPORT ia_err
 ia_ccat_get_face_coverage(
     const ia_face_roi *a_face_ptr,
     float32_t *a_coverage);
@@ -608,9 +696,40 @@ ia_ccat_set_face_in_exit_time(
     bool face_in_exit_time);
 
 LIBEXPORT ia_err
+ia_ccat_set_ae_scale(
+    ia_ccat_frame_info *a_frame_info_ptr,
+    float32_t ae_scale);
+
+LIBEXPORT ia_err
+ia_ccat_set_wb_face_based(
+    ia_ccat_frame_info *a_frame_info_ptr,
+    bool wb_face_based);
+
+LIBEXPORT ia_err
+ia_ccat_get_ae_scale(
+    ia_ccat_frame_info *a_frame_info_ptr,
+    float32_t *ae_scale);
+
+LIBEXPORT ia_err
 ia_ccat_get_face_in_exit_time(
     ia_ccat_frame_info *a_frame_info_ptr,
     bool* face_in_exit_time);
+
+LIBEXPORT ia_err
+ia_ccat_analyze_stable_face(
+    ia_ccat_frame_info* a_frame_info_ptr,
+    bool* is_stable);
+
+LIBEXPORT ia_err
+ia_ccat_analysis_face_position(
+    ia_ccat_frame_info* a_frame_info_ptr,
+    float32_t* factor);
+
+LIBEXPORT ia_err
+ia_ccat_get_face_detection_exit_delay(
+    ia_ccat_frame_info* a_frame_info_ptr,
+    uint32_t face_exit_delay_tuning,
+    uint32_t *refined_face_exit_dela);
 #endif /* IA_CCAT_FACE_ANALYSIS_ENABLED */
 #endif /* IA_CCAT_RGBS_GRID_ENABLED */
 
@@ -751,6 +870,16 @@ LIBEXPORT ia_err
 ia_ccat_set_frame_min_gamma_gtm(
     ia_ccat_frame_info *a_frame_info_ptr,
     float32_t min_gamma_gtm);
+
+LIBEXPORT ia_err
+ia_ccat_set_base_gamma(
+    ia_ccat_frame_info *a_frame_info_ptr,
+    float32_t base_gamma);
+
+LIBEXPORT ia_err
+ia_ccat_get_base_gamma(
+    ia_ccat_frame_info *a_frame_info_ptr,
+    float32_t *base_gamma);
 
 LIBEXPORT ia_err
 ia_ccat_get_frame_athena_mode(

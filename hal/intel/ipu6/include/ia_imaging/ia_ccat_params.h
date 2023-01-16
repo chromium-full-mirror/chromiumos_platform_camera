@@ -28,7 +28,7 @@ extern "C" {
 
 #define MANUAL_CONVERGENCE_TIME_GRANULARITY 0.01f
 #define TIMED_TRIMMED_FILTER_SIZE 34
-#define DEFAULT_MODULE_ISO 100
+#define CCAT_DEFAULT_MODULE_ISO 100U
 #define MAX_IR_WEIGHT_GRID_SIZE 480u /* Max IR weight grid size = ir_width x ir_height*/
 #define MAX_NUM_SECTORS 36u
 #define MAX_NUM_IR_WEIGHT_GRIDS 30u
@@ -39,6 +39,9 @@ extern "C" {
 #define MIN_LUMINANCE_SATURATED_TARGET 92
 #define MIN_LUMINANCE_BRIGHT_TARGET 50
 #define LUMINANCE_BASED_MOTION_THRESHOLD 8
+#define MAX_STATISTICS_WIDTH 200
+
+#define USE_STABLE_FACE
 
 #ifdef __cplusplus
 }
