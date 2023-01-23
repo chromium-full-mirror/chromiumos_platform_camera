@@ -16,7 +16,7 @@
 
 #ifndef CAMERA_HAL_MEDIATEK_MTKCAM_IPC_CLIENT_HAL3AIPCADAPTER_H_
 #define CAMERA_HAL_MEDIATEK_MTKCAM_IPC_CLIENT_HAL3AIPCADAPTER_H_
-#include <base/bind.h>
+#include <base/functional/bind.h>
 #include <list>
 #include <memory>
 #include <string>

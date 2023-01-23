@@ -25,8 +25,8 @@
 
 #include "CameraLog.h"
 #include "Parameters.h"
-#include "base/bind.h"
-#include "base/callback.h"
+#include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "cros-camera/camera_algorithm_bridge.h"
 #include "iutils/Thread.h"
 #include "modules/sandboxing/IPCCommon.h"

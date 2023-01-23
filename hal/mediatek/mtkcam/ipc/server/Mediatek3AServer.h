@@ -20,7 +20,7 @@
 #include <memory>
 #include <sys/un.h>
 
-#include <base/bind.h>
+#include <base/functional/bind.h>
 #include <base/threading/thread.h>
 #include <unordered_map>
 

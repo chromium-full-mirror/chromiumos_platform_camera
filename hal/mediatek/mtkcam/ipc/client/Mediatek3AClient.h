@@ -17,7 +17,7 @@
 #ifndef CAMERA_HAL_MEDIATEK_MTKCAM_IPC_CLIENT_MEDIATEK3ACLIENT_H_
 #define CAMERA_HAL_MEDIATEK_MTKCAM_IPC_CLIENT_MEDIATEK3ACLIENT_H_
 
-#include <base/bind.h>
+#include <base/functional/bind.h>
 #include <cros-camera/camera_algorithm_bridge.h>
 #include <Errors.h>
 #include <memory>

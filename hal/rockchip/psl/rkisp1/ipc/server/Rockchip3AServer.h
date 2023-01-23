@@ -23,7 +23,7 @@
 #include "IPCCommon.h"
 #include "AiqLibrary.h"
 
-#include <base/bind.h>
+#include <base/functional/bind.h>
 #include <base/threading/thread.h>
 #include "cros-camera/camera_algorithm.h"
 
