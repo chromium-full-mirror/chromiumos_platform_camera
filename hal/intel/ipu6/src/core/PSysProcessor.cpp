@@ -1133,22 +1133,20 @@ void PSysProcessor::outputRawImage(shared_ptr<CameraBuffer>& srcBuf,
     int srcBufferSize = srcBuf->getBufferSize();
     int srcMemoryType = srcBuf->getMemory();
     void* pSrcBuf = (srcMemoryType == V4L2_MEMORY_DMABUF) ?
-                        CameraBuffer::mapDmaBufferAddr(srcBuf->getFd(), srcBufferSize) :
-                        srcBuf->getBufferAddr();
+                        srcBuf->mapDmaBufferAddr() : srcBuf->getBufferAddr();
 
     int dstBufferSize = dstBuf->getBufferSize();
     int dstMemoryType = dstBuf->getMemory();
     void* pDstBuf = (dstMemoryType == V4L2_MEMORY_DMABUF) ?
-                        CameraBuffer::mapDmaBufferAddr(dstBuf->getFd(), dstBufferSize) :
-                        dstBuf->getBufferAddr();
+                        dstBuf->mapDmaBufferAddr() : dstBuf->getBufferAddr();
 
     MEMCPY_S(pDstBuf, dstBufferSize, pSrcBuf, srcBufferSize);
 
     if (srcMemoryType == V4L2_MEMORY_DMABUF) {
-        CameraBuffer::unmapDmaBufferAddr(pSrcBuf, srcBufferSize);
+        srcBuf->unmapDmaBufferAddr(pSrcBuf);
     }
     if (dstMemoryType == V4L2_MEMORY_DMABUF) {
-        CameraBuffer::unmapDmaBufferAddr(pDstBuf, dstBufferSize);
+        dstBuf->unmapDmaBufferAddr(pDstBuf);
     }
 
     // Send output buffer to its consumer
