@@ -58,6 +58,12 @@ void AiqUtils::dumpAeResults(const cca::cca_ae_results& aeResult) {
     LOG3("AE bracket mode = %d %s", aeResult.multiframe,
          aeResult.multiframe == ia_aiq_bracket_mode_ull ? "ULL" : "none-ULL");
 
+    if (aeResult.flicker_reduction_mode == ia_aiq_ae_flicker_reduction_50hz) {
+        LOG3("AE antiflicker freq 50hz");
+    } else if (aeResult.flicker_reduction_mode == ia_aiq_ae_flicker_reduction_60hz) {
+        LOG3("AE antiflicker freq 60hz");
+    }
+
     const cca::cca_hist_weight_grid& wg = aeResult.weight_grid;
     if (wg.width != 0 && wg.height != 0) {
         LOG3("AE weight grid [%dx%d]", wg.width, wg.height);

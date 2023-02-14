@@ -280,8 +280,15 @@ int MetadataConvert::constructDefaultMetadata(int cameraId, android::CameraMetad
     settings->update(ANDROID_REQUEST_METADATA_MODE, &mode, 1);
 
     // Scale
-    int32_t region[] = {0, 0, 0, 0};
-    settings->update(ANDROID_SCALER_CROP_REGION, region, 4);
+    tag = CAMERA_SENSOR_INFO_ACTIVE_ARRAY_SIZE;
+    roEntry = meta->find(tag);
+    // Check if the count is correct
+    if (roEntry.count == 4) {
+        settings->update(ANDROID_SCALER_CROP_REGION, roEntry.data.i32, roEntry.count);
+    } else {
+        int32_t region[] = {0, 0, 0, 0};
+        settings->update(ANDROID_SCALER_CROP_REGION, region, 4);
+    }
 
     // Statistics
     mode = ANDROID_STATISTICS_FACE_DETECT_MODE_OFF;
