@@ -223,6 +223,8 @@ std::vector<CrosCameraInfo> getCrosCameraInfo() {
                     info.facing = icamera::FACING_BACK;
                 }
             }
+            LOG2("%s, cameraIdx: %d, facing: %d, str: %s, orientation: %d", __func__,
+                 cameraIdx, info.facing, facing.c_str(), info.orientation);
             infos.push_back(info);
         }
         ++cameraIdx;

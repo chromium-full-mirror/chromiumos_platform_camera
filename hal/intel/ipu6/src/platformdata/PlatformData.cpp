@@ -428,11 +428,19 @@ MediaCtlConf* PlatformData::getMediaCtlConf(int cameraId) {
 
 int PlatformData::getCameraInfo(int cameraId, camera_info_t& info) {
     info.device_version = 1;
-    info.facing = getInstance()->mStaticCfg.mCameras[cameraId].mFacing;
     info.orientation = getInstance()->mStaticCfg.mCameras[cameraId].mOrientation;
     info.name = getSensorName(cameraId);
     info.description = getSensorDescription(cameraId);
     info.capability = &getInstance()->mStaticCfg.mCameras[cameraId].mCapability;
+
+    const CameraMetadata& meta = icamera::ParameterHelper::getMetadata(*info.capability);
+    auto entry = meta.find(CAMERA_LENS_FACING);
+    info.facing = FACING_BACK;
+    if (entry.count == 1) {
+        info.facing = entry.data.u8[0] == CAMERA_LENS_FACING_BACK ?
+                                          FACING_BACK : FACING_FRONT;
+    }
+
     return OK;
 }
 

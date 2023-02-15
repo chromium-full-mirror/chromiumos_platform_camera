@@ -130,7 +130,6 @@ class PlatformData {
                       mISysFourcc(V4L2_PIX_FMT_SGRBG8),
                       mISysRawFormat(V4L2_PIX_FMT_SGRBG10),
                       mUseCrlModule(true),
-                      mFacing(FACING_BACK),
                       mOrientation(ORIENTATION_0),
                       mSensorOrientation(ORIENTATION_0),
                       mUseSensorDigitalGain(false),
@@ -218,7 +217,6 @@ class PlatformData {
             std::vector<ConfigMode> mConfigModesForAuto;
 
             bool mUseCrlModule;
-            int mFacing;
             int mOrientation;
             int mSensorOrientation;
             bool mUseSensorDigitalGain;
