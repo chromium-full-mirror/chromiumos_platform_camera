@@ -998,7 +998,6 @@ FdNodeImp::ReturnFDResult(IMetadata* pOutMetadataResult,
               entryMode.itemAt(0, Type2Type<MUINT8>())) {
         FDEn = 1;
         FDMode = entryMode.itemAt(0, Type2Type<MUINT8>());
-        pOutMetadataResult->update(MTK_STATISTICS_FACE_DETECT_MODE, entryMode);
       }
     }
     {
