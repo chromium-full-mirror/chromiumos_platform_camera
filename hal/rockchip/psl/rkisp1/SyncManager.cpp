@@ -197,10 +197,10 @@ status_t SyncManager::init(int32_t exposureDelay, int32_t gainDelay)
     msg.exposureDelay = exposureDelay;
 
     status_t status = NO_ERROR;
-    base::Callback<status_t()> closure =
-            base::Bind(&SyncManager::handleInit, base::Unretained(this),
-                       base::Passed(std::move(msg)));
-    mCameraThread.PostTaskSync<status_t>(FROM_HERE, closure, &status);
+    base::OnceCallback<status_t()> closure = base::BindOnce(
+        &SyncManager::handleInit, base::Unretained(this), std::move(msg));
+    mCameraThread.PostTaskSync<status_t>(FROM_HERE, std::move(closure),
+                                         &status);
     return status;
 }
 
@@ -277,10 +277,11 @@ status_t SyncManager::getSensorModeData(rk_aiq_exposure_sensor_descriptor &desc)
     msg.desc = &desc;
 
     status_t status = OK;
-    base::Callback<status_t()> closure =
-            base::Bind(&SyncManager::handleGetSensorModeData,
-                       base::Unretained(this), base::Passed(std::move(msg)));
-    mCameraThread.PostTaskSync<status_t>(FROM_HERE, closure, &status);
+    base::OnceCallback<status_t()> closure =
+        base::BindOnce(&SyncManager::handleGetSensorModeData,
+                       base::Unretained(this), std::move(msg));
+    mCameraThread.PostTaskSync<status_t>(FROM_HERE, std::move(closure),
+                                         &status);
     return status;
 }
 
@@ -382,10 +383,10 @@ status_t SyncManager::handleGetSensorModeData(MessageSensorModeData msg)
 status_t SyncManager::setParameters(std::shared_ptr<CaptureUnitSettings> settings)
 {
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL2);
-    base::Callback<status_t()> closure =
-            base::Bind(&SyncManager::handleSetParams, base::Unretained(this),
-                       base::Passed(std::move(settings)));
-    mCameraThread.PostTaskAsync<status_t>(FROM_HERE, closure);
+    base::OnceCallback<status_t()> closure =
+        base::BindOnce(&SyncManager::handleSetParams, base::Unretained(this),
+                       std::move(settings));
+    mCameraThread.PostTaskAsync<status_t>(FROM_HERE, std::move(closure));
     return OK;
 }
 
@@ -504,10 +505,11 @@ status_t SyncManager::setSensorFT(int width, int height)
     msg.height = height;
 
     status_t status = OK;
-    base::Callback<status_t()> closure =
-            base::Bind(&SyncManager::handleSetSensorFT,
-                       base::Unretained(this), base::Passed(std::move(msg)));
-    mCameraThread.PostTaskSync<status_t>(FROM_HERE, closure, &status);
+    base::OnceCallback<status_t()> closure =
+        base::BindOnce(&SyncManager::handleSetSensorFT, base::Unretained(this),
+                       std::move(msg));
+    mCameraThread.PostTaskSync<status_t>(FROM_HERE, std::move(closure),
+                                         &status);
     return status;
 }
 
@@ -639,9 +641,10 @@ status_t SyncManager::start()
 {
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL1);
     status_t status = OK;
-    base::Callback<status_t()> closure =
-            base::Bind(&SyncManager::handleStart, base::Unretained(this));
-    mCameraThread.PostTaskSync<status_t>(FROM_HERE, closure, &status);
+    base::OnceCallback<status_t()> closure =
+        base::BindOnce(&SyncManager::handleStart, base::Unretained(this));
+    mCameraThread.PostTaskSync<status_t>(FROM_HERE, std::move(closure),
+                                         &status);
     return status;
 }
 
@@ -700,10 +703,10 @@ status_t SyncManager::isStarted(bool &started)
     msg.value = &started;
 
     status_t status = OK;
-    base::Callback<status_t()> closure =
-            base::Bind(&SyncManager::handleIsStarted,
-                       base::Unretained(this), base::Passed(std::move(msg)));
-    mCameraThread.PostTaskSync<status_t>(FROM_HERE, closure, &status);
+    base::OnceCallback<status_t()> closure = base::BindOnce(
+        &SyncManager::handleIsStarted, base::Unretained(this), std::move(msg));
+    mCameraThread.PostTaskSync<status_t>(FROM_HERE, std::move(closure),
+                                         &status);
     return status;
 }
 
@@ -730,9 +733,10 @@ status_t SyncManager::stop()
 {
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL1);
     status_t status = OK;
-    base::Callback<status_t()> closure =
-            base::Bind(&SyncManager::handleStop, base::Unretained(this));
-    mCameraThread.PostTaskSync<status_t>(FROM_HERE, closure, &status);
+    base::OnceCallback<status_t()> closure =
+        base::BindOnce(&SyncManager::handleStop, base::Unretained(this));
+    mCameraThread.PostTaskSync<status_t>(FROM_HERE, std::move(closure),
+                                         &status);
     return status;
 }
 
@@ -769,9 +773,10 @@ status_t SyncManager::flush()
 {
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL1);
     status_t status = OK;
-    base::Callback<status_t()> closure =
-            base::Bind(&SyncManager::handleFlush, base::Unretained(this));
-    mCameraThread.PostTaskSync<status_t>(FROM_HERE, closure, &status);
+    base::OnceCallback<status_t()> closure =
+        base::BindOnce(&SyncManager::handleFlush, base::Unretained(this));
+    mCameraThread.PostTaskSync<status_t>(FROM_HERE, std::move(closure),
+                                         &status);
     return status;
 }
 
@@ -841,16 +846,16 @@ status_t SyncManager::notifyPollEvent(PollEventMessage *pollEventMsg)
             msg.exp_id = event.u.frame_sync.frame_sequence;
             msg.reqId = pollEventMsg->data.reqId;
             if (mFrameSyncSource == FRAME_SYNC_SOF) {
-                base::Callback<status_t()> closure =
-                        base::Bind(&SyncManager::handleSOF,
-                                   base::Unretained(this),
-                                   base::Passed(std::move(msg)));
-                mCameraThread.PostTaskAsync<status_t>(FROM_HERE, closure);
+                base::OnceCallback<status_t()> closure =
+                    base::BindOnce(&SyncManager::handleSOF,
+                                   base::Unretained(this), std::move(msg));
+                mCameraThread.PostTaskAsync<status_t>(FROM_HERE,
+                                                      std::move(closure));
             } else if (mFrameSyncSource == FRAME_SYNC_EOF) {
-                base::Callback<status_t()> closure =
-                        base::Bind(&SyncManager::handleEOF,
-                                   base::Unretained(this));
-                mCameraThread.PostTaskAsync<status_t>(FROM_HERE, closure);
+                base::OnceCallback<status_t()> closure = base::BindOnce(
+                    &SyncManager::handleEOF, base::Unretained(this));
+                mCameraThread.PostTaskAsync<status_t>(FROM_HERE,
+                                                      std::move(closure));
             } else {
                 LOGE("Unhandled frame sync source : %d", mFrameSyncSource);
             }

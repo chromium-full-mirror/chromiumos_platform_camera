@@ -420,10 +420,10 @@ ControlUnit::processRequest(Camera3Request* request)
 
     state->init(request);
 
-    base::Callback<status_t()> closure =
-            base::Bind(&ControlUnit::handleNewRequest, base::Unretained(this),
-                       base::Passed(std::move(state)));
-    mCameraThread.PostTaskAsync<status_t>(FROM_HERE, closure);
+    base::OnceCallback<status_t()> closure =
+        base::BindOnce(&ControlUnit::handleNewRequest, base::Unretained(this),
+                       std::move(state));
+    mCameraThread.PostTaskAsync<status_t>(FROM_HERE, std::move(closure));
     return OK;
 }
 
@@ -831,9 +831,10 @@ ControlUnit::flush(void)
 {
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL2, LOG_TAG);
     status_t status = NO_ERROR;
-    base::Callback<status_t()> closure =
-            base::Bind(&ControlUnit::handleFlush, base::Unretained(this));
-    mCameraThread.PostTaskSync<status_t>(FROM_HERE, closure, &status);
+    base::OnceCallback<status_t()> closure =
+        base::BindOnce(&ControlUnit::handleFlush, base::Unretained(this));
+    mCameraThread.PostTaskSync<status_t>(FROM_HERE, std::move(closure),
+                                         &status);
     return status;
 }
 
@@ -870,11 +871,11 @@ ControlUnit::notifyCaptureEvent(CaptureMessage *captureMsg)
             msg.requestId = captureMsg->data.event.reqId;
             msg.rawBuffer = captureMsg->data.event.pixelBuffer;
             msg.lastRawBuffer = captureMsg->data.event.lastPixelBuffer;
-            base::Callback<status_t()> closure =
-                    base::Bind(&ControlUnit::handleNewImage,
-                               base::Unretained(this),
-                               base::Passed(std::move(msg)));
-            mCameraThread.PostTaskAsync<status_t>(FROM_HERE, closure);
+            base::OnceCallback<status_t()> closure =
+                base::BindOnce(&ControlUnit::handleNewImage,
+                               base::Unretained(this), std::move(msg));
+            mCameraThread.PostTaskAsync<status_t>(FROM_HERE,
+                                                  std::move(closure));
             break;
         }
         case CAPTURE_EVENT_NEW_SENSOR_DESCRIPTOR:
@@ -882,11 +883,11 @@ ControlUnit::notifyCaptureEvent(CaptureMessage *captureMsg)
             MessageSensorMode msg;
             msg.exposureDesc = captureMsg->data.event.exposureDesc;
             msg.frameParams = captureMsg->data.event.frameParams;
-            base::Callback<status_t()> closure =
-                    base::Bind(&ControlUnit::handleNewSensorDescriptor,
-                               base::Unretained(this),
-                               base::Passed(std::move(msg)));
-            mCameraThread.PostTaskAsync<status_t>(FROM_HERE, closure);
+            base::OnceCallback<status_t()> closure =
+                base::BindOnce(&ControlUnit::handleNewSensorDescriptor,
+                               base::Unretained(this), std::move(msg));
+            mCameraThread.PostTaskAsync<status_t>(FROM_HERE,
+                                                  std::move(closure));
             break;
         }
         case CAPTURE_EVENT_2A_STATISTICS:
@@ -896,11 +897,11 @@ ControlUnit::notifyCaptureEvent(CaptureMessage *captureMsg)
             } else {
                 MessageStats msg;
                 msg.stats = captureMsg->data.event.stats;
-                base::Callback<status_t()> closure =
-                        base::Bind(&ControlUnit::handleNewStat,
-                                   base::Unretained(this),
-                                   base::Passed(std::move(msg)));
-                mCameraThread.PostTaskAsync<status_t>(FROM_HERE, closure);
+                base::OnceCallback<status_t()> closure =
+                    base::BindOnce(&ControlUnit::handleNewStat,
+                                   base::Unretained(this), std::move(msg));
+                mCameraThread.PostTaskAsync<status_t>(FROM_HERE,
+                                                      std::move(closure));
             }
             break;
         case CAPTURE_EVENT_SHUTTER:
@@ -909,11 +910,11 @@ ControlUnit::notifyCaptureEvent(CaptureMessage *captureMsg)
             msg.requestId = captureMsg->data.event.reqId;
             msg.tv_sec = captureMsg->data.event.timestamp.tv_sec;
             msg.tv_usec = captureMsg->data.event.timestamp.tv_usec;
-            base::Callback<status_t()> closure =
-                    base::Bind(&ControlUnit::handleNewShutter,
-                               base::Unretained(this),
-                               base::Passed(std::move(msg)));
-            mCameraThread.PostTaskAsync<status_t>(FROM_HERE, closure);
+            base::OnceCallback<status_t()> closure =
+                base::BindOnce(&ControlUnit::handleNewShutter,
+                               base::Unretained(this), std::move(msg));
+            mCameraThread.PostTaskAsync<status_t>(FROM_HERE,
+                                                  std::move(closure));
             break;
         }
         case CAPTURE_EVENT_NEW_SOF:

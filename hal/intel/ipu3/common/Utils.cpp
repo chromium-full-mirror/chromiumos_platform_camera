@@ -275,10 +275,10 @@ void CameraDumpAsync::dumpImageToFile(const void *data, uint32_t size,
     msg.name = name;
     msg.data = std::move(dumpBuf);
 
-    base::Callback<void()> closure =
-        base::Bind(&CameraDumpAsync::handleDumpImageToFile, base::Unretained(this),
-                   base::Passed(&msg));
-    mCameraThread.PostTaskAsync<void>(FROM_HERE, closure);
+    base::OnceCallback<void()> closure =
+        base::BindOnce(&CameraDumpAsync::handleDumpImageToFile,
+                       base::Unretained(this), std::move(msg));
+    mCameraThread.PostTaskAsync<void>(FROM_HERE, std::move(closure));
 }
 
 } /* namespace intel */

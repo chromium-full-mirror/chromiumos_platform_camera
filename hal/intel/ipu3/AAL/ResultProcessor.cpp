@@ -57,9 +57,10 @@ status_t ResultProcessor::requestExitAndWait(void)
 {
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL1, LOG_TAG);
     status_t status = NO_ERROR;
-    base::Callback<status_t()> closure =
-            base::Bind(&ResultProcessor::handleExit, base::Unretained(this));
-    mCameraThread.PostTaskSync<status_t>(FROM_HERE, closure, &status);
+    base::OnceCallback<status_t()> closure =
+        base::BindOnce(&ResultProcessor::handleExit, base::Unretained(this));
+    mCameraThread.PostTaskSync<status_t>(FROM_HERE, std::move(closure),
+                                         &status);
     return status;
 }
 
@@ -94,10 +95,11 @@ status_t ResultProcessor::registerRequest(Camera3Request *request)
     MessageRegisterRequest msg;
     msg.request = request;
     status_t status = NO_ERROR;
-    base::Callback<status_t()> closure =
-            base::Bind(&ResultProcessor::handleRegisterRequest,
-                       base::Unretained(this), base::Passed(std::move(msg)));
-    mCameraThread.PostTaskSync<status_t>(FROM_HERE, closure, &status);
+    base::OnceCallback<status_t()> closure =
+        base::BindOnce(&ResultProcessor::handleRegisterRequest,
+                       base::Unretained(this), std::move(msg));
+    mCameraThread.PostTaskSync<status_t>(FROM_HERE, std::move(closure),
+                                         &status);
     return status;
 }
 
@@ -142,10 +144,10 @@ status_t ResultProcessor::shutterDone(Camera3Request* request,
     msg.request = request;
     msg.time = timestamp;
 
-    base::Callback<status_t()> closure =
-            base::Bind(&ResultProcessor::handleShutterDone,
-                       base::Unretained(this), base::Passed(std::move(msg)));
-    mCameraThread.PostTaskAsync<status_t>(FROM_HERE, closure);
+    base::OnceCallback<status_t()> closure =
+        base::BindOnce(&ResultProcessor::handleShutterDone,
+                       base::Unretained(this), std::move(msg));
+    mCameraThread.PostTaskAsync<status_t>(FROM_HERE, std::move(closure));
     return OK;
 }
 
@@ -215,10 +217,10 @@ status_t ResultProcessor::metadataDone(Camera3Request* request,
     msg.request = request;
     msg.resultIndex = resultIndex;
 
-    base::Callback<status_t()> closure =
-            base::Bind(&ResultProcessor::handleMetadataDone,
-                       base::Unretained(this), base::Passed(std::move(msg)));
-    mCameraThread.PostTaskAsync<status_t>(FROM_HERE, closure);
+    base::OnceCallback<status_t()> closure =
+        base::BindOnce(&ResultProcessor::handleMetadataDone,
+                       base::Unretained(this), std::move(msg));
+    mCameraThread.PostTaskAsync<status_t>(FROM_HERE, std::move(closure));
     return OK;
 }
 
@@ -329,10 +331,10 @@ status_t ResultProcessor::bufferDone(Camera3Request* request,
     msg.request = request;
     msg.buffer = buffer;
 
-    base::Callback<status_t()> closure =
-            base::Bind(&ResultProcessor::handleBufferDone,
-                       base::Unretained(this), base::Passed(std::move(msg)));
-    mCameraThread.PostTaskAsync<status_t>(FROM_HERE, closure);
+    base::OnceCallback<status_t()> closure =
+        base::BindOnce(&ResultProcessor::handleBufferDone,
+                       base::Unretained(this), std::move(msg));
+    mCameraThread.PostTaskAsync<status_t>(FROM_HERE, std::move(closure));
     return OK;
 }
 
@@ -608,10 +610,9 @@ status_t ResultProcessor::recycleRequest(Camera3Request *req)
 status_t ResultProcessor::deviceError(void)
 {
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL1, LOG_TAG);
-    base::Callback<void()> closure =
-            base::Bind(&ResultProcessor::handleDeviceError,
-                       base::Unretained(this));
-    mCameraThread.PostTaskAsync<void>(FROM_HERE, closure);
+    base::OnceCallback<void()> closure = base::BindOnce(
+        &ResultProcessor::handleDeviceError, base::Unretained(this));
+    mCameraThread.PostTaskAsync<void>(FROM_HERE, std::move(closure));
     return OK;
 }
 

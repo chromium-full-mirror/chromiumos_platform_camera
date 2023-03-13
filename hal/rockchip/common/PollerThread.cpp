@@ -80,10 +80,10 @@ status_t PollerThread::init(std::vector<std::shared_ptr<V4L2DeviceBase>> &device
     msg.makeRealtime = makeRealtime;
 
     status_t status = NO_ERROR;
-    base::Callback<status_t()> closure =
-            base::Bind(&PollerThread::handleInit, base::Unretained(this),
-                       base::Passed(std::move(msg)));
-    mCameraThread.PostTaskSync<status_t>(FROM_HERE, closure, &status);
+    base::OnceCallback<status_t()> closure = base::BindOnce(
+        &PollerThread::handleInit, base::Unretained(this), std::move(msg));
+    mCameraThread.PostTaskSync<status_t>(FROM_HERE, std::move(closure),
+                                         &status);
     return status;
 }
 
@@ -156,10 +156,10 @@ status_t PollerThread::pollRequest(int reqId, int timeout,
     if (devices)
         msg.devices = *devices;
 
-    base::Callback<status_t()> closure =
-            base::Bind(&PollerThread::handlePollRequest, base::Unretained(this),
-                       base::Passed(std::move(msg)));
-    mCameraThread.PostTaskAsync<status_t>(FROM_HERE, closure);
+    base::OnceCallback<status_t()> closure =
+        base::BindOnce(&PollerThread::handlePollRequest, base::Unretained(this),
+                       std::move(msg));
+    mCameraThread.PostTaskAsync<status_t>(FROM_HERE, std::move(closure));
     return OK;
 }
 
@@ -233,16 +233,15 @@ status_t PollerThread::flush(bool sync, bool clear)
 
     if (sync) {
         status_t status = NO_ERROR;
-        base::Callback<status_t()> closure =
-                base::Bind(&PollerThread::handleFlush, base::Unretained(this),
-                           base::Passed(std::move(msg)));
-        mCameraThread.PostTaskSync<status_t>(FROM_HERE, closure, &status);
+        base::OnceCallback<status_t()> closure = base::BindOnce(
+            &PollerThread::handleFlush, base::Unretained(this), std::move(msg));
+        mCameraThread.PostTaskSync<status_t>(FROM_HERE, std::move(closure),
+                                             &status);
         return status;
     } else {
-        base::Callback<status_t()> closure =
-                base::Bind(&PollerThread::handleFlush, base::Unretained(this),
-                           base::Passed(std::move(msg)));
-        mCameraThread.PostTaskAsync<status_t>(FROM_HERE, closure);
+        base::OnceCallback<status_t()> closure = base::BindOnce(
+            &PollerThread::handleFlush, base::Unretained(this), std::move(msg));
+        mCameraThread.PostTaskAsync<status_t>(FROM_HERE, std::move(closure));
         return OK;
     }
 }

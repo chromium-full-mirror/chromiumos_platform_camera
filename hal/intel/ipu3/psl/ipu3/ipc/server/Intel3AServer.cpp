@@ -282,8 +282,9 @@ void Intel3AServer::request(uint32_t req_id,
     }
 
     MsgReq msg = {req_id, buffer_handle};
-    mThreads[group]->task_runner()->PostTask(FROM_HERE,
-        base::Bind(&Intel3AServer::handleRequest, base::Unretained(this), msg));
+    mThreads[group]->task_runner()->PostTask(
+        FROM_HERE, base::BindOnce(&Intel3AServer::handleRequest,
+                                  base::Unretained(this), msg));
 }
 
 void Intel3AServer::deregisterBuffers(const int32_t buffer_handles[], uint32_t size)

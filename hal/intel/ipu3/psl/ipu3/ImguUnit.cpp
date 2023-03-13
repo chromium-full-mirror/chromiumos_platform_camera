@@ -705,10 +705,10 @@ ImguUnit::ImguPipe::completeRequest(std::shared_ptr<ProcUnitSettings> &processin
     msg.id = MESSAGE_COMPLETE_REQ;
     msg.pMsg = procMsg;
     msg.cbMetadataMsg = cbMetadataMsg;
-    base::Callback<status_t()> closure =
-            base::Bind(&ImguUnit::ImguPipe::handleCompleteReq, base::Unretained(this),
-                       base::Passed(std::move(msg)));
-    mCameraThread.PostTaskAsync<status_t>(FROM_HERE, closure);
+    base::OnceCallback<status_t()> closure =
+        base::BindOnce(&ImguUnit::ImguPipe::handleCompleteReq,
+                       base::Unretained(this), std::move(msg));
+    mCameraThread.PostTaskAsync<status_t>(FROM_HERE, std::move(closure));
     return NO_ERROR;
 }
 
@@ -975,10 +975,10 @@ status_t ImguUnit::ImguPipe::notifyPollEvent(PollEventMessage *pollMsg)
             }
             pthread_mutex_unlock(&mFirstLock);
         }
-        base::Callback<status_t()> closure =
-                base::Bind(&ImguUnit::ImguPipe::handlePoll, base::Unretained(this),
-                           base::Passed(std::move(msg)));
-        mCameraThread.PostTaskAsync<status_t>(FROM_HERE, closure);
+        base::OnceCallback<status_t()> closure =
+            base::BindOnce(&ImguUnit::ImguPipe::handlePoll,
+                           base::Unretained(this), std::move(msg));
+        mCameraThread.PostTaskAsync<status_t>(FROM_HERE, std::move(closure));
 
     } else if (pollMsg->id == POLL_EVENT_ID_ERROR) {
         LOGE("Device poll failed");
@@ -1079,9 +1079,10 @@ ImguUnit::ImguPipe::flush(void)
 {
     LOG2("%s pipe type %d", __FUNCTION__, mPipeType);
     status_t status = NO_ERROR;
-    base::Callback<status_t()> closure =
-            base::Bind(&ImguUnit::ImguPipe::handleFlush, base::Unretained(this));
-    mCameraThread.PostTaskSync<status_t>(FROM_HERE, closure, &status);
+    base::OnceCallback<status_t()> closure = base::BindOnce(
+        &ImguUnit::ImguPipe::handleFlush, base::Unretained(this));
+    mCameraThread.PostTaskSync<status_t>(FROM_HERE, std::move(closure),
+                                         &status);
     return status;
 }
 

@@ -180,9 +180,10 @@ void Rockchip3AServer::request(
         status = handleRequest(cmd, info.size, info.addr);
     }
 
-    mThread.task_runner()->PostTask(FROM_HERE,
-        base::Bind(&Rockchip3AServer::returnCallback, base::Unretained(this),
-                   req_id, status, buffer_handle));
+    mThread.task_runner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&Rockchip3AServer::returnCallback,
+                       base::Unretained(this), req_id, status, buffer_handle));
 }
 
 void Rockchip3AServer::deregisterBuffers(const int32_t buffer_handles[], uint32_t size)

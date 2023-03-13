@@ -96,9 +96,9 @@ RequestThread::deinit()
         mResultProcessor = nullptr;
     }
 
-    base::Callback<status_t()> closure =
-            base::Bind(&RequestThread::handleExit, base::Unretained(this));
-    mCameraThread.PostTaskAsync<status_t>(FROM_HERE, closure);
+    base::OnceCallback<status_t()> closure =
+        base::BindOnce(&RequestThread::handleExit, base::Unretained(this));
+    mCameraThread.PostTaskAsync<status_t>(FROM_HERE, std::move(closure));
 
     mCameraThread.Stop();
 
@@ -134,11 +134,11 @@ RequestThread::configureStreams(camera3_stream_configuration_t *stream_list)
     msg.list = stream_list;
 
     status_t status = NO_ERROR;
-    base::Callback<status_t()> closure =
-            base::Bind(&RequestThread::handleConfigureStreams,
-                       base::Unretained(this),
-                       base::Passed(std::move(msg)));
-    mCameraThread.PostTaskSync<status_t>(FROM_HERE, closure, &status);
+    base::OnceCallback<status_t()> closure =
+        base::BindOnce(&RequestThread::handleConfigureStreams,
+                       base::Unretained(this), std::move(msg));
+    mCameraThread.PostTaskSync<status_t>(FROM_HERE, std::move(closure),
+                                         &status);
     return status;
 }
 
@@ -238,11 +238,11 @@ RequestThread::constructDefaultRequest(int type,
     msg.type= type;
     msg.request = meta;
     status_t status = NO_ERROR;
-    base::Callback<status_t()> closure =
-            base::Bind(&RequestThread::handleConstructDefaultRequest,
-                       base::Unretained(this),
-                       base::Passed(std::move(msg)));
-    mCameraThread.PostTaskSync<status_t>(FROM_HERE, closure, &status);
+    base::OnceCallback<status_t()> closure =
+        base::BindOnce(&RequestThread::handleConstructDefaultRequest,
+                       base::Unretained(this), std::move(msg));
+    mCameraThread.PostTaskSync<status_t>(FROM_HERE, std::move(closure),
+                                         &status);
     return status;
 }
 
@@ -265,11 +265,11 @@ RequestThread::processCaptureRequest(camera3_capture_request_t *request)
     msg.request3 = request;
 
     status_t status = NO_ERROR;
-    base::Callback<status_t()> closure =
-            base::Bind(&RequestThread::handleProcessCaptureRequest,
-                       base::Unretained(this),
-                       base::Passed(std::move(msg)));
-    mCameraThread.PostTaskSync<status_t>(FROM_HERE, closure, &status);
+    base::OnceCallback<status_t()> closure =
+        base::BindOnce(&RequestThread::handleProcessCaptureRequest,
+                       base::Unretained(this), std::move(msg));
+    mCameraThread.PostTaskSync<status_t>(FROM_HERE, std::move(closure),
+                                         &status);
     if (mBlockAction != REQBLK_NONBLOCKING) {
         mWaitRequest.Reset();
         mWaitRequest.Wait();
@@ -357,10 +357,10 @@ RequestThread::returnRequest(Camera3Request* req)
     msg.request = req;
     msg.reqId = req->getId();
 
-    base::Callback<status_t()> closure =
-            base::Bind(&RequestThread::handleReturnRequest,
-                       base::Unretained(this), base::Passed(std::move(msg)));
-    mCameraThread.PostTaskAsync<status_t>(FROM_HERE, closure);
+    base::OnceCallback<status_t()> closure =
+        base::BindOnce(&RequestThread::handleReturnRequest,
+                       base::Unretained(this), std::move(msg));
+    mCameraThread.PostTaskAsync<status_t>(FROM_HERE, std::move(closure));
     return 0;
 }
 

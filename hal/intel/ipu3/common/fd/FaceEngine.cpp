@@ -68,8 +68,9 @@ void FaceEngine::run(const pvl_image& frame)
     CheckAndLogError(!ret, VOID_VALUE,
                      "Failed to prepare to run face detection");
 
-    base::Callback<void()> closure = base::Bind(&FaceEngine::handleRun, base::Unretained(this));
-    mCameraThread.PostTaskAsync<void>(FROM_HERE, closure);
+    base::OnceCallback<void()> closure =
+        base::BindOnce(&FaceEngine::handleRun, base::Unretained(this));
+    mCameraThread.PostTaskAsync<void>(FROM_HERE, std::move(closure));
 }
 
 void FaceEngine::handleRun(void)

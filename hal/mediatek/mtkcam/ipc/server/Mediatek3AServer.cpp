@@ -436,8 +436,8 @@ void Mediatek3AServer::request(uint32_t req_id,
 
   MsgReq msg = {req_id, buffer_handle};
   mThreads[servGroup]->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&Mediatek3AServer::handleRequest,
-                            base::Unretained(this), msg));
+      FROM_HERE, base::BindOnce(&Mediatek3AServer::handleRequest,
+                                base::Unretained(this), msg));
 }
 
 void Mediatek3AServer::notify(uint32_t req_id, uint32_t rc) {

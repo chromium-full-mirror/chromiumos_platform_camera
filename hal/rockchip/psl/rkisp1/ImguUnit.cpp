@@ -430,10 +430,9 @@ ImguUnit::completeRequest(std::shared_ptr<ProcUnitSettings> &processingSettings,
     msg.id = MESSAGE_COMPLETE_REQ;
     msg.pMsg = procMsg;
     msg.cbMetadataMsg = cbMetadataMsg;
-    base::Callback<status_t()> closure =
-            base::Bind(&ImguUnit::handleCompleteReq, base::Unretained(this),
-                       base::Passed(std::move(msg)));
-    mCameraThread.PostTaskAsync<status_t>(FROM_HERE, closure);
+    base::OnceCallback<status_t()> closure = base::BindOnce(
+        &ImguUnit::handleCompleteReq, base::Unretained(this), std::move(msg));
+    mCameraThread.PostTaskAsync<status_t>(FROM_HERE, std::move(closure));
     return NO_ERROR;
 }
 
@@ -805,19 +804,17 @@ status_t ImguUnit::notifyPollEvent(PollEventMessage *pollMsg)
             return -EAGAIN;
         }
 
-        base::Callback<status_t()> closure =
-               base::Bind(&ImguUnit::handlePoll, base::Unretained(this),
-                          base::Passed(std::move(msg)));
-
-        mCameraThread.PostTaskSync<status_t>(FROM_HERE, closure, &status);
+        base::OnceCallback<status_t()> closure = base::BindOnce(
+            &ImguUnit::handlePoll, base::Unretained(this), std::move(msg));
+        mCameraThread.PostTaskSync<status_t>(FROM_HERE, std::move(closure),
+                                             &status);
     } else if (pollMsg->id == POLL_EVENT_ID_ERROR) {
         LOGE("Device poll failed");
         msg.pollEvent.numDevices = 0;
         msg.pollEvent.polledDevices = pollMsg->data.polledDevices->size();
-        base::Callback<status_t()> closure =
-                base::Bind(&ImguUnit::handlePoll, base::Unretained(this),
-                           base::Passed(std::move(msg)));
-        mCameraThread.PostTaskAsync<status_t>(FROM_HERE, closure);
+        base::OnceCallback<status_t()> closure = base::BindOnce(
+            &ImguUnit::handlePoll, base::Unretained(this), std::move(msg));
+        mCameraThread.PostTaskAsync<status_t>(FROM_HERE, std::move(closure));
     } else {
         LOGW("unknown poll event id (%d)", pollMsg->id);
     }
@@ -907,9 +904,10 @@ ImguUnit::flush(void)
         mFlushing = true;
     }
 
-    base::Callback<status_t()> closure =
-            base::Bind(&ImguUnit::handleFlush, base::Unretained(this));
-    mCameraThread.PostTaskSync<status_t>(FROM_HERE, closure, &status);
+    base::OnceCallback<status_t()> closure =
+        base::BindOnce(&ImguUnit::handleFlush, base::Unretained(this));
+    mCameraThread.PostTaskSync<status_t>(FROM_HERE, std::move(closure),
+                                         &status);
     return status;
 }
 

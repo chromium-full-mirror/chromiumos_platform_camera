@@ -185,9 +185,10 @@ status_t CaptureUnit::flush()
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL1, LOG_TAG);
 
     status_t status = NO_ERROR;
-    base::Callback<status_t()> closure =
-            base::Bind(&CaptureUnit::handleFlush, base::Unretained(this));
-    mCameraThread.PostTaskSync<status_t>(FROM_HERE, closure, &status);
+    base::OnceCallback<status_t()> closure =
+        base::BindOnce(&CaptureUnit::handleFlush, base::Unretained(this));
+    mCameraThread.PostTaskSync<status_t>(FROM_HERE, std::move(closure),
+                                         &status);
     return status;
 }
 
@@ -218,10 +219,11 @@ status_t CaptureUnit::configStreams(std::vector<camera3_stream_t*> &activeStream
     msg.configChanged = configChanged; // written to in msg handler
 
     status_t status = NO_ERROR;
-    base::Callback<status_t()> closure =
-            base::Bind(&CaptureUnit::handleConfigStreams,
-                       base::Unretained(this), base::Passed(std::move(msg)));
-    mCameraThread.PostTaskSync<status_t>(FROM_HERE, closure, &status);
+    base::OnceCallback<status_t()> closure =
+        base::BindOnce(&CaptureUnit::handleConfigStreams,
+                       base::Unretained(this), std::move(msg));
+    mCameraThread.PostTaskSync<status_t>(FROM_HERE, std::move(closure),
+                                         &status);
     return status;
 }
 
@@ -482,10 +484,9 @@ status_t CaptureUnit::doCapture(Camera3Request* request,
         return BAD_VALUE;
     }
 
-    base::Callback<status_t()> closure =
-            base::Bind(&CaptureUnit::handleCapture, base::Unretained(this),
-                       base::Passed(std::move(msg)));
-    mCameraThread.PostTaskAsync<status_t>(FROM_HERE, closure);
+    base::OnceCallback<status_t()> closure = base::BindOnce(
+        &CaptureUnit::handleCapture, base::Unretained(this), std::move(msg));
+    mCameraThread.PostTaskAsync<status_t>(FROM_HERE, std::move(closure));
     return OK;
 }
 
@@ -655,11 +656,10 @@ void CaptureUnit::notifyIsysEvent(IsysMessage &isysMsg)
         if (isysMsg.data.event.buffer != nullptr) {
             msg.v4l2Buf = *isysMsg.data.event.buffer;
         }
-        base::Callback<status_t()> closure =
-                base::Bind(&CaptureUnit::handleIsysEvent,
-                           base::Unretained(this),
-                           base::Passed(std::move(msg)));
-        mCameraThread.PostTaskAsync<status_t>(FROM_HERE, closure);
+        base::OnceCallback<status_t()> closure =
+            base::BindOnce(&CaptureUnit::handleIsysEvent,
+                           base::Unretained(this), std::move(msg));
+        mCameraThread.PostTaskAsync<status_t>(FROM_HERE, std::move(closure));
     } else {
         LOGE("Error from input system, ReqId: %d", isysMsg.id);
     }

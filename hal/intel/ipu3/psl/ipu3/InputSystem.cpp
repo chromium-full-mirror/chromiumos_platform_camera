@@ -74,9 +74,10 @@ status_t InputSystem::requestExitAndWait()
 
     if (mStarted) {
         status_t ret = NO_ERROR;
-        base::Callback<status_t()> closure =
-                base::Bind(&InputSystem::handleExit, base::Unretained(this));
-        mCameraThread.PostTaskSync<status_t>(FROM_HERE, closure, &ret);
+        base::OnceCallback<status_t()> closure =
+            base::BindOnce(&InputSystem::handleExit, base::Unretained(this));
+        mCameraThread.PostTaskSync<status_t>(FROM_HERE, std::move(closure),
+                                             &ret);
         status |= ret;
     }
 
@@ -103,10 +104,10 @@ status_t InputSystem::configure(IStreamConfigProvider &streamConfigMgr,
     MessageConfigure msg;
     msg.streamConfigProv = &streamConfigMgr;
     msg.result = &outData;
-    base::Callback<status_t()> closure =
-            base::Bind(&InputSystem::handleConfigure, base::Unretained(this),
-                       base::Passed(std::move(msg)));
-    mCameraThread.PostTaskSync<status_t>(FROM_HERE, closure, &status);
+    base::OnceCallback<status_t()> closure = base::BindOnce(
+        &InputSystem::handleConfigure, base::Unretained(this), std::move(msg));
+    mCameraThread.PostTaskSync<status_t>(FROM_HERE, std::move(closure),
+                                         &status);
     return status;
 }
 
@@ -170,9 +171,10 @@ status_t InputSystem::start()
     LOG1("@%s", __FUNCTION__);
     status_t status = NO_ERROR;
 
-    base::Callback<status_t()> closure =
-            base::Bind(&InputSystem::handleStart, base::Unretained(this));
-    mCameraThread.PostTaskSync<status_t>(FROM_HERE, closure, &status);
+    base::OnceCallback<status_t()> closure =
+        base::BindOnce(&InputSystem::handleStart, base::Unretained(this));
+    mCameraThread.PostTaskSync<status_t>(FROM_HERE, std::move(closure),
+                                         &status);
     return status;
 }
 
@@ -209,10 +211,10 @@ status_t InputSystem::stop()
 
     MessageStop msg;
     msg.stop = true;
-    base::Callback<status_t()> closure =
-            base::Bind(&InputSystem::handleStop, base::Unretained(this),
-                       base::Passed(std::move(msg)));
-    mCameraThread.PostTaskSync<status_t>(FROM_HERE, closure, &status);
+    base::OnceCallback<status_t()> closure = base::BindOnce(
+        &InputSystem::handleStop, base::Unretained(this), std::move(msg));
+    mCameraThread.PostTaskSync<status_t>(FROM_HERE, std::move(closure),
+                                         &status);
     return status;
 }
 
@@ -244,10 +246,10 @@ status_t InputSystem::releaseBufferPools()
     LOG1("@%s", __FUNCTION__);
     status_t status = NO_ERROR;
 
-    base::Callback<status_t()> closure =
-            base::Bind(&InputSystem::handleReleaseBufferPools,
-                       base::Unretained(this));
-    mCameraThread.PostTaskSync<status_t>(FROM_HERE, closure, &status);
+    base::OnceCallback<status_t()> closure = base::BindOnce(
+        &InputSystem::handleReleaseBufferPools, base::Unretained(this));
+    mCameraThread.PostTaskSync<status_t>(FROM_HERE, std::move(closure),
+                                         &status);
     return status;
 }
 
@@ -291,10 +293,10 @@ bool InputSystem::isStarted()
     MessageBoolQuery msg;
     msg.value = &value;
     status_t status = NO_ERROR;
-    base::Callback<status_t()> closure =
-            base::Bind(&InputSystem::handleIsStarted, base::Unretained(this),
-                       base::Passed(std::move(msg)));
-    mCameraThread.PostTaskSync<status_t>(FROM_HERE, closure, &status);
+    base::OnceCallback<status_t()> closure = base::BindOnce(
+        &InputSystem::handleIsStarted, base::Unretained(this), std::move(msg));
+    mCameraThread.PostTaskSync<status_t>(FROM_HERE, std::move(closure),
+                                         &status);
     return value;
 }
 
@@ -317,10 +319,9 @@ status_t InputSystem::putFrame(IPU3NodeNames isysNodeName,
     msg.isysNodeName = isysNodeName;
     msg.buf = buf;
 
-    base::Callback<status_t()> closure =
-            base::Bind(&InputSystem::handlePutFrame, base::Unretained(this),
-                       base::Passed(std::move(msg)));
-    mCameraThread.PostTaskAsync<status_t>(FROM_HERE, closure);
+    base::OnceCallback<status_t()> closure = base::BindOnce(
+        &InputSystem::handlePutFrame, base::Unretained(this), std::move(msg));
+    mCameraThread.PostTaskAsync<status_t>(FROM_HERE, std::move(closure));
     return NO_ERROR;
 }
 
@@ -404,10 +405,11 @@ status_t InputSystem::setBufferPool(IPU3NodeNames isysNodeName,
     msg.isysNodeName = isysNodeName;
     msg.pool = &pool;
     msg.cached = cached;
-    base::Callback<status_t()> closure =
-            base::Bind(&InputSystem::handleSetBufferPool,
-                       base::Unretained(this), base::Passed(std::move(msg)));
-    mCameraThread.PostTaskSync<status_t>(FROM_HERE, closure, &status);
+    base::OnceCallback<status_t()> closure =
+        base::BindOnce(&InputSystem::handleSetBufferPool,
+                       base::Unretained(this), std::move(msg));
+    mCameraThread.PostTaskSync<status_t>(FROM_HERE, std::move(closure),
+                                         &status);
 
     return status;
 }
@@ -451,10 +453,11 @@ status_t InputSystem::getOutputNodes(ConfiguredNodesPerName **nodes,
     MessageNodes msg;
     msg.nodes = nodes;
     msg.nodeCount = &nodeCount;
-    base::Callback<status_t()> closure =
-            base::Bind(&InputSystem::handleGetOutputNodes,
-                       base::Unretained(this), base::Passed(std::move(msg)));
-    mCameraThread.PostTaskSync<status_t>(FROM_HERE, closure, &status);
+    base::OnceCallback<status_t()> closure =
+        base::BindOnce(&InputSystem::handleGetOutputNodes,
+                       base::Unretained(this), std::move(msg));
+    mCameraThread.PostTaskSync<status_t>(FROM_HERE, std::move(closure),
+                                         &status);
     return status;
 }
 
@@ -490,10 +493,9 @@ status_t InputSystem::capture(int requestId)
     MessageCapture msg;
     msg.requestId = requestId;
 
-    base::Callback<status_t()> closure =
-            base::Bind(&InputSystem::handleCapture,
-                       base::Unretained(this), base::Passed(std::move(msg)));
-    mCameraThread.PostTaskAsync<status_t>(FROM_HERE, closure);
+    base::OnceCallback<status_t()> closure = base::BindOnce(
+        &InputSystem::handleCapture, base::Unretained(this), std::move(msg));
+    mCameraThread.PostTaskAsync<status_t>(FROM_HERE, std::move(closure));
     return NO_ERROR;
 }
 
@@ -517,9 +519,10 @@ status_t InputSystem::flush()
     status_t status = NO_ERROR;
 
     // flush the poll messages
-    base::Callback<status_t()> closure =
-            base::Bind(&InputSystem::handleFlush, base::Unretained(this));
-    mCameraThread.PostTaskSync<status_t>(FROM_HERE, closure, &status);
+    base::OnceCallback<status_t()> closure =
+        base::BindOnce(&InputSystem::handleFlush, base::Unretained(this));
+    mCameraThread.PostTaskSync<status_t>(FROM_HERE, std::move(closure),
+                                         &status);
     return status;
 }
 
@@ -575,10 +578,10 @@ status_t InputSystem::notifyPollEvent(PollEventMessage *pollMsg)
         msg.numDevices = numDevices;
         msg.polledDevices = numPolledDevices;
 
-        base::Callback<status_t()> closure =
-                base::Bind(&InputSystem::handlePollEvent,
-                           base::Unretained(this), base::Passed(std::move(msg)));
-        mCameraThread.PostTaskAsync<status_t>(FROM_HERE, closure);
+        base::OnceCallback<status_t()> closure =
+            base::BindOnce(&InputSystem::handlePollEvent,
+                           base::Unretained(this), std::move(msg));
+        mCameraThread.PostTaskAsync<status_t>(FROM_HERE, std::move(closure));
 
         if (pollMsg->data.activeDevices->size() != pollMsg->data.polledDevices->size()) {
             LOG2("@%s: %zu inactive nodes for request %d, retry poll", __FUNCTION__,
@@ -593,10 +596,10 @@ status_t InputSystem::notifyPollEvent(PollEventMessage *pollMsg)
         // For now, set number of device to zero in error case
         msg.numDevices = 0;
         msg.polledDevices = 0;
-        base::Callback<status_t()> closure =
-                base::Bind(&InputSystem::handlePollEvent,
-                           base::Unretained(this), base::Passed(std::move(msg)));
-        mCameraThread.PostTaskAsync<status_t>(FROM_HERE, closure);
+        base::OnceCallback<status_t()> closure =
+            base::BindOnce(&InputSystem::handlePollEvent,
+                           base::Unretained(this), std::move(msg));
+        mCameraThread.PostTaskAsync<status_t>(FROM_HERE, std::move(closure));
     }
 
     return OK;

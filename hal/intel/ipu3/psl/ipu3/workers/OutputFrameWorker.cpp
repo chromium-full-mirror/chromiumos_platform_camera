@@ -266,10 +266,10 @@ status_t OutputFrameWorker::postRun()
         }
         }
 
-        base::Callback<status_t()> closure =
-                base::Bind(&OutputFrameWorker::handlePostRun, base::Unretained(this));
+        base::OnceCallback<status_t()> closure = base::BindOnce(
+            &OutputFrameWorker::handlePostRun, base::Unretained(this));
 
-        mCameraThread.PostTaskAsync<status_t>(FROM_HERE, closure);
+        mCameraThread.PostTaskAsync<status_t>(FROM_HERE, std::move(closure));
     } else if (mProcessingData.mMsg != nullptr) {
         processData(std::move(mProcessingData));
     }
