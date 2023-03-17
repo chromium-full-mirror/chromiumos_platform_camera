@@ -223,14 +223,11 @@ bool GPUExecutor::fetchTnrOutBuffer(int64_t seq, std::shared_ptr<CameraBuffer> b
 
     std::unique_lock<std::mutex> lock(mTnrOutBufMapLock);
     if (mTnrOutBufMap.find(seq) != mTnrOutBufMap.end()) {
-        void* pSrcBuf = (buf->getMemory() == V4L2_MEMORY_DMABUF) ?
-                            buf->mapDmaBufferAddr() : buf->getBufferAddr();
+        ScopeMapping mapper(buf);
+        void* pSrcBuf = mapper.getUserPtr();
         CheckAndLogError(!pSrcBuf, false, "pSrcBuf is nullptr");
         LOG2("Sequence %ld is used for output", seq);
         MEMCPY_S(pSrcBuf, buf->getBufferSize(), mTnrOutBufMap[seq], mOutBufferSize);
-        if (buf->getMemory() == V4L2_MEMORY_DMABUF) {
-            buf->unmapDmaBufferAddr(pSrcBuf);
-        }
 
         return true;
     }
@@ -565,16 +562,13 @@ int GPUExecutor::runTnrFrame(const std::shared_ptr<CameraBuffer>& inBuf,
     int fd = outBuf->getFd();
     int memoryType = outBuf->getMemory();
     int bufferSize = outBuf->getBufferSize();
-    void* outPtr = (memoryType == V4L2_MEMORY_DMABUF) ?
-                       outBuf->mapDmaBufferAddr() : outBuf->getBufferAddr();
+    ScopeMapping mapper(outBuf);
+    void* outPtr = mapper.getUserPtr();
     if (!outPtr) return UNKNOWN_ERROR;
 
     outBuf->setSequence(sequence);
     if (!mIntelTNR) {
         MEMCPY_S(outPtr, bufferSize, inBuf->getBufferAddr(), inBuf->getBufferSize());
-        if (memoryType == V4L2_MEMORY_DMABUF) {
-            outBuf->unmapDmaBufferAddr(outPtr);
-        }
         return OK;
     }
 
@@ -582,9 +576,6 @@ int GPUExecutor::runTnrFrame(const std::shared_ptr<CameraBuffer>& inBuf,
         // when running still stream tnr, should skip video tnr to decrease still capture duration.
         if (mStreamId == VIDEO_STREAM_ID && !mGPULock.try_lock()) {
             MEMCPY_S(outPtr, bufferSize, inBuf->getBufferAddr(), inBuf->getBufferSize());
-            if (memoryType == V4L2_MEMORY_DMABUF) {
-                outBuf->unmapDmaBufferAddr(outPtr);
-            }
             mLastSequence = UINT32_MAX;
             LOG2("Executor name:%s, skip frame sequence: %ld", mName.c_str(), inBuf->getSequence());
             return OK;
@@ -644,9 +635,6 @@ int GPUExecutor::runTnrFrame(const std::shared_ptr<CameraBuffer>& inBuf,
         LOG2("outBuf->first %ld, outBuf->second %p", tnrOutBuf->first, tnrOutBuf->second);
     }
 
-    if (memoryType == V4L2_MEMORY_DMABUF) {
-        outBuf->unmapDmaBufferAddr(outPtr);
-    }
     CheckAndLogError(ret != OK, UNKNOWN_ERROR, "tnr7us run frame failed");
     mLastSequence = sequence;
 

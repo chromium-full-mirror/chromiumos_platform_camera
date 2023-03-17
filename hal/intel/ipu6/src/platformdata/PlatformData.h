@@ -163,8 +163,7 @@ class PlatformData {
                       mDisableBLCByAGain(false),
                       mDisableBLCAGainLow(-1),
                       mDisableBLCAGainHigh(-1),
-                      mResetLinkRoute(true) {
-            }
+                      mResetLinkRoute(true) {}
 
             std::vector<MediaCtlConf> mMediaCtlConfs;
 
@@ -1251,6 +1250,18 @@ class PlatformData {
      */
     static int saveMakernoteData(int cameraId, camera_makernote_mode_t makernoteMode,
                                  int64_t sequence, TuningMode tuningMode);
+
+    /**
+     * \brief Get Makernote buffer
+     *
+     * \param[in] cameraId: [0, MAX_CAMERA_NUMBER - 1]
+     * \param[in] makernoteMode: makernote mode
+     * \param[out] dump: return dump if in dump case
+     *
+     * \return the pointer of makernote buffer
+     */
+    static void* getMakernoteBuf(int cameraId, camera_makernote_mode_t makernoteMode,
+                                 bool& dump);
 
     /**
      * \brief Update Makernote timestamp.

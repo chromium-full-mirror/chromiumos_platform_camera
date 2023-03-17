@@ -394,14 +394,12 @@ void CameraDump::dumpImage(int cameraId, const shared_ptr<CameraBuffer>& camBuff
     int fd = camBuffer->getFd();
     int bufferSize = camBuffer->getBufferSize();
     int memoryType = camBuffer->getMemory();
-    void* pBuf = (memoryType == V4L2_MEMORY_DMABUF) ?
-                     camBuffer->mapDmaBufferAddr() : camBuffer->getBufferAddr();
+
+    ScopeMapping mapper(camBuffer);
+    void* pBuf = mapper.getUserPtr();
     LOG1("@%s, fd:%d, buffersize:%d, buf:%p, memoryType:%d, fileName:%s", __func__, fd, bufferSize,
          pBuf, memoryType, fileName.c_str());
     writeData(pBuf, bufferSize, fileName.c_str());
-    if (memoryType == V4L2_MEMORY_DMABUF) {
-        camBuffer->unmapDmaBufferAddr(pBuf);
-    }
 }
 
 void CameraDump::dumpBinary(int cameraId, const void* data, int size, BinParam_t* binParam) {

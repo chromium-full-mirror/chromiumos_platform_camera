@@ -1293,6 +1293,14 @@ int PlatformData::saveMakernoteData(int cameraId, camera_makernote_mode_t makern
                                                                     sequence, tuningMode);
 }
 
+void* PlatformData::getMakernoteBuf(int cameraId, camera_makernote_mode_t makernoteMode,
+                                    bool& dump) {
+    CheckAndLogError(cameraId >= static_cast<int>(getInstance()->mAiqInitData.size()), nullptr,
+                     "@%s, bad cameraId:%d", __func__, cameraId);
+
+    return getInstance()->mAiqInitData[cameraId]->getMakernoteBuf(makernoteMode, dump);
+}
+
 void PlatformData::updateMakernoteTimeStamp(int cameraId, int64_t sequence, uint64_t timestamp) {
     CheckAndLogError(cameraId >= static_cast<int>(getInstance()->mAiqInitData.size()), VOID_VALUE,
                      "@%s, bad cameraId:%d", __func__, cameraId);
