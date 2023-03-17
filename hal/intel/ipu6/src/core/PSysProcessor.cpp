@@ -181,6 +181,11 @@ int PSysProcessor::start() {
         CheckAndLogError(ret != OK, NO_MEMORY, "Allocating producer buffer failed:%d", ret);
     }
 
+    {
+        AutoMutex lock(mBufferMapLock);
+        mRawBufferMap.clear();
+    }
+
     mThreadRunning = true;
     CLEAR(mSofTimestamp);
     mProcessThread->run("PsysProcessor", PRIORITY_NORMAL);

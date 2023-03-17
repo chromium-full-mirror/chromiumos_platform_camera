@@ -177,6 +177,20 @@ int fillHALStreams(int cameraId, const camera3_stream_t& camera3Stream, icamera:
         }
     }
 
+    if (getRotationDegrees(camera3Stream) <= 0 &&
+        stream->usage == icamera::CAMERA_STREAM_STILL_CAPTURE) {
+        const icamera::camera_resolution_t* psl =
+            icamera::PlatformData::getPreferStillOutput(stream->width, stream->height, cameraId);
+
+        if (psl) {
+            stream->width = psl->width;
+            stream->height = psl->height;
+            LOG1("%s, Use the psl output %dx%d to map user's still stream: %dx%d",
+                 __func__, stream->width, stream->height, camera3Stream.width,
+                 camera3Stream.height);
+        }
+    }
+
     LOG2("@%s, stream: width:%d, height:%d, usage %d", __func__, stream->width, stream->height,
          stream->usage);
     return icamera::OK;

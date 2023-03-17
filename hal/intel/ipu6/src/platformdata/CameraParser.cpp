@@ -315,6 +315,8 @@ void CameraParser::handleSensor(CameraParser* profiles, const char* name, const 
         getSupportedFormat(atts[1], pCurrentCam->mSupportedISysFormat);
     } else if (strcmp(name, "iSysRawFormat") == 0) {
         pCurrentCam->mISysRawFormat = CameraUtils::string2PixelCode(atts[1]);
+    } else if (strcmp(name, "preferredStillOutput") == 0) {
+        parseSizesList(atts[1], pCurrentCam->mPreferStillOutput);
     } else if (strcmp(name, "configModeToStreamId") == 0) {
         char* srcDup = strdup(atts[1]);
         CheckAndLogError(!srcDup, VOID_VALUE, "Create a copy of source string failed.");

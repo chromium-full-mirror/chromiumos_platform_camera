@@ -361,7 +361,7 @@ cca::cca_out_stats* IntelPGParam::fetchOutStats(int64_t sequence) {
         // Request decodeStats together when rgbCallback is enabled
         aiqResult->mOutStats.get_rgbs_stats = true;
         return &aiqResult->mOutStats;
-    } else if (!PlatformData::isStatsRunningRateSupport(mCameraId)) {
+    } else if (aiqResult && !PlatformData::isStatsRunningRateSupport(mCameraId)) {
         // Request decodeStats together when running rate is disabled
         aiqResult->mOutStats.get_rgbs_stats = false;
         return &aiqResult->mOutStats;

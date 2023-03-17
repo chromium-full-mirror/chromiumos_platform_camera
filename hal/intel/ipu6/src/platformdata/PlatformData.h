@@ -253,6 +253,7 @@ class PlatformData {
             // a PG might be incorrect. To be removed after stream id mismatch issue fixed.
             std::map<int, int> mConfigModeToStreamId;
             std::vector<UserToPslOutputMap> mOutputMap;
+            std::vector<camera_resolution_t> mPreferStillOutput;
             int mMaxNvmDataSize;
             std::string mNvmDirectory;
             int mNvmOverwrittenFileSize;
@@ -273,6 +274,11 @@ class PlatformData {
             int mDisableBLCAGainHigh;
             bool mResetLinkRoute;
         };
+
+        /**
+         * Overwrite staticCfg with info from CMC
+         */
+        void getModuleInfoFromCmc(int cameraId);
 
         std::vector<CameraInfo> mCameras;
         std::vector<PolicyConfig> mPolicyConfig;
@@ -1134,6 +1140,16 @@ class PlatformData {
      * \return the psl output resolution if provides it in xml file, otherwise return nullptr.
      */
     static camera_resolution_t* getPslOutputForRotation(int width, int height, int cameraId);
+
+    /**
+     * Get preferred output size for still
+     *
+     * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
+     * \param width:    The width of user requirement
+     * \param height:   The height of user requirement
+     * \return the output resolution if provides it in xml file, otherwise return nullptr.
+     */
+    const static camera_resolution_t* getPreferStillOutput(int width, int height, int cameraId);
 
     /**
      * Check if test pattern is supported or not
