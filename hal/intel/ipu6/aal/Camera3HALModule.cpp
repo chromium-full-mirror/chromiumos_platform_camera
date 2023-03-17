@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Intel Corporation
+ * Copyright (C) 2017-2023 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -135,9 +135,6 @@ static int hal_set_callbacks(const camera_module_callbacks_t* callbacks) {
 }
 
 static int hal_dev_open(const hw_module_t* module, const char* name, hw_device_t** device) {
-    icamera::Log::setDebugLevel();
-    icamera::CameraDump::setDumpLevel();
-
     CheckAndLogError(!name || !module || !device, -EINVAL, "Camera name is nullptr");
     LOG1("<id%s>%s", name, __func__);
 
@@ -241,10 +238,10 @@ static int hal_set_torch_mode(const char* camera_id, bool enabled) {
  *  ......
  */
 static void hal_set_up(cros::CameraMojoChannelManagerToken* token) {
-    LOG1("@%s", __func__);
-
     icamera::Log::setDebugLevel();
     icamera::CameraDump::setDumpLevel();
+
+    LOG1("@%s", __func__);
 
 #ifdef ENABLE_SANDBOXING
     // Create IntelAlgoClient and set the mojo manager token

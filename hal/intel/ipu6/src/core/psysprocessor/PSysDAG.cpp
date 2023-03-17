@@ -22,7 +22,7 @@
 
 #include "iutils/CameraLog.h"
 #include "iutils/Utils.h"
-#ifdef TNR7_CM
+#if defined(TNR7_CM) || defined(TNR7_LEVEL0)
 #include "GPUExecutor.h"
 #endif
 #include "CameraScheduler.h"
@@ -137,7 +137,7 @@ int PSysDAG::createPipeExecutors(bool useTnrOutBuffer) {
         if (!hasVideoPipe) hasVideoPipe = (streamId == VIDEO_STREAM_ID);
         if (!hasStillPipe)
             hasStillPipe = (streamId == STILL_STREAM_ID || streamId == STILL_TNR_STREAM_ID);
-#ifdef TNR7_CM
+#if defined(TNR7_CM) || defined(TNR7_LEVEL0)
         PipeExecutor* executor;
         if (strstr(item.exeName.c_str(), "gputnr") != nullptr) {
             executor =

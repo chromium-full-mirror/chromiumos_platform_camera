@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021-2022 Intel Corporation
+ * Copyright (C) 2021-2023 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -193,6 +193,8 @@ PrivateStreamFD::~PrivateStreamFD() {
     LOG2("[%p]@%s", this, __func__);
 
     PrivateStream::requestExit();
+
+    PrivateStream::requestExitAndWait();
 
     if (mFaceDetection) {
         icamera::FaceDetection::destoryInstance(mCameraId);

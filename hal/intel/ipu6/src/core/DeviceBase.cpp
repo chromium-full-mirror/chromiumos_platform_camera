@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2022 Intel Corporation.
+ * Copyright (C) 2018-2023 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,7 +78,6 @@ void DeviceBase::closeDevice() {
         AutoMutex l(mBufferLock);
         mPendingBuffers.clear();
         mBuffersInDevice.clear();
-        mAllocatedBuffers.clear();
     }
     mDevice->Close();
 }
@@ -201,9 +200,6 @@ void DeviceBase::resetBuffers() {
 
     mBuffersInDevice.clear();
     mPendingBuffers.clear();
-    for (const auto& buffer : mAllocatedBuffers) {
-        mPendingBuffers.push_back(buffer);
-    }
 }
 
 bool DeviceBase::hasPendingBuffer() {
