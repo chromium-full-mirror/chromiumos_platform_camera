@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 Intel Corporation.
+ * Copyright (C) 2023 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,7 +53,7 @@
  *  also has terminals, which connect it to the outside world.  Each
  *  terminal represents either parameters or image data flowing in or
  *  out of the group.  Terminals come in different types and may have
- *  additional attributes.  For example, a data termainal will have
+ *  additional attributes.  For example, a data terminal will have
  *  a frame format attribute.
  *  @see ia_css_process_group_create()
  *  @see ia_css_program_group_manifest_t and related API and:
@@ -86,7 +86,7 @@ struct ia_css_process_group_s {
     uint32_t size;
     /** The timestamp when PG load starts
      *  @note Internal firmware use only. */
-    /**< PSYS server init time in cycless */
+    /**< PSYS server init time in cycles */
     uint32_t psys_server_init_cycles;
     /**< The timestamp when PG load starts */
     uint32_t pg_load_start_ts;
@@ -268,7 +268,7 @@ extern int ia_css_process_group_store(
     ia_css_process_group_t                *process_group,
     bool                        secure);
 
-/*! Need to get the right context for each PG for FW test app only
+/*! Need to get the right context for each PG for FW test application only
  *
  * @param    process_group[in]        process group object
  *

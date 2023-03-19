@@ -147,6 +147,20 @@ ia_exc_convert_multi_gain_codes_to_iso(
     const int32_t a_gain_codes[IA_CMC_GAINS_MAX_NUM],
     int32_t *a_iso);
 
+/*!
+* \brief Gets gain limits.
+* get gain limits from the CMC gain conversion tables.
+* \param[in]  a_gain_conversion   Structure containing gain to gain code conversion tables.
+* \param[out] a_min_gain minium gain.
+* \param[out] a_max_gain maxium gain.
+* \return                       Error code.
+*/
+LIBEXPORT ia_err
+ia_exc_get_gain_limits(
+    const cmc_gain_conversion_t *a_gain_conversion,
+    float32_t* a_min_gain,
+    float32_t* a_max_gain);
+
 #ifdef __cplusplus
 }
 #endif

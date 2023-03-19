@@ -308,6 +308,11 @@ ia_ccat_get_frame_statistics_grid_changed(
     bool *statistics_grid_changed);
 
 LIBEXPORT ia_err
+ia_ccat_get_frame_statistics_crop_changed(
+    ia_ccat_frame_info* a_frame_info_ptr,
+    bool* statistics_crop_changed);
+
+LIBEXPORT ia_err
 ia_ccat_get_global_luma_change(
     ia_ccat_frame_info *a_frame_info_ptr,
     bool *global_luma_change
@@ -511,6 +516,11 @@ LIBEXPORT ia_err
 ia_ccat_get_ir_compgain(
     ia_ccat_frame_info *a_frame_info_ptr,
     float32_t *ir_compgain_ptr);
+
+LIBEXPORT ia_err
+ia_ccat_is_ir_sensor(
+    ia_ccat_frame_info *a_frame_info_ptr,
+    bool *is_ir_sensor);
 #endif
 
 #ifdef IA_CCAT_DEPTH_GRID_ENABLED
@@ -555,6 +565,12 @@ ia_ccat_get_frame_motion_level_estimate(
     ia_ccat_frame_info *a_frame_info_ptr,
     uint32_t a_exposure_index,
     float32_t *a_motion_estimate_ptr);
+
+LIBEXPORT ia_err
+ia_ccat_get_frame_filtered_motion_level_estimate(
+    ia_ccat_frame_info *a_frame_info_ptr,
+    uint32_t a_exposure_index,
+    float32_t *a_filtered_motion_estimate_ptr);
 
 LIBEXPORT ia_err
 ia_ccat_get_frame_luminance_average(

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 Intel Corporation.
+ * Copyright (C) 2023 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -413,7 +413,7 @@ struct ia_css_fragment_param_section_desc_s {
 #define SIZE_OF_FRAG_SEQ_COMMANDS_STRUCT_BITS \
     (N_UINT16_IN_FRAG_SEQ_COMMAND_STRUCT * IA_CSS_UINT16_T_BITS)
 
-/** 4 commands packet together to save memory space */
+/** 4 commands packed together to save memory space */
 struct ia_css_kernel_fragment_sequencer_command_desc_s {
     /** Contains the "(command_index%4) == index" command desc */
     uint16_t line_count[IA_CSS_N_COMMAND_COUNT];

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 Intel Corporation.
+ * Copyright (C) 2023 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -302,7 +302,7 @@ ia_css_program_control_init_terminal_get_program_desc(
 );
 
 /*!
- * Pretty prints the program control init termnial
+ * Pretty prints the program control init terminal
  * @param terminal[in]        program control init terminal
  */
 IA_CSS_PSYS_DYNAMIC_STORAGE_CLASS_H

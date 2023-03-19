@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 Intel Corporation.
+ * Copyright (C) 2023 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -170,7 +170,7 @@ struct ia_css_spatial_param_terminal_manifest_s {
     /** Contains limits for the frame spatial parameters */
     ia_css_frame_grid_manifest_desc_t frame_grid_desc;
     /**
-     * Contains limits for the fragment spatial parameters
+     * Constrains limits for the fragment spatial parameters
      * - COMMON AMONG FRAGMENTS
      */
     ia_css_fragment_grid_manifest_desc_t common_fragment_grid_desc;
@@ -191,7 +191,7 @@ struct ia_css_spatial_param_terminal_manifest_s {
     uint8_t kernel_id;
     /**
      * Groups together compute units in order to achieve alignment
-     * requirements for transfes and to achieve canonical frame
+     * requirements for transfer and to achieve canonical frame
      * representation
      */
     uint8_t compute_units_p_elem;

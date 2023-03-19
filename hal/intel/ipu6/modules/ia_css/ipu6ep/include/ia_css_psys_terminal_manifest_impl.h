@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 Intel Corporation.
+ * Copyright (C) 2023 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -211,7 +211,7 @@ static void ia_css_terminal_manifest_set_attributes_by_type(
     ia_css_terminal_manifest_set_connect_buffer_type(manifest, connect_buf_type);
 }
 
-/** Temporary implementation for new fields until the manfifest generator
+/** Temporary implementation for new fields until the manifest generator
  *  tool will be enhance to set values directly.
  *
  *  - Attributes are set to meaningful values by mapping terminal type to

@@ -639,6 +639,10 @@ typedef struct
 {
     uint16_t base_iso;
     cmc_optomechanics_t optics;
+    float32_t min_ag;
+    float32_t max_ag;
+    float32_t min_dg;
+    float32_t max_dg;
     uint16_t lut_apertures;
     int32_t media_format;
     tnr7us_trigger_info_t tnr7us_trigger_info;

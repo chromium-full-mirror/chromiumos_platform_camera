@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Intel Corporation.
+ * Copyright (C) 2023 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -611,33 +611,13 @@
      */
 
     #define IA_CSS_TRACE_TRACE_0(severity, module, format)
-    #define IA_CSS_TRACE_TRACE_1(severity, module, format, a1) \
-    do { \
-        (void)a1; \
-    } while(0)
-    #define IA_CSS_TRACE_TRACE_2(severity, module, format, a1, a2) \
-    do { \
-        (void)a1; (void)a2; \
-    } while(0)
-    #define IA_CSS_TRACE_TRACE_3(severity, module, format, a1, a2, a3) \
-    do { \
-        (void)a1; (void)a2; (void)a3; \
-    } while(0)
-    #define IA_CSS_TRACE_TRACE_4(severity, module, format, a1, a2, a3, a4) \
-    do { \
-        (void)a1; (void)a2; (void)a3; (void)a4; \
-    } while(0)
-    #define IA_CSS_TRACE_TRACE_5(severity, module, format, a1, a2, a3, a4, a5) \
-    do { \
-        (void)a1; (void)a2; (void)a3; (void)a4; (void)a5; \
-    } while(0)
-    #define IA_CSS_TRACE_TRACE_6(severity, module, format, a1, a2, a3, a4, a5, a6) \
-    do { \
-        (void)a1; (void)a2; (void)a3; (void)a4; (void)a5;(void)a6; \
-    } while(0)
-    #define IA_CSS_TRACE_TRACE_7(severity, module, format, a1, a2, a3, a4, a5, a6, a7) \ \
-    do { \ (void)a1; (void)a2; (void)a3; (void)a4; (void)a5; (void)a6; (void)a7;
-    } while(0)
+    #define IA_CSS_TRACE_TRACE_1(severity, module, format, a1)
+    #define IA_CSS_TRACE_TRACE_2(severity, module, format, a1, a2)
+    #define IA_CSS_TRACE_TRACE_3(severity, module, format, a1, a2, a3)
+    #define IA_CSS_TRACE_TRACE_4(severity, module, format, a1, a2, a3, a4)
+    #define IA_CSS_TRACE_TRACE_5(severity, module, format, a1, a2, a3, a4, a5)
+    #define IA_CSS_TRACE_TRACE_6(severity, module, format, a1, a2, a3, a4, a5, a6)
+    #define IA_CSS_TRACE_TRACE_7(severity, module, format, a1, a2, a3, a4, a5, a6, a7)
 
 #ifdef __XTENSA_FW__
     #define SOURCE "FW"
@@ -788,37 +768,16 @@
 /* Disabled */
 /* Legend: IA_CSS_TRACE_{Argument Count}_{Backend ID}_{Enabled} */
 #define IA_CSS_TRACE_0_1_0(severity, module, format)
-#define IA_CSS_TRACE_1_1_0(severity, module, format, arg1) \
-    do { \
-        (void)(arg1); \
-    } while(0)
-#define IA_CSS_TRACE_2_1_0(severity, module, format, arg1, arg2) \
-    do { \
-        (void)(arg1); (void)(arg2); \
-    } while(0)
-#define IA_CSS_TRACE_3_1_0(severity, module, format, arg1, arg2, arg3) \
-    do { \
-        (void)(arg1); (void)(arg2); (void)(arg3); \
-    } while(0)
-#define IA_CSS_TRACE_4_1_0(severity, module, format, arg1, arg2, arg3, arg4) \
-    do { \
-        (void)(arg1); (void)(arg2); (void)(arg3); (void)(arg4); \
-    } while(0)
+#define IA_CSS_TRACE_1_1_0(severity, module, format, arg1)
+#define IA_CSS_TRACE_2_1_0(severity, module, format, arg1, arg2)
+#define IA_CSS_TRACE_3_1_0(severity, module, format, arg1, arg2, arg3)
+#define IA_CSS_TRACE_4_1_0(severity, module, format, arg1, arg2, arg3, arg4)
 #define IA_CSS_TRACE_5_1_0(severity, module, format, arg1, arg2, arg3, arg4, \
-                            arg5) \
-    do { \
-        (void)(arg1); (void)(arg2); (void)(arg3); (void)(arg4); (void)(arg5); \
-    } while(0)
+                            arg5)
 #define IA_CSS_TRACE_6_1_0(severity, module, format, arg1, arg2, arg3, arg4, \
-                            arg5, arg6) \
-    do { \
-        (void)(arg1); (void)(arg2); (void)(arg3); (void)(arg4); (void)(arg5); (void)(arg6); \
-    } while(0)
+                            arg5, arg6)
 #define IA_CSS_TRACE_7_1_0(severity, module, format, arg1, arg2, arg3, arg4, \
-                            arg5, arg6, arg7) \
-    do { \
-        (void)(arg1); (void)(arg2); (void)(arg3); (void)(arg4); (void)(arg5); (void)(arg6); \
-    } while(0)
+                            arg5, arg6, arg7)
 
 /* Enabled */
 /* Legend: IA_CSS_TRACE_{Argument Count}_{Backend ID}_{Enabled} */
@@ -855,37 +814,16 @@
 /* Disabled */
 /* Legend: IA_CSS_TRACE_{Argument Count}_{Backend ID}_{Enabled} */
 #define IA_CSS_TRACE_0_2_0(severity, module, format)
-#define IA_CSS_TRACE_1_2_0(severity, module, format, arg1) \
-    do { \
-        (void)(arg1); \
-    } while(0)
-#define IA_CSS_TRACE_2_2_0(severity, module, format, arg1, arg2) \
-    do { \
-        (void)(arg1); (void)(arg2); \
-    } while(0)
-#define IA_CSS_TRACE_3_2_0(severity, module, format, arg1, arg2, arg3) \
-    do { \
-        (void)(arg1); (void)(arg2); (void)(arg3); \
-    } while(0)
-#define IA_CSS_TRACE_4_2_0(severity, module, format, arg1, arg2, arg3, arg4) \
-    do { \
-        (void)(arg1); (void)(arg2); (void)(arg3); (void)(arg4); \
-    } while(0)
+#define IA_CSS_TRACE_1_2_0(severity, module, format, arg1)
+#define IA_CSS_TRACE_2_2_0(severity, module, format, arg1, arg2)
+#define IA_CSS_TRACE_3_2_0(severity, module, format, arg1, arg2, arg3)
+#define IA_CSS_TRACE_4_2_0(severity, module, format, arg1, arg2, arg3, arg4)
 #define IA_CSS_TRACE_5_2_0(severity, module, format, arg1, arg2, arg3, arg4, \
-                            arg5) \
-    do { \
-        (void)(arg1); (void)(arg2); (void)(arg3); (void)(arg4); (void)(arg5); \
-    } while(0)
+                            arg5)
 #define IA_CSS_TRACE_6_2_0(severity, module, format, arg1, arg2, arg3, arg4, \
-                            arg5, arg6) \
-    do { \
-        (void)arg1; (void)arg2; (void)arg3; (void)arg4; (void)arg5; (void)arg6; \
-    } while(0)
+                            arg5, arg6)
 #define IA_CSS_TRACE_7_2_0(severity, module, format, arg1, arg2, arg3, arg4, \
-                            arg5, arg6, arg7) \
-    do { \
-        (void)(arg1); (void)(arg2); (void)(arg3); (void)(arg4); (void)(arg5); (void)(arg6); (void)(arg7); \
-    } while(0)
+                            arg5, arg6, arg7)
 
 /* Enabled */
 /* Legend: IA_CSS_TRACE_{Argument Count}_{Backend ID}_{Enabled} */

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 Intel Corporation.
+ * Copyright (C) 2023 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@
  *  This file, together with the user space header, ia_css_psys_process_group.hsys.user.h,
  *  defines the functions required to manage the lifetime of a process group.
  *
- * Sequence for setup up and queueing processing tasks with a persistent program group
+ * Sequence for setup up and queuing processing tasks with a persistent program group
  * to IPU is:
  *
  * # Get Program Group manifest by ID

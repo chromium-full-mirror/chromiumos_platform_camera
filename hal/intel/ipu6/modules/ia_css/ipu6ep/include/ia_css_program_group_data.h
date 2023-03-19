@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 Intel Corporation.
+ * Copyright (C) 2023 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -155,14 +155,14 @@ struct ia_css_param_frame_s {
 
 /**
  * Structure defining the frame (size and access) properties for
- * inbuild types only.
+ * inbuilt types only.
  *
- * The inbuild types like FourCC, MIPI and CSS private types are supported
+ * The inbuilt types like FourCC, MIPI and CSS private types are supported
  * by FW all other types are custom types which interpretation must be encoded
  * on the buffer itself or known by the source and sink
  */
 struct ia_css_frame_descriptor_s {
-    /** Indicates if this is a generic type or inbuild with
+    /** Indicates if this is a generic type or inbuilt with
       * variable size descriptor.
       */
     ia_css_frame_format_type_t frame_format_type;
