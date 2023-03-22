@@ -261,12 +261,9 @@ static void hal_set_up(cros::CameraMojoChannelManagerToken* token) {
 static void hal_tear_down() {
     LOG1("@%s", __func__);
 
-    int ret = icamera::camera_hal_deinit();
-    CheckAndLogError(ret != icamera::OK, VOID_VALUE, "@%s, camera_hal_deinit fails, ret:%d",
-                     __func__, ret);
-
 #ifdef ENABLE_SANDBOXING
-    icamera::IntelAlgoClient::releaseInstance();
+    // Set nullptr to the mojo manager token
+    icamera::IntelAlgoClient::getInstance()->setMojoManagerToken(nullptr);
 #endif
 }
 
