@@ -437,18 +437,6 @@ P2ANode::enqueISP(const RequestPtr& pRequest,
 
       CHECK_AND_RELEASE(ret == OK, "fail to set ISP");
 
-      if (pOMetaApp != NULL) {
-        IMetadata::IEntry entry;
-        entry = outMetaSet.appMeta.entryFor(MTK_EDGE_MODE);
-        if (entry.tag() != IMetadata::IEntry::BAD_TAG) {
-          outMetaSet.appMeta.remove(MTK_EDGE_MODE);
-        }
-        entry = outMetaSet.appMeta.entryFor(MTK_NOISE_REDUCTION_MODE);
-        if (entry.tag() != IMetadata::IEntry::BAD_TAG) {
-          outMetaSet.appMeta.remove(MTK_NOISE_REDUCTION_MODE);
-        }
-      }
-
       if (pOMetaHal != NULL) {
         (*pOMetaHal) = inMetaSet.halMeta + outMetaSet.halMeta;
 #if MTK_ISP_SUPPORT_COLOR_SPACE
