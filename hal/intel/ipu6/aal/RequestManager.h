@@ -28,6 +28,7 @@
 #include "HALv3Interface.h"
 #include "PlatformData.h"
 #include "PrivateStream.h"
+#include "PrivacyControl.h"
 #include "ResultProcessor.h"
 
 namespace camera3 {
@@ -82,6 +83,7 @@ class RequestManager : public RequestManagerCallback, public icamera::camera_cal
     static void callbackNotify(const icamera::camera_callback_ops* cb,
                                const icamera::camera_msg_data_t& data);
     void handleCallbackEvent(const icamera::camera_msg_data_t& data);
+    int handlePrivacySwitch(camera3_capture_request_t* request, bool* privacyMode);
 
  private:
     static const uint32_t kMaxStreamNum = 8;
@@ -96,6 +98,10 @@ class RequestManager : public RequestManagerCallback, public icamera::camera_cal
     struct CameraBufferInfo mCameraBufferInfo[kMaxProcessRequestNum];
 
     int mCameraId;
+    std::unique_ptr<PrivacyControl> mPrivacyControl;
+    bool mSwPrivacyMode;
+    bool mPrivacyStarted;
+
     const camera3_callback_ops_t* mCallbackOps;
     bool mCameraDeviceStarted;
     ResultProcessor* mResultProcessor;
@@ -117,6 +123,7 @@ class RequestManager : public RequestManagerCallback, public icamera::camera_cal
     PrivateStream* mFDStream;
     camera3_stream_t mFDStreamsInfo;
     int mFDStreamIndex;
+    icamera::stream_config_t mStreamCfg;
 
     /* choose HAL stream to do qbuf/dqbuf from stream list.
      * halStreamFlag: array keeps the result.

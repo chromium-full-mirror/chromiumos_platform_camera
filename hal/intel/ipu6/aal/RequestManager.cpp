@@ -44,6 +44,9 @@ namespace camera3 {
 
 RequestManager::RequestManager(int cameraId)
         : mCameraId(cameraId),
+          mPrivacyControl(nullptr),
+          mSwPrivacyMode(false),
+          mPrivacyStarted(false),
           mCallbackOps(nullptr),
           mCameraDeviceStarted(false),
           mResultProcessor(nullptr),
@@ -100,6 +103,7 @@ int RequestManager::init(const camera3_callback_ops_t* callback_ops) {
     mResultProcessor = new ResultProcessor(mCameraId, callback_ops, this, mParameterResult);
     mCallbackOps = callback_ops;
 
+    mPrivacyControl = std::make_unique<PrivacyControl>(mCameraId, callback_ops, this);
     // Register callback to icamera HAL
     icamera::camera_callback_ops_t::notify = RequestManager::callbackNotify;
     icamera::camera_callback_register(mCameraId,
@@ -129,6 +133,11 @@ int RequestManager::deinit() {
 
     waitAllRequestsDone();
     LOG1("@%s done", __func__);
+
+    if (mPrivacyStarted) {
+        mPrivacyControl->stop();
+        mPrivacyStarted = false;
+    }
 
     StaticCapability::releaseInstance(mCameraId);
 
@@ -352,11 +361,11 @@ int RequestManager::createHALStreams(camera3_stream_configuration_t* stream_list
 }
 
 int RequestManager::deviceConfigHALStreams(int halStreamNum) {
-    icamera::stream_config_t streamCfg = {
-        halStreamNum, mHALStream,
+    CLEAR(mStreamCfg);
+    mStreamCfg = {halStreamNum, mHALStream,
         icamera::camera_stream_configuration_mode_t::CAMERA_STREAM_CONFIGURATION_MODE_AUTO};
 
-    int ret = icamera::camera_device_config_streams(mCameraId, &streamCfg);
+    int ret = icamera::camera_device_config_streams(mCameraId, &mStreamCfg);
     CheckAndLogError(ret != icamera::OK, ret, "failed to configure stream, ret %d", ret);
 
     return icamera::OK;
@@ -405,6 +414,10 @@ void RequestManager::createCamera3Stream(camera3_stream_configuration_t* stream_
         stream->usage |= GRALLOC_USAGE_HW_CAMERA_WRITE | GRALLOC_USAGE_SW_READ_OFTEN |
                          GRALLOC_USAGE_SW_WRITE_NEVER;
         mCamera3StreamVector.push_back(s);
+
+        if (stream->format == HAL_PIXEL_FORMAT_BLOB) {
+            mPrivacyControl->configure(mHALStream[halStreamIndex], *stream);
+        }
 
         requestStreamIndex++;
         LOGI("OUTPUT max buffer %d, usage %x, format %x, %dx%d", stream->max_buffers, stream->usage,
@@ -475,6 +488,7 @@ int RequestManager::configureStreams(camera3_stream_configuration_t* stream_list
 
     createCamera3Stream(stream_list, streamToHALIndex, halStreamFlag, inputReqStream,
                         userStreamForFd);
+    mSwPrivacyMode = false;
 
     return icamera::OK;
 }
@@ -543,6 +557,58 @@ int RequestManager::constructDefaultRequestSettings(int type, const camera_metad
     return icamera::OK;
 }
 
+int RequestManager::handlePrivacySwitch(camera3_capture_request_t* request, bool* privacyMode) {
+    bool stateChanged = false;
+    *privacyMode = PrivacyControl::getPrivacyMode();
+
+    if (*privacyMode != mSwPrivacyMode) {
+        stateChanged = true;
+        mSwPrivacyMode = *privacyMode;
+    }
+    LOG2("%s, privacyMode: %d, frameNumber: %d, stateChanged: %d", __func__,
+         *privacyMode, request->frame_number, stateChanged);
+
+    if (*privacyMode) {
+        mPrivacyControl->processCaptureRequest(request);
+    }
+
+    if (stateChanged) {
+        if (*privacyMode) {
+            waitAllRequestsDone();
+
+            // start PrivacyControl
+            if (!mPrivacyStarted) {
+                mPrivacyControl->start();
+                mPrivacyStarted = true;
+                LOG2("%s, Start the sw privacy mode", __func__);
+            }
+
+            // stop CameraDevice
+            if (mCameraDeviceStarted) {
+                icamera::camera_device_stop(mCameraId);
+                mCameraDeviceStarted = false;
+                LOG2("%s, Stop the physical camera device", __func__);
+            }
+        } else {
+            LOG2("%s, Re-Configure device for privacy mode: ON -> OFF. privacyMode: %d",
+                 __func__, *privacyMode);
+            int ret = icamera::camera_device_config_streams(mCameraId, &mStreamCfg);
+            CheckAndLogError(ret != icamera::OK, ret, "failed to re-configure stream");
+
+            waitAllRequestsDone();
+
+            // stop privacy mode
+            if (mPrivacyStarted) {
+                mPrivacyControl->stop();
+                mPrivacyStarted = false;
+                LOG2("%s, Stop the sw priority mode", __func__);
+            }
+        }
+    }
+
+    return icamera::OK;
+}
+
 int RequestManager::processCaptureRequest(camera3_capture_request_t* request) {
     CheckAndLogError(!request, icamera::UNKNOWN_ERROR, "@%s, request is nullptr", __func__);
     LOG2("<fn%u>@%s, input_buffer:%d, num_output_buffers:%d", request->frame_number, __func__,
@@ -555,9 +621,24 @@ int RequestManager::processCaptureRequest(camera3_capture_request_t* request) {
     CheckAndLogError(request->num_output_buffers > kMaxStreamNum, icamera::BAD_VALUE,
                      "@%s, num_output_buffers:%d", __func__, request->num_output_buffers);
 
-    int ret = icamera::OK;
-
     waitProcessRequest();
+
+    if (request->settings) {
+        MetadataConvert::dumpMetadata(request->settings);
+        mLastSettings = request->settings;
+    } else if (mLastSettings.isEmpty()) {
+        LOGE("nullptr settings for the first reqeust!");
+        return icamera::BAD_VALUE;
+    }
+
+    bool privacyMode;
+    int ret = handlePrivacySwitch(request, &privacyMode);
+    CheckAndLogError(ret != icamera::OK, icamera::UNKNOWN_ERROR,
+                     "@%s, failed to handle privacy mode switch", __func__);
+    if (privacyMode) {
+        increaseRequestCount();
+        return icamera::OK;
+    }
 
     int index = -1;
     for (int i = 0; i < kMaxProcessRequestNum; i++) {
@@ -569,14 +650,6 @@ int RequestManager::processCaptureRequest(camera3_capture_request_t* request) {
     CheckAndLogError(index < 0, icamera::UNKNOWN_ERROR, "<fn%u>no empty CameraBufferInfo!",
                      request->frame_number);
     CLEAR(mCameraBufferInfo[index]);
-
-    if (request->settings) {
-        MetadataConvert::dumpMetadata(request->settings);
-        mLastSettings = request->settings;
-    } else if (mLastSettings.isEmpty()) {
-        LOGE("nullptr settings for the first reqeust!");
-        return icamera::BAD_VALUE;
-    }
 
     std::shared_ptr<Camera3Buffer> inputCam3Buf = nullptr;
     icamera::sensor_raw_info_t opaqueRawInfo = {-1, 0};
@@ -670,8 +743,6 @@ int RequestManager::processCaptureRequest(camera3_capture_request_t* request) {
                          ret);
     }
 
-    increaseRequestCount();
-
     if (!mCameraDeviceStarted) {
         LOGI("Start camera device in processCaptureRequest");
         ret = icamera::camera_device_start(mCameraId);
@@ -679,6 +750,7 @@ int RequestManager::processCaptureRequest(camera3_capture_request_t* request) {
 
         mCameraDeviceStarted = true;
     }
+    increaseRequestCount();
 
     mCameraBufferInfo[index].frameInProcessing = true;
     mCameraBufferInfo[index].frameNumber = request->frame_number;

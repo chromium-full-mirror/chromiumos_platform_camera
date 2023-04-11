@@ -48,6 +48,7 @@ shared_library("libcamhal") {
     "aal/RequestManager.cpp",
     "aal/ResultProcessor.cpp",
     "aal/ParameterResult.cpp",
+    "aal/PrivacyControl.cpp",
     "modules/ia_cipr/src/Buffer.cpp",
     "modules/ia_cipr/src/Command.cpp",
     "modules/ia_cipr/src/Context.cpp",

@@ -33,6 +33,7 @@
 #include "VendorTags.h"
 #include "iutils/CameraDump.h"
 #include "iutils/CameraLog.h"
+#include "PrivacyControl.h"
 
 namespace camera3 {
 
@@ -270,6 +271,10 @@ void set_face_detection_result_callback(int camera_id,
                                                                   std::move(callback));
 }
 
+void hal_set_privacy_switch_state(bool on) {
+    PrivacyControl::setPrivacyMode(on);
+}
+
 static struct hw_module_methods_t hal_module_methods = {.open = hal_dev_open};
 
 static hw_module_t camera_common = {.tag = HARDWARE_MODULE_TAG,
@@ -298,7 +303,8 @@ camera_module_t VISIBILITY_PUBLIC HAL_MODULE_INFO_SYM = {
 cros::cros_camera_hal_t VISIBILITY_PUBLIC CROS_CAMERA_HAL_INFO_SYM = {
     .set_up = hal_set_up,
     .tear_down = hal_tear_down,
-    .set_face_detection_result_callback = set_face_detection_result_callback
+    .set_face_detection_result_callback = set_face_detection_result_callback,
+    .set_privacy_switch_state = hal_set_privacy_switch_state
 };
 }
 

@@ -502,7 +502,7 @@ bool ResultProcessor::ResultThread::threadLoop() {
                 l, std::chrono::nanoseconds(kMaxDuration * SLOWLY_MULTIPLIER));
 
             if (ret == std::cv_status::timeout) {
-                LOGW("%s, wait event timeout", __func__);
+                LOG2("%s, wait event timeout", __func__);
             }
 
             return true;
