@@ -85,8 +85,8 @@ class VISIBILITY_PUBLIC Mediatek3AClient
 
   std::unique_ptr<cros::CameraAlgorithmBridge> mBridge;
 
-  base::Callback<void(uint32_t, uint32_t, int32_t)> mCallback;
-  base::Callback<void(uint32_t)> mNotifyCallback;
+  base::RepeatingCallback<void(uint32_t, uint32_t, int32_t)> mCallback;
+  base::RepeatingCallback<void(uint32_t)> mNotifyCallback;
   bool mIPCStatus;             // true: no error happens, false: error happens
   std::mutex mIPCStatusMutex;  // the mutex for mIPCStatus
 

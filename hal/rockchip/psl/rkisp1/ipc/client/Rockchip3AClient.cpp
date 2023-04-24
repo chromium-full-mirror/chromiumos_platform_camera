@@ -57,10 +57,12 @@ Rockchip3AClient::Rockchip3AClient():
                      "@%s, call pthread_mutex_init fails, ret:%d", __FUNCTION__,
                      ret);
 
-    mCallback = base::Bind(&Rockchip3AClient::callbackHandler, base::Unretained(this));
+    mCallback = base::BindRepeating(&Rockchip3AClient::callbackHandler,
+                                    base::Unretained(this));
     Rockchip3AClient::return_callback = returnCallback;
 
-    mNotifyCallback = base::Bind(&Rockchip3AClient::notifyHandler, base::Unretained(this));
+    mNotifyCallback = base::BindRepeating(&Rockchip3AClient::notifyHandler,
+                                          base::Unretained(this));
     Rockchip3AClient::notify = notifyCallback;
 
     mBridge = cros::CameraAlgorithmBridge::CreateInstance(

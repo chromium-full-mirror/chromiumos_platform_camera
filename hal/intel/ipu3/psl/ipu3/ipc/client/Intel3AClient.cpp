@@ -34,10 +34,10 @@ Intel3AClient::Intel3AClient():
 {
     LOG1("@%s", __FUNCTION__);
 
-    mCallback = base::Bind(&Intel3AClient::callbackHandler, base::Unretained(this));
+    mCallback = base::BindRepeating(&Intel3AClient::callbackHandler, base::Unretained(this));
     Intel3AClient::return_callback = returnCallback;
 
-    mNotifyCallback = base::Bind(&Intel3AClient::notifyHandler, base::Unretained(this));
+    mNotifyCallback = base::BindRepeating(&Intel3AClient::notifyHandler, base::Unretained(this));
     Intel3AClient::notify = notifyCallback;
 
     mBridge = cros::CameraAlgorithmBridge::CreateInstance(

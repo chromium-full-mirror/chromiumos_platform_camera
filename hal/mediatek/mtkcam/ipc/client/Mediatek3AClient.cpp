@@ -43,12 +43,12 @@ Mediatek3AClient::Mediatek3AClient()
     : mErrCb(nullptr), mIPCStatus(true), mInitialized(false) {
   LOG1("@%s", __FUNCTION__);
 
-  mCallback =
-      base::Bind(&Mediatek3AClient::callbackHandler, base::Unretained(this));
+  mCallback = base::BindRepeating(&Mediatek3AClient::callbackHandler,
+                                  base::Unretained(this));
   Mediatek3AClient::return_callback = returnCallback;
 
-  mNotifyCallback =
-      base::Bind(&Mediatek3AClient::notifyHandler, base::Unretained(this));
+  mNotifyCallback = base::BindRepeating(&Mediatek3AClient::notifyHandler,
+                                        base::Unretained(this));
   Mediatek3AClient::notify = notifyCallback;
 
   mBridge = cros::CameraAlgorithmBridge::CreateInstance(
@@ -81,12 +81,12 @@ void Mediatek3AClient::tryReconnectBridge() {
 
   mInitialized = false;
 
-  mCallback =
-      base::Bind(&Mediatek3AClient::callbackHandler, base::Unretained(this));
+  mCallback = base::BindRepeating(&Mediatek3AClient::callbackHandler,
+                                  base::Unretained(this));
   Mediatek3AClient::return_callback = returnCallback;
 
-  mNotifyCallback =
-      base::Bind(&Mediatek3AClient::notifyHandler, base::Unretained(this));
+  mNotifyCallback = base::BindRepeating(&Mediatek3AClient::notifyHandler,
+                                        base::Unretained(this));
   Mediatek3AClient::notify = notifyCallback;
 
   mBridge = cros::CameraAlgorithmBridge::CreateInstance(
