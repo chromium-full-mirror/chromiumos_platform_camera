@@ -447,7 +447,7 @@ int ParameterGenerator::updateCommonMetadata(Parameters* params, const AiqResult
         entry.data.u8 = &lscFlags;
         ParameterHelper::mergeTag(entry, params);
 
-        if (Log::isLogTagEnabled(ST_STATS)) {
+        if (Log::isLogTagEnabled(ST_STATS, CAMERA_DEBUG_LOG_LEVEL2)) {
             const cca::cca_out_stats* outStats = &aiqResult->mOutStats;
             const rgbs_grid_block* rgbsPtr = aiqResult->mOutStats.rgbs_blocks;
             int size = outStats->rgbs_grid.grid_width * outStats->rgbs_grid.grid_height;

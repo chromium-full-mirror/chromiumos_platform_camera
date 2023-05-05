@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2022 Intel Corporation.
+ * Copyright (C) 2015-2023 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -269,6 +269,7 @@ int IspParamAdaptor::configure(const stream_t& stream, ConfigMode configMode, Tu
         inputParams->seq_id = -1;
         initInputParams(inputParams);
         inputParams->stream_id = ispParamIt.first;
+        inputParams->dvs_id = inputParams->stream_id;
 
         ia_isp_bxt_program_group* pgPtr = mGraphConfig->getProgramGroup(ispParamIt.first);
         CheckAndLogError(!pgPtr, UNKNOWN_ERROR,

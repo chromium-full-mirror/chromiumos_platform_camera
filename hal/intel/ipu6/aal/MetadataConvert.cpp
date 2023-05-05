@@ -21,6 +21,7 @@
 #include <cmath>
 #include <sstream>
 #include <unordered_map>
+#include <algorithm>
 
 #include "Errors.h"
 #include "HALv3Utils.h"
@@ -904,11 +905,28 @@ int MetadataConvert::convertControlParameter(const icamera::Parameters& paramete
         settings->update(ANDROID_CONTROL_AE_LOCK, &mode, 1);
     }
 
+    auto update3ARegion = [&](auto& windows) {
+        icamera::camera_zoom_region_t cw;
+        if ((parameter.getZoomRegion(&cw) != icamera::OK) ||
+            (cw.left == 0 && cw.right == 0 && cw.top == 0 && cw.bottom == 0))
+            return;
+
+        for (auto& w : windows) {
+            if (cw.right < w.left || cw.left > w.right || cw.bottom < w.top ||
+                w.bottom < cw.top)
+                continue;
+            w = { std::max(cw.left, w.left), std::max(cw.top, w.top),
+                  std::min(cw.right, w.right), std::min(cw.bottom, w.bottom),
+                  w.weight };
+        }
+    };
+
     icamera::camera_window_list_t windows;
     parameter.getAeRegions(windows);
     int count = windows.size() * 5;
     if (count > 0) {
         int regions[count];
+        update3ARegion(windows);
         count = convertToMetadataRegion(windows, windows.size() * 5, regions);
         if (count > 0) {
             settings->update(ANDROID_CONTROL_AE_REGIONS, &regions[0], count);
@@ -948,6 +966,7 @@ int MetadataConvert::convertControlParameter(const icamera::Parameters& paramete
     count = windows.size() * 5;
     if (count > 0) {
         int regions[count];
+        update3ARegion(windows);
         count = convertToMetadataRegion(windows, windows.size() * 5, regions);
         if (count > 0) {
             settings->update(ANDROID_CONTROL_AF_REGIONS, &regions[0], count);
@@ -973,6 +992,7 @@ int MetadataConvert::convertControlParameter(const icamera::Parameters& paramete
     count = windows.size() * 5;
     if (count > 0) {
         int regions[count];
+        update3ARegion(windows);
         count = convertToMetadataRegion(windows, windows.size() * 5, regions);
         if (count > 0) {
             settings->update(ANDROID_CONTROL_AWB_REGIONS, &regions[0], count);

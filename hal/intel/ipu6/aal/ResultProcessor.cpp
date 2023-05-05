@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Intel Corporation
+ * Copyright (C) 2017-2023 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -433,7 +433,8 @@ bool ResultProcessor::checkRequestDone(const RequestState& requestState) {
 void ResultProcessor::returnRequestDone(uint32_t frameNumber) {
     TRACE_LOG_POINT("ResultProcessor", __func__, MAKE_COLOR(frameNumber), frameNumber);
 
-    if ((frameNumber % FPS_FRAME_COUNT == 0) && icamera::Log::isLogTagEnabled(ST_FPS)) {
+    if ((frameNumber % FPS_FRAME_COUNT == 0)
+        && icamera::Log::isLogTagEnabled(ST_FPS, icamera::CAMERA_DEBUG_LOG_LEVEL2)) {
         struct timeval curTime;
         gettimeofday(&curTime, nullptr);
         int duration = static_cast<int>(curTime.tv_usec - mRequestTime.tv_usec +
