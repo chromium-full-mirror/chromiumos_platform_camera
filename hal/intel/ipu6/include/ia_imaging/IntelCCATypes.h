@@ -383,6 +383,7 @@ typedef struct
     ia_atbx_face  faces[MAX_FACE_NUM];       /*!< Array of face information. */
     bool updated;                            /*!< The update status of face. true is the real statistics, and false is the false statistics that have not been updated. */
     bool is_video_conf;                      /*!< video confenerce mode. */
+    FD_IMPL_TYPE fd_algo;                    /*!< face detection algo type. */
 } cca_face_state;
 
 /*!
@@ -409,8 +410,8 @@ typedef struct
 typedef struct
 {
     bool get_rgbs_stats;                /*!< If get rgbs statistics back. */
-    ia_aiq_rgbs_grid rgbs_grid;
-    rgbs_grid_block rgbs_blocks[BXT_RGBS_GRID_MAX_NUM_ELEMENTS];
+    ia_aiq_rgbs_grid rgbs_grid[MAX_NUM_EXPOSURE];
+    rgbs_grid_block rgbs_blocks[MAX_NUM_EXPOSURE][BXT_RGBS_GRID_MAX_NUM_ELEMENTS];
 } cca_out_stats;
 
 /*!
@@ -545,6 +546,16 @@ typedef struct
 } cca_gdc_configuration;
 
 /*!
+ * \brief  structure for multi-stream DVS configuration.
+ */
+typedef struct
+{
+    size_t count;
+    uint32_t ids[MAX_STREAM_NUM];
+    cca_gdc_configuration configs[MAX_STREAM_NUM];
+} cca_gdc_configurations;
+
+/*!
  * \brief  struct of zoom parameters.
  */
 struct cca_dvs_zoom
@@ -655,7 +666,7 @@ struct cca_init_params{
     cca_cpf aiq_cpf;                 /*!< Mandatory. tuning data */
     cca_nvm aiq_nvm;                 /*!< Mandatory. sensor nvm data */
     cca_aiqd aiq_aiqd;               /*!< Mandatory. aiq algo calibration data, NULL for 1st time launch */
-    uint32_t bitmap;             /*!< Mandatory. list all components (CCAModuleBitMap) that need initialization. */
+    uint32_t bitmap;                 /*!< Mandatory. list all components (CCAModuleBitMap) that need initialization. */
     ia_aiq_frame_params frameParams; /*!< Mandatory. Sensor frame parameters. Describe frame scaling/cropping done in sensor. */
     ia_aiq_frame_use frameUse;       /*!< Mandatory. scenario for use case still/preview/video */
     //BComp init params
@@ -665,11 +676,10 @@ struct cca_init_params{
     CCADVSOutputType dvsOutputType;  /*!< Mandatory. DVS algo output configuration must match with GDC kernel */
     float32_t dvsZoomRatio;              /*!< Mandatory. zoom factor */
     bool enableVideoStablization;    /*!< Mandatory. enable/disable video statlization */
-    cca_gdc_configuration gdcConfig; /*!< Mandatory. GDC resolution configuration */
+    cca_gdc_configurations gdcConfigs; /*!< Mandatory. GDC resolution configuration */
     uint8_t aiqStorageLen;           /*!< Mandatory. lehgth of history to store algo results */
     uint8_t aecFrameDelay;           /*!< Mandatory. frame delay for auto exposure take effect */
     cca_stream_ids aic_stream_ids;   /*!< Optional. the stream id for aic handle*/
-    cca_stream_ids dvs_ids;          /*!< Optional. the DVS handle number */
     cca_init_params() :
         frameUse(ia_aiq_frame_use_preview),
         conversionGainRatio(1),
@@ -689,9 +699,8 @@ struct cca_init_params{
             IA_MEMSET(&aiq_nvm, 0, sizeof(aiq_nvm));
             IA_MEMSET(&aiq_aiqd, 0, sizeof(aiq_aiqd));
             IA_MEMSET(&frameParams, 0, sizeof(frameParams));
-            IA_MEMSET(&gdcConfig, 0, sizeof(gdcConfig));
+            IA_MEMSET(&gdcConfigs, 0, sizeof(gdcConfigs));
             IA_MEMSET(&aic_stream_ids, 0, sizeof(aic_stream_ids));
-            IA_MEMSET(&dvs_ids, 0, sizeof(dvs_ids));
         }
 };
 /*!

@@ -177,6 +177,7 @@ typedef struct
     ia_face_roi faces[IA_CCAT_FACES_MAX_NUM];                                /*!< Optional. Face coordinates from external face detector. NULL if not available. */
     bool updated;                                                            /*!< The update status of face. true is the real statistics, and false is the false statistics that have not been updated.*/
     bool is_video_conf;                                                      /*!< video confenerce mode. */
+    FD_IMPL_TYPE fd_algo;                                                    /*!< face detection algo type. */
 #endif
 } ia_ccat_frame_parameters;
 

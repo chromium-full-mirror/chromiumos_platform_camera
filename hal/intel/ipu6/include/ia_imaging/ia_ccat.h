@@ -37,6 +37,8 @@ extern "C" {
 #endif
 #define IA_CCAT_ACM_SECTORS_MAX_NUM 36
 #define PERCENTAGE_2_DECIMAL 0.01F
+#define SATURATION_THRE_CCAT 12U /* 5% pixel saturated */
+#define LUX_EST_THRE_CCAT 10000.0f /* Lux level estimation is not correct over 10000 lux. */
 
 typedef struct ia_ccat_t ia_ccat;
 typedef struct frame_info_t ia_ccat_frame_info;
@@ -235,6 +237,12 @@ ia_ccat_get_frame_hist_info(
     float32_t *a_mean_ptr,
     float32_t *a_saturation_percent_ptr,
     float32_t *a_max_ptr);
+
+LIBEXPORT ia_err
+ia_ccat_get_frame_rgb_saturation(
+    ia_ccat_frame_info* a_frame_info_ptr,
+    uint32_t a_exposure_index,
+    uint32_t* a_rgb_saturation_percent_ptr);
 
 LIBEXPORT ia_err
 ia_ccat_get_frame_histogram_segment_average(
@@ -570,7 +578,7 @@ LIBEXPORT ia_err
 ia_ccat_get_frame_filtered_motion_level_estimate(
     ia_ccat_frame_info *a_frame_info_ptr,
     uint32_t a_exposure_index,
-    float32_t *a_filtered_motion_estimate_ptr);
+    int32_t *a_filtered_motion_estimate_ptr);
 
 LIBEXPORT ia_err
 ia_ccat_get_frame_luminance_average(
@@ -646,6 +654,14 @@ ia_ccat_get_frame_face_states(
     ia_ccat_frame_info *a_frame_info_ptr,
     bool *updated,
     bool *is_video_conf);
+
+
+LIBEXPORT ia_err
+ia_ccat_get_analyzed_face_mask(
+    ia_ccat_frame_info* a_frame_info_ptr,
+    uint32_t a_exposure_index,
+    const ia_face_roi *a_face_ptr,
+    bool *a_has_mask);
 
 LIBEXPORT ia_err
 ia_ccat_get_analyzed_face_area(
@@ -746,6 +762,7 @@ ia_ccat_get_face_detection_exit_delay(
     ia_ccat_frame_info* a_frame_info_ptr,
     uint32_t face_exit_delay_tuning,
     uint32_t *refined_face_exit_dela);
+
 #endif /* IA_CCAT_FACE_ANALYSIS_ENABLED */
 #endif /* IA_CCAT_RGBS_GRID_ENABLED */
 
@@ -875,6 +892,14 @@ ia_ccat_remap_ir_light_sources(
     const cmc_light_source *lsrc_in,
     uint32_t a_num_of_lsources_in,
     float32_t *a_ir_proportion);
+
+LIBEXPORT ia_err
+ia_ccat_set_lux_cct_interp_data(
+    ia_ccat *a_ccat_ptr,
+    int32_t *lux_levels,
+    int32_t *target_cct_low,
+    int32_t *target_cct_high,
+    int32_t num_interp_data);
 #endif /* IA_CCAT_LIGHT_SOURCE_ESTIMATION_ENABLED */
 
 LIBEXPORT ia_err

@@ -215,6 +215,22 @@ public:
     */
     virtual ia_err getBrightestIndex(uint32_t *outMaxBin) = 0;
 
+    /*!
+     * \brief calc the total pixel number in range [luminance_low, luminance_high]
+     *
+     * \param[in] luminance_low          Mandatory.\n
+     *                                   the low pixel value
+     *
+     * \param[in] luminance_high         Mandatory.\n
+     *                                   the high pixel value
+     *
+     * \param[out] outTotalPixels        Mandatory.\n
+     *                                   the total pixel number in range [luminance_low, luminance_high]
+     *
+     * \return                           Error code.
+     */
+    virtual ia_err getPixelCount(uint32_t luminance_low, uint32_t luminance_high, uint32_t *outTotalPixels) = 0;
+
 #ifdef PAC_ENABLE
     /*!
      * \brief configure cb including kernels group and kernels offset.
