@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2021 Intel Corporation.
+ * Copyright (C) 2015-2023 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,7 +57,7 @@ int AiqResult::init() {
     CLEAR(mAwbResults);
     CLEAR(mPaResults);
     CLEAR(mOutStats);
-    mOutStats.rgbs_grid.blocks_ptr = mOutStats.rgbs_blocks;
+    mOutStats.rgbs_grid[0].blocks_ptr = mOutStats.rgbs_blocks[0];
 
     mAiqParam.reset();
 
@@ -92,7 +92,7 @@ AiqResult& AiqResult::operator=(const AiqResult& other) {
     mGbceResults = other.mGbceResults;
     mPaResults = other.mPaResults;
     mOutStats = other.mOutStats;
-    mOutStats.rgbs_grid.blocks_ptr = mOutStats.rgbs_blocks;
+    mOutStats.rgbs_grid[0].blocks_ptr = mOutStats.rgbs_blocks[0];
 
     mCustomControls.count = other.mCustomControls.count;
     for (int i = 0; i < mCustomControls.count; i++) {

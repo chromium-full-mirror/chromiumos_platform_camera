@@ -23,6 +23,10 @@
 #include "Parameters.h"
 #include "PlatformData.h"
 #include "TNRCommon.h"
+#ifdef TNR7_LEVEL0
+#include "src/icbm/ICBMTypes.h"
+#include "src/icbm/ICBMThread.h"
+#endif
 
 namespace icamera {
 class IntelTNR7US {
@@ -56,6 +60,7 @@ class IntelTNR7US {
     explicit IntelTNR7US(int cameraId) : mCameraId(cameraId){};
 };
 
+#ifdef TNR7_CM
 class IntelC4mTNR : public IntelTNR7US {
  public:
     explicit IntelC4mTNR(int cameraId);
@@ -74,5 +79,25 @@ class IntelC4mTNR : public IntelTNR7US {
     ShmMemInfo mTnrRequestInfoMem;
     DISALLOW_COPY_AND_ASSIGN(IntelC4mTNR);
 };
+
+#elif defined(TNR7_LEVEL0)
+class IntelLevel0TNR : public IntelTNR7US {
+ public:
+    explicit IntelLevel0TNR(int cameraId) : IntelTNR7US(cameraId){};
+    virtual ~IntelLevel0TNR();
+    virtual int init(int width, int height, TnrType type = TNR_INSTANCE0);
+    virtual int runTnrFrame(const void* inBufAddr, void* outBufAddr, uint32_t inBufSize,
+                            uint32_t outBufSize, Tnr7Param* tnrParam, bool syncUpdate = true,
+                            int fd = -1);
+
+ private:
+    std::unique_ptr<ICBMThread> mIntelICBM;
+    int mWidth;
+    int mHeight;
+
+ private:
+    DISALLOW_COPY_AND_ASSIGN(IntelLevel0TNR);
+};
+#endif
 
 }  // namespace icamera

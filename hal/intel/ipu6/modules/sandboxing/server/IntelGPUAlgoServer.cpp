@@ -121,6 +121,9 @@ void IntelGPUAlgoServer::handleRequest(const MsgReq& msg) {
     }
     LOG1("@%s, req_id:%d:%s, status:%d", __func__, req_id,
          IntelAlgoIpcCmdToString(static_cast<IPC_CMD>(req_id)), status);
+
+    (void)requestSize;
+    (void)addr;
     getIntelAlgoServer()->returnCallback(req_id, status, buffer_handle);
 }
 } /* namespace icamera */

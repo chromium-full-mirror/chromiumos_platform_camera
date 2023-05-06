@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Intel Corporation
+ * Copyright (C) 2017-2023 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -140,6 +140,7 @@ class ResultProcessor : public CallbackEventInterface {
     virtual int bufferDone(const BufferEvent& event);
 
     void callbackNotify(const icamera::camera_msg_data_t& data);
+    void videoPipeOnly(bool videoOnly);
 
     // Used to handle Opaque raw reprocessing
     void clearRawBufferInfoMap(void);
@@ -157,6 +158,7 @@ class ResultProcessor : public CallbackEventInterface {
 
     void returnInputBuffer(uint32_t frameNumber);
     void updateMetadata(const icamera::Parameters& parameter, android::CameraMetadata* settings);
+    bool isReturnMetadataWithBuf(RequestState curReqState);
 
  private:
     class ResultThread : public icamera::Thread {
@@ -200,6 +202,8 @@ class ResultProcessor : public CallbackEventInterface {
     // first key is timestamp of RAW buffer, second key is sequence from HAL
     std::map<uint64_t, int64_t> mOpaqueRawInfoMap;
     std::mutex mmOpaqueRawInfoMapLock;  // used to protect mOpaqueRawInfoMap
+
+    bool mVideoPipeOnly;
 };
 
 }  // namespace camera3

@@ -490,6 +490,15 @@ int RequestManager::configureStreams(camera3_stream_configuration_t* stream_list
                         userStreamForFd);
     mSwPrivacyMode = false;
 
+    bool videoOnly = true;
+    for (int i = 0; i < halStreamNum; i++) {
+        if (mHALStream[i].usage != icamera::CAMERA_STREAM_PREVIEW &&
+            mHALStream[i].usage != icamera::CAMERA_STREAM_VIDEO_CAPTURE) {
+            videoOnly = false;
+        }
+    }
+    mResultProcessor->videoPipeOnly(videoOnly);
+
     return icamera::OK;
 }
 

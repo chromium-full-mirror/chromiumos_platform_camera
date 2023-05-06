@@ -70,9 +70,14 @@ PSysProcessor::~PSysProcessor() {
     mProcessThread->join();
     delete mProcessThread;
 
-    // Delete PSysDAG before Scheduler because ~PSysDAG() needs Scheduler
+    /* PipeExecutor is shared between Scheduler and PSysDAG, so need to delete Scheduler
+     * before delete PipeExecutor in PSysDAG.
+     */
+    if (mScheduler) {
+        mPSysDAGs[mCurConfigMode]->unregisterNode();
+        delete mScheduler;
+    }
     mPSysDAGs.clear();
-    if (mScheduler) delete mScheduler;
 }
 
 int PSysProcessor::configure(const std::vector<ConfigMode>& configModes) {
@@ -956,7 +961,7 @@ void PSysProcessor::dispatchTask(CameraBufferPortMap& inBuf, CameraBufferPortMap
     // Handle per-frame settings if output buffer requires
     if (settingSequence > -1 && mParameterGenerator) {
         Parameters params;
-        if (mParameterGenerator->getParameters(currentSequence, &params, true, false) == OK) {
+        if (mParameterGenerator->getIspParameters(currentSequence, &params) == OK) {
             setParameters(params);
 
             bool hasStill = false;

@@ -245,8 +245,12 @@ int IspParamAdaptor::configure(const stream_t& stream, ConfigMode configMode, Tu
             // Use the tuning mode in graph to update the isp tuning data
             if (ispTuningIndex != -1) {
                 uint8_t lardTag = cca::CCA_LARD_ISP;
-                ia_lard_input_params lardParam = {};
-                lardParam.isp_mode_index = ispTuningIndex;
+                ia_lard_input_params lardParam = {
+                    IA_MKN_CHTOUL('D', 'F', 'L', 'T'),
+                    IA_MKN_CHTOUL('D', 'F', 'L', 'T'),
+                    static_cast<uint32_t>(ispTuningIndex),
+                    IA_MKN_CHTOUL('D', 'F', 'L', 'T')
+                };
                 cca::cca_nvm tmpNvm = {};
 
                 ia_err iaErr =
@@ -848,7 +852,7 @@ int IspParamAdaptor::runIspAdaptL(ia_isp_bxt_program_group* pgPtr, ia_isp_bxt_gd
         }
 
         LOG2("%s: set digital gain for ULL pipe: %f", __func__, inputParams->manual_digital_gain);
-    } else if (CameraUtils::isMultiExposureCase(mCameraId, mTuningMode) &&
+    } else if (PlatformData::isMultiExposureCase(mCameraId, mTuningMode) &&
                PlatformData::getSensorGainType(mCameraId) == ISP_DG_AND_SENSOR_DIRECT_AG) {
         inputParams->manual_digital_gain =
             aiqResults->mAeResults.exposures[0].exposure[0].digital_gain;

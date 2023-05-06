@@ -21,7 +21,6 @@
 #include "iutils/CameraDump.h"
 #include "iutils/Utils.h"
 
-#include "PlatformData.h"
 #include "Parameters.h"
 #include "ParameterHelper.h"
 
@@ -1596,7 +1595,6 @@ int Parameters::getSensorMountType(camera_mount_type_t& sensorMountType) const {
 // User can set envrionment and then call api to update the debug level.
 int Parameters::updateDebugLevel() {
     Log::setDebugLevel();
-    CameraDump::setDumpLevel();
     return OK;
 }
 

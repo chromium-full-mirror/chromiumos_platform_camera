@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2023 Intel Corporation
+ * Copyright (C) 2017-2022 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,7 +71,8 @@ ResultProcessor::ResultProcessor(int cameraId, const camera3_callback_ops_t* cal
         : mCameraId(cameraId),
           mCallbackOps(callback),
           mLastSettings(nullptr),
-          mRequestManagerCallback(requestManagerCallback) {
+          mRequestManagerCallback(requestManagerCallback),
+          mVideoPipeOnly(false) {
     UNUSED(mCameraId);
     LOG1("<id%d>@%s", mCameraId, __func__);
 
@@ -193,14 +194,51 @@ int ResultProcessor::shutterDone(const ShutterEvent& event) {
     return icamera::OK;
 }
 
+void ResultProcessor::videoPipeOnly(bool videoOnly) {
+    mVideoPipeOnly = videoOnly;
+}
+
+/*
+ * Check if return metadata with buffer done.
+ * Below cases return metadata immediately:
+ * 1, not video pipe only;
+ * 2, all buffers are returned;
+ * 3, RGBS callback is required;
+ * 4, not in low power mode.
+ */
+bool ResultProcessor::isReturnMetadataWithBuf(RequestState curReqState) {
+    if (!mVideoPipeOnly || !curReqState.metaResult) return false;
+
+    bool hasCb = false;
+    bool lowPower = false;
+    android::CameraMetadata* meta = curReqState.metaResult->getMetadata();
+    camera_metadata_entry entry = meta->find(INTEL_VENDOR_CAMERA_CALLBACK_RGBS);
+    if (entry.count == 1) {
+        hasCb = (entry.data.u8[0] == INTEL_VENDOR_CAMERA_CALLBACK_RGBS_TRUE) ? true : false;
+    }
+    entry = meta->find(INTEL_VENDOR_CAMERA_POWER_MODE);
+    if (entry.count == 1) {
+        lowPower = (entry.data.u8[0] == INTEL_VENDOR_CAMERA_POWER_MODE_LOW_POWER) ? true : false;
+    }
+
+    if (curReqState.buffersToReturn == curReqState.buffersReturned || hasCb || !lowPower) {
+        return false;
+    }
+
+    LOG2("<fn%u>@%s, pending metadata for buffer done", curReqState.frameNumber, __func__);
+    return true;
+}
+
 int ResultProcessor::metadataDone(const MetadataEvent& event) {
     std::lock_guard<std::mutex> l(mLock);
 
+    RequestState curReqState;
     for (auto& reqStat : mRequestStateVector) {
         if (reqStat.frameNumber == event.frameNumber &&
             reqStat.partialResultReturned < reqStat.partialResultCount) {
             reqStat.partialResultReturned = 1;
             reqStat.isMetadataReady = true;
+            curReqState = reqStat;
 
             LOG2("<fn%u>@%s, metadataReady", reqStat.frameNumber, __func__);
             if (mInputCam3Bufs.find(reqStat.frameNumber) == mInputCam3Bufs.end()) {
@@ -213,6 +251,8 @@ int ResultProcessor::metadataDone(const MetadataEvent& event) {
             break;
         }
     }
+
+    if (isReturnMetadataWithBuf(curReqState)) return icamera::OK;
 
     /**
      * Return metadata in request order, because metadata event from device might be not in FIFO.
@@ -257,14 +297,30 @@ int ResultProcessor::metadataDone(const MetadataEvent& event) {
 int ResultProcessor::bufferDone(const BufferEvent& event) {
     std::lock_guard<std::mutex> l(mLock);
 
+    RequestState curReqState;
+    for (int32_t i = 0; i < mRequestStateVector.size(); i++) {
+        RequestState& reqStat = mRequestStateVector[i];
+
+        // Check if the previous metadatas'd returned
+        if (!reqStat.isShutterDone) break;
+        if (!reqStat.isMetadataReady) break;
+        if (reqStat.frameNumber < event.frameNumber && !reqStat.isMetadataDone) break;
+
+        if ((reqStat.frameNumber == event.frameNumber) && !reqStat.isMetadataDone) {
+            curReqState = reqStat;
+            break;
+        }
+    }
+
     camera3_capture_result_t result;
     CLEAR(result);
 
     result.frame_number = event.frameNumber;
     result.output_buffers = event.outputBuffer;
     result.num_output_buffers = 1;
-    result.result = nullptr;
-    result.partial_result = 0;
+    result.result
+        = (curReqState.metaResult) ? curReqState.metaResult->getMemory() : nullptr;
+    result.partial_result = (curReqState.metaResult) ? 1 : 0;
     result.num_physcam_metadata = 0;
     result.physcam_ids = nullptr;
     result.physcam_metadata = nullptr;
@@ -285,6 +341,7 @@ int ResultProcessor::bufferDone(const BufferEvent& event) {
     for (uint32_t i = 0; i < mRequestStateVector.size(); i++) {
         if (mRequestStateVector.at(i).frameNumber == event.frameNumber) {
             mRequestStateVector.at(i).buffersReturned++;
+            if (curReqState.metaResult) mRequestStateVector.at(i).isMetadataDone = true;
             if (checkRequestDone(mRequestStateVector.at(i))) {
                 returnInputBuffer(event.frameNumber);
                 returnRequestDone(event.frameNumber);
@@ -299,7 +356,8 @@ int ResultProcessor::bufferDone(const BufferEvent& event) {
     if (!found) {
         LOGW("<fn%u>%s wasn't found!", event.frameNumber, __func__);
     } else {
-        LOG2("<fn%u>%s was returned", event.frameNumber, __func__);
+        LOG2("<fn%u>%s %s was returned", event.frameNumber, __func__,
+             (curReqState.metaResult) ? "with metadata" : "without metadata");
     }
 
     if (event.timestamp != 0 && event.sequence != -1) {
@@ -433,8 +491,7 @@ bool ResultProcessor::checkRequestDone(const RequestState& requestState) {
 void ResultProcessor::returnRequestDone(uint32_t frameNumber) {
     TRACE_LOG_POINT("ResultProcessor", __func__, MAKE_COLOR(frameNumber), frameNumber);
 
-    if ((frameNumber % FPS_FRAME_COUNT == 0)
-        && icamera::Log::isLogTagEnabled(ST_FPS, icamera::CAMERA_DEBUG_LOG_LEVEL2)) {
+    if ((frameNumber % FPS_FRAME_COUNT == 0) && icamera::Log::isLogTagEnabled(ST_FPS)) {
         struct timeval curTime;
         gettimeofday(&curTime, nullptr);
         int duration = static_cast<int>(curTime.tv_usec - mRequestTime.tv_usec +

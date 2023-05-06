@@ -130,8 +130,10 @@ void PlatformData::StaticCfg::getModuleInfoFromCmc(int cameraId) {
     cca::cca_cpf* cpf = new cca::cca_cpf;
     cpf->size = cpfData.size;
     MEMCPY_S(cpf->buf, cca::MAX_CPF_LEN, cpfData.data, cpfData.size);
+
     ia_err iaRet = IntelCca::getInstance(cameraId, tuningMode)->getCMC(&cmc, cpf);
     delete cpf;
+    IntelCca::releaseInstance(cameraId, tuningMode);
     CheckWarning(iaRet != ia_err_none, VOID_VALUE, "Get cmc data failed");
 
     LOG1("%s: base iso %d, ag [%4.2f, %4.2f], ag [%4.2f, %4.2f], from aiqb", __func__, cmc.base_iso,
@@ -393,6 +395,11 @@ int PlatformData::getExposureNum(int cameraId, bool multiExposure) {
 bool PlatformData::isLtmEnabled(int cameraId) {
 
     return getInstance()->mStaticCfg.mCameras[cameraId].mLtmEnabled;
+}
+
+bool PlatformData::isMultiExposureCase(int cameraId, TuningMode tuningMode) {
+
+    return false;
 }
 
 int PlatformData::getSensorExposureType(int cameraId) {
@@ -1295,9 +1302,14 @@ camera_coordinate_system_t PlatformData::getActivePixelArray(int cameraId) {
 }
 
 string PlatformData::getCameraCfgPath() {
-    char* p = getenv("CAMERA_CFG_PATH");
+    string cfgPath = string(CAMERA_DEFAULT_CFG_PATH);
+#ifdef SUB_CONFIG_PATH
+    cfgPath += string(SUB_CONFIG_PATH);
+    cfgPath.append("/");
+#endif
 
-    return p ? string(p) : string(CAMERA_DEFAULT_CFG_PATH);
+    char* p = getenv("CAMERA_CFG_PATH");
+    return p ? string(p) : cfgPath;
 }
 
 string PlatformData::getGraphDescFilePath() {

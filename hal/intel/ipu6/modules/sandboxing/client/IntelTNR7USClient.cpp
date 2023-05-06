@@ -26,7 +26,11 @@
 namespace icamera {
 
 IntelTNR7US* IntelTNR7US::createIntelTNR(int cameraId) {
+#ifdef TNR7_CM
     return new IntelC4mTNR(cameraId);
+#else
+    return new IntelLevel0TNR(cameraId);
+#endif
 }
 
 Tnr7Param* IntelTNR7US::allocTnr7ParamBuf() {
@@ -65,6 +69,7 @@ void IntelTNR7US::freeAllBufs() {
     }
 }
 
+#ifdef TNR7_CM
 IntelC4mTNR::IntelC4mTNR(int cameraId)
         : IntelTNR7US(cameraId),
           mTnrType(TNR_INSTANCE_MAX),
@@ -221,4 +226,35 @@ int IntelC4mTNR::getTnrBufferSize(int width, int height, uint32_t* size) {
     if (size) *size = mTnrRequestInfo->surfaceSize;
     return OK;
 }
+#elif defined(TNR7_LEVEL0)
+IntelLevel0TNR::~IntelLevel0TNR() {
+    if (mIntelICBM) {
+        icamera::ICBMReqInfo reqInfo;
+        reqInfo.cameraId = mCameraId;
+        reqInfo.reqType = icamera::ICBMReqType::LEVEL0_TNR;
+        mIntelICBM->shutdown(reqInfo);
+        mIntelICBM = nullptr;
+    }
+}
+
+int IntelLevel0TNR::init(int width, int height, TnrType type) {
+    LOG1("<id%d> %s  %dx%d", mCameraId, __func__, width, height);
+    mWidth = width;
+    mHeight = height;
+    mIntelICBM = std::make_unique<ICBMThread>();
+    int ret = mIntelICBM->setup(nullptr);
+    CheckAndLogError(ret != OK, ret, "%s: Init failed", __func__);
+
+    return ret;
+}
+
+int IntelLevel0TNR::runTnrFrame(const void* inBufAddr, void* outBufAddr, uint32_t inBufSize,
+                                uint32_t outBufSize, Tnr7Param* tnrParam, bool syncUpdate, int fd) {
+    LOG1("<id%d> Level0 %s", mCameraId, __func__);
+    (void)syncUpdate;
+    (void)fd;
+    MEMCPY_S(outBufAddr, outBufSize, inBufAddr, inBufSize);
+    return OK;
+}
+#endif
 }  // namespace icamera

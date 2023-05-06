@@ -20,6 +20,7 @@ group("all") {
     ":libcamhal",
     ":install_intel_ipu6_so",
   ]
+
   if (use.ipu6se) {
     deps += [
       ":libcam_algo_vendor_gpu",
@@ -248,7 +249,7 @@ shared_library("libcamhal") {
       "IPU_SYSVER_ipu6v3",
       "TNR7_CM",
     ]
-  } else if (use.ipu6ep || use.ipu6epadln) {
+  } else if (use.ipu6ep) {
     sources += [
       "modules/ia_css/ipu6ep/src/ia_css_program_group_param.c",
       "modules/ia_css/ipu6ep/src/ia_css_psys_process_group.c",
@@ -270,6 +271,35 @@ shared_library("libcamhal") {
     ]
     defines += [
       "IPU_SYSVER_ipu6v5",
+    ]
+    libs += [
+      "broxton_ia_pal",
+    ]
+  } else if (use.ipu6epadln) {
+    sources += [
+      "modules/ia_css/ipu6ep/src/ia_css_program_group_param.c",
+      "modules/ia_css/ipu6ep/src/ia_css_psys_process_group.c",
+      "modules/ia_css/ipu6ep/src/ia_css_psys_program_group_manifest.c",
+      "modules/ia_css/ipu6ep/src/ia_css_psys_terminal_manifest.c",
+      "modules/ia_css/ipu6ep/src/ia_css_kernel_bitmap.c",
+      "modules/ia_css/ipu6ep/src/ia_css_terminal_manifest.c",
+      "modules/ia_css/ipu6ep/src/ia_css_psys_program_manifest.c",
+      "modules/ia_css/ipu6ep/src/ia_css_psys_process.c",
+      "modules/ia_css/ipu6ep/src/ia_css_psys_terminal.c",
+      "modules/ia_css/ipu6ep/src/ia_css_psys_process_group_cmd_impl.c",
+      "modules/ia_css/ipu6ep/src/vied_nci_psys_system.c",
+      "modules/ia_css/ipu6ep/src/ia_css_terminal.c",
+      "modules/ia_css/ipu6ep/src/ia_css_program_group_data.c",
+      "modules/ia_css/ipu6ep/src/ia_css_rbm.c",
+    ]
+    include_dirs += [
+      "modules/ia_css/ipu6ep/include",
+    ]
+    defines += [
+      "IPU_SYSVER_ipu6v5",
+    ]
+    libs += [
+      "broxton_ia_pal",
     ]
   } else if (use.ipu6epmtl) {
     sources += [
@@ -470,8 +500,8 @@ if (use.ipu6se) {
       "modules/sandboxing/IPCCommon.cpp",
       "modules/sandboxing/server/IntelAlgoServer.cpp",
       "modules/sandboxing/server/IntelGPUAlgoServer.cpp",
-      "modules/sandboxing/server/IntelTNRServer.cpp",
       "modules/algowrapper/IntelTNR7US.cpp",
+      "modules/sandboxing/server/IntelTNRServer.cpp",
     ]
     include_dirs = [
       ".",
@@ -488,7 +518,6 @@ if (use.ipu6se) {
       "src/iutils",
       "src/metadata",
       "src/v4l2",
-      "include",
       "include/ia_imaging",
       "include/gcss",
     ]
@@ -500,8 +529,8 @@ if (use.ipu6se) {
       "HAVE_PTHREADS",
       "CAMERA_HAL_DEBUG",
       "ENABLE_SANDBOXING",
-      "IPU_SYSVER_ipu6v3",
       "GPU_ALGO_SERVER",
+      "IPU_SYSVER_ipu6v3",
       "TNR7_CM",
     ]
     libs = [
@@ -513,8 +542,8 @@ if (use.ipu6se) {
     pkg_deps = [
       "libcros_camera",
       "libcros_camera_android_deps",
-      "igfxcmrt",
       "libmojo",
+      "igfxcmrt",
     ]
   }
 }

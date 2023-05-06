@@ -560,6 +560,15 @@ class PlatformData {
     static bool isLtmEnabled(int cameraId);
 
     /**
+     * Get if multi exposure cases or not
+     *
+     * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
+     * \param[in] TuningMode: tuningMode
+     * \return true if multi exposure case
+     */
+    static bool isMultiExposureCase(int cameraId, TuningMode tuningMode);
+
+    /**
      * Get sensor exposure type
      *
      * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
