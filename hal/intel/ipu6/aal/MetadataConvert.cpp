@@ -570,7 +570,6 @@ int MetadataConvert::HALMetadataToRequestMetadata(const icamera::Parameters& par
     convertStatisticsParameter(parameter, settings);
 
     // ANDROID_TONEMAP
-    convertTonemapParameter(parameter, settings);
 
     // ANDROID_DEMOSAIC, ANDROID_EDGE, ANDROID_HOT_PIXEL, ANDROID_NOISE_REDUCTION
     // ANDROID_SHADING, ANDROID_INFO, ANDROID_BLACK_LEVEL, ANDROID_SYNC
@@ -1176,18 +1175,6 @@ int MetadataConvert::convertTonemapMetadata(const android::CameraMetadata& setti
     return icamera::OK;
 }
 
-int MetadataConvert::convertTonemapParameter(const icamera::Parameters& parameter,
-                                             android::CameraMetadata* settings) {
-    icamera::camera_tonemap_curves_t curves;
-    if (parameter.getTonemapCurves(curves) == 0) {
-        settings->update(ANDROID_TONEMAP_CURVE_RED, curves.rCurve, curves.rSize);
-        settings->update(ANDROID_TONEMAP_CURVE_BLUE, curves.bCurve, curves.bSize);
-        settings->update(ANDROID_TONEMAP_CURVE_GREEN, curves.gCurve, curves.gSize);
-    }
-
-    return icamera::OK;
-}
-
 int MetadataConvert::convertSensorMetadata(const android::CameraMetadata& settings,
                                            icamera::Parameters* parameter, bool forceConvert) {
     // get control ae mode
@@ -1545,19 +1532,13 @@ int MetadataConvert::convertVendorTagParameter(const icamera::Parameters& parame
                                                android::CameraMetadata* settings) {
     icamera_metadata_ro_entry entry = meta.find(INTEL_VENDOR_CAMERA_CALLBACK_RGBS);
     if (entry.count == 1 && entry.data.u8[0] == INTEL_VENDOR_CAMERA_CALLBACK_RGBS_TRUE) {
-        size_t gridSize = 0;
         entry = meta.find(INTEL_VENDOR_CAMERA_RGBS_GRID_SIZE);
         if (entry.count == 2) {
             settings->update(INTEL_VENDOR_CAMERA_RGBS_GRID_SIZE, entry.data.i32, entry.count);
-            gridSize = entry.data.i32[0] * entry.data.i32[1] * 5;
         }
         entry = meta.find(INTEL_VENDOR_CAMERA_SHADING_CORRECTION);
         if (entry.count == 1) {
             settings->update(INTEL_VENDOR_CAMERA_SHADING_CORRECTION, entry.data.u8, entry.count);
-        }
-        entry = meta.find(INTEL_VENDOR_CAMERA_RGBS_STATS_BLOCKS);
-        if (entry.count == gridSize) {
-            settings->update(INTEL_VENDOR_CAMERA_RGBS_STATS_BLOCKS, entry.data.u8, entry.count);
         }
     }
 
@@ -1565,16 +1546,6 @@ int MetadataConvert::convertVendorTagParameter(const icamera::Parameters& parame
     if (entry.count == 2) {
         settings->update(INTEL_VENDOR_CAMERA_TOTAL_EXPOSURE_TARGET_RANGE, entry.data.i64,
                          entry.count);
-    }
-
-    entry = meta.find(INTEL_VENDOR_CAMERA_CALLBACK_TM_CURVE);
-    if (entry.count == 1 && entry.data.u8[0] == INTEL_VENDOR_CAMERA_CALLBACK_TM_CURVE_TRUE) {
-        camera_metadata_entry aEntry = settings->find(ANDROID_TONEMAP_MAX_CURVE_POINTS);
-        int32_t curvePoint = (aEntry.count == 1) ? (aEntry.data.i32[0] * 2) : 0;
-        entry = meta.find(INTEL_VENDOR_CAMERA_TONE_MAP_CURVE);
-        if (entry.count == curvePoint) {
-            settings->update(INTEL_VENDOR_CAMERA_TONE_MAP_CURVE, entry.data.f, entry.count);
-        }
     }
 
     return icamera::OK;
@@ -2372,7 +2343,8 @@ int MetadataConvert::convertToMetadataRegion(const icamera::camera_window_list_t
 }
 
 void MetadataConvert::dumpMetadata(const camera_metadata_t* meta) {
-    if (!meta || !icamera::Log::isLogTagEnabled(GET_FILE_SHIFT(MetadataConvert))) return;
+    if (!meta || !icamera::Log::isLogTagEnabled(GET_FILE_SHIFT(MetadataConvert),
+                                                icamera::CAMERA_DEBUG_LOG_LEVEL3)) return;
 
     LOG3("%s", __func__);
     int entryCount = get_camera_metadata_entry_count(meta);

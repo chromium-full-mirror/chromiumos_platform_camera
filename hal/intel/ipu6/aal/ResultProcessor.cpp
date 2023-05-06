@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2022 Intel Corporation
+ * Copyright (C) 2017-2023 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@
 #include "ResultProcessor.h"
 
 #include <mutex>
+#include <unordered_map>
 
 #include "Errors.h"
 #include "HALv3Utils.h"
@@ -107,8 +108,60 @@ ResultProcessor::~ResultProcessor() {
     mInputCam3Bufs.clear();
 }
 
+void ResultProcessor::updateMetadata(const icamera::metadata_entry_t& entry) {
+    std::unordered_map<uint32_t, std::pair<uint32_t, uint8_t>> metaMap = {
+        {CAMERA_TONEMAP_CURVE_RED, {ANDROID_TONEMAP_CURVE_RED, ICAMERA_TYPE_FLOAT}},
+        {CAMERA_TONEMAP_CURVE_BLUE, {ANDROID_TONEMAP_CURVE_BLUE, ICAMERA_TYPE_FLOAT}},
+        {CAMERA_TONEMAP_CURVE_GREEN, {ANDROID_TONEMAP_CURVE_GREEN, ICAMERA_TYPE_FLOAT}},
+        {INTEL_VENDOR_CAMERA_TONE_MAP_CURVE, {INTEL_VENDOR_CAMERA_TONE_MAP_CURVE,
+         ICAMERA_TYPE_FLOAT}},
+        {INTEL_VENDOR_CAMERA_RGBS_STATS_BLOCKS, {INTEL_VENDOR_CAMERA_RGBS_STATS_BLOCKS,
+         ICAMERA_TYPE_BYTE}},
+    };
+
+    std::lock_guard<std::mutex> l(mLock);
+    for (uint32_t i = 0; i < mRequestStateVector.size(); i++) {
+        if (mRequestStateVector.at(i).frameNumber != entry.frameNumber)
+            continue;
+
+        MetadataMemory* metaResult = mRequestStateVector[i].metaResult;
+        android::CameraMetadata* meta = metaResult->getMetadata();
+        if (metaMap.find(entry.tag) != metaMap.end()) {
+            switch (metaMap[entry.tag].second) {
+                case ICAMERA_TYPE_BYTE:
+                    meta->update(metaMap[entry.tag].first, entry.data.u8, entry.count);
+                    break;
+                case ICAMERA_TYPE_INT32:
+                    meta->update(metaMap[entry.tag].first, entry.data.i32, entry.count);
+                    break;
+                case ICAMERA_TYPE_FLOAT:
+                    meta->update(metaMap[entry.tag].first, entry.data.f, entry.count);
+                    break;
+                case ICAMERA_TYPE_INT64:
+                    meta->update(metaMap[entry.tag].first, entry.data.i64, entry.count);
+                    break;
+                case ICAMERA_TYPE_DOUBLE:
+                    meta->update(metaMap[entry.tag].first, entry.data.d, entry.count);
+                    break;
+                default:
+                    LOGW("Wrong data type %d", metaMap[entry.tag].second);
+                    break;
+            }
+            LOG2("%s, tag %u, type %d, count %d", __func__, metaMap[entry.tag].first,
+                 metaMap[entry.tag].second, entry.count);
+        } else {
+            LOGW("Meta tag %d not found", entry.tag);
+        }
+    }
+}
+
 void ResultProcessor::callbackNotify(const icamera::camera_msg_data_t& data) {
     LOG2("@%s, type %d", __func__, data.type);
+
+    if (data.type == icamera::CAMERA_METADATA_ENTRY) {
+        updateMetadata(data.data.metadata_entry);
+        return;
+    }
 
     mResultThread->sendEvent(data);
 }
@@ -491,7 +544,8 @@ bool ResultProcessor::checkRequestDone(const RequestState& requestState) {
 void ResultProcessor::returnRequestDone(uint32_t frameNumber) {
     TRACE_LOG_POINT("ResultProcessor", __func__, MAKE_COLOR(frameNumber), frameNumber);
 
-    if ((frameNumber % FPS_FRAME_COUNT == 0) && icamera::Log::isLogTagEnabled(ST_FPS)) {
+    if ((frameNumber % FPS_FRAME_COUNT == 0)
+        && icamera::Log::isLogTagEnabled(ST_FPS, icamera::CAMERA_DEBUG_LOG_LEVEL2)) {
         struct timeval curTime;
         gettimeofday(&curTime, nullptr);
         int duration = static_cast<int>(curTime.tv_usec - mRequestTime.tv_usec +

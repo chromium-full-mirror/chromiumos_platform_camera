@@ -70,8 +70,6 @@ class MetadataConvert {
                                     android::CameraMetadata* settings);
     static int convertStatisticsParameter(const icamera::Parameters& /*parameter*/,
                                           android::CameraMetadata* settings);
-    static int convertTonemapParameter(const icamera::Parameters& parameter,
-                                       android::CameraMetadata* settings);
     static int convertFlashParameter(const icamera::Parameters& /*parameter*/,
                                      android::CameraMetadata* settings);
     static int convertAdvancedFeatureMetadata(const android::CameraMetadata& settings,

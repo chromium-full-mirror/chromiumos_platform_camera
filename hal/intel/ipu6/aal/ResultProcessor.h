@@ -155,6 +155,7 @@ class ResultProcessor : public CallbackEventInterface {
 
     MetadataMemory* acquireMetadataMemory();
     void releaseMetadataMemory(MetadataMemory* metaMem);
+    void updateMetadata(const icamera::metadata_entry_t& entry);
 
     void returnInputBuffer(uint32_t frameNumber);
     void updateMetadata(const icamera::Parameters& parameter, android::CameraMetadata* settings);
