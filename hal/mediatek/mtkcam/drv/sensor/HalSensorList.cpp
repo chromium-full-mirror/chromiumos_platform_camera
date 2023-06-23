@@ -541,7 +541,7 @@ HalSensor* HalSensorList::openSensor(vector<MUINT> const& vSensorIndex,
     if (it->mpHalSensor->isMatch(vSensorIndex)) {
       //  The open list holds a created instance.
       //  just increment reference count and return the instance.
-      it->miRefCount++;
+      it->miRefCount = it->miRefCount + 1;
 #ifdef DEBUG_SENSOR_OPEN_CLOSE
       CAM_LOGD("openSensor mpHalSensor : %p,idx %d, %d, %d, refcnt %d",
                it->mpHalSensor, vSensorIndex[0], vSensorIndex[1],

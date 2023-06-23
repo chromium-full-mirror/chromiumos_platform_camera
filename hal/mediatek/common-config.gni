@@ -53,3 +53,10 @@ defines = [
   "MTK_CAM_NEW_NVRAM_SUPPORT=1",
   "PLATFORM_SDK_VERSION=21",
 ]
+
+if (use.cpp20) {
+  # Number of header files are using anonymous enum to define constants,
+  # which is deprecated and causing build errors. Suppress them for the
+  # workaround temporarily.
+  cflags = [ "-Wno-error=deprecated-anon-enum-enum-conversion" ]
+}

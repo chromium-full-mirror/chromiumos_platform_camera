@@ -399,7 +399,7 @@ BaseImageBufferHeap::lockBufLocked(char const* szCallerName, MINT usage) {
                            eBUFFER_USAGE_HW_CAMERA_READ |
                            eBUFFER_USAGE_HW_TEXTURE;
     if (!(usage & ~readUsage) && mLockUsage == usage) {
-      mLockCount++;
+      mLockCount = mLockCount + 1;
       add_lock_info();
       return MTRUE;
     } else {
@@ -430,7 +430,7 @@ BaseImageBufferHeap::lockBufLocked(char const* szCallerName, MINT usage) {
   }
   //
   mLockUsage = usage;
-  mLockCount++;
+  mLockCount = mLockCount + 1;
   add_lock_info();
   return MTRUE;
 }
@@ -470,7 +470,7 @@ BaseImageBufferHeap::unlockBufLocked(char const* szCallerName) {
   };
 
   if (1 < mLockCount) {
-    mLockCount--;
+    mLockCount = mLockCount - 1;
     MY_LOGD("%s@ still locked (%d)", szCallerName, mLockCount);
     del_lock_info();
     return MTRUE;
@@ -487,7 +487,7 @@ BaseImageBufferHeap::unlockBufLocked(char const* szCallerName) {
   }
   //
   mLockUsage = 0;
-  mLockCount--;
+  mLockCount = mLockCount - 1;
   del_lock_info();
   return MTRUE;
 }

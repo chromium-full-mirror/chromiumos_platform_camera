@@ -592,7 +592,7 @@ BaseImageBuffer::lockBufLocked(char const* szCallerName, MINT usage) {
   }
   //
   mLockUsage = usage;
-  mLockCount++;
+  mLockCount = mLockCount + 1;
   return MTRUE;
 }
 
@@ -616,7 +616,7 @@ BaseImageBuffer::unlockBufLocked(char const* szCallerName) {
   }
   //
   mLockUsage = 0;
-  mLockCount--;
+  mLockCount = mLockCount - 1;
   return MTRUE;
 }
 
