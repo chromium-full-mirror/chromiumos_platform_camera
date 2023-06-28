@@ -112,7 +112,8 @@ int PSysProcessor::configure(const std::vector<ConfigMode>& configModes) {
     }
 
     // Hold raw for SDV case with GPU TNR enabled
-    if (PlatformData::isGpuTnrEnabled() && videoStream.width > 0 && stillStream.width > 0) {
+    if (PlatformData::isGpuTnrEnabled(mCameraId) && videoStream.width > 0 &&
+        stillStream.width > 0) {
         // hold raw buffer for running TNR in still pipe
         mHoldRawBuffers = true;
     }
@@ -663,7 +664,7 @@ void PSysProcessor::handleRawReprocessing(CameraBufferPortMap* srcBuffers,
         sendPsysRequestEvent(dstBuffers, settingSequence, timestamp, EVENT_PSYS_REQUEST_BUF_READY);
 
         // only one video buffer is supported
-        if (PlatformData::isGpuTnrEnabled() && videoBuf.size() == 1) {
+        if (PlatformData::isGpuTnrEnabled(mCameraId) && videoBuf.size() == 1) {
             shared_ptr<CameraBuffer> buf = videoBuf.begin()->second;
             bool handled = mPSysDAGs[mCurConfigMode]->fetchTnrOutBuffer(settingSequence, buf);
             if (handled) {
@@ -839,7 +840,7 @@ status_t PSysProcessor::prepareTask(CameraBufferPortMap* srcBuffers,
             sendPsysRequestEvent(dstBuffers, settingSequence, timestamp,
                                  EVENT_PSYS_REQUEST_BUF_READY);
         }
-        if (PlatformData::isGpuTnrEnabled()) {
+        if (PlatformData::isGpuTnrEnabled(mCameraId)) {
             handleStillPipeForTnr(inputSequence, dstBuffers);
         }
 

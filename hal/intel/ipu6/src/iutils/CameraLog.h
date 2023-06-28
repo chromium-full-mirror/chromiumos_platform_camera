@@ -18,10 +18,11 @@
 
 #include <stdarg.h>
 
-#include "utils/ScopedAtrace.h"
 #ifdef HAVE_ANDROID_OS
 #include <log/log.h>
 #endif
+
+#include "src/iutils/PerfettoTrace.h"
 
 // ***********************************************************
 #include <stdint.h>

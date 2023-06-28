@@ -1435,10 +1435,6 @@ void PlatformData::setScalerInfo(int cameraId, std::vector<IGraphType::ScalerInf
     }
 }
 
-bool PlatformData::isGpuTnrEnabled() {
-    return getInstance()->mStaticCfg.mCommonConfig.isGpuTnrEnabled;
-}
-
 int PlatformData::getVideoStreamNum() {
     return getInstance()->mStaticCfg.mCommonConfig.videoStreamNum;
 }
@@ -1457,7 +1453,9 @@ int PlatformData::getMaxIsysTimeout() {
 
 bool PlatformData::isUsingGpuAlgo() {
     bool enabled = false;
-    enabled |= isGpuTnrEnabled();
+    for (int cameraId = static_cast<int>(getInstance()->mStaticCfg.mCameras.size()) - 1;
+         cameraId >= 0; cameraId--)
+        enabled |= isGpuTnrEnabled(cameraId);
     return enabled;
 }
 
@@ -1487,6 +1485,10 @@ int PlatformData::getSensorOrientation(int cameraId) {
 
 bool PlatformData::isDummyStillSink(int cameraId) {
     return getInstance()->mStaticCfg.mCameras[cameraId].mDummyStillSink;
+}
+
+bool PlatformData::isGpuTnrEnabled(int cameraId) {
+    return getInstance()->mStaticCfg.mCameras[cameraId].mGpuTnrEnabled;
 }
 
 bool PlatformData::removeCacheFlushOutputBuffer(int cameraId) {

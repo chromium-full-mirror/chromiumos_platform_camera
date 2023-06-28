@@ -27,6 +27,12 @@ group("all") {
     ]
   }
 
+  if (use.ipu6epadln) {
+    deps += [
+      ":libcam_algo_vendor_gpu",
+    ]
+  }
+
 }
 
 shared_library("libcamhal") {
@@ -115,7 +121,7 @@ shared_library("libcamhal") {
     "src/image_process/chrome/ImageProcessorCore.cpp",
     "src/iutils/CameraDump.cpp",
     "src/iutils/CameraLog.cpp",
-    "src/iutils/ScopedAtrace.cpp",
+    "src/iutils/PerfettoTrace.cpp",
     "src/iutils/SwImageConverter.cpp",
     "src/iutils/Thread.cpp",
     "src/iutils/Trace.cpp",
@@ -209,6 +215,7 @@ shared_library("libcamhal") {
     "dl",
     "rt",
     "facessd_cros",
+    "perfetto_sdk",
   ]
   pkg_deps = [
     "expat",
@@ -291,12 +298,15 @@ shared_library("libcamhal") {
       "modules/ia_css/ipu6ep/src/ia_css_terminal.c",
       "modules/ia_css/ipu6ep/src/ia_css_program_group_data.c",
       "modules/ia_css/ipu6ep/src/ia_css_rbm.c",
+      "src/core/psysprocessor/GPUExecutor.cpp",
+      "modules/sandboxing/client/IntelTNR7USClient.cpp",
     ]
     include_dirs += [
       "modules/ia_css/ipu6ep/include",
     ]
     defines += [
       "IPU_SYSVER_ipu6v5",
+      "TNR7_CM",
     ]
     libs += [
       "broxton_ia_pal",
@@ -351,7 +361,7 @@ shared_library("libcam_algo") {
   sources = [
     "src/iutils/Utils.cpp",
     "src/iutils/Trace.cpp",
-    "src/iutils/ScopedAtrace.cpp",
+    "src/iutils/PerfettoTrace.cpp",
     "src/iutils/Thread.cpp",
     "src/iutils/CameraLog.cpp",
     "src/platformdata/gc/GraphUtils.cpp",
@@ -436,6 +446,7 @@ shared_library("libcam_algo") {
     "gcss",
     "ia_aiqb_parser",
     "rt",
+    "perfetto_sdk",
   ]
   install_path = "lib"
   pkg_deps = [
@@ -492,7 +503,7 @@ if (use.ipu6se) {
     sources = [
       "src/iutils/Utils.cpp",
       "src/iutils/Trace.cpp",
-      "src/iutils/ScopedAtrace.cpp",
+      "src/iutils/PerfettoTrace.cpp",
       "src/iutils/Thread.cpp",
       "src/iutils/CameraLog.cpp",
       "src/iutils/ModuleTags.cpp",
@@ -537,6 +548,68 @@ if (use.ipu6se) {
       "ia_log",
       "tnr7_cm",
       "rt",
+      "perfetto_sdk",
+    ]
+    install_path = "lib"
+    pkg_deps = [
+      "libcros_camera",
+      "libcros_camera_android_deps",
+      "libmojo",
+      "igfxcmrt",
+    ]
+  }
+}
+if (use.ipu6epadln) {
+  shared_library("libcam_algo_vendor_gpu") {
+    sources = [
+      "src/iutils/Utils.cpp",
+      "src/iutils/Trace.cpp",
+      "src/iutils/PerfettoTrace.cpp",
+      "src/iutils/Thread.cpp",
+      "src/iutils/CameraLog.cpp",
+      "src/iutils/ModuleTags.cpp",
+      "src/iutils/LogSink.cpp",
+      "modules/sandboxing/IPCCommon.cpp",
+      "modules/sandboxing/server/IntelAlgoServer.cpp",
+      "modules/sandboxing/server/IntelGPUAlgoServer.cpp",
+      "modules/algowrapper/IntelTNR7US.cpp",
+      "modules/sandboxing/server/IntelTNRServer.cpp",
+    ]
+    include_dirs = [
+      ".",
+      "include",
+      "include/api",
+      "include/utils",
+      "include/linux",
+      "src",
+      "src/core",
+      "src/fd",
+      "src/platformdata",
+      "src/3a",
+      "src/platformdata/gc",
+      "src/iutils",
+      "src/metadata",
+      "src/v4l2",
+      "include/ia_imaging",
+      "include/gcss",
+    ]
+    defines = [
+      "CAL_BUILD",
+      "IPU_SYSVER_IPU6",
+      "HAVE_LINUX_OS",
+      "__STDC_FORMAT_MACROS",
+      "HAVE_PTHREADS",
+      "CAMERA_HAL_DEBUG",
+      "ENABLE_SANDBOXING",
+      "GPU_ALGO_SERVER",
+      "IPU_SYSVER_ipu6v5",
+      "TNR7_CM",
+    ]
+    libs = [
+      "ia_log",
+      "tnr7_cm",
+      "rt",
+      "perfetto_sdk",
     ]
     install_path = "lib"
     pkg_deps = [

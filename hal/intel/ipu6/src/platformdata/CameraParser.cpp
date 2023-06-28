@@ -270,8 +270,6 @@ void CameraParser::handleCommon(CameraParser* profiles, const char* name, const 
         cfg->ipuName = atts[1];
     } else if (strcmp(name, "availableSensors") == 0) {
         parseXmlConvertStrings(atts[1], cfg->availableSensors, convertCharToString);
-    } else if (strcmp(name, "useGpuTnr") == 0) {
-        cfg->isGpuTnrEnabled = strcmp(atts[1], "true") == 0;
     } else if (strcmp(name, "cameraNumber") == 0) {
         cfg->cameraNumber = atoi(atts[1]);
     } else if (strcmp(name, "stillTnrPrior") == 0) {
@@ -605,6 +603,8 @@ void CameraParser::handleSensor(CameraParser* profiles, const char* name, const 
         pCurrentCam->mTnrExtraFrameNum = val > 0 ? val : DEFAULT_TNR_EXTRA_FRAME_NUM;
     } else if (strcmp(name, "dummyStillSink") == 0) {
         pCurrentCam->mDummyStillSink = strcmp(atts[1], "true") == 0;
+    } else if (strcmp(name, "useGpuTnr") == 0) {
+        pCurrentCam->mGpuTnrEnabled = strcmp(atts[1], "true") == 0;
     } else if (!strcmp(name, "removeCacheFlushOutputBuffer")) {
         pCurrentCam->mRemoveCacheFlushOutputBuffer = strcmp(atts[1], "true") == 0;
     } else if (!strcmp(name, "isPLCEnable")) {

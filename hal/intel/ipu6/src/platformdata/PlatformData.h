@@ -157,6 +157,7 @@ class PlatformData {
                       mNvmOverwrittenFileSize(0),
                       mTnrExtraFrameNum(DEFAULT_TNR_EXTRA_FRAME_NUM),
                       mDummyStillSink(false),
+                      mGpuTnrEnabled(false),
                       mRemoveCacheFlushOutputBuffer(false),
                       mPLCEnable(false),
                       mStillOnlyPipe(false),
@@ -265,6 +266,7 @@ class PlatformData {
             std::vector<IGraphType::ScalerInfo> mScalerInfo;
             int mTnrExtraFrameNum;
             bool mDummyStillSink;
+            bool mGpuTnrEnabled;
             bool mRemoveCacheFlushOutputBuffer;
             bool mPLCEnable;
             bool mStillOnlyPipe;
@@ -1332,7 +1334,7 @@ class PlatformData {
      *
      * \return true if tnr is enabled.
      */
-    static bool isGpuTnrEnabled();
+    static bool isGpuTnrEnabled(int cameraId);
 
     /**
      * get the video stream number supported

@@ -157,7 +157,8 @@ ia_err IntelCca::runAIC(uint64_t frameId, const cca::cca_pal_input_params* param
     CheckAndLogError(!params, ia_err_argument, "@%s, params is nullptr", __func__);
     CheckAndLogError(!pal, ia_err_argument, "@%s, pal is nullptr", __func__);
 
-    ia_err ret = getIntelCCA()->runAIC(frameId, *params, pal);
+    // Currently the aicId is same as stream_id
+    ia_err ret = getIntelCCA()->runAIC(frameId, *params, pal, params->stream_id);
 
     // if PAL doesn't run, set output size to 0
     if (ret == ia_err_not_run) pal->size = 0;

@@ -25,7 +25,7 @@
 #include "TNRCommon.h"
 #ifdef TNR7_LEVEL0
 #include "src/icbm/ICBMTypes.h"
-#include "src/icbm/ICBMThread.h"
+#include "modules/sandboxing/client/IntelICBMClient.h"
 #endif
 
 namespace icamera {
@@ -91,7 +91,7 @@ class IntelLevel0TNR : public IntelTNR7US {
                             int fd = -1);
 
  private:
-    std::unique_ptr<ICBMThread> mIntelICBM;
+    std::unique_ptr<IntelICBM> mIntelICBM;
     int mWidth;
     int mHeight;
 

@@ -26,6 +26,7 @@
 namespace icamera {
 
 IntelTNR7US* IntelTNR7US::createIntelTNR(int cameraId) {
+    if (!PlatformData::isGpuTnrEnabled(cameraId)) return nullptr;
 #ifdef TNR7_CM
     return new IntelC4mTNR(cameraId);
 #else
@@ -228,10 +229,11 @@ int IntelC4mTNR::getTnrBufferSize(int width, int height, uint32_t* size) {
 }
 #elif defined(TNR7_LEVEL0)
 IntelLevel0TNR::~IntelLevel0TNR() {
+    LOG1("<id%d> %s", mCameraId, __func__);
     if (mIntelICBM) {
         icamera::ICBMReqInfo reqInfo;
         reqInfo.cameraId = mCameraId;
-        reqInfo.reqType = icamera::ICBMReqType::LEVEL0_TNR;
+        reqInfo.sessionType = icamera::ICBMFeatureType::LEVEL0_TNR;
         mIntelICBM->shutdown(reqInfo);
         mIntelICBM = nullptr;
     }
@@ -241,8 +243,10 @@ int IntelLevel0TNR::init(int width, int height, TnrType type) {
     LOG1("<id%d> %s  %dx%d", mCameraId, __func__, width, height);
     mWidth = width;
     mHeight = height;
-    mIntelICBM = std::make_unique<ICBMThread>();
-    int ret = mIntelICBM->setup(nullptr);
+    mIntelICBM = std::make_unique<IntelICBM>();
+    icamera::ICBMInitInfo initParam = {.cameraId = mCameraId,
+                                       .sessionType = icamera::ICBMFeatureType::LEVEL0_TNR};
+    int ret = mIntelICBM->setup(&initParam);
     CheckAndLogError(ret != OK, ret, "%s: Init failed", __func__);
 
     return ret;
@@ -250,11 +254,41 @@ int IntelLevel0TNR::init(int width, int height, TnrType type) {
 
 int IntelLevel0TNR::runTnrFrame(const void* inBufAddr, void* outBufAddr, uint32_t inBufSize,
                                 uint32_t outBufSize, Tnr7Param* tnrParam, bool syncUpdate, int fd) {
-    LOG1("<id%d> Level0 %s", mCameraId, __func__);
     (void)syncUpdate;
-    (void)fd;
-    MEMCPY_S(outBufAddr, outBufSize, inBufAddr, inBufSize);
-    return OK;
+    ImageInfo input = {};
+    input.width = mWidth;
+    input.height = mHeight;
+    input.size = inBufSize;
+    input.stride = mWidth;
+    input.gfxHandle = mCommon.getShmMemHandle(const_cast<void*>(inBufAddr), GPU_ALGO_SHM);
+
+    ImageInfo output = {};
+    output.width = mWidth;
+    output.height = mHeight;
+    output.size = outBufSize;
+    output.stride = mWidth;
+
+    if (fd >= 0) {
+        output.gfxHandle = mCommon.registerGbmBuffer(fd, GPU_ALGO_SHM);
+    } else {
+        output.gfxHandle = mCommon.getShmMemHandle(static_cast<void*>(outBufAddr), GPU_ALGO_SHM);
+    }
+
+    ICBMReqInfo reqInfo;
+    reqInfo.cameraId = mCameraId;
+    reqInfo.sessionType = icamera::ICBMFeatureType::LEVEL0_TNR;
+    reqInfo.reqType = icamera::ICBMFeatureType::LEVEL0_TNR;
+    reqInfo.paramHandle = mParamMems.mHandle;
+    reqInfo.inII = input;
+    reqInfo.outII = output;
+
+    int ret = mIntelICBM->runTnrFrame(reqInfo);
+
+    if (fd >= 0) {
+        mCommon.deregisterGbmBuffer(output.gfxHandle, GPU_ALGO_SHM);
+    }
+
+    return ret;
 }
 #endif
 }  // namespace icamera

@@ -163,15 +163,16 @@ int fillHALStreams(int cameraId, const camera3_stream_t& camera3Stream, icamera:
     } else if (IS_ZSL_USAGE(camera3Stream.usage)) {
         stream->usage = icamera::CAMERA_STREAM_OPAQUE_RAW;
     } else {
-        int size = stream->width * stream->height;
         if (camera3Stream.format == HAL_PIXEL_FORMAT_BLOB) {
-            // When enable GPU tnr, use video pipe to output BLOB stream for small resolutions
-            if (size <= RESOLUTION_1080P_WIDTH * RESOLUTION_1080P_HEIGHT &&
-                icamera::PlatformData::isGpuTnrEnabled()) {
+            stream->usage = icamera::CAMERA_STREAM_STILL_CAPTURE;
+#ifdef IPU_SYSVER_ipu6v3
+            // When enable GPU tnr, JSL use video pipe to output BLOB stream for small resolutions
+            if (stream->width * stream->height <=
+                    RESOLUTION_1080P_WIDTH * RESOLUTION_1080P_HEIGHT &&
+                icamera::PlatformData::isGpuTnrEnabled(cameraId)) {
                 stream->usage = icamera::CAMERA_STREAM_VIDEO_CAPTURE;
-            } else {
-                stream->usage = icamera::CAMERA_STREAM_STILL_CAPTURE;
             }
+#endif
         } else {
             stream->usage = icamera::CAMERA_STREAM_VIDEO_CAPTURE;
         }

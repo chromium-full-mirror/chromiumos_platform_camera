@@ -189,26 +189,7 @@ void setDebugLevel(void) {
     // performance
     char* perfLevel = getenv(PROP_CAMERA_HAL_PERF);
     if (perfLevel) {
-        gPerfLevel = strtoul(perfLevel, nullptr, 0);
-        LOGI("Performance level is 0x%x", gPerfLevel);
-
-        // bitmask of tracing categories
-        if (gPerfLevel & CAMERA_DEBUG_LOG_PERF_TRACES) {
-            LOG1("Perf KPI start/end trace is not yet supported");
-        }
-        if (gPerfLevel & CAMERA_DEBUG_LOG_PERF_TRACES_BREAKDOWN) {
-            LOG1("Perf KPI breakdown trace is not yet supported");
-        }
-        if (gPerfLevel & CAMERA_DEBUG_LOG_PERF_IOCTL_BREAKDOWN) {
-            LOG1("Perf IOCTL breakdown trace is not yet supported");
-        }
-        if (gPerfLevel & CAMERA_DEBUG_LOG_PERF_MEMORY) {
-            LOG1("Perf memory breakdown trace is not yet supported");
-        }
-        if (gPerfLevel & CAMERA_DEBUG_LOG_MEDIA_CONTROLLER_LEVEL) {
-            gIsDumpMediaInfo = true;
-        }
-        ScopedAtrace::setTraceLevel(gPerfLevel);
+        initPerfettoTrace();
     }
 }
 

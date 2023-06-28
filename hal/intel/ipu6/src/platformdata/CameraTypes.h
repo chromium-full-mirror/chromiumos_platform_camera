@@ -173,7 +173,6 @@ struct CommonConfig {
     float xmlVersion;
     std::string ipuName;
     std::vector<std::string> availableSensors;
-    bool isGpuTnrEnabled;
     bool isStillTnrPrior;
     bool isTnrParamForceUpdate;
     bool useTnrGlobalProtection;
@@ -185,10 +184,9 @@ struct CommonConfig {
 
     CommonConfig() {
         xmlVersion = 1.0;
-        isGpuTnrEnabled = false;
-        isStillTnrPrior = true;
+        isStillTnrPrior = false;
         isTnrParamForceUpdate = false;
-        useTnrGlobalProtection = false;
+        useTnrGlobalProtection = true;
         cameraNumber = -1;
         videoStreamNum = DEFAULT_VIDEO_STREAM_NUM;
         supportIspTuningUpdate = false;
