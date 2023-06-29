@@ -86,6 +86,7 @@ GCSS_KEY (HW_BITMAPS, hw_bitmaps)
 GCSS_KEY (DEB, deb)
 GCSS_KEY (TEB, teb)
 GCSS_KEY (REB, reb)
+GCSS_KEY (PIPELINE, pipeline)
 /* add new keys to this section above this line */
 GCSS_KEY_SECTION_END (GENERIC_KEYS_END, generic_keys_end, 0x0FFF)
 

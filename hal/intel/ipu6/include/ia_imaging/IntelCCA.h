@@ -324,9 +324,11 @@ public:
      *                                  sensor nvm data.
      * \param[out] pLardResults         Mandatory.\n
      *                                  lard results
+     * \param[in] streamId              Optional.\n
+     *                                  the stream id for aic handle
      * \return                          Error code for status. zero on success, non-zero on failure
     */
-    ia_err updateTuning(uint8_t tag, const ia_lard_input_params &lardParams, const cca_nvm &nvm, ia_lard_results **pLardResults);
+    ia_err updateTuning(uint8_t tag, const ia_lard_input_params &lardParams, const cca_nvm &nvm, ia_lard_results **pLardResults, int32_t streamId = -1);
 
     /*!
      * \brief parse embedded data in run time.
@@ -435,11 +437,12 @@ public:
     * \param [in]  params       manual settings for IPU pipeline
     * \param [in]  bitmap       bitmap to decide which CB will be run
     * \param [out] output       binary array of IPU parameters for each CB
+    * \param [in]  aicId        (Optional)The id for aic handle
     *
     * \return                   Error code for status. zero on success, non-zero on failure
     */
     ia_err runAIC (uint64_t frameId, const cca_pal_input_params& params,
-                   cca_multi_pal_output& output, uint8_t bitmap = UINT8_MAX);
+                   cca_multi_pal_output& output, uint8_t bitmap = UINT8_MAX, int32_t aicId = -1);
 
     static  uint32_t getPacOutputSize(const cca_program_group& programGroup);
     ia_err updateConfigurationResolutions(const cca_aic_config& conf, int32_t aicId, bool isKeyResolutionChanged);
@@ -494,12 +497,13 @@ public:
     * \param [in]  frameId      indicate PAL results for specia frame
     * \param [in]  params       manual settings for IPU pipeline
     * \param [out] pal          binary of IPU parameters for IPU HW
-    *
+    * \param[in] aicId          Optional.\n
+    *                           id for aic handle.
     * \return                   Error code for status. zero on success, non-zero on failure
     */
     ia_err runAIC (uint64_t frameId,
                const cca_pal_input_params& params,
-               ia_binary_data* pal);
+               ia_binary_data* pal, int32_t aicId = -1);
 #endif
 
     /*!

@@ -4963,12 +4963,20 @@ typedef struct
     int32_t log_downscale_ratio;
     /*!< smthnrm_slope[4] estimated short-smoothed normalization coefficient*/
     int32_t smthnrm_slope[4];
+    /*!< smthnrm_slope_user[4] estimated short-smoothed normalization coefficient - user override*/
+    int32_t smthnrm_slope_user[4];
     /*!< etr_slope[4] estimated ETR coefficient*/
     int32_t etr_slope[4];
+    /*!< etr_slope_user[4] estimated ETR coefficient - user override*/
+    int32_t etr_slope_user[4];
     /*!< smthnrm_bias[4] estimated short-smoothed normalization bias*/
     int32_t smthnrm_bias[4];
+    /*!< smthnrm_bias_user[4] estimated short-smoothed normalization bias - user override*/
+    int32_t smthnrm_bias_user[4];
     /*!< etr_bias[4] estimated ETR bias*/
     int32_t etr_bias[4];
+    /*!< etr_bias_user[4] estimated ETR bias - user override*/
+    int32_t etr_bias_user[4];
     /*!< deghost_bias deghost indicator constant*/
     int32_t deghost_bias;
     /*!< deghost_coeff deghost indicator coefficient*/
@@ -5017,6 +5025,8 @@ typedef struct
     int32_t shrt_smth_padding_lft;
     /*!< black_level[4] black level*/
     int32_t black_level[4];
+    /*!< short_is_invalid If on, the blend is 100% long exposure (back door)*/
+    int32_t short_is_invalid;
     /*!< max_use_long Max use of long exposure in the output blend*/
     int32_t max_use_long;
     /*!< short_denoise_power use of denoised short-exposure in blend*/

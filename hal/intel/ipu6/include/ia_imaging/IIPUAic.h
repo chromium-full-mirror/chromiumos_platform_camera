@@ -332,9 +332,11 @@ public:
      *                                   AIQ plus results.
      * \param[out] pal                   Mandatory.\n
      *                                   AIC results.
+     * \param[in] aicId                  Optional.\n
+     *                                   id for aic handle.
      * \return                           Error code.
      */
-    virtual ia_err run(const cca_pal_input_params& params, cca_3a_plus_results& aaaResults, ia_binary_data* pal) = 0;
+    virtual ia_err run(const cca_pal_input_params& params, cca_3a_plus_results& aaaResults, ia_binary_data* pal, int32_t aicId = -1) = 0;
 
 #endif
      /*!

@@ -37,8 +37,6 @@ extern "C" {
 #endif
 #define IA_CCAT_ACM_SECTORS_MAX_NUM 36
 #define PERCENTAGE_2_DECIMAL 0.01F
-#define SATURATION_THRE_CCAT 12U /* 5% pixel saturated */
-#define LUX_EST_THRE_CCAT 10000.0f /* Lux level estimation is not correct over 10000 lux. */
 
 typedef struct ia_ccat_t ia_ccat;
 typedef struct frame_info_t ia_ccat_frame_info;
@@ -159,7 +157,6 @@ ia_ccat_get_frame_total_exposure_time(
 LIBEXPORT ia_err
 ia_ccat_get_frame_lux_level_estimate(
     ia_ccat_frame_info *a_frame_info_ptr,
-    uint32_t a_exposure_index,
     float32_t *a_lux_level_estimate_ptr);
 
 LIBEXPORT ia_err
@@ -376,6 +373,11 @@ ia_ccat_get_frame_histogram_weight_map(
     const ia_aec_weight_grid **a_weight_grid_ptr);
 
 LIBEXPORT ia_err
+ia_ccat_get_frame_scaled_histogram_weight_map(
+    ia_ccat_frame_info* a_frame_info_ptr,
+    const ia_ccat_grid_char** a_weight_grid_ptr);
+
+LIBEXPORT ia_err
 ia_ccat_get_frame_weight_map_changed(
     ia_ccat_frame_info *a_frame_info_ptr,
     bool *weight_map_changed);
@@ -412,6 +414,16 @@ LIBEXPORT ia_err
 ia_ccat_is_stitched_stats(
     ia_ccat_frame_info *a_frame_info_ptr,
     bool *is_stitched);
+
+LIBEXPORT ia_err
+ia_ccat_is_staggered_hdr_mode(
+    ia_ccat_frame_info *a_frame_info_ptr,
+    bool *is_staggered_hdr_mode);
+
+LIBEXPORT ia_err
+ia_ccat_set_staggered_hdr_mode(
+    ia_ccat_frame_info *a_frame_info_ptr,
+    bool is_staggered_hdr_mode);
 
 /*!
  * \brief Get information about number of exposures and which of them is the center (in case of multi exposure frame) exposure index.
@@ -568,6 +580,12 @@ ia_ccat_get_frame_luminance_grid(
     const ia_ccat_grid_char **a_luminance_grid_ptr);
 
 #ifdef IA_CCAT_LUMINANCE_MOTION_ESTIMATE_ENABLED
+LIBEXPORT ia_err
+ia_ccat_get_frame_previous_luminance_grid(
+    ia_ccat_frame_info *a_frame_info_ptr,
+    uint32_t a_exposure_index,
+    ia_ccat_grid_char **a_luminance_grid_ptr);
+
 LIBEXPORT ia_err
 ia_ccat_get_frame_motion_level_estimate(
     ia_ccat_frame_info *a_frame_info_ptr,
@@ -752,6 +770,11 @@ ia_ccat_analyze_stable_face(
     ia_ccat_frame_info* a_frame_info_ptr,
     bool* is_stable);
 
+LIBEXPORT bool check_face_rec_correct(
+    ia_ccat_frame_info* a_frame_info_ptr,
+    bool face_stable
+);
+
 LIBEXPORT ia_err
 ia_ccat_analysis_face_position(
     ia_ccat_frame_info* a_frame_info_ptr,
@@ -931,6 +954,16 @@ LIBEXPORT ia_err
 ia_ccat_get_frame_min_gamma_gtm(
     ia_ccat_frame_info *a_frame_info_ptr,
     float32_t *min_gamma_gtm);
+
+LIBEXPORT ia_err
+ia_ccat_get_smooth_number(
+    ia_ccat_frame_info *a_frame_info_ptr,
+    int32_t *smooth_number);
+
+LIBEXPORT ia_err
+ia_ccat_set_smooth_number(
+    ia_ccat_frame_info *a_frame_info_ptr,
+    int32_t smooth_number);
 #ifdef __cplusplus
 }
 #endif

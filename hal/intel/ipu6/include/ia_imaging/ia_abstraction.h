@@ -435,7 +435,7 @@ inline static int memcpy_s(void *dest, size_t destsz, const void *src, size_t co
 #ifdef MEMDEBUG
 #define IA_MEMASSIGN(ptr, size)  IA_CALLOC(size); IA_UNUSED(ptr)
 #else
-#define IA_MEMASSIGN(ptr, size)  ptr; ptr += IA_ALIGN(size, 8)
+#define IA_MEMASSIGN(ptr, size)  ptr; ptr += IA_ALIGN(size, 8U)
 #endif
 
 #ifndef __cplusplus

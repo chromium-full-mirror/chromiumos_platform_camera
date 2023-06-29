@@ -641,6 +641,7 @@ typedef struct
     ia_isp_call_rate_control call_rate_control; /*!< Optional. algo run frequency for power saving purpose.*/
     ia_isp_bxt_csc csc_matrix;                  /*!< Optional. manual rgb2yuv matrix for bxt_csc.*/
     uint32_t gain_id_gaic;                        /*!< Optional. tell which gain is used by generic AIC in multi-expo case.*/
+    bool     skipDvs;                          /*Optional. indicate if dvs result need pass to AIC*/
 } cca_pal_input_params;
 
 /*!
