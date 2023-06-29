@@ -25,6 +25,9 @@
 
 #include "CameraParser.h"
 #include "iutils/CameraLog.h"
+// ALGO_TUNING_S
+#include "TunningParser.h"
+// ALGO_TUNING_E
 #include "ParameterHelper.h"
 #include "PolicyParser.h"
 
@@ -64,6 +67,9 @@ PlatformData::PlatformData() {
     }
 
     CameraParser CameraParser(mc, &mStaticCfg);
+// ALGO_TUNING_S
+    TunningParser TunningParser(&mStaticCfg);
+// ALGO_TUNING_E
     PolicyParser PolicyParser(&mStaticCfg);
 }
 
@@ -197,6 +203,27 @@ int PlatformData::queryGraphSettings(int cameraId, const stream_config_t* stream
         }
     }
     return OK;
+}
+
+int PlatformData::getEdgeNrSetting(int cameraId, float totalGain, float hdrRatio,
+                                   EdgeNrSetting& setting) {
+    const StaticCfg::CameraInfo& pCam = getInstance()->mStaticCfg.mCameras[cameraId];
+    LOG2("%s, totalGain %f, hdrRatio %f", __func__, totalGain, hdrRatio);
+
+    if (!pCam.mTotalGainHdrRatioToEdgeNrMap.empty()) {
+        // found the lower value in map
+        auto subMap = pCam.mTotalGainHdrRatioToEdgeNrMap.upper_bound(hdrRatio);
+        if (subMap != pCam.mTotalGainHdrRatioToEdgeNrMap.begin()) {
+            auto sub = (--subMap)->second;
+            auto it = sub.upper_bound(totalGain);
+            if (it != sub.begin()) {
+                setting = (--it)->second;
+                return OK;
+            }
+        }
+    }
+
+    return NAME_NOT_FOUND;
 }
 
 void PlatformData::releaseGraphConfigNodes() {

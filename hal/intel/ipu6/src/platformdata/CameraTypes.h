@@ -127,6 +127,11 @@ typedef struct {
     uint32_t vertical_scaling_denominator;
 } SensorFrameParams;
 
+typedef struct {
+    int8_t edgeStrength;
+    int8_t nrStrength;
+} EdgeNrSetting;
+
 enum ExecutorNotifyPolicy {
     POLICY_FRAME_FIRST = 0,
     POLICY_STATS_FIRST,

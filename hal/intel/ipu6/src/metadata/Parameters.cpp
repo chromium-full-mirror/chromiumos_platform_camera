@@ -1877,6 +1877,20 @@ int Parameters::getPowerMode(camera_power_mode_t& mode) const {
     return OK;
 }
 
+int Parameters::setHdrRatio(float hdrRatio) {
+    ParameterHelper::AutoWLock wl(mData);
+    return ParameterHelper::getMetadata(mData).update(INTEL_VENDOR_CAMERA_HDR_RATIO, &hdrRatio, 1);
+}
+
+int Parameters::getHdrRatio(float& hdrRatio) const {
+    ParameterHelper::AutoRLock rl(mData);
+    auto entry = ParameterHelper::getMetadataEntry(mData, INTEL_VENDOR_CAMERA_HDR_RATIO);
+    if (entry.count != 1) return NAME_NOT_FOUND;
+
+    hdrRatio = entry.data.f[0];
+    return OK;
+}
+
 int Parameters::setTotalExposureTarget(int64_t totalExposureTarget) {
     ParameterHelper::AutoWLock wl(mData);
     return ParameterHelper::getMetadata(mData).update(INTEL_VENDOR_CAMERA_TOTAL_EXPOSURE_TARGET,

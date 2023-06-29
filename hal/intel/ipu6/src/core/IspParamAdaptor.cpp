@@ -43,6 +43,7 @@ IspParamAdaptor::IspParamAdaptor(int cameraId)
           mTuningMode(TUNING_MODE_VIDEO),
           mIpuOutputFormat(V4L2_PIX_FMT_NV12),
           mLastLscSequece(-1),
+          mLastGdcSequence(-1),
           mGraphConfig(nullptr),
           mIntelCca(nullptr),
           mGammaTmOffset(-1) {
@@ -51,7 +52,8 @@ IspParamAdaptor::IspParamAdaptor(int cameraId)
 
     PalRecord palRecordArray[] = {{ia_pal_uuid_isp_call_info, -1},
                                   {ia_pal_uuid_isp_bnlm_3_2, -1},
-                                  {ia_pal_uuid_isp_lsc_1_1, -1}};
+                                  {ia_pal_uuid_isp_lsc_1_1, -1},
+                                  {ia_pal_uuid_isp_gdc5, -1}};
     for (uint32_t i = 0; i < sizeof(palRecordArray) / sizeof(PalRecord); i++) {
         mPalRecords.push_back(palRecordArray[i]);
     }
@@ -210,6 +212,7 @@ int IspParamAdaptor::configure(const stream_t& stream, ConfigMode configMode, Tu
     mTuningMode = tuningMode;
     CLEAR(mLastPalDataForVideoPipe);
     mLastLscSequece = -1;
+    mLastGdcSequence = -1;
     for (uint32_t i = 0; i < mPalRecords.size(); i++) {
         mPalRecords[i].offset = -1;
     }
@@ -407,7 +410,10 @@ void IspParamAdaptor::updateKernelToggles(cca::cca_program_group* programGroup) 
  */
 void IspParamAdaptor::updatePalDataForVideoPipe(ia_binary_data dest, int64_t bufSeq,
                                                 int64_t settingSeq) {
-    if (mLastPalDataForVideoPipe.data == nullptr || mLastPalDataForVideoPipe.size == 0) return;
+    if (mLastPalDataForVideoPipe.data == nullptr || mLastPalDataForVideoPipe.size == 0) {
+        mLastGdcSequence = settingSeq;
+        return;
+    }
 
     if (mPalRecords.empty()) return;
 
@@ -448,6 +454,16 @@ void IspParamAdaptor::updatePalDataForVideoPipe(ia_binary_data dest, int64_t buf
                     updateLscSeqMap(bufSeq);
                 } else {
                     LOG2("settingSeq %ld, not copy LSC for buf %ld", settingSeq, bufSeq);
+                    continue;
+                }
+            }
+
+            if (ia_pal_uuid_isp_gdc5 == header->uuid) {
+                if (isGdcCopy(bufSeq, settingSeq)) {
+                    LOG2("settingSeq %ld, copy GDC for buf %ld", settingSeq, bufSeq);
+                    updateGdcSeqMap(bufSeq);
+                } else {
+                    LOG2("settingSeq %ld, not copy GDC for buf %ld", settingSeq, bufSeq);
                     continue;
                 }
             }
@@ -505,6 +521,32 @@ void IspParamAdaptor::updateLscSeqMap(int64_t settingSeq) {
 
     if (mSeqIdToLscSeqIdMap.size() > ISP_PARAM_QUEUE_SIZE) {
         mSeqIdToLscSeqIdMap.erase(mSeqIdToLscSeqIdMap.begin());
+    }
+}
+
+bool IspParamAdaptor::isGdcCopy(int64_t bufSeq, int64_t settingSeq) {
+    if (!PlatformData::isDvsSupported(mCameraId)) return false;
+
+    if (AiqResultStorage::getInstance(mCameraId)->isDvsRun(settingSeq)) {
+        mLastGdcSequence = settingSeq;
+        LOG2("%s, GDC update %ld", __func__, settingSeq);
+        return false;
+    } else {
+        if (mSeqIdToGdcSeqIdMap.find(bufSeq) != mSeqIdToGdcSeqIdMap.end()) {
+            if (mLastGdcSequence >= 0 && mSeqIdToGdcSeqIdMap[bufSeq] == mLastGdcSequence) {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+void IspParamAdaptor::updateGdcSeqMap(int64_t settingSeq) {
+    mSeqIdToGdcSeqIdMap[settingSeq] = mLastGdcSequence;
+
+    if (mSeqIdToGdcSeqIdMap.size() > ISP_PARAM_QUEUE_SIZE) {
+        mSeqIdToGdcSeqIdMap.erase(mSeqIdToGdcSeqIdMap.begin());
     }
 }
 
@@ -581,6 +623,7 @@ int IspParamAdaptor::runIspAdapt(const IspSettings* ispSettings, int64_t setting
                     mLastPalDataForVideoPipe = binaryData;
                     updateResultFromAlgo(&binaryData, settingSequence);
                     updateLscSeqMap(settingSequence);
+                    updateGdcSeqMap(settingSequence);
                 }
             }
         }

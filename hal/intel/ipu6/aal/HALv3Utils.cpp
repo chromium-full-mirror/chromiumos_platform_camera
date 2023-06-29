@@ -251,7 +251,8 @@ void updateOrientation(const std::vector<CrosCameraInfo>& infos) {
     for (size_t i = 0; i < infos.size(); ++i) {
         for (size_t j = 0; j < infos.size(); ++j) {
             icamera::camera_info_t info;
-            icamera::get_camera_info(j, info);
+            int ret = icamera::get_camera_info(j, info);
+            if (ret != icamera::OK) continue;
 
             if (info.facing == infos[i].facing) {
                 LOG1("%s@, cameraID %zu's orient = %d ", __func__, j, infos[i].orientation);

@@ -189,7 +189,9 @@ void setDebugLevel(void) {
     // performance
     char* perfLevel = getenv(PROP_CAMERA_HAL_PERF);
     if (perfLevel) {
+#ifndef GPU_ALGO_SERVER
         initPerfettoTrace();
+#endif
     }
 }
 

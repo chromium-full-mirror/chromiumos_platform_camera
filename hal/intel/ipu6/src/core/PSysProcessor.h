@@ -61,7 +61,7 @@ class PSysProcessor : public BufferQueue, public PSysDagCallback {
     void onBufferDone(int64_t sequence, Port port, const std::shared_ptr<CameraBuffer>& camBuffer);
     void onStatsDone(int64_t sequence, const CameraBufferPortMap& outBuf);
 // INTEL_DVS_S
-    void onDvsPrepare(int32_t streamId);
+    void onDvsPrepare(int64_t sequence, int32_t streamId);
 // INTEL_DVS_E
 
  private:

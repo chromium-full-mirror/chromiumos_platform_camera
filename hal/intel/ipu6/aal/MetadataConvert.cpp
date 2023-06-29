@@ -1296,6 +1296,12 @@ int MetadataConvert::convertVendorControlMetadata(const android::CameraMetadata&
         }
     }
 
+    tag = INTEL_VENDOR_CAMERA_HDR_RATIO;
+    entry = settings.find(tag);
+    if (entry.count == 1) {
+        parameter->setHdrRatio(entry.data.f[0]);
+    }
+
     tag = INTEL_VENDOR_CAMERA_TOTAL_EXPOSURE_TARGET;
     entry = settings.find(tag);
     if (entry.count == 1) {

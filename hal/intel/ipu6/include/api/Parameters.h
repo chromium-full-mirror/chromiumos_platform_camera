@@ -2706,6 +2706,24 @@ class Parameters {
     int getRawDataOutput(raw_data_output_t& mode) const;
 
     /**
+     * \brief Set HDR ratio
+     *
+     * \param[in] float
+     *
+     * \return 0 if set successfully, otherwise non-0 value is returned.
+     */
+    int setHdrRatio(float hdrRatio);
+
+    /**
+     * \brief Get HDR ratio
+     *
+     * \param[out] float
+     *
+     * \return 0 if HDR ratio was set, otherwise non-0 value is returned.
+     */
+    int getHdrRatio(float& hdrRatio) const;
+
+    /**
      * \brief Set total exposure target
      *
      * \param[in] int64_t

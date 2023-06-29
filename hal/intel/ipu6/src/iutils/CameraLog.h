@@ -22,7 +22,9 @@
 #include <log/log.h>
 #endif
 
+#ifndef GPU_ALGO_SERVER
 #include "src/iutils/PerfettoTrace.h"
+#endif
 
 // ***********************************************************
 #include <stdint.h>

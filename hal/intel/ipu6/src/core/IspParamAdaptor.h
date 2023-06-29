@@ -123,6 +123,9 @@ class IspParamAdaptor {
     bool isLscCopy(int64_t bufSeq, int64_t settingSeq);
     void updateLscSeqMap(int64_t settingSeq);
 
+    bool isGdcCopy(int64_t bufSeq, int64_t settingSeq);
+    void updateGdcSeqMap(int64_t settingSeq);
+
  private:
     enum IspAdaptorState {
         ISP_ADAPTOR_NOT_INIT,
@@ -144,6 +147,9 @@ class IspParamAdaptor {
 
     int64_t mLastLscSequece;
     std::map<int64_t, int64_t> mSeqIdToLscSeqIdMap;
+
+    int64_t mLastGdcSequence;
+    std::map<int64_t, int64_t> mSeqIdToGdcSeqIdMap;
 
     // Guard lock for ipu parameter
     Mutex mIpuParamLock;

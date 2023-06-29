@@ -227,6 +227,8 @@ class PlatformData {
             std::map<int, stream_array_t> mStreamToMcMap;
             Parameters mCapability;
 
+            /* key: total gain, value: a map (key: hdr ratio, value: edge and noise settings) */
+            std::map<float, std::map<float, EdgeNrSetting>> mTotalGainHdrRatioToEdgeNrMap;
             std::string mGraphSettingsFile;
             GraphSettingType mGraphSettingsType;
             std::vector<MultiExpRange> mMultiExpRanges;
@@ -784,6 +786,19 @@ class PlatformData {
      * \return the value of analog gain lag
      */
     static int getAnalogGainLag(int cameraId);
+
+    /**
+     * Get EdgeNrSetting based on total gain and hdr ratio
+     *
+     * \param[in] cameraId: [0, MAX_CAMERA_NUMBER - 1]
+     * \param[in] totalGain: total gain
+     * \param[in] hdrRatio: hdr ratio
+     * \param[out] setting: EdgeNrSetting setting
+     *
+     * \return OK if setting is available, otherwise return NAME_NOT_FOUND.
+     */
+    static int getEdgeNrSetting(int cameraId, float totalGain, float hdrRatio,
+                                EdgeNrSetting& setting);
 
     /**
      * Get the executor policy config.

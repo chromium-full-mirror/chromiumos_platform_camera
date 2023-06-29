@@ -409,11 +409,6 @@ std::vector<EventListener*> AiqUnit::getDVSEventListener() {
 
 int AiqUnit::setParameters(const Parameters& params) {
     AutoMutex l(mAiqUnitLock);
-// INTEL_DVS_S
-    if (mDvs) {
-        mDvs->setParameter(params);
-    }
-// INTEL_DVS_E
 
     return mAiqSetting->setParameters(params);
 }

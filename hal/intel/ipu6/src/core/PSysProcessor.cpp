@@ -965,6 +965,25 @@ void PSysProcessor::dispatchTask(CameraBufferPortMap& inBuf, CameraBufferPortMap
         if (mParameterGenerator->getIspParameters(currentSequence, &params) == OK) {
             setParameters(params);
 
+            // Apply HAL tuning parameters
+            float hdrRatio = 0;
+            EdgeNrSetting edgeNrSetting;
+            CLEAR(edgeNrSetting);
+
+            int ret = params.getHdrRatio(hdrRatio);
+            if (ret == OK) {
+                auto* res = AiqResultStorage::getInstance(mCameraId)->getAiqResult(currentSequence);
+                if (res != nullptr) {
+                    auto exposure = res->mAeResults.exposures[0].exposure[0];
+                    float totalGain = exposure.analog_gain * exposure.digital_gain;
+                    PlatformData::getEdgeNrSetting(mCameraId, totalGain, hdrRatio, edgeNrSetting);
+                    mIspSettings.eeSetting.strength += edgeNrSetting.edgeStrength;
+                    mIspSettings.nrSetting.strength += edgeNrSetting.nrStrength;
+                    LOG2("edgeStrength %d, nrStrength %d", edgeNrSetting.edgeStrength,
+                         edgeNrSetting.nrStrength);
+                }
+            }
+
             bool hasStill = false;
             for (const auto& item : outBuf) {
                 if (item.second && item.second->getStreamUsage() == CAMERA_STREAM_STILL_CAPTURE) {
@@ -1138,13 +1157,18 @@ void PSysProcessor::onStatsDone(int64_t sequence, const CameraBufferPortMap& out
 }
 
 // INTEL_DVS_S
-void PSysProcessor::onDvsPrepare(int32_t streamId) {
+void PSysProcessor::onDvsPrepare(int64_t sequence, int32_t streamId) {
     LOG2("%s stream Id %d", __func__, streamId);
 
-    EventData eventData;
-    eventData.type = EVENT_DVS_READY;
-    eventData.data.dvsRunReady.streamId = streamId;
-    notifyListeners(eventData);
+    camera_zoom_region_t region;
+    if (mParameterGenerator && mParameterGenerator->getZoomRegion(sequence, region) == OK) {
+        EventData eventData;
+        eventData.type = EVENT_DVS_READY;
+        eventData.data.dvsRunReady.streamId = streamId;
+        eventData.data.dvsRunReady.sequence = sequence;
+        eventData.data.dvsRunReady.region = region;
+        notifyListeners(eventData);
+    }
 }
 // INTEL_DVS_E
 

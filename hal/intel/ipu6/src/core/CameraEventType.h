@@ -86,6 +86,8 @@ struct EventRequestReady {
 // INTEL_DVS_S
 struct EventDVSRunReady {
     int streamId;
+    int64_t sequence;
+    camera_zoom_region_t region;
 };
 // INTEL_DVS_E
 
