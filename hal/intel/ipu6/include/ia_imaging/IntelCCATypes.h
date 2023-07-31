@@ -171,6 +171,14 @@ enum CCADVSOutputType
 };
 
 /*!
+ *  \brief dvs init param.
+ */
+typedef struct {
+    float32_t dvs_zoom_ration;
+    CCADVSOutputType dvs_output_type;
+} cca_dvs_init_param;
+
+/*!
  * \brief aec_features input parameters.
  */
 typedef struct
@@ -680,7 +688,7 @@ struct cca_init_params{
     cca_gdc_configurations gdcConfigs; /*!< Mandatory. GDC resolution configuration */
     uint8_t aiqStorageLen;           /*!< Mandatory. lehgth of history to store algo results */
     uint8_t aecFrameDelay;           /*!< Mandatory. frame delay for auto exposure take effect */
-    cca_stream_ids aic_stream_ids;   /*!< Optional. the stream id for aic handle*/
+    cca_stream_ids aic_stream_ids;   /*!< Optional. the aic id for aic handle*/
     cca_init_params() :
         frameUse(ia_aiq_frame_use_preview),
         conversionGainRatio(1),
