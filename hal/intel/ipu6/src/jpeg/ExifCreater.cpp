@@ -1,7 +1,7 @@
 /*
  * Copyright Samsung Electronics Co.,LTD.
  * Copyright (C) 2010 The Android Open Source Project
- * Copyright (C) 2016-2021 Intel Corporation
+ * Copyright (C) 2016-2023 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -98,18 +98,22 @@ exif_status ExifCreater::makeExif(void* exifOut, exif_attribute_t* exifInfo, siz
     writeExifIfd(&pCur, EXIF_TAG_IMAGE_DESCRIPTION, EXIF_TYPE_ASCII,
                  strlen(reinterpret_cast<char*>(exifInfo->image_description)) + 1,
                  exifInfo->image_description, &LongerTagOffset, pIfdStart);
-    writeExifIfd(&pCur, EXIF_TAG_MAKE, EXIF_TYPE_ASCII, strlen((char*)exifInfo->maker) + 1,
-                 exifInfo->maker, &LongerTagOffset, pIfdStart);
-    writeExifIfd(&pCur, EXIF_TAG_MODEL, EXIF_TYPE_ASCII, strlen((char*)exifInfo->model) + 1,
-                 exifInfo->model, &LongerTagOffset, pIfdStart);
+    writeExifIfd(&pCur, EXIF_TAG_MAKE, EXIF_TYPE_ASCII,
+                 strlen(reinterpret_cast<char*>(exifInfo->maker)) + 1, exifInfo->maker,
+                 &LongerTagOffset, pIfdStart);
+    unsigned int modelLength = strlen(reinterpret_cast<char*>(exifInfo->model));
+    if (modelLength < 4) modelLength = 4;
+    writeExifIfd(&pCur, EXIF_TAG_MODEL, EXIF_TYPE_ASCII, modelLength + 1, exifInfo->model,
+                 &LongerTagOffset, pIfdStart);
     writeExifIfd(&pCur, EXIF_TAG_ORIENTATION, EXIF_TYPE_SHORT, 1, exifInfo->orientation);
     writeExifIfd(&pCur, EXIF_TAG_X_RESOLUTION, EXIF_TYPE_RATIONAL, 1, &exifInfo->x_resolution,
                  &LongerTagOffset, pIfdStart);
     writeExifIfd(&pCur, EXIF_TAG_Y_RESOLUTION, EXIF_TYPE_RATIONAL, 1, &exifInfo->y_resolution,
                  &LongerTagOffset, pIfdStart);
     writeExifIfd(&pCur, EXIF_TAG_RESOLUTION_UNIT, EXIF_TYPE_SHORT, 1, exifInfo->resolution_unit);
-    writeExifIfd(&pCur, EXIF_TAG_SOFTWARE, EXIF_TYPE_ASCII, strlen((char*)exifInfo->software) + 1,
-                 exifInfo->software, &LongerTagOffset, pIfdStart);
+    writeExifIfd(&pCur, EXIF_TAG_SOFTWARE, EXIF_TYPE_ASCII,
+                 strlen(reinterpret_cast<char*>(exifInfo->software)) + 1, exifInfo->software,
+                 &LongerTagOffset, pIfdStart);
     writeExifIfd(&pCur, EXIF_TAG_DATE_TIME, EXIF_TYPE_ASCII, 20, exifInfo->date_time,
                  &LongerTagOffset, pIfdStart);
     writeExifIfd(&pCur, EXIF_TAG_YCBCR_POSITIONING, EXIF_TYPE_SHORT, 1,

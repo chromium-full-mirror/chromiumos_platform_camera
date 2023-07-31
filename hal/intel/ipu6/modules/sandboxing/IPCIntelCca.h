@@ -84,6 +84,14 @@ struct intel_cca_run_ltm_data {
     cca::cca_ltm_input_params inParams;
 };
 
+struct intel_cca_reconfig_dvs_data {
+    int cameraId;
+    TuningMode tuningMode;
+
+    cca::cca_dvs_init_param dvsInitParam;
+    cca::cca_gdc_configurations gdcConfigs;
+};
+
 struct intel_cca_update_zoom_data {
     int cameraId;
     TuningMode tuningMode;

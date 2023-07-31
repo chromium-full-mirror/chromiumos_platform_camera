@@ -29,6 +29,7 @@
 #include "CameraTypes.h"
 #include "FaceType.h"
 #include "ICamera.h"
+#include "ia_types.h"
 #include "IGraphConfig.h"
 #include "MediaControl.h"
 #include "Parameters.h"
@@ -135,6 +136,7 @@ class PlatformData {
                       mUseSensorDigitalGain(false),
                       mUseIspDigitalGain(false),
                       mNeedPreRegisterBuffers(false),
+                      mMediaFormat(media_format_legacy),
                       mEnableAiqd(false),
                       mCurrentMcConf(nullptr),
                       mGraphSettingsType(COUPLED),
@@ -164,7 +166,8 @@ class PlatformData {
                       mDisableBLCByAGain(false),
                       mDisableBLCAGainLow(-1),
                       mDisableBLCAGainHigh(-1),
-                      mResetLinkRoute(true) {}
+                      mResetLinkRoute(true),
+                      mReqWaitTimeout(0) {}
 
             std::vector<MediaCtlConf> mMediaCtlConfs;
 
@@ -222,6 +225,7 @@ class PlatformData {
             bool mUseSensorDigitalGain;
             bool mUseIspDigitalGain;
             bool mNeedPreRegisterBuffers;
+            ia_media_format mMediaFormat;
             bool mEnableAiqd;
             MediaCtlConf* mCurrentMcConf;
             std::map<int, stream_array_t> mStreamToMcMap;
@@ -277,6 +281,8 @@ class PlatformData {
             int mDisableBLCAGainLow;
             int mDisableBLCAGainHigh;
             bool mResetLinkRoute;
+            /* mReqWaitTimeout is used to override dqbuf timeout (ns) */
+            int64_t mReqWaitTimeout;
         };
 
         /**
@@ -562,6 +568,14 @@ class PlatformData {
      * \return if LTM is enabled or not.
      */
     static bool isLtmEnabled(int cameraId);
+
+    /**
+     * Get media format
+     *
+     * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
+     * \return the value of media format.
+     */
+    static ia_media_format getMediaFormat(int cameraId);
 
     /**
      * Get if multi exposure cases or not
@@ -1015,6 +1029,14 @@ class PlatformData {
                                              std::vector<ConfigMode>& configModes);
 
     /**
+     * to reorder tuning config
+     *
+     * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
+     * \param configMode: type of ConfigMode
+     */
+    static void reorderSupportedTuningConfig(int cameraId, ConfigMode configMode);
+
+    /**
      * to get the TuningMode by Config Mode
      *
      * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
@@ -1461,6 +1483,14 @@ class PlatformData {
      * \return if reset links and routes
      */
     static bool isResetLinkRoute(int cameraId);
+
+  /**
+     * Get use defined timeout val for dqbuf
+     *
+     * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
+     * \return timeout interval for dqbuf in ns (2000000000 for 2s)
+     */
+    static int64_t getReqWaitTimeout(int cameraId);
 
 };
 } /* namespace icamera */

@@ -41,12 +41,15 @@ RequestThread::RequestThread(int cameraId, AiqUnitBase* a3AControl, ParameterGen
           mLastAppliedSeq(-1),
           mLastSofSeq(-1),
           mBlockRequest(true),
-          mSofEnabled(false) {
+          mSofEnabled(false),
+          mWaitFrameDurationOverride(0) {
     CLEAR(mFakeReqBuf);
 
     mPerframeControlSupport = PlatformData::isFeatureSupported(mCameraId, PER_FRAME_CONTROL);
 
     mSofEnabled = PlatformData::isIsysEnabled(cameraId);
+    mWaitFrameDurationOverride = PlatformData::getReqWaitTimeout(cameraId);
+    LOG1("%s: Set mWaitFrameDurationOverride: %lld", __func__, mWaitFrameDurationOverride);
 }
 
 RequestThread::~RequestThread() {}
@@ -191,7 +194,8 @@ int RequestThread::waitFrame(int streamId, camera_buffer_t** ubuffer) {
     if (!mActive) return NO_INIT;
     while (frameQueue.mFrameQueue.empty()) {
         int ret = frameQueue.mFrameAvailableSignal.waitRelative(
-            lock, kWaitFrameDuration * SLOWLY_MULTIPLIER);
+            lock, (mWaitFrameDurationOverride > 0) ? mWaitFrameDurationOverride :
+                                                     (kWaitFrameDuration * SLOWLY_MULTIPLIER));
         if (!mActive) return NO_INIT;
 
         CheckWarning(ret == TIMED_OUT, ret, "<id%d>@%s, time out happens, wait recovery", mCameraId,

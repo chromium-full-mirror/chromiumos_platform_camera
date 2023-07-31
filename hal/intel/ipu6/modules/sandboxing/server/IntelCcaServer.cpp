@@ -109,6 +109,20 @@ status_t IntelCcaServer::runLTM(void* pData, int dataSize) {
     return OK;
 }
 
+status_t IntelCcaServer::reconfigDvs(void* pData, int dataSize) {
+    PERF_CAMERA_ATRACE();
+
+    CheckAndLogError(pData == nullptr, UNKNOWN_ERROR, "@%s, pData is nullptr", __func__);
+    CheckAndLogError(mCca == nullptr, UNKNOWN_ERROR, "@%s, mCca is nullptr", __func__);
+
+    intel_cca_reconfig_dvs_data* params = static_cast<intel_cca_reconfig_dvs_data*>(pData);
+
+    ia_err ret = mCca->reconfigDvs(params->dvsInitParam, params->gdcConfigs);
+    CheckAndLogError(ret != ia_err_none, UNKNOWN_ERROR, "@%s, fails: %d", __func__, ret);
+
+    return OK;
+}
+
 status_t IntelCcaServer::updateZoom(void* pData, int dataSize) {
     PERF_CAMERA_ATRACE();
 

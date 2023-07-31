@@ -511,11 +511,13 @@ camera3_stream_t* RequestManager::choosePreviewStream(uint32_t streamsNum,
     int maxHeight = MAX_FACE_FRAME_HEIGHT;
     int preStreamNum = -1;
     int yuvStreamNum = -1;
+    int fdVendor = icamera::PlatformData::faceEngineVendor(mCameraId);
 
     for (uint32_t i = 0; i < streamsNum; i++) {
         camera3_stream_t* s = streams[i];
         if (!s || s->stream_type != CAMERA3_STREAM_OUTPUT ||
-            ((s->width > maxWidth || s->height > maxHeight))) {
+            ((s->width > maxWidth || s->height > maxHeight) &&
+             (fdVendor != FACE_ENGINE_GOOGLE_FACESSD))) {
             continue;
         }
 

@@ -114,6 +114,7 @@ int PlatformData::init() {
             ParameterHelper::merge(staticCfg->mCameras[i].mCameraModuleInfoMap[camModuleName],
                                    &staticCfg->mCameras[i].mCapability);
         }
+
     }
 
     return OK;
@@ -144,9 +145,8 @@ void PlatformData::StaticCfg::getModuleInfoFromCmc(int cameraId) {
 
     LOG1("%s: base iso %d, ag [%4.2f, %4.2f], ag [%4.2f, %4.2f], from aiqb", __func__, cmc.base_iso,
          cmc.min_dg, cmc.max_dg, cmc.min_ag, cmc.max_ag);
-    LOGI("%s: focal_len %d, min_fd %d, ap %d", __func__, cmc.optics.effect_focal_length,
+    LOG1("%s: focal_len %d, min_fd %d, ap %d", __func__, cmc.optics.effect_focal_length,
          cmc.optics.min_focus_distance, cmc.lut_apertures);
-
     int32_t maxAg = cmc.base_iso * cmc.max_ag;
     const CameraMetadata caps = ParameterHelper::getMetadata(info.mCapability);
     CameraMetadata meta;
@@ -212,10 +212,10 @@ int PlatformData::getEdgeNrSetting(int cameraId, float totalGain, float hdrRatio
 
     if (!pCam.mTotalGainHdrRatioToEdgeNrMap.empty()) {
         // found the lower value in map
-        auto subMap = pCam.mTotalGainHdrRatioToEdgeNrMap.upper_bound(hdrRatio);
+        auto subMap = pCam.mTotalGainHdrRatioToEdgeNrMap.upper_bound(totalGain);
         if (subMap != pCam.mTotalGainHdrRatioToEdgeNrMap.begin()) {
             auto sub = (--subMap)->second;
-            auto it = sub.upper_bound(totalGain);
+            auto it = sub.upper_bound(hdrRatio);
             if (it != sub.begin()) {
                 setting = (--it)->second;
                 return OK;
@@ -422,6 +422,10 @@ int PlatformData::getExposureNum(int cameraId, bool multiExposure) {
 bool PlatformData::isLtmEnabled(int cameraId) {
 
     return getInstance()->mStaticCfg.mCameras[cameraId].mLtmEnabled;
+}
+
+ia_media_format PlatformData::getMediaFormat(int cameraId) {
+    return getInstance()->mStaticCfg.mCameras[cameraId].mMediaFormat;
 }
 
 bool PlatformData::isMultiExposureCase(int cameraId, TuningMode tuningMode) {
@@ -1078,6 +1082,54 @@ int PlatformData::getConfigModesByOperationMode(int cameraId, uint32_t operation
     return INVALID_OPERATION;
 }
 
+/*
+ * This function adds for binning mode tuning support, and there are 2 tuning modes for configMode.
+ * The first tuning mode will be used when selecting tuning mode.
+ * When selecting small ISYS output, the binning mode should be moved to first, otherwise full size
+ * mode should be the first tuning mode.
+ */
+void PlatformData::reorderSupportedTuningConfig(int cameraId, ConfigMode configMode) {
+    auto pCam = &getInstance()->mStaticCfg.mCameras[cameraId];
+    int binningIdx = -1;
+    int fullIdx = -1;
+    int idx = -1;
+    for (auto& cfg : pCam->mSupportedTuningConfig) {
+        idx++;
+        LOG1("%s, tuningMode %d, configMode %x, idx %d", __func__, cfg.tuningMode, cfg.configMode,
+             idx);
+        if (cfg.configMode == configMode) {
+            if (cfg.tuningMode == TUNING_MODE_VIDEO_BINNING) {
+                binningIdx = idx;
+            } else {
+                fullIdx = idx;
+            }
+        }
+    }
+
+    if (binningIdx < 0 || fullIdx < 0) return;
+
+    bool smallSize = false;
+    MediaCtlConf* mc = PlatformData::getMediaCtlConf(cameraId);
+    vector<camera_resolution_t> res;
+    // The supported resolutions are saved in res with ascending order(small -> bigger)
+    getSupportedISysSizes(cameraId, res);
+    if (!res.empty() && mc) {
+        for (const auto& output : mc->outputs) {
+            if (res.back().width > output.width || res.back().height > output.height) {
+                smallSize = true;
+                break;
+            }
+        }
+    }
+
+    if ((smallSize && binningIdx > fullIdx) || (!smallSize && binningIdx < fullIdx)) {
+        // Switch binning mode and full mode
+        auto config = pCam->mSupportedTuningConfig[fullIdx];
+        pCam->mSupportedTuningConfig[fullIdx] = pCam->mSupportedTuningConfig[binningIdx];
+        pCam->mSupportedTuningConfig[binningIdx] = config;
+    }
+}
+
 int PlatformData::getTuningModeByConfigMode(int cameraId, ConfigMode configMode,
                                             TuningMode& tuningMode) {
     CheckAndLogError(getInstance()->mStaticCfg.mCameras[cameraId].mSupportedTuningConfig.empty(),
@@ -1538,6 +1590,10 @@ bool PlatformData::getDisableBLCByAGain(int cameraId, int& low, int& high) {
 
 bool PlatformData::isResetLinkRoute(int cameraId) {
     return getInstance()->mStaticCfg.mCameras[cameraId].mResetLinkRoute;
+}
+
+int64_t PlatformData::getReqWaitTimeout(int cameraId) {
+    return getInstance()->mStaticCfg.mCameras[cameraId].mReqWaitTimeout;
 }
 
 }  // namespace icamera

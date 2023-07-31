@@ -33,6 +33,7 @@ class IntelCcaServer {
     status_t runAEC(void* pData, int dataSize);
     status_t runAIQ(void* pData, int dataSize);
     status_t runLTM(void* pData, int dataSize);
+    status_t reconfigDvs(void* pData, int dataSize);
     status_t updateZoom(void* pData, int dataSize);
     status_t runDVS(void* pData, int dataSize);
     status_t runAIC(void* pData, int dataSize);

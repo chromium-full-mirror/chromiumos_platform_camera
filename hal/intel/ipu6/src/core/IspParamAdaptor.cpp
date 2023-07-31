@@ -730,7 +730,6 @@ void IspParamAdaptor::applyMediaFormat(const AiqResult* aiqResult, ia_media_form
                                        bool* useLinearGamma) {
     CheckAndLogError(!mediaFormat || !aiqResult, VOID_VALUE, "mediaFormat or aiqResult is nullptr");
 
-    *mediaFormat = media_format_legacy;
     if (aiqResult->mAiqParam.tonemapMode == TONEMAP_MODE_GAMMA_VALUE) {
         if (aiqResult->mAiqParam.tonemapGamma == 1.0) {
             *useLinearGamma = true;
@@ -800,6 +799,7 @@ int IspParamAdaptor::runIspAdaptL(ia_isp_bxt_program_group* pgPtr, ia_isp_bxt_gd
     inputParams->seq_id = settingSequence;
 
     bool useLinearGamma = false;
+    inputParams->media_format = PlatformData::getMediaFormat(mCameraId);
     applyMediaFormat(aiqResults, &inputParams->media_format, &useLinearGamma);
     LOG2("%s, media format: 0x%x, gamma lut size: %d", __func__, inputParams->media_format,
          aiqResults->mGbceResults.gamma_lut_size);

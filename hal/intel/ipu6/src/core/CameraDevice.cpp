@@ -190,7 +190,7 @@ void CameraDevice::bindListeners() {
         mSofSource->registerListener(EVENT_ISYS_SOF, sofListener);
     }
 
-    if (PlatformData::psysAlignWithSof(mCameraId)) {
+    if (PlatformData::psysAlignWithSof(mCameraId) || PlatformData::isSchedulerEnabled(mCameraId)) {
         for (auto& item : mProcessors) {
             mSofSource->registerListener(EVENT_ISYS_SOF, item);
         }
@@ -235,7 +235,7 @@ void CameraDevice::unbindListeners() {
         mSofSource->removeListener(EVENT_ISYS_SOF, sofListener);
     }
 
-    if (PlatformData::psysAlignWithSof(mCameraId)) {
+    if (PlatformData::psysAlignWithSof(mCameraId) || PlatformData::isSchedulerEnabled(mCameraId)) {
         for (auto& item : mProcessors) {
             mSofSource->removeListener(EVENT_ISYS_SOF, item);
         }
@@ -320,6 +320,10 @@ int CameraDevice::configure(stream_config_t* streamList) {
 
     vector<ConfigMode> configModes;
     PlatformData::getConfigModesByOperationMode(mCameraId, streamList->operation_mode, configModes);
+
+    for (auto cfg : configModes) {
+        PlatformData::reorderSupportedTuningConfig(mCameraId, cfg);
+    }
 
     ret = mProducer->configure(producerConfigs, configModes);
     CheckAndLogError(ret < 0, BAD_VALUE, "@%s Device Configure failed", __func__);
@@ -681,6 +685,13 @@ int CameraDevice::dqbuf(int streamId, camera_buffer_t** ubuffer, Parameters* set
     LOG2("<id%d>@%s, stream id:%d", mCameraId, __func__, streamId);
 
     int ret = mRequestThread->waitFrame(streamId, ubuffer);
+
+    if ((ret == TIMED_OUT) && (PlatformData::getReqWaitTimeout(mCameraId) > 0)) {
+        LOG1("<id%d>@%s, reqWaitTimeoutNs (%lld).", mCameraId, __func__,
+             PlatformData::getReqWaitTimeout(mCameraId));
+        return ret;
+    }
+
     while (ret == TIMED_OUT) ret = mRequestThread->waitFrame(streamId, ubuffer);
 
     if (ret == NO_INIT) return ret;

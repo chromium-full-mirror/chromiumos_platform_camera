@@ -136,17 +136,36 @@ int AiqCore::deinit() {
 
     mAiqState = AIQ_NOT_INIT;
 
-    if (mAiqResults) {
-        IntelCca* intelCca = IntelCca::getInstance(mCameraId, mTuningMode);
-        CheckAndLogError(!intelCca, UNKNOWN_ERROR, "Failed to get intelCca instance");
-
-        intelCca->freeMem(mAiqResults);
-    }
+    freeAiqResultMem();
 
     return OK;
 }
 
+int AiqCore::allocAiqResultMem() {
+    IntelCca* intelCca = IntelCca::getInstance(mCameraId, mTuningMode);
+    CheckAndLogError(!intelCca, UNKNOWN_ERROR, "Failed to get intelCca instance");
+
+    mAiqResults =
+        static_cast<cca::cca_aiq_results*>(intelCca->allocMem(0, "aiqResults", 0,
+                                                              sizeof(cca::cca_aiq_results)));
+    CheckAndLogError(!mAiqResults, NO_MEMORY, "allocMem failed");
+
+    return OK;
+}
+
+void AiqCore::freeAiqResultMem() {
+    if (mTuningMode == TUNING_MODE_MAX || !mAiqResults) return;
+
+    IntelCca* intelCca = IntelCca::getInstance(mCameraId, mTuningMode);
+    CheckAndLogError(!intelCca, VOID_VALUE, "Failed to get intelCca instance");
+
+    intelCca->freeMem(mAiqResults);
+    mAiqResults = nullptr;
+}
+
 int AiqCore::configure() {
+    freeAiqResultMem();
+
     if (mAiqState == AIQ_CONFIGURED) {
         return OK;
     }
@@ -258,13 +277,8 @@ int AiqCore::updateParameter(const aiq_parameter_t& param) {
     }
 
     if (!mAiqResults) {
-        IntelCca* intelCca = IntelCca::getInstance(mCameraId, mTuningMode);
-        CheckAndLogError(!intelCca, UNKNOWN_ERROR, "Failed to get intelCca instance");
-
-        mAiqResults =
-            static_cast<cca::cca_aiq_results*>(intelCca->allocMem(0, "aiqResults", 0,
-                                                                  sizeof(cca::cca_aiq_results)));
-        CheckAndLogError(!mAiqResults, NO_MEMORY, "allocMem failed");
+        int ret = allocAiqResultMem();
+        CheckAndLogError(ret != OK, NO_MEMORY, "alloc aiq result failed");
     }
 
     return OK;
@@ -430,8 +444,19 @@ int AiqCore::runAiq(long requestId, AiqResult* aiqResult) {
 
     // handle pa result
     if (aaaRunType & IMAGING_ALGO_PA) {
-        mIntel3AParameter->updatePaResult(&mAiqResults->pa_output);
+        mIntel3AParameter->updatePaResult(&mAiqResults->pa_output, mAwbForceLock,
+                                          mLockedColorGain, mLockedColorTransform);
         aiqResult->mPaResults = mAiqResults->pa_output;
+        if (!mAwbForceLock) {
+            mLockedColorGain.color_gains_rggb[0] = aiqResult->mPaResults.color_gains.r;
+            mLockedColorGain.color_gains_rggb[1] = aiqResult->mPaResults.color_gains.gr;
+            mLockedColorGain.color_gains_rggb[2] = aiqResult->mPaResults.color_gains.gb;
+            mLockedColorGain.color_gains_rggb[3] = aiqResult->mPaResults.color_gains.b;
+            MEMCPY_S(&mLockedColorTransform.color_transform,
+                     sizeof(mLockedColorTransform.color_transform),
+                     aiqResult->mPaResults.color_conversion_matrix,
+                     sizeof(aiqResult->mPaResults.color_conversion_matrix));
+        }
         AiqUtils::dumpPaResults(aiqResult->mPaResults);
     }
 

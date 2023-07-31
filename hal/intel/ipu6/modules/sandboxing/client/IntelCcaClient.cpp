@@ -85,6 +85,7 @@ IntelCca::IntelCca(int cameraId, TuningMode mode)
     std::string aecName = "/ccaAec" + number + SHM_NAME;
     std::string aiqName = "/ccaAiq" + number + SHM_NAME;
     std::string ltmName = "/ccaLtm" + number + SHM_NAME;
+    std::string cfgDvsName = "/ccaCfgDvs" + number + SHM_NAME;
     std::string zoomName = "/ccaZoom" + number + SHM_NAME;
     std::string dvsName = "/ccaDvs" + number + SHM_NAME;
     std::string aicName = "/ccaAic" + number + SHM_NAME;
@@ -101,6 +102,7 @@ IntelCca::IntelCca(int cameraId, TuningMode mode)
         {aecName.c_str(), sizeof(intel_cca_run_aec_data), &mMemAEC, false},
         {aiqName.c_str(), sizeof(intel_cca_run_aiq_data), &mMemAIQ, false},
         {ltmName.c_str(), sizeof(intel_cca_run_ltm_data), &mMemLTM, false},
+        {cfgDvsName.c_str(), sizeof(intel_cca_reconfig_dvs_data), &mMemCfgDvs, false},
         {zoomName.c_str(), sizeof(intel_cca_update_zoom_data), &mMemZoom, false},
         {dvsName.c_str(), sizeof(intel_cca_run_dvs_data), &mMemDVS, false},
         {aicName.c_str(), sizeof(intel_cca_run_aic_data), &mMemAIC, false},
@@ -269,6 +271,22 @@ ia_err IntelCca::runLTM(uint64_t frameId, const cca::cca_ltm_input_params& param
     ltmParams->inParams = params;
 
     ia_err ret = mCommon.requestSyncCca(IPC_CCA_RUN_LTM, mMemLTM.mHandle);
+    CheckAndLogError(ret != ia_err_none, ia_err_general, "@%s, requestSyncCca fails", __func__);
+
+    return ret;
+}
+
+ia_err IntelCca::reconfigDvs(const cca::cca_dvs_init_param& dvsInitParam,
+                             const cca::cca_gdc_configurations& gdcConfigs) {
+    LOG1("<id%d> @%s, tuningMode:%d", mCameraId, __func__, mTuningMode);
+    intel_cca_reconfig_dvs_data* params =
+        static_cast<intel_cca_reconfig_dvs_data*>(mMemCfgDvs.mAddr);
+    params->cameraId = mCameraId;
+    params->tuningMode = mTuningMode;
+    params->dvsInitParam = dvsInitParam;
+    params->gdcConfigs = gdcConfigs;
+
+    ia_err ret = mCommon.requestSyncCca(IPC_CCA_RECONFIG_DVS, mMemCfgDvs.mHandle);
     CheckAndLogError(ret != ia_err_none, ia_err_general, "@%s, requestSyncCca fails", __func__);
 
     return ret;

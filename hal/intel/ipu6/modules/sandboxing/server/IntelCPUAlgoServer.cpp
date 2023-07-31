@@ -189,6 +189,13 @@ void IntelCPUAlgoServer::handleRequest(const MsgReq& msg) {
             status = mCcas[key]->runLTM(addr, requestSize);
             break;
         }
+        case IPC_CCA_RECONFIG_DVS: {
+            intel_cca_reconfig_dvs_data* p = static_cast<intel_cca_reconfig_dvs_data*>(addr);
+            FUNCTION_PREPARED_RETURN
+
+            status = mCcas[key]->reconfigDvs(addr, requestSize);
+            break;
+        }
         case IPC_CCA_UPDATE_ZOOM: {
             intel_cca_update_zoom_data* p = static_cast<intel_cca_update_zoom_data*>(addr);
             FUNCTION_PREPARED_RETURN

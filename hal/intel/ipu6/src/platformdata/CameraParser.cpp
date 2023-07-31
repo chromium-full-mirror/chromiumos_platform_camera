@@ -624,6 +624,9 @@ void CameraParser::handleSensor(CameraParser* profiles, const char* name, const 
         profiles->pCurrentCam->mDisableBLCByAGain = true;
     } else if (strcmp(name, "resetLinkRoute") == 0) {
         pCurrentCam->mResetLinkRoute = strcmp(atts[1], "true") == 0;
+    } else if (strcmp(name, "reqWaitTimeoutNs") == 0) {
+        int64_t val = atoi(atts[1]);
+        pCurrentCam->mReqWaitTimeout = (val >= 0) ? val : 0;
     }
 }
 
