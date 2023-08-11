@@ -37,19 +37,20 @@ namespace v4l2 {
 
 SyncReqMgr::SYNC_ID SyncReqMgr::getSyncIdByNodeId(V4L2StreamNode::ID id) {
   /* RequestAPI support table */
-  static std::map<V4L2StreamNode::ID, SyncReqMgr::SYNC_ID>
-      s_syncid_nodeid_mapping_tbl = {
-          {V4L2StreamNode::ID_P1_MAIN_STREAM, SyncReqMgr::SYNC_MAIN_STREAM},
-          {V4L2StreamNode::ID_P1_SUB_STREAM, SyncReqMgr::SYNC_SUB_STREAM},
-          {V4L2StreamNode::ID_P1_META3, SyncReqMgr::SYNC_META3},
-          {V4L2StreamNode::ID_P1_META4, SyncReqMgr::SYNC_META4},
-          {V4L2StreamNode::ID_P1_TUNING, SyncReqMgr::SYNC_TUNING}};
-
-  auto itr = s_syncid_nodeid_mapping_tbl.find(id);
-  if (itr == s_syncid_nodeid_mapping_tbl.end()) {
-    return SYNC_NONE;
+  switch (id) {
+    case V4L2StreamNode::ID_P1_MAIN_STREAM:
+      return SyncReqMgr::SYNC_MAIN_STREAM;
+    case V4L2StreamNode::ID_P1_SUB_STREAM:
+      return SyncReqMgr::SYNC_SUB_STREAM;
+    case V4L2StreamNode::ID_P1_META3:
+      return SyncReqMgr::SYNC_META3;
+    case V4L2StreamNode::ID_P1_META4:
+      return SyncReqMgr::SYNC_META4;
+    case V4L2StreamNode::ID_P1_TUNING:
+      return SyncReqMgr::SYNC_TUNING;
+    default:
+      return SYNC_NONE;
   }
-  return itr->second;
 }
 
 SyncReqMgr::SyncReqMgr(std::weak_ptr<MtkCameraV4L2API> p_v4l2api,
