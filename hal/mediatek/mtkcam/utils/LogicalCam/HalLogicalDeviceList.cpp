@@ -184,7 +184,7 @@ HalLogicalDeviceList::addLogicalDevice(SensorInfo_t vInfo,
   // check sensor count is match to NumofCombinSensor.
   if ((pLogicalSen->Sensorlist.size()) % (pLogicalSen->NumofCombinSensor) !=
       0) {
-    MY_LOGE("Sensor list count(%d) does not match to combin sensor count(%d)",
+    MY_LOGE("Sensor list count(%zu) does not match to combin sensor count(%d)",
             pLogicalSen->Sensorlist.size(), pLogicalSen->NumofCombinSensor);
     return -1;
   }
@@ -210,7 +210,7 @@ HalLogicalDeviceList::addLogicalDevice(SensorInfo_t vInfo,
 }
 
 void HalLogicalDeviceList::dumpDebugInfo() {
-  MY_LOGI_IF(1, "map size : %d", mDeviceSensorMap.size());
+  MY_LOGI_IF(1, "map size : %zu", mDeviceSensorMap.size());
   for (int i = 0; i < mDeviceSensorMap.size(); i++) {
     MY_LOGI_IF(1, "index(%d) name : %s", i, queryDriverName(i));
     MY_LOGI_IF(1, "index(%d) facing : %d", i, queryFacingDirection(i));
@@ -283,7 +283,7 @@ HalLogicalDeviceList::querySyncMode(const std::vector<MINT32>& Sensors) {
       base::StringAppendF(&checkString, "S[D:%d] ", devIdList[i]);
     }
   }
-  base::StringAppendF(&checkString, "Primary[D:%d] SecondaryList[%d]",
+  base::StringAppendF(&checkString, "Primary[D:%d] SecondaryList[%zu]",
                       info->primaryDevId, info->secondaryDevId.size());
   if (info->primaryDevId != 0xFF &&
       info->secondaryDevId.size() == (Sensors.size() - 1)) {
@@ -306,7 +306,7 @@ HalLogicalDeviceList::createDeviceMap() {
   SensorStaticInfo sensorStaticInfo;
   MINT32 i = 0;
 
-  MY_LOGD("sensorNum : %d", sensorNum);
+  MY_LOGD("sensorNum : %zu", sensorNum);
   for (i = 0; i < sensorNum; i++) {
     memset(&sensorStaticInfo, 0, sizeof(SensorStaticInfo));
     int sendorDevIndex = pHalSensorList->querySensorDevIdx(i);

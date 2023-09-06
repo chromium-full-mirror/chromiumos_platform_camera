@@ -897,7 +897,7 @@ MINT32 Hal3aIpcServerAdapter::stt2Pipe(void* addr, int dataSize) {
       LOG1("E3ACtrl_IPC_P1_Stt2Control ipcMetaBuf2.magicnum:%d",
            meta2.magicnum);
       LOG1("E3ACtrl_IPC_P1_Stt2Control ipcMetaBuf2.bufFd:%llu",
-           params->arg1.ipcMetaBuf2.bufFd);
+           (unsigned long long)params->arg1.ipcMetaBuf2.bufFd);
     }
 
     // error handling implement on response member variable

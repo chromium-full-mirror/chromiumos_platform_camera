@@ -5571,7 +5571,7 @@ P1NodeImp::hardwareOps_deque(QBufInfo* deqBuf) {
   for (size_t i = 0; i < deqBuf->mvOut.size(); i++) {
     MY_LOGI(
         "P1 width*height:%d*%d, mvPortId %d, mSize %d, getBufSizeInBytes(0) "
-        "%d, mMetaData.mDstSize.w %d, mMetaData.mDstSize.h %d",
+        "%zu, mMetaData.mDstSize.w %d, mMetaData.mDstSize.h %d",
         deqBuf->mvOut[i].mBuffer->getImgSize().w,
         deqBuf->mvOut[i].mBuffer->getImgSize().h,
         deqBuf->mvOut[i].mPortID.index, deqBuf->mvOut[i].mSize,

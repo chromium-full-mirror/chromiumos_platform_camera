@@ -96,7 +96,7 @@ int property_get(const char* key, char* value, const char* default_value) {
   int len = 0, ret;
 
   if (strlen(key) >= PROPERTY_KEY_MAX) {
-    printf("invalid key length %d\n", strlen(key));
+    printf("invalid key length %zu\n", strlen(key));
     return -1;
   }
 

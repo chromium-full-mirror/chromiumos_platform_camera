@@ -440,7 +440,7 @@ status_t NormalStream::_find_format_and_erase(MSize img_size,
            it->second.imgSize.w, it->second.imgSize.h, it->first);
     }
   }
-  LOGD("erased count = %d", erase_candidate.size());
+  LOGD("erased count = %zu", erase_candidate.size());
   if (erase_candidate.size() == 0) {
     LOGD("In mPortIdxToFmt, port %d is erased, line %d", port, __LINE__);
     mPortIdxToFmt.erase(port);
@@ -738,7 +738,7 @@ NormalStream::init(char const* szCallerName,
     return MFALSE;
   }
   if (config.mInStreams.size() == 0 || config.mOutStreams.size() == 0) {
-    LOGE("Stream [%d] init fail with %d inputs and %d outputs", streamTag,
+    LOGE("Stream [%d] init fail with %zu inputs and %zu outputs", streamTag,
          config.mInStreams.size(), config.mOutStreams.size());
     return MFALSE;
   }
@@ -754,7 +754,7 @@ NormalStream::init(char const* szCallerName,
     }
     if (config.mOutStreams.size() < output_num) {
       LOGD(
-          "init with %d configs for %d outputs, mismatched stream tag and "
+          "init with %zu configs for %d outputs, mismatched stream tag and "
           "output counts",
           config.mOutStreams.size(), output_num);
       stream_tag = static_cast<NSCam::v4l2::ENormalStreamTag>(streamTag + 1);
@@ -764,17 +764,17 @@ NormalStream::init(char const* szCallerName,
            stream_tag);
 
     if (config.mInStreams.size() > input_num) {
-      LOGE("init with %d configs for %d inputs", config.mInStreams.size(),
+      LOGE("init with %zu configs for %d inputs", config.mInStreams.size(),
            input_num);
       return MFALSE;
     }
     if (config.mOutStreams.size() > output_num) {
-      LOGE("init with %d configs for %d outputs", config.mOutStreams.size(),
+      LOGE("init with %zu configs for %d outputs", config.mOutStreams.size(),
            output_num);
       return MFALSE;
     }
   }
-  LOGD("stream[%d], mInStreams = %d, mOutStreams = %d", streamTag,
+  LOGD("stream[%d], mInStreams = %zu, mOutStreams = %zu", streamTag,
        config.mInStreams.size(), config.mOutStreams.size());
 
   mPortIdxToFmt.clear();
@@ -1360,7 +1360,7 @@ NormalStream::enque(QParams* pParams) {
             LOGD("required nodes : %s  is pushed", (*it2)->getName());
           }
         }
-        LOGD("size of mPortIdxToFmt = %d, size of requiredNodes =  %d",
+        LOGD("size of mPortIdxToFmt = %zu, size of requiredNodes =  %zu",
              mPortIdxToFmt.size(), required_nodes.size());
         if (mPortIdxToFmt.size() == 1 && required_nodes.size() == 1) {
           auto iter1 = mPortIdxToFmt.begin();
@@ -1409,8 +1409,8 @@ NormalStream::enque(QParams* pParams) {
 
           } else {
             LOGE(
-                "[%d]Cannot setting::size of mPortIdxToFmt = %d, size of "
-                "requiredNodes =  %d",
+                "[%d]Cannot setting::size of mPortIdxToFmt = %zu, size of "
+                "requiredNodes =  %zu",
                 mStreamTag, mPortIdxToFmt.size(), required_nodes.size());
             return MFALSE;
           }
@@ -1517,7 +1517,7 @@ NormalStream::enque(QParams* pParams) {
                  the_node->second->getName(), all_nodes[i]->getName());
           if (the_node->second->enque(all_bufs[i], true, mSubDevice) !=
               NO_ERROR) {
-            LOGE("[%d]enque failed @%d, bufs[%d], port=%d,  w=%d,h=%d,fmt=0x%x",
+            LOGE("[%d]enque failed @%d, bufs[%zu], port=%d,  w=%d,h=%d,fmt=0x%x",
                  mStreamTag, __LINE__, i, all_bufs[i].mPortID.index,
                  all_bufs[i].mBuffer->getImgSize().w,
                  all_bufs[i].mBuffer->getImgSize().h,
@@ -1530,7 +1530,7 @@ NormalStream::enque(QParams* pParams) {
         }
       } else {
         if (all_nodes[i]->enque(all_bufs[i], true, mSubDevice) != NO_ERROR) {
-          LOGE("[%d]enque failed @%d, bufs[%d], port=%d,  w=%d,h=%d,fmt=0x%x",
+          LOGE("[%d]enque failed @%d, bufs[%zu], port=%d,  w=%d,h=%d,fmt=0x%x",
                mStreamTag, __LINE__, i, all_bufs[i].mPortID.index,
                all_bufs[i].mBuffer->getImgSize().w,
                all_bufs[i].mBuffer->getImgSize().h,
@@ -1666,7 +1666,7 @@ MBOOL NormalStream::sendCommand(ESDCmd cmd,
       }
       break;
     case ENormalStreamCmd_ISPOnly:
-      cmd_id = reinterpret_cast<int>(arg1);
+      cmd_id = (int)arg1;
       LOGI("ENormalStreamCmd_ISPOnly type %d", cmd_id);
       switch (cmd_id) {
         case EOUTBUF_USAGE_FD:
@@ -1740,7 +1740,7 @@ status_t NormalStream::notifyPollEvent(PollEventMessage* pollMsg) {
         pollMsg->data.polledDevices->size()) {
       LOGD("%zu inactive nodes for request %u, retry poll",
            pollMsg->data.inactiveDevices->size(), pollMsg->data.reqId);
-      LOGD("active devs = %d, polled devs = %d, mAllNodes = %d",
+      LOGD("active devs = %zu, polled devs = %zu, mAllNodes = %zu",
            pollMsg->data.activeDevices->size(),
            pollMsg->data.polledDevices->size(), mAllNodes.size());
 
@@ -1749,7 +1749,7 @@ status_t NormalStream::notifyPollEvent(PollEventMessage* pollMsg) {
 
       return -EAGAIN;
     } else {
-      LOGD("poll success : inact=%d,act=%d,pol=%d, mAllNodes=%d, req-id=%d",
+      LOGD("poll success : inact=%zu,act=%zu,pol=%zu, mAllNodes=%zu, req-id=%d",
            pollMsg->data.inactiveDevices->size(),
            pollMsg->data.activeDevices->size(),
            pollMsg->data.polledDevices->size(), mAllNodes.size(),

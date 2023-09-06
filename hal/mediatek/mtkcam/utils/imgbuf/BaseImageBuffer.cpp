@@ -142,8 +142,8 @@ BaseImageBuffer::onCreate() {
                   mspImgBufHeap->getBufSizeInBytes(i) ||
               0 != mvImgBufInfo[i]->offsetInBytes) {
             MY_LOGI(
-                "special case, fmt(%d), plane(%d), s(%d), w(%d), h(%d), "
-                "offset(%d), s*h(%d), heap size(%d),",
+                "special case, fmt(%d), plane(%zu), s(%zu), w(%zu), h(%zu), "
+                "offset(%zu), s*h(%zu), heap size(%zu),",
                 getImgFormat(), i, mvImgBufInfo[i]->stridesInBytes,
                 imgWidthInBytes, imgHeightInPixels,
                 mvImgBufInfo[i]->offsetInBytes,

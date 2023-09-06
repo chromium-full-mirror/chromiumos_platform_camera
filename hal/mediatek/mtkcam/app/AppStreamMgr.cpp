@@ -753,7 +753,7 @@ NSCam::v3::Imp::AppStreamMgr::createRequest(camera3_capture_request_t* request,
     auto pStreamBuffer = createImageStreamBuffer(p_stream_buffer);
     //
     if (pStreamBuffer == nullptr) {
-      MY_LOGE("NULL AppImageStreamBuffer of request->output_buffers[%d]", i);
+      MY_LOGE("NULL AppImageStreamBuffer of request->output_buffers[%zu]", i);
       return -EINVAL;
     }
     rRequest->vOutputImageBuffers.emplace(
@@ -1177,7 +1177,7 @@ NSCam::v3::Imp::AppStreamMgr::performCallback(CallbackParcel const& cbParcel) {
           pTransport->jpeg_size = jpegDataSize;
 
           pImageBufferHeap->unlockBuf(LOG_TAG);
-          MY_LOGD("jpegBuf:%#" PRIxPTR " bufsize:%d datasize:%d", jpegBuf,
+          MY_LOGD("jpegBuf:%#" PRIxPTR " bufsize:%d datasize:%zu", jpegBuf,
                   staticInfo.widthInPixels, jpegDataSize);
         } else {
           MY_LOGE("Fail to lock jpeg");

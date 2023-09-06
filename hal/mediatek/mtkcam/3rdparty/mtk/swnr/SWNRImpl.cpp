@@ -318,7 +318,7 @@ void SwnrPluginProviderImp::uninit() {
     mpSwnr = nullptr;
   }
   if (!mvFutures.empty()) {
-    MY_LOGE("remain %d requests...", mvFutures.size());
+    MY_LOGE("remain %zu requests...", mvFutures.size());
     waitForIdle();
   }
   {
@@ -396,12 +396,12 @@ int32_t SwnrPluginProviderImp::doSwnr(RequestPtr const pRequest) {
   if (pRequest->mIBufferFull != nullptr) {
     pIBuffer_MainFull = pRequest->mIBufferFull->acquire(
         eBUFFER_USAGE_SW_READ_MASK | eBUFFER_USAGE_SW_WRITE_MASK);
-    MY_LOGD("\tMain Full img VA: 0x%x", pIBuffer_MainFull->getBufVA(0));
+    MY_LOGD("\tMain Full img VA: 0x%" PRIxPTR, pIBuffer_MainFull->getBufVA(0));
   }
 
   if (pRequest->mOBufferFull != nullptr) {
     pOBuffer_Full = pRequest->mOBufferFull->acquire();
-    MY_LOGD("\tOut Full img VA: 0x%x", pOBuffer_Full->getBufVA(0));
+    MY_LOGD("\tOut Full img VA: 0x%" PRIxPTR, pOBuffer_Full->getBufVA(0));
   }
 
   // meta

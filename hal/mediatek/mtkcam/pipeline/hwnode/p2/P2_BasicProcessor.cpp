@@ -449,7 +449,7 @@ MBOOL BasicProcessor::processBurst(const std::shared_ptr<P2Payload>& payload) {
     }
   }
   TRACE_S_FUNC_EXIT(payload->mRequest->mLog,
-                    "reqtSmvrFps=%d, burst(%d) queueSize(%d)", reqtSmvrFps,
+                    "reqtSmvrFps=%d, burst(%d) queueSize(%zu)", reqtSmvrFps,
                     burst, mBurstQueue.size());
   return (burst > 1 && reqtSmvrFps != MTK_SMVR_FPS_30);
 }

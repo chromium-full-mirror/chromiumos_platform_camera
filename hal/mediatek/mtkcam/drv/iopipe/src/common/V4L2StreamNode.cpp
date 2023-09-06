@@ -296,7 +296,7 @@ status_t V4L2StreamNode::setFormatLocked(
            i < NSCam::Utils::Format::queryPlaneCount(imgParam->imgFormat);
            i++) {
         v4l2_fmt.SetBytesPerLine(imgParam->bufStridesInBytes[i], i);
-        MY_LOGI("plane %d, bpp %u %dx%d", i, imgParam->bufStridesInBytes[i],
+        MY_LOGI("plane %zu, bpp %zu %dx%d", i, imgParam->bufStridesInBytes[i],
                 imgParam->imgSize.w, imgParam->imgSize.h);
       }
     }
@@ -335,8 +335,8 @@ status_t V4L2StreamNode::setupBuffersLocked() {
                    __FUNCTION__);
   for (auto& it : mBuffers) {
     if (it.Length(0) != mFormat.SizeImage(0)) {
-      LOGW("@%s incosistent size (%zu vs %zu)", __FUNCTION__, it.Length(0),
-           mFormat.SizeImage(0));
+      LOGW("@%s incosistent size (%zu vs %zu)", __FUNCTION__, (size_t)it.Length(0),
+           (size_t)mFormat.SizeImage(0));
     }
 
     if (mType == V4L2_MEMORY_MMAP) {
@@ -630,7 +630,7 @@ status_t V4L2StreamNode::enque(BufInfo const& buf,
     // should not use incomplete v4l2_fmt
     if (mFormat.SizeImage(0) != b->getBufSizeInBytes(0)) {
       LOGW("@%s incosistent size (%zu vs %zu)", __FUNCTION__,
-           mFormat.SizeImage(0), b->getBufSizeInBytes(0));
+           (size_t)mFormat.SizeImage(0), (size_t)b->getBufSizeInBytes(0));
     }
   }
   if (mState == StreamNodeState::CONFIGURED) {
@@ -694,14 +694,14 @@ status_t V4L2StreamNode::enque(BufInfo const& buf,
               case V4L2_MEMORY_DMABUF:
                 vb->SetFd(b->getFD(i), i);
                 LOGD("plane %d Set Fd %d Offset %lld", i, vb->Fd(i),
-                     b->getImageBufferHeap()->getBufOffsetInBytes(i));
+                     (long long)b->getImageBufferHeap()->getBufOffsetInBytes(i));
                 vb->SetDataOffset(
                     b->getImageBufferHeap()->getBufOffsetInBytes(i), i);
                 vb->SetLength(mFormat.SizeImage(i) + vb->DataOffset(i), i);
                 break;
               case V4L2_MEMORY_USERPTR:
                 vb->SetUserptr(b->getBufVA(i), i);
-                LOGI("Set Userptr %u", vb->Userptr(i));
+                LOGI("Set Userptr %" PRIuPTR, vb->Userptr(i));
                 break;
               default:
                 LOGE("wrong buffer type:%d for enque", mType);
@@ -738,7 +738,7 @@ status_t V4L2StreamNode::enque(BufInfo const& buf,
               break;
             }
             LOGD("plane %d Set Fd %d Offset %lld", i, vb->Fd(i),
-                 b->getImageBufferHeap()->getBufOffsetInBytes(i));
+                 (long long)b->getImageBufferHeap()->getBufOffsetInBytes(i));
             vb->SetFd(b->getFD(i), i);
             vb->SetDataOffset(
                 b->getImageBufferHeap()->getBufOffsetInBytes(i), i);

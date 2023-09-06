@@ -63,7 +63,7 @@ IHal3A* Hal3AIpcAdapter::getInstance(MINT32 const i4SensorOpenIndex,
 bool Hal3AIpcAdapter::doInit(MINT32 const i4SensorIdx, const char* strUser) {
   std::lock_guard<std::mutex> lock(mInitMutex);
 
-  MY_LOGD("[%s] User.count(%d), User doInit(%s)", __FUNCTION__, m_Users.size(),
+  MY_LOGD("[%s] User.count(%zu), User doInit(%s)", __FUNCTION__, m_Users.size(),
           strUser);
 
   if (mInitialized) {
@@ -180,7 +180,7 @@ bool Hal3AIpcAdapter::doInit(MINT32 const i4SensorIdx, const char* strUser) {
     return false;
   }
 
-  MY_LOGD("[%s] - User.count(%d)", __FUNCTION__, m_Users.size());
+  MY_LOGD("[%s] - User.count(%zu)", __FUNCTION__, m_Users.size());
 
   mInitialized = true;
 
@@ -246,7 +246,7 @@ Hal3AIpcAdapter::~Hal3AIpcAdapter() {
 MVOID Hal3AIpcAdapter::destroyInstance(const char* strUser) {
   std::lock_guard<std::mutex> lock(mInitMutex);
 
-  MY_LOGD("[%s] User.count(%d), User uninit(%s)", __FUNCTION__, m_Users.size(),
+  MY_LOGD("[%s] User.count(%zu), User uninit(%s)", __FUNCTION__, m_Users.size(),
           strUser);
 
   if (!m_Users[string(strUser)]) {
@@ -259,11 +259,11 @@ MVOID Hal3AIpcAdapter::destroyInstance(const char* strUser) {
       if (!m_Users.size())
         doUninit();
       else
-        MY_LOGD("[%s] Still %d users", __FUNCTION__, m_Users.size());
+        MY_LOGD("[%s] Still %zu users", __FUNCTION__, m_Users.size());
     }
   }
 
-  MY_LOGD("[%s] - User.count(%d)", __FUNCTION__, m_Users.size());
+  MY_LOGD("[%s] - User.count(%zu)", __FUNCTION__, m_Users.size());
 }
 
 MINT32 Hal3AIpcAdapter::sendRequest(IPC_CMD cmd,
@@ -1508,7 +1508,7 @@ void Hal3ACbSet::doNotifyCb(MINT32 _msgType,
                             MINTPTR _ext3) {
   std::lock_guard<std::mutex> autoLock(m_Mutex);
 
-  LOG1("[Hal3ACbSet::%s] _msgType(%d), _ext1(%d), _ext2(%d), _ext3(%d)",
+  LOG1("[Hal3ACbSet::%s] _msgType(%d), _ext1(%" PRIdPTR "), _ext2(%" PRIdPTR "), _ext3(%" PRIdPTR ")",
        __FUNCTION__, _msgType, _ext1, _ext2, _ext3);
 
   for (auto const& pCb : m_CallBacks) {

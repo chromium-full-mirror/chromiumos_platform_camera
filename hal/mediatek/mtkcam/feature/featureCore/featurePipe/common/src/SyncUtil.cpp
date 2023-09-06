@@ -187,7 +187,7 @@ void CountDownLatch::wait() {
     if (timeout > 0) {
       if (mCondition.wait_for(lck, std::chrono::nanoseconds(timeout)) ==
           std::cv_status::timeout) {
-        MY_LOGW("CountDownLatch timeout(%llu) done(%d) total(%d)", timeout,
+        MY_LOGW("CountDownLatch timeout(%llu) done(%d) total(%d)", (unsigned long long)timeout,
                 mDone, mTotal);
         if (mTimeoutCB != NULL) {
           mTimeoutCB->onTimeout();

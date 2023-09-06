@@ -156,7 +156,7 @@ GbmImageBufferHeap::impInit(BufInfoVect_t const& rvBufInfo) {
   size_t allocateSize = 0;
   int err;
 
-  MY_LOGD("[w,h]=[%d,%d],format=%x", mImgSize.w, mImgSize.h, mImgFormat);
+  MY_LOGD("[w,h]=[%d,%d],format=%zx", mImgSize.w, mImgSize.h, mImgFormat);
   //  Allocate memory and setup mBufHeapInfo & rBufHeapInfo.
   mGbmBufferManager = cros::CameraBufferManager::GetInstance();
   if (mGbmBufferManager == nullptr) {

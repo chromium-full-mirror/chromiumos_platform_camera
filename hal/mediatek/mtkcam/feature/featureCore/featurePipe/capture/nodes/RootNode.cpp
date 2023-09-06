@@ -122,7 +122,7 @@ MBOOL RootNode::onThreadLoop() {
 
     auto frameNum = pRequest->getParameter(PID_FRAME_COUNT);
     if ((ssize_t)mvPendingRequests.size() < frameNum) {
-      MY_LOGD("(%d < %d) data not ready, keep waiting",
+      MY_LOGD("(%zu < %d) data not ready, keep waiting",
               mvPendingRequests.size(), frameNum);
     } else {
       MY_LOGD("The requests are ready");

@@ -87,8 +87,8 @@ FrameController::FrameController(std::string userName)
   MY_LOGI(
       "- miLogLevel(%d), max delay(%lld), max sleep(%lld ns), min sleep(%lld "
       "us), adj sleep(%lld ns)",
-      miLogLevel, mnFrameMaxPlusDelay, mnFrameMaxSleep, mnFrameMinSleep,
-      mnAdjSleepTime);
+      miLogLevel, (long long)mnFrameMaxPlusDelay, (long long)mnFrameMaxSleep, (long long)mnFrameMinSleep,
+      (long long)mnAdjSleepTime);
 }
 
 /******************************************************************************
@@ -121,7 +121,7 @@ void FrameController::bufferControl(int64_t frameTime) {
       if (mAverageCount == 5) {
         mAverageDisplayTime /= 5;
         miDisplayControlStage = 2;
-        MY_LOGD("mAverageDisplayTime(%lld)", mAverageDisplayTime);
+        MY_LOGD("mAverageDisplayTime(%lld)", (long long)mAverageDisplayTime);
       }
     } break;
     case 2: {
@@ -130,16 +130,16 @@ void FrameController::bufferControl(int64_t frameTime) {
       int64_t currentTime = (t.tv_sec) * 1000000000LL + (t.tv_usec) * 1000LL;
       int64_t currentDisplayDelay = currentTime - mnCurrentFrameTime;
       MY_LOGD("currentDisplayDelay(%lld),mAverageDisplayTime(%lld)",
-              currentDisplayDelay, mAverageDisplayTime);
+              (long long)currentDisplayDelay, (long long)mAverageDisplayTime);
       if (currentDisplayDelay <= mAverageDisplayTime) {
         mnLastFrameTime = mnCurrentFrameTime;
         miFirstDelayTime = property_get_int32("debug.displaydelay.ms", 15);
         miAdjDelay = property_get_int32("debug.displaydelay.adjdelay", 5000000);
         miP2interval = property_get_int32("debug.displaydelay.p2", 30000000);
-        MY_LOGI("FirstFrameDelay(%lld)ms", miFirstDelayTime);
+        MY_LOGI("FirstFrameDelay(%lld)ms", (long long)miFirstDelayTime);
         miFirstDelayTime = miFirstDelayTime * 1000;  // ms to us
         usleep(miFirstDelayTime);
-        MY_LOGI("FirstFrameDelay(%lld)ms", miFirstDelayTime);
+        MY_LOGI("FirstFrameDelay(%lld)ms", (long long)miFirstDelayTime);
         miFirstDelayTime = miFirstDelayTime * 1000;
         miDisplayControlStage = 3;
       }
@@ -212,25 +212,25 @@ void FrameController::bufferControl(int64_t frameTime) {
         MY_LOG_ID((2 <= miLogLevel),
                   "off:ct(%lld),cft(%lld),cddt(%lld),oddt(%lld),nddt(%lld),max("
                   "%lld),min(%lld),fi(%lld),ti(%lld),stc(%d),st(%lld us)",
-                  currentTime, currentFrameTime, currentDisplayDelayAfterSleep,
-                  mnOldDisplayDelayTime, mnNewDisplayDelayTime, mnMaxAdjDisplay,
-                  mnMinAdjDisplay, mnFrameInterval, mnTimeInterval,
-                  mbFrameControlAdj, sleepus);
+                  (long long)currentTime, (long long)currentFrameTime, (long long)currentDisplayDelayAfterSleep,
+                  (long long)mnOldDisplayDelayTime, (long long)mnNewDisplayDelayTime, (long long)mnMaxAdjDisplay,
+                  (long long)mnMinAdjDisplay, (long long)mnFrameInterval, (long long)mnTimeInterval,
+                  mbFrameControlAdj, (long long)sleepus);
         if (mnWaitTime >= mnFrameMaxSleep) {
           MY_LOGW("Check Frame conrol parameters, something wrong");
           MY_LOGW(
               "ct(%lld),cft(%lld),lft(%lld),cddt(%lld),nddt(%lld),fi(%lld),ti(%"
               "lld)",
-              currentTime, currentFrameTime, lastFrameTimeBK,
-              currentDisplayDelay + (sleepus * 1000), mnNewDisplayDelayTime,
-              mnFrameInterval, mnTimeInterval);
+              (long long)currentTime, (long long)currentFrameTime, (long long)lastFrameTimeBK,
+              (long long)(currentDisplayDelay + (sleepus * 1000)), (long long)mnNewDisplayDelayTime,
+              (long long)mnFrameInterval, (long long)mnTimeInterval);
         }
       } else {
         MY_LOG_ID(
             (2 <= miLogLevel),
             " on:ct(%lld),cft(%lld),cddt(%lld),oddt(%lld),fi(%lld),ti(%lld)",
-            currentTime, currentFrameTime, currentDisplayDelay,
-            mnOldDisplayDelayTime, mnFrameInterval, mnTimeInterval);
+            (long long)currentTime, (long long)currentFrameTime, (long long)currentDisplayDelay,
+            (long long)mnOldDisplayDelayTime, (long long)mnFrameInterval, (long long)mnTimeInterval);
 
         if (currentDisplayDelay <=
             ((mnOldDisplayDelayTime + mnNewDisplayDelayTime) / 2)) {

@@ -174,7 +174,7 @@ StdExif::init(ExifParams const& rExifParams, MBOOL const enableDbgExif) {
                  : (mICCIdx == EXIF_ICC_PROFILE_DCI_P3
                         ? sizeof(icc_profile_display_p3) / sizeof(int8_t)
                         : 0);
-  MY_LOGD_IF(mLogLevel, "ICCIdx %d ICCSize %zu", mICCIdx, mICCSize);
+  MY_LOGD_IF(mLogLevel, "ICCIdx %d ICCSize %d", mICCIdx, mICCSize);
   //
   if (!getDebugExif()) {
     MY_LOGE("bad getDebugExif()");
@@ -329,7 +329,7 @@ void StdExif::updateStdExif(exifAPP1Info_s* exifApp1Info) {
                sizeof(exifApp1Info->gpsDateStamp), "%04d:%02d:%02d",
                ptime->tm_year + 1900, ptime->tm_mon + 1, ptime->tm_mday);
     } else {
-      MY_LOGE("wrong timestamp(%lld)", timestamp);
+      MY_LOGE("wrong timestamp(%lld)", (long long)timestamp);
     }
     // ProcessingMethod
     const char exifAsciiPrefix[] = {0x41, 0x53, 0x43, 0x49,

@@ -281,7 +281,7 @@ int V4L2LensMgr::getSubDevice(size_t i2c_idx, int* p_r_sdev_fd) {
         if (dev_i2c_idx != i2c_idx) {
           CAM_LOGD(
               "found lens driver \"%s\", but i2c index(%d) is not "
-              "what we want (%d).",
+              "what we want (%zu).",
               entity.name, dev_i2c_idx, i2c_idx);
           continue;  // find the next entity
         }
@@ -313,7 +313,7 @@ int V4L2LensMgr::getSubDevice(size_t i2c_idx, int* p_r_sdev_fd) {
   if (sd_fd >= 0) {
     CAM_LOGD("open lens driver %s", subdev_name);
   } else {
-    CAM_LOGD("no lens driver to open (target i2c idx=%d)", i2c_idx);
+    CAM_LOGD("no lens driver to open (target i2c idx=%zu)", i2c_idx);
   }
 
   return 0;

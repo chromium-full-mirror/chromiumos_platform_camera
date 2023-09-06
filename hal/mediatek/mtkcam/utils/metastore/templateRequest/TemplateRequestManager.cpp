@@ -96,7 +96,7 @@ int32_t keyAt(size_t index) {
   pthread_rwlock_rdlock(&gRWLock);
   if (index >= gMap.size()) {
     pthread_rwlock_unlock(&gRWLock);
-    return NULL;
+    return (int32_t)NULL;
   }
   auto iter = gMap.begin();
   std::advance(iter, index);

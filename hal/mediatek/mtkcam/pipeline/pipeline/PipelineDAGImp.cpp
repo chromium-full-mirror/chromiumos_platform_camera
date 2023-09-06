@@ -242,7 +242,7 @@ PipelineDAGImp::removeNode(NodeId_T id) {
   NodeSet::iterator it = mRootIds.begin();
   while (it != mRootIds.end()) {
     if (id == (*it)) {
-      MY_LOGD("erase root node: id = %d" PRIxPTR " ", id);
+      MY_LOGD("erase root node: id = %" PRIxPTR " ", id);
       it = mRootIds.erase(it);
     } else {
       it++;
@@ -343,14 +343,14 @@ MERROR
 PipelineDAGImp::setRootNode(NodeSet roots) {
   pthread_rwlock_wrlock(&mRWLock);
   if (roots.size() == 0) {
-    MY_LOGE("Input error, roots.size() == %d", roots.size());
+    MY_LOGE("Input error, roots.size() == %zu", roots.size());
     pthread_rwlock_unlock(&mRWLock);
     return BAD_VALUE;
   }
   for (size_t i = 0; i < roots.size(); i++) {
     auto iter = mNodesVec.find(roots[i]);
     if (iter == mNodesVec.end()) {
-      MY_LOGE("Node does not exist, RootNode[%d] ID:%" PRIxPTR "", i, roots[i]);
+      MY_LOGE("Node does not exist, RootNode[%zu] ID:%" PRIxPTR "", i, roots[i]);
       pthread_rwlock_unlock(&mRWLock);
       return -1;
     }
@@ -386,7 +386,7 @@ std::vector<PipelineDAGImp::NodeObj_T> PipelineDAGImp::getRootNode() const {
   std::vector<NodeObj_T> node_set;
   // Check if mRootIds has been set or not
   if (mRootIds.size() == 0) {
-    MY_LOGW("There is no root node (mRootIds.size() = %d)", mRootIds.size());
+    MY_LOGW("There is no root node (mRootIds.size() = %zu)", mRootIds.size());
     pthread_rwlock_unlock(&mRWLock);
     return node_set;
   }
@@ -395,7 +395,7 @@ std::vector<PipelineDAGImp::NodeObj_T> PipelineDAGImp::getRootNode() const {
   for (size_t i = 0; i < mRootIds.size(); i++) {
     auto idx = mNodesVec.find(mRootIds[i]);
     if (idx == mNodesVec.end()) {
-      MY_LOGE("Node does not exist (ID[%d]:%" PRIxPTR ")", i, mRootIds[i]);
+      MY_LOGE("Node does not exist (ID[%zu]:%" PRIxPTR ")", i, mRootIds[i]);
       pthread_rwlock_unlock(&mRWLock);
       return node_set;
     }
@@ -683,7 +683,7 @@ MERROR
 PipelineDAGImp::checkListDFS(NodeId_T id, bool* checkList) const {
   auto idx = mNodesVec.find(id);
   if (mNodesVec.end() == idx) {
-    MY_LOGE("Node ID=%x" PRIxPTR " does not exist", idx->first);
+    MY_LOGE("Node ID=%" PRIxPTR " does not exist", idx->first);
     return -1L;
   }
   checkList[std::distance(mNodesVec.begin(), idx)] = true;

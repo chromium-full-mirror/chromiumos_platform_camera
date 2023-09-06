@@ -871,7 +871,7 @@ JpegNodeImp::encodeThumbnail(std::shared_ptr<encode_frame>* pEncodeFrame) {
     params.isSOI = 1;
     params.quality = (*pEncodeFrame)->mParams.quality_thumbnail;
 
-    size_t bitstream_thumbsize = 0;
+    uint32_t bitstream_thumbsize = 0;
     MINT32 quality = params.quality;
     int thumbsrc_size =
         ((params.pSrc->getImgSize().w) * (params.pSrc->getImgSize().h) * 3) / 2;

@@ -121,7 +121,7 @@ int32_t CamDeviceManagerImp::enumDeviceLocked() {
 
   size_t const sensorNum = pHalDeviceList->queryNumberOfSensors();
   if (sensorNum != deviceNum) {
-    CAM_LOGW("sensorNum:%d, deviceNum:%d", sensorNum, deviceNum);
+    CAM_LOGW("sensorNum:%zu, deviceNum:%zu", sensorNum, deviceNum);
     return i4DeviceNum;
   }
   mEnumMap.reserve(sensorNum + 1);

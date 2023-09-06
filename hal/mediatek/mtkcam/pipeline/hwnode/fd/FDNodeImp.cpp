@@ -894,7 +894,7 @@ FdNodeImp::tryToUpdateOldData(IMetadata* pOutMetadataResult, MINT32 FDMode) {
   auto fdReader = IFDContainer::createInstance(
       LOG_TAG, IFDContainer::eFDContainer_Opt_Read);
   auto fdData = fdReader->queryLock();
-  MY_LOGD_IF(mLogLevel, "get FD data : %d", fdData.size());
+  MY_LOGD_IF(mLogLevel, "get FD data : %zu", fdData.size());
   if (fdData.size() > 0) {
     auto fdChunk = fdData.back();
     if (CC_LIKELY(fdChunk != nullptr) &&

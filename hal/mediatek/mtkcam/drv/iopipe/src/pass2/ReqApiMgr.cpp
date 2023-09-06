@@ -161,7 +161,7 @@ int ReqApiMgr::releaseUsedReqApi(SYNC_ID caller, int fd) {
     mq_record_freelist.push(std::distance(
         mv_records.begin(), it_record));  // recycle record and push idx
                                           // to the tail of free list
-    LOGD("reinit request_api:%#x and push idx:%d to free list",
+    LOGD("reinit request_api:%#x and push idx:%td to free list",
          reinterpret_cast<int>(fd),
          std::distance(mv_records.begin(), it_record));
   }

@@ -286,7 +286,7 @@ MBOOL FDNode::onRequestProcess(RequestPtr& pRequest) {
     entryFaceRects.push_back(faceRect, Type2Type<MRect>());
 
     MY_LOGD(
-        "Detected Face Rect[%zd]: (xmin, ymin, xmax, ymax) => (%d, %d, %d, %d)",
+        "Detected Face Rect[%d]: (xmin, ymin, xmax, ymax) => (%d, %d, %d, %d)",
         i, faceRect.p.x, faceRect.p.y, faceRect.s.w, faceRect.s.h);
 
     // Face Landmark

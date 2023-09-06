@@ -140,7 +140,7 @@ auto RequestMetadataPolicy_Default::evaluateRequest(
         if (Crop.isEmpty()) {
           Crop = params.pRequest_AppControl->entryFor(MTK_SCALER_CROP_REGION);
           if (Crop.isEmpty()) {
-            MY_LOGW("cannot get scaler crop region, index : %d", i);
+            MY_LOGW("cannot get scaler crop region, index : %zu", i);
             continue;
           }
         }

@@ -735,7 +735,7 @@ status_t V4L2PipeBase::notifyPollEvent(PollEventMessage* poll_msg) {
         "update magic number(curr=%d) by driver says(target=%d), timestamp "
         "%lld",
         it_burst_frame->mv_buf.front().FrameBased.mMagicNum_tuning,
-        buf.magic_num, buf.timestamp);
+        buf.magic_num, (long long)buf.timestamp);
 
     const auto& it_deq_ctnr = m_map_deq_ctnr.find(it_node.first);
     it_deq_ctnr->second.emplace_back(std::move(*it_burst_frame));

@@ -778,7 +778,7 @@ MINT HalSensor::sendCommand(MUINT indexDual,
           (arg3_size == sizeof(MUINT32))) {
         *reinterpret_cast<MUINT32*>(arg3) = mSensorDynamicInfo.pixelMode;
       } else {
-        CAM_LOGE("%s(0x%x) wrong input params", __FUNCTION__, cmd);
+        CAM_LOGE("%s(0x%" PRIxPTR ") wrong input params", __FUNCTION__, cmd);
         ret = MFALSE;
       }
       break;
@@ -790,7 +790,7 @@ MINT HalSensor::sendCommand(MUINT indexDual,
         *(reinterpret_cast<MUINT32*>(arg1)) =
             (mSensorIdx != IMGSENSOR_SENSOR_IDX_NONE) ? 1 << mSensorIdx : 0;
       } else {
-        CAM_LOGE("%s(0x%x) wrong input params", __FUNCTION__, cmd);
+        CAM_LOGE("%s(0x%" PRIxPTR ") wrong input params", __FUNCTION__, cmd);
         ret = MFALSE;
       }
       break;
@@ -808,7 +808,7 @@ MINT HalSensor::sendCommand(MUINT indexDual,
                  sizeof(SENSOR_WINSIZE_INFO_STRUCT));
         }
       } else {
-        CAM_LOGE("%s(0x%x) wrong input params", __FUNCTION__, cmd);
+        CAM_LOGE("%s(0x%" PRIxPTR ") wrong input params", __FUNCTION__, cmd);
         ret = MFALSE;
       }
       break;
@@ -832,7 +832,7 @@ MINT HalSensor::sendCommand(MUINT indexDual,
         CAM_LOGD("set max framerate %d, mFramerate %d control.value %d",
                  *(MUINT32*)arg2, mFramerate, control.value);
       } else {
-        CAM_LOGE("%s(0x%x) wrong input params", __FUNCTION__, cmd);
+        CAM_LOGE("%s(0x%" PRIxPTR ") wrong input params", __FUNCTION__, cmd);
         ret = MFALSE;
       }
       break;
@@ -885,7 +885,7 @@ MINT HalSensor::sendCommand(MUINT indexDual,
           }
         }
       } else {
-        CAM_LOGE("%s(0x%x) wrong input params", __FUNCTION__, cmd);
+        CAM_LOGE("%s(0x%" PRIxPTR ") wrong input params", __FUNCTION__, cmd);
         ret = MFALSE;
       }
       break;
@@ -928,7 +928,7 @@ MINT HalSensor::sendCommand(MUINT indexDual,
                    __FUNCTION__);
         }
       } else {
-        CAM_LOGE("%s(0x%x) wrong input params", __FUNCTION__, cmd);
+        CAM_LOGE("%s(0x%" PRIxPTR ") wrong input params", __FUNCTION__, cmd);
         ret = MFALSE;
       }
       break;
@@ -938,7 +938,7 @@ MINT HalSensor::sendCommand(MUINT indexDual,
           (arg1_size == sizeof(MUINT32))) {
         *reinterpret_cast<MUINT32*>(arg1) = m_pixClk;
       } else {
-        CAM_LOGE("%s(0x%x) wrong input params", __FUNCTION__, cmd);
+        CAM_LOGE("%s(0x%" PRIxPTR ") wrong input params", __FUNCTION__, cmd);
         ret = MFALSE;
       }
       break;
@@ -949,7 +949,7 @@ MINT HalSensor::sendCommand(MUINT indexDual,
         *reinterpret_cast<MUINT32*>(arg1) =
             (m_framelength << 16) + m_linelength;
       } else {
-        CAM_LOGE("%s(0x%x) wrong input params", __FUNCTION__, cmd);
+        CAM_LOGE("%s(0x%" PRIxPTR ") wrong input params", __FUNCTION__, cmd);
         ret = MFALSE;
       }
       break;
@@ -975,7 +975,7 @@ MINT HalSensor::sendCommand(MUINT indexDual,
                    control.value);
         }
       } else {
-        CAM_LOGE("%s(0x%x) wrong input params", __FUNCTION__, cmd);
+        CAM_LOGE("%s(0x%" PRIxPTR ") wrong input params", __FUNCTION__, cmd);
         ret = MFALSE;
       }
       break;
@@ -1000,7 +1000,7 @@ MINT HalSensor::sendCommand(MUINT indexDual,
           CAM_LOGE("Wrong pixel clock");
         }
       } else {
-        CAM_LOGE("%s(0x%x) wrong input params", __FUNCTION__, cmd);
+        CAM_LOGE("%s(0x%" PRIxPTR ") wrong input params", __FUNCTION__, cmd);
         ret = MFALSE;
       }
       break;
@@ -1012,7 +1012,7 @@ MINT HalSensor::sendCommand(MUINT indexDual,
     case SENSOR_CMD_GET_VERTICAL_BLANKING:
     case SENSOR_CMD_SET_FLICKER_FRAME_RATE:
     case SENSOR_CMD_SET_OB_LOCK:
-      CAM_LOGD("TODO sendCommand(0x%x)", cmd);
+      CAM_LOGD("TODO sendCommand(0x%" PRIxPTR ")", cmd);
       ret = MFALSE;
       break;
 
@@ -1022,7 +1022,7 @@ MINT HalSensor::sendCommand(MUINT indexDual,
       break;
 
     default:
-      CAM_LOGE("Unsupported sendCommand %s(0x%x)",
+      CAM_LOGE("Unsupported sendCommand %s(0x%" PRIxPTR ")",
                sensorCommandToString(cmd).c_str(), cmd);
       ret = MFALSE;
       break;

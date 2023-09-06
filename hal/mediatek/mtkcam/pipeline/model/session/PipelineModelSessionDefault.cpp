@@ -306,8 +306,8 @@ auto PipelineModelSessionDefault::submitOneRequest(
         .pPipelineContext = pPipelineContext};
 
     MY_LOGD(
-        "process request (%u): frametype(%d), sub(%u), preFake(%u), "
-        "postFake(%u), enableZSL(%d)",
+        "process request (%u): frametype(%d), sub(%zu), preFake(%zu), "
+        "postFake(%zu), enableZSL(%d)",
         request->requestNo, frameType, out.subFrames.size(),
         out.preFakeFrames.size(), out.postFakeFrames.size(), out.needZslFlow);
 

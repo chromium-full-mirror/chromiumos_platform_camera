@@ -1080,7 +1080,7 @@ MINT32 P2ANode::addTuningFrameParam(MUINT32 sensorID,
   std::unique_lock<std::mutex> _l(mTuningLock, std::defer_lock);
   _l.lock();
   if (mTuningBuffers.empty()) {
-    MY_LOGE("No tuning buffer,mTuningBuffers size:%d", mTuningBuffers.size());
+    MY_LOGE("No tuning buffer,mTuningBuffers size:%zu", mTuningBuffers.size());
     return -1;
   }
   auto tuning = mTuningBuffers[0];

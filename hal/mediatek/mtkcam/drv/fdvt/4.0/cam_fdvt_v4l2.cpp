@@ -774,18 +774,18 @@ static int poll_buf(int v4lfd) {
   while ((ret = poll(fds, 1, 5000)) > 0) {
     if (fds[0].revents & POLLIN) {
       MY_LOGD("poll got POLLIN event from FD:0x%llx, revents:0x%llx",
-              (uint64_t)v4lfd, (uint64_t)fds[0].revents);
+              (unsigned long long)v4lfd, (unsigned long long)fds[0].revents);
       break;
     }
     if (fds[0].revents & POLLOUT) {
       MY_LOGD("poll got POLLOUT event from FD:0x%llx, revents:0x%llx",
-              (uint64_t)v4lfd, (uint64_t)fds[0].revents);
+              (unsigned long long)v4lfd, (unsigned long long)fds[0].revents);
       break;
     }
   }
   if (ret == 0) {
     MY_LOGE("poll timeout for POLLIN event from FD:%llx, revents%llx",
-            (uint64_t)v4lfd, (uint64_t)fds[0].revents);
+            (unsigned long long)v4lfd, (unsigned long long)fds[0].revents);
     perror("-poll");
   }
   return 0;

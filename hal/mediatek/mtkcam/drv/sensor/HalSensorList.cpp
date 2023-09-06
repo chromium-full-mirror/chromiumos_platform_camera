@@ -367,7 +367,7 @@ HalSensorList::searchSensors() {
 
       pIPCHalSensorList->ipcSetStaticInfo(i, info.mMetadata);
 
-      CAM_LOGD("IPCHalSensorList: sensor (idx,type,deviceid)=(%#x, %#x, %#x)",
+      CAM_LOGD("IPCHalSensorList: sensor (idx,type,deviceid)=(%#zx, %#x, %#x)",
                i, type, deviceId);
     }
     if (CC_UNLIKELY(mEnumSensorList.empty())) {

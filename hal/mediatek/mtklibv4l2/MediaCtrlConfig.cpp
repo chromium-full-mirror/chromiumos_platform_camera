@@ -208,7 +208,7 @@ string MediaCtrlConfig::getMediaDevicePathByName(const string& modelName) {
     LOGE("Failed to open directory: %s", DEVICE_PATH);
   }
 
-  LOGD("candidates size %d", candidates.size());
+  LOGD("candidates size %zu", candidates.size());
   status_t retVal = NO_ERROR;
   for (const auto& candidate : candidates) {
     MtkMediaController controller(modelName.c_str(), candidate.c_str());

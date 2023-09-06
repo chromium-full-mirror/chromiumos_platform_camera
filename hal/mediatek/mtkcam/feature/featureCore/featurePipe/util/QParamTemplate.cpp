@@ -125,7 +125,7 @@ QParamTemplateGenerator::checkValid() {
        mPass2EnqueFrame.mvOut.size() != 0) ||
       (mPass2EnqueFrame.mvIn.size() != 0 &&
        mPass2EnqueFrame.mvOut.size() == 0)) {
-    MY_LOGE("FrameID:%d In/Out buffer size is not consistent, in:%d out:%d",
+    MY_LOGE("FrameID:%d In/Out buffer size is not consistent, in:%zu out:%zu",
             miFrameID, mPass2EnqueFrame.mvIn.size(),
             mPass2EnqueFrame.mvOut.size());
     bAllSuccess = MFALSE;

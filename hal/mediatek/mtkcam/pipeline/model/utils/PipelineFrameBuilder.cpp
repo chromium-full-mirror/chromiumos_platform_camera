@@ -199,7 +199,7 @@ auto buildPipelineFrame(std::shared_ptr<IPipelineFrame>* out,
     if (p) {                                                                \
       _builder_.setImageStreamBuffer(p->getStreamInfo()->getStreamId(), p); \
       MY_LOGD("setImageStreamBuffer for app image (%lld)",                  \
-              p->getStreamInfo()->getStreamId());                           \
+              (long long)p->getStreamInfo()->getStreamId());                           \
     }                                                                       \
   } while (0)
 

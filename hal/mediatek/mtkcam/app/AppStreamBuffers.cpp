@@ -133,20 +133,20 @@ ssize_t NSCam::v3::AppImageStreamBuffer::enqueUserGraph(
     if (IUsersManager::Category::NONE == pMyUserGraph->getCategory(i)) {
       continue;
     }
-    MY_LOGD("Node:%d is a (%d: producer or consumer)!", i,
+    MY_LOGD("Node:%zu is a (%d: producer or consumer)!", i,
             pMyUserGraph->getCategory(i));
     //
     MERROR err = OK;
     if (!found) {
       found = MTRUE;
-      MY_LOGD("0-indegree user:%d streamid(%#" PRIx64 ") set acquire fence:%d",
+      MY_LOGD("0-indegree user:%zu streamid(%#" PRIx64 ") set acquire fence:%d",
               i, this->getStreamInfo()->getStreamId(), getAcquireFence());
       err = pMyUserGraph->setAcquireFence(i, getAcquireFence());
     } else {
       MINT fence = -1;
       if (getAcquireFence() > 0) {
         fence = ::dup(getAcquireFence());
-        MY_LOGW("another 0-indegree user:%d; need dup acquire fence:%d->%d", i,
+        MY_LOGW("another 0-indegree user:%zu; need dup acquire fence:%d->%d", i,
                 getAcquireFence(), fence);
         if (fence < 0) {
           MY_LOGE("dup Fence fail");

@@ -150,7 +150,7 @@ FakeImageBufferHeap::impInit(BufInfoVect_t const& rvBufInfo) {
   mvBufInfo.reserve(getPlaneCount());
   for (MUINT32 i = 0; i < getPlaneCount(); i++) {
     if (!helpCheckBufStrides(i, mBufStridesInBytesToAlloc[i])) {
-      CAM_LOGW("stride(size=%zu) of plane(%zu) is invalid.",
+      CAM_LOGW("stride(size=%zu) of plane(%u) is invalid.",
                mBufStridesInBytesToAlloc[i], i);
 
       goto lbExit;

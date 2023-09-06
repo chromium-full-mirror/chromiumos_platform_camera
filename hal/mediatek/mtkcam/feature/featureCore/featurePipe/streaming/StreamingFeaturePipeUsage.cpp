@@ -210,7 +210,7 @@ MSize StreamingFeaturePipeUsage::getStreamingSize() const {
 MSize StreamingFeaturePipeUsage::getRrzoSizeByIndex(MUINT32 index) {
   MSize result;
   if (index >= mResizedRawSizeList.size()) {
-    MY_LOGE("index(%d) >= resized raw size list(%d)", index,
+    MY_LOGE("index(%d) >= resized raw size list(%zu)", index,
             mResizedRawSizeList.size());
     return result;
   }

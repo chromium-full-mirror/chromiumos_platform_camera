@@ -372,7 +372,7 @@ void IPCHalSensorImp::updateCommand(MUINT indexDual,
       break;
 
     default:
-      CAM_LOGE("unsupported cmd(%#x)", cmd);
+      CAM_LOGE("unsupported cmd(%#" PRIxPTR ")", cmd);
       return;
   }
 

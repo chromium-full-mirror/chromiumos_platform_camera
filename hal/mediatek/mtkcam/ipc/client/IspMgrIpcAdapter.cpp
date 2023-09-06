@@ -39,7 +39,7 @@ VISIBILITY_PUBLIC extern "C" IIspMgrIPC* getInstance_ispMgr_IPC(
 void IspMgrIpcAdapter::init(const char* strUser) {
   std::lock_guard<std::mutex> lock(mInitMutex);
 
-  MY_LOGD("[%s] User.count(%d), User init(%s)", __FUNCTION__, m_Users.size(),
+  MY_LOGD("[%s] User.count(%zu), User init(%s)", __FUNCTION__, m_Users.size(),
           strUser);
 
   if (mInitialized) {
@@ -79,7 +79,7 @@ void IspMgrIpcAdapter::init(const char* strUser) {
 void IspMgrIpcAdapter::uninit(const char* strUser) {
   std::lock_guard<std::mutex> lock(mInitMutex);
 
-  MY_LOGD("[%s] User.count(%d), User uninit(%s)", __FUNCTION__, m_Users.size(),
+  MY_LOGD("[%s] User.count(%zu), User uninit(%s)", __FUNCTION__, m_Users.size(),
           strUser);
 
   if (!m_Users[string(strUser)]) {
@@ -97,12 +97,12 @@ void IspMgrIpcAdapter::uninit(const char* strUser) {
         mCommon.releaseAllShmMems(&imMem);
         mInitialized = false;
       } else {
-        MY_LOGD("[%s] Still %d users", __FUNCTION__, m_Users.size());
+        MY_LOGD("[%s] Still %zu users", __FUNCTION__, m_Users.size());
       }
     }
   }
 
-  MY_LOGD("[%s] - User.count(%d)", __FUNCTION__, m_Users.size());
+  MY_LOGD("[%s] - User.count(%zu)", __FUNCTION__, m_Users.size());
 }
 
 IspMgrIpcAdapter::IspMgrIpcAdapter() {

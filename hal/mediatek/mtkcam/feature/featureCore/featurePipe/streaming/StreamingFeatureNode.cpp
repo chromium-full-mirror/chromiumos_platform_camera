@@ -244,7 +244,7 @@ MVOID StreamingFeatureNode::drawScanLine(IImageBuffer* buffer) {
 
 MVOID StreamingFeatureNode::printIO(const RequestPtr& request,
                                     const QParams& params) {
-  MY_LOGD("params.mvFrameParams.siz = %d!", params.mvFrameParams.size());
+  MY_LOGD("params.mvFrameParams.siz = %zu!", params.mvFrameParams.size());
   for (unsigned f = 0, fCount = params.mvFrameParams.size(); f < fCount; ++f) {
     for (unsigned i = 0, n = params.mvFrameParams[f].mvIn.size(); i < n; ++i) {
       unsigned index = params.mvFrameParams[f].mvIn[i].mPortID.index;

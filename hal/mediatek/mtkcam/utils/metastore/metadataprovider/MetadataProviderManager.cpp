@@ -123,7 +123,7 @@ std::shared_ptr<IMetadataProvider> valueAt(size_t index) {
 int32_t keyAt(size_t index) {
   pthread_rwlock_rdlock(&gRWLock);
   if (index >= gMap.size()) {
-    return NULL;
+    return (int32_t)NULL;
   }
   auto iter = gMap.begin();
   std::advance(iter, index);

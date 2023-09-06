@@ -270,7 +270,7 @@ std::shared_ptr<ImageBufferHandle> ImageBufferPool::doAllocate() {
     return nullptr;
   }
 
-  heap = IGbmImageBufferHeap::create(mName, mAllocatorParam, NULL);
+  heap = IGbmImageBufferHeap::create(mName, mAllocatorParam, (MBOOL)NULL);
   if (heap == nullptr) {
     MY_LOGE("%s: IIonImageBufferHeap create failed", mName);
     return MFALSE;
