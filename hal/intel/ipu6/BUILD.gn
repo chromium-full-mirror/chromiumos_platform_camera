@@ -35,6 +35,22 @@ group("all") {
 
 }
 
+config("default_compiler_flags") {
+  # HACK: For some reason, `cflags` doesn't get applied to all C & C++ builds.
+  # Applying the same flags through `cflags_c` and `cflags_cc` does work,
+  # however.
+  default_cflags = [
+    # This codebase has many `TRACE` macros that are `#define`d as nothing in
+    # some build configurations. This causes false-positives for
+    # -Wno-unused-but-set-variable.
+    "-Wno-unused-but-set-variable",
+  ]
+  cflags_c = default_cflags
+  cflags_cc = default_cflags + [
+    "-fvisibility=default",
+  ]
+}
+
 shared_library("libcamhal") {
   sources = [
     "aal/VendorTags.cpp",
@@ -154,10 +170,7 @@ shared_library("libcamhal") {
     "src/iutils/ModuleTags.cpp",
     "src/iutils/LogSink.cpp",
   ]
-
-  cflags_cc = [
-    "-fvisibility=default",
-  ]
+  configs += [ ":default_compiler_flags" ]
   include_dirs = [
     ".",
     "include",
@@ -387,9 +400,7 @@ shared_library("libcam_algo") {
     "src/iutils/ModuleTags.cpp",
     "src/iutils/LogSink.cpp",
   ]
-  cflags_cc = [
-    "-fvisibility=default",
-  ]
+  configs += [ ":default_compiler_flags" ]
   include_dirs = [
     ".",
     "include",
@@ -514,6 +525,7 @@ if (use.ipu6se) {
       "modules/algowrapper/IntelTNR7US.cpp",
       "modules/sandboxing/server/IntelTNRServer.cpp",
     ]
+    configs += [ ":default_compiler_flags" ]
     include_dirs = [
       ".",
       "include",
@@ -573,6 +585,7 @@ if (use.ipu6epadln) {
       "modules/algowrapper/IntelTNR7US.cpp",
       "modules/sandboxing/server/IntelTNRServer.cpp",
     ]
+    configs += [ ":default_compiler_flags" ]
     include_dirs = [
       ".",
       "include",
