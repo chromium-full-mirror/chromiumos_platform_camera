@@ -122,7 +122,9 @@ int AiqCore::init() {
     int ret = mIntel3AParameter->init();
     CheckAndLogError(ret != OK, ret, "@%s, Init 3a parameter failed ret: %d", __func__, ret);
 
-    CLEAR(mLastAeResult), mAeRunTime = 0;
+    CLEAR(mLastAeResult);
+
+    mAeRunTime = 0;
     mAwbRunTime = 0;
     mAiqRunTime = 0;
 
@@ -249,6 +251,10 @@ int AiqCore::updateParameter(const aiq_parameter_t& param) {
 
         mHyperFocalDistance = AiqUtils::calculateHyperfocalDistance(mIntel3AParameter->mCMC);
         mTuningMode = param.tuningMode;
+
+        // Tuning Mode changed, reset AE/AWB run count
+        mAeRunTime = 0;
+        mAwbRunTime = 0;
     }
     mShadingMode = param.shadingMode;
     mLensShadingMapMode = param.lensShadingMapMode;

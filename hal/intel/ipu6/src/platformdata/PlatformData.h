@@ -175,6 +175,7 @@ class PlatformData {
             std::string sensorDescription;
             std::string mLensName;
             int mLensHwType;
+            std::map<TuningMode, SensitivityRange> mTuningModeToSensitivityMap;
             bool mEnablePdaf;
             bool mSensorAwb;
             bool mSensorAe;
@@ -406,6 +407,16 @@ class PlatformData {
      * \return int: the Lens HW type
      */
     static int getLensHwType(int cameraId);
+
+    /**
+     * get sensitivity range by TuningMode
+     *
+     * \param[in] cameraId: [0, MAX_CAMERA_NUMBER - 1]
+     * \param[out] range: SensitivityRange
+     * \return OK if found, otherwise return NAME_NOT_FOUND.
+     */
+    static int getSensitivityRangeByTuningMode(int cameraId, TuningMode mode,
+                                               SensitivityRange& range);
 
     /**
      * check if PDAF is supported or not
