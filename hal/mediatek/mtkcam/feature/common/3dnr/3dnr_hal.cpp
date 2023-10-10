@@ -1305,17 +1305,11 @@ MBOOL Hal3dnr::handleAlignVipiIMGI(const NR3DHALParam& nr3dHalParam,
     MINT32 i4PVOfstY2 = 0;
     MINT32 i4OvlpWD = 0;
     MINT32 i4OvlpHT = 0;
-    MINT32 NR3D_WD = 0;
-    MINT32 NR3D_HT = 0;
     MINT32 VIPI_OFST_X = 0;
     MINT32 VIPI_OFST_Y = 0;
-    MINT32 VIPI_WD = 0;
-    MINT32 VIPI_HT = 0;
     MINT32 NR3D_ON_EN = 0;
     MINT32 NR3D_ON_OFST_X = 0;
     MINT32 NR3D_ON_OFST_Y = 0;
-    MINT32 NR3D_ON_WD = 0;
-    MINT32 NR3D_ON_HT = 0;
     MINT32 nmvX = 0;
     MINT32 nmvY = 0;
 
@@ -1373,19 +1367,12 @@ MBOOL Hal3dnr::handleAlignVipiIMGI(const NR3DHALParam& nr3dHalParam,
     i4OvlpWD = MIN(i4FrmWidthCU, i4FrmWidthPV) - abs(i4GMVX);
     i4OvlpHT = MIN(i4FrmHeightCU, i4FrmHeightPV) - abs(i4GMVY);
 
-    NR3D_WD = i4FrmWidthCU;
-    NR3D_HT = i4FrmHeightCU;
-
     VIPI_OFST_X = i4PVOfstX1 + i4PVOfstX2;
     VIPI_OFST_Y = i4PVOfstY1 + i4PVOfstY2;
-    VIPI_WD = i4FrmWidthCU;
-    VIPI_HT = i4FrmHeightCU;
 
     NR3D_ON_EN = 1;
     NR3D_ON_OFST_X = i4CUOfstX1 + i4CUOfstX2;
     NR3D_ON_OFST_Y = i4CUOfstY1 + i4CUOfstY2;
-    NR3D_ON_WD = i4OvlpWD;
-    NR3D_ON_HT = i4OvlpHT;
     // === Algo code: end: align vipi/imgi ===
 
     // === save the vipi/imgi align info

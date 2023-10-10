@@ -49,7 +49,6 @@ unsigned int ExifUtils::exifAPP1Write(unsigned char* pdata,
   unsigned int nextIFD0Offest;
   unsigned int nodeCnt;
   ifdNode_t* pnode;
-  unsigned char* pstart;
   unsigned int value32 = 0;
   unsigned int exifNextPtr = 0;
   unsigned char buf[12];
@@ -57,7 +56,6 @@ unsigned int ExifUtils::exifAPP1Write(unsigned char* pdata,
   TiffHeader_t tiff;
 
   *pretSize = 0;
-  pstart = pdata;
   ifdSize = sizeof(IFD_t);
   tiffHdrSize = sizeof(TiffHeader_t);
 

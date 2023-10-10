@@ -100,8 +100,7 @@ void CaptureFeaturePipe::setSensorIndex(MINT32 sensorIndex) {
 
 MVOID CaptureFeaturePipe::init() {
   TRACE_FUNC_ENTER();
-  MBOOL ret;
-  ret = PARENT_PIPE::init();
+  PARENT_PIPE::init();
   TRACE_FUNC_EXIT();
 }
 
@@ -112,8 +111,7 @@ MBOOL CaptureFeaturePipe::config(const StreamConfigure config) {
 
 MVOID CaptureFeaturePipe::uninit() {
   TRACE_FUNC_ENTER();
-  MBOOL ret;
-  ret = PARENT_PIPE::uninit();
+  PARENT_PIPE::uninit();
   TRACE_FUNC_EXIT();
 }
 

@@ -137,7 +137,6 @@ FakeImageBufferHeap::syncCache(NSCam::eCacheCtrl const /* ctrl */) {
 MBOOL
 FakeImageBufferHeap::impInit(BufInfoVect_t const& rvBufInfo) {
   MBOOL ret = MFALSE;
-  MUINT32 planesSizeInBytes = 0;  // for calculating n-plane va
   //
   CAM_LOGD_IF(getLogCond(),
               "plane(%zu), memID(0x%x), va(0x%" PRIxPTR "/0x%" PRIxPTR
@@ -168,8 +167,6 @@ FakeImageBufferHeap::impInit(BufInfoVect_t const& rvBufInfo) {
           helpQueryBufSizeInBytes(i, mBufStridesInBytesToAlloc[i]);
       pBufInfo->va = mPortBufInfo.virtAddr[i];
       pBufInfo->pa = mPortBufInfo.phyAddr[i];
-      //
-      planesSizeInBytes += pBufInfo->sizeInBytes;
       //
       rvBufInfo[i]->stridesInBytes = pBufInfo->stridesInBytes;
       rvBufInfo[i]->sizeInBytes = pBufInfo->sizeInBytes;

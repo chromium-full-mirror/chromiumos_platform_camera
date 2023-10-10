@@ -192,7 +192,7 @@ MUINT32 CaptureFeatureNode::dumpData(const char* buffer,
   if (fd < 0) {
     MY_LOGE("Cannot create file [%s]", filename);
   } else {
-    for (int cnt = 0, nw = 0; writeCount < size; ++cnt) {
+    for (int nw = 0; writeCount < size;) {
       nw = ::write(fd, buffer + writeCount, size - writeCount);
       if (nw < 0) {
         MY_LOGE("Cannot write to file [%s]", filename);
@@ -228,7 +228,7 @@ MUINT32 CaptureFeatureNode::loadData(char* buffer,
       size = (readSize < 0) ? 0 : readSize;
       ::lseek(fd, 0, SEEK_SET);
     }
-    for (int cnt = 0, nr = 0; readCount < size; ++cnt) {
+    for (int nr = 0; readCount < size;) {
       nr = ::read(fd, buffer + readCount, size - readCount);
       if (nr < 0) {
         MY_LOGE("Cannot read from file [%s]", filename);

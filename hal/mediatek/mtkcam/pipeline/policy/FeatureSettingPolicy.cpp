@@ -1977,15 +1977,6 @@ auto NSCam::v3::pipeline::policy::featuresetting::FeatureSettingPolicy::
                              1)) {  // sl2e: default on, need use metadata?
       out->StreamingParams.nr3dMode |= NSCam::NR3D::E3DNR_MODE_MASK_SL2E_EN;
     }
-
-    if ((::property_get_int32("vendor.debug.3dnr.rsc.limit", 0) == 0) ||
-        isAPSupport3DNR) {
-      MUINT32 nr3d_mask = NR3DCustom::USAGE_MASK_NONE;
-      if (pParsedAppConfiguration->operationMode ==
-          1 /* CONSTRAINED_HIGH_SPEED_MODE */) {
-        nr3d_mask |= NR3DCustom::USAGE_MASK_HIGHSPEED;
-      }
-    }
   }
   MY_LOGD("3DNR mode : %d, meta c(%d), force(%d) ap(%d)",
           out->StreamingParams.nr3dMode,

@@ -321,7 +321,7 @@ int V4L2LensMgr::getSubDevice(size_t i2c_idx, int* p_r_sdev_fd) {
 
 int V4L2LensMgr::getSubDevName(int major, int minor, char* r_subdev_name) {
   char uevent_path[64] = {0};
-  int fd = -1, r = 0;
+  int fd = -1;
   char* ptr = nullptr;
 
   /* constructs file path */
@@ -346,7 +346,7 @@ int V4L2LensMgr::getSubDevName(int major, int minor, char* r_subdev_name) {
   uevent[filesize] = '\0';
 
   /* read buffer */
-  r = ::read(fd, uevent.get(), filesize);
+  (void)::read(fd, uevent.get(), filesize);
   close(fd);
 
   ptr = ::strstr(uevent.get(), "DEVNAME");
@@ -355,7 +355,7 @@ int V4L2LensMgr::getSubDevName(int major, int minor, char* r_subdev_name) {
     return -ENOENT;
   }
 
-  r = ::sscanf(ptr, "DEVNAME=%s\n", r_subdev_name);
+  (void)::sscanf(ptr, "DEVNAME=%s\n", r_subdev_name);
   CAM_LOGD("subdev name is %s", r_subdev_name);
   return 0;
 }

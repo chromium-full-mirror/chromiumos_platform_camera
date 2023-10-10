@@ -983,7 +983,6 @@ FdNodeImp::ReturnFDResult(IMetadata* pOutMetadataResult,
   MINT32 face_id;
   MUINT8 face_score;
   MINT32 FDEn = 0;
-  MINT32 SDEn = 0;
   MUINT8 FDMode = MTK_STATISTICS_FACE_DETECT_MODE_OFF;
 
   int fake_face = (mLogLevel >= 2);
@@ -1006,7 +1005,6 @@ FdNodeImp::ReturnFDResult(IMetadata* pOutMetadataResult,
       if (!entryMode.isEmpty() &&
           MTK_FACE_FEATURE_SMILE_DETECT_MODE_OFF !=
               entryMode.itemAt(0, Type2Type<MINT32>())) {
-        SDEn = 1;
       }
     }
   }

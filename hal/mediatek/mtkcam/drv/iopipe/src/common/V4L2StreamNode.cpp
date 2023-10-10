@@ -391,25 +391,23 @@ status_t V4L2StreamNode::stopLocked() {
 }
 
 status_t V4L2StreamNode::setTransformLocked(BufInfo const& buf) {
-  int rotation, flip;
+  int rotation;
   v4l2_queryctrl queryctrl = {};
   int transform = buf.mTransform;
 
   switch (transform) {
-#define TransCase(iTrans, iRot, iFlip) \
+#define TransCase(iTrans, iRot) \
   case (iTrans):                       \
     rotation = (iRot);                 \
-    flip = (iFlip);                    \
     break;
-    TransCase(0, 0, 0) TransCase(eTransform_FLIP_H, 0, 1)
-        TransCase(eTransform_FLIP_V, 180, 1) TransCase(eTransform_ROT_90, 90, 0)
-            TransCase(eTransform_ROT_180, 180, 0)
-                TransCase(eTransform_FLIP_H | eTransform_ROT_90, 270, 1)
-                    TransCase(eTransform_FLIP_V | eTransform_ROT_90, 90, 1)
-                        TransCase(eTransform_ROT_270, 270, 0) default
+    TransCase(0, 0) TransCase(eTransform_FLIP_H, 0)
+        TransCase(eTransform_FLIP_V, 180) TransCase(eTransform_ROT_90, 90)
+            TransCase(eTransform_ROT_180, 180)
+                TransCase(eTransform_FLIP_H | eTransform_ROT_90, 270)
+                    TransCase(eTransform_FLIP_V | eTransform_ROT_90, 90)
+                        TransCase(eTransform_ROT_270, 270) default
         : LOGE("not supported transform(0x%x)", transform);
     rotation = 0;
-    flip = 0;
     return BAD_VALUE;
 #undef TransCase
   }

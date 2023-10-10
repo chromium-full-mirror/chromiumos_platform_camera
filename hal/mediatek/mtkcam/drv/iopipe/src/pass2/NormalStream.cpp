@@ -716,7 +716,7 @@ NormalStream::init(char const* szCallerName,
   LOGI("+, name=%s, tag=%d", szCallerName, streamTag);
   status_t status;
   int port_idx = 0, input_num = 0, output_num = 0, imgi_w = 0, imgi_h = 0;
-  MUINT32 largest_w = 0, largest_idx = 0;
+  MUINT32 largest_w = 0;
   MINT32 bufBoundaryInBytes[3] = {0, 0, 0};
   MUINT32 bufStridesInBytes[3] = {0, 0, 0};
   NSCam::v4l2::ENormalStreamTag stream_tag = streamTag;
@@ -802,13 +802,10 @@ NormalStream::init(char const* szCallerName,
          port_idx, it->getImgSize().w, it->getImgSize().h);
   }
 
-  size_t i = 0;
   for (auto& it : config.mOutStreams) {
     if (it->getImgSize().w > largest_w) {
       largest_w = it->getImgSize().w;
-      largest_idx = i;
     }
-    i++;
   }
 
   if (stream_tag != NSCam::v4l2::ENormalStreamTag_Cap_S) {
@@ -993,7 +990,6 @@ NormalStream::enque(QParams* pParams) {
   LOGI("+");
   int imgi_w = 0, imgi_h = 0;
   bool vipi_enqued = false, img3o_enqued = false;
-  unsigned int unstarted_node_num = 0;
   status_t status = NO_ERROR;
   IImageBuffer* lsc_buffer = nullptr;
   IImageBuffer* lce_buffer = nullptr;
@@ -1056,7 +1052,6 @@ NormalStream::enque(QParams* pParams) {
 
         // Dynamic Link
         if (mFirstFrame && it == pParams->mvFrameParams.begin()) {
-          unstarted_node_num++;
           if (it->mvIn[i].mPortID.index !=
               NSImageio::NSIspio::EPortIndex_TUNING) {
             if (!node->isPrepared())
@@ -1217,8 +1212,6 @@ NormalStream::enque(QParams* pParams) {
 
       // Dynamic Link
       if (mFirstFrame && it == pParams->mvFrameParams.begin()) {
-        unstarted_node_num++;
-
         if (!node->isPrepared())
           _set_format_and_buffers(buf);
 

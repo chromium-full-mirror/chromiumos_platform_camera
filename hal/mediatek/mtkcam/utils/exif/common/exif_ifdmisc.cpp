@@ -52,7 +52,6 @@ unsigned int ExifUtils::ifdListSizeof() const {
  *
  ******************************************************************************/
 unsigned char* ExifUtils::ifdListValBufGet(unsigned int ifdType) {
-  unsigned int err = EXIF_NO_ERROR;
   void* plist;
   unsigned char* pdata = 0;
 
@@ -78,7 +77,6 @@ unsigned char* ExifUtils::ifdListValBufGet(unsigned int ifdType) {
       pdata = (reinterpret_cast<itopIFDList_t*>(plist))->valBuf;
       break;
     default:
-      err = LIBEXIF_IFD_ERR0001;
       break;
   }
 
@@ -89,7 +87,6 @@ unsigned char* ExifUtils::ifdListValBufGet(unsigned int ifdType) {
  *
  ******************************************************************************/
 unsigned int ExifUtils::ifdListValBufSizeof(unsigned int ifdType) {
-  unsigned int err = EXIF_NO_ERROR;
   unsigned int cnt = 0;
   void* plist;
 
@@ -115,7 +112,6 @@ unsigned int ExifUtils::ifdListValBufSizeof(unsigned int ifdType) {
       cnt = (reinterpret_cast<itopIFDList_t*>(plist))->valBufPos;
       break;
     default:
-      err = LIBEXIF_IFD_ERR0001;
       break;
   }
   return cnt;
@@ -125,7 +121,6 @@ unsigned int ExifUtils::ifdListValBufSizeof(unsigned int ifdType) {
  *
  ******************************************************************************/
 unsigned int ExifUtils::ifdListNodeCntGet(unsigned int ifdType) {
-  unsigned int err = EXIF_NO_ERROR;
   unsigned int cnt = 0;
   void* plist = 0;
 
@@ -151,7 +146,6 @@ unsigned int ExifUtils::ifdListNodeCntGet(unsigned int ifdType) {
       cnt = (reinterpret_cast<itopIFDList_t*>(plist))->nodeCnt;
       break;
     default:
-      err = LIBEXIF_IFD_ERR0001;
       break;
   }
 

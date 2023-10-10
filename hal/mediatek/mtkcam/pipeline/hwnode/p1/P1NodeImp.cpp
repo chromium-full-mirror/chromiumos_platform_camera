@@ -1535,8 +1535,8 @@ P1NodeImp::setRequest(MBOOL initial) {
                      pAct->flushSet);
     std::string str("");
     MINT32 num = 0;
-    size_t idx = 0;
 #if USING_CTRL_3A_LIST
+    size_t idx = 0;
     size_t size = ctrlList.size();
     List<NS3Av3::MetaSet_T>::iterator it = ctrlList.begin();
     for (; it != ctrlList.end(); it++) {
@@ -1553,7 +1553,6 @@ P1NodeImp::setRequest(MBOOL initial) {
     for (; it != ctrlQueue.end(); it++) {
       num = ((*it) != nullptr) ? ((*it)->MagicNum) : (0);
       str += base::StringPrintf("%d ", num);
-      idx++;
     }
 #endif
     P1_LOGI(1, "[P1::SET]" P1INFO_ACT_STR " Num[%d] Ctrl[%zu]=[ %s]",
@@ -3764,11 +3763,6 @@ P1NodeImp::hardwareOps_start() {
   }
   //
   {
-    EPipeSelect ps = EPipeSelect_Normal;
-    if (mPipeMode == PIPE_MODE_NORMAL_SV) {
-      ps = EPipeSelect_NormalSv;
-    }
-
     int selectedVersion = 0;
     const unsigned int* version = nullptr;
     size_t count = 0;

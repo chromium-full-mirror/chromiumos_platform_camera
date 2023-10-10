@@ -273,18 +273,14 @@ MINT32 LMVHalImp::ConfigLMV(const LMV_HAL_CONFIG_DATA& aLmvConfig) {
     }
   }
 
-  LMV_SENSOR_ENUM sensorType;
   switch (aLmvConfig.sensorType) {
     case NSCam::NSSensorType::eRAW:
-      sensorType = LMV_RAW_SENSOR;
       break;
     case NSCam::NSSensorType::eYUV:
-      sensorType = LMV_YUV_SENSOR;
       break;
     default:
       CAM_LOGE("not support sensor type(%u), use RAW setting",
                aLmvConfig.sensorType);
-      sensorType = LMV_RAW_SENSOR;
       break;
   }
   CAM_LOGD("mIsLmvConfig(%u)", mIsLmvConfig);

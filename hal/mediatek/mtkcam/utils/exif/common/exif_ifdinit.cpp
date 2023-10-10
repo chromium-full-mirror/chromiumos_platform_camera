@@ -427,12 +427,10 @@ unsigned int ExifUtils::ifdExifIFDValInit(ifdNode_t* pnode,
 unsigned int ExifUtils::ifdGpsIFDValInit(ifdNode_t* pnode,
                                          struct gpsIFDList_t* plist) {
   unsigned int err = 0;
-  unsigned char* pdata;
   IFD_t* pifd;
   unsigned int idx = 0;
   /*unsigned char timeBuf[20];*/
 
-  pdata = plist->valBuf + plist->valBufPos;
   pifd = &pnode->ifd;
 
   while (idx < plist->nodeCnt) {
@@ -472,28 +470,24 @@ unsigned int ExifUtils::ifdGpsIFDValInit(ifdNode_t* pnode,
       pifd->count = 3;
       pifd->valoff = plist->valBufPos;
       plist->valBufPos += (sizeof(unsigned int) << 1) * 3;
-      pdata += (sizeof(unsigned int) << 1) * 3;
       break;
     case GPS_TAG_ALTITUDE:
       pifd->type = IFD_DATATYPE_RATIONAL;
       pifd->count = 1;
       pifd->valoff = plist->valBufPos;
       plist->valBufPos += (sizeof(unsigned int) << 1) * 1;
-      pdata += (sizeof(unsigned int) << 1) * 1;
       break;
     case GPS_TAG_PROCESSINGMETHOD:
       pifd->type = IFD_DATATYPE_UNDEFINED;
       pifd->count = 64;
       pifd->valoff = plist->valBufPos;
       plist->valBufPos += 64;
-      pdata += 64;
       break;
     case GPS_TAG_DATESTAMP:
       pifd->type = IFD_DATATYPE_ASCII;
       pifd->valoff = plist->valBufPos;
       pifd->count = 11;
       plist->valBufPos += pifd->count;
-      pdata += pifd->count;
       break;
     default:
       MEXIF_LOGE("Unsupport tag!(0x%x)", pifd->tag);
@@ -585,11 +579,9 @@ unsigned int ExifUtils::ifdFirstIFDValInit(ifdNode_t* pnode,
 unsigned int ExifUtils::ifdItopIFDValInit(ifdNode_t* pnode,
                                           struct itopIFDList_t* plist) {
   unsigned int err = 0;
-  unsigned char* pdata;
   IFD_t* pifd;
   unsigned int idx = 0;
 
-  pdata = plist->valBuf + plist->valBufPos;
   pifd = &pnode->ifd;
 
   while (idx < plist->nodeCnt) {
