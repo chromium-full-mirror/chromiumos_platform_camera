@@ -538,7 +538,7 @@ MBOOL StreamingFeatureNode::loadData(IImageBuffer* buffer,
     loadData(reinterpret_cast<char*>(buffer->getBufVA(0)), 0, filename);
     ret = MTRUE;
   }
-  return MFALSE;
+  return ret;
 }
 
 MUINT32 StreamingFeatureNode::loadData(char* buffer,

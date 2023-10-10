@@ -702,7 +702,6 @@ BaseImageBuffer::loadFromFile(char const* filepath) {
   MBOOL ret = MFALSE;
   MBOOL isLocked = MFALSE;
   int fd = -1;
-  int filesize = 0;
   //
   isLocked = lockBuf(filepath, eBUFFER_USAGE_SW_WRITE_OFTEN);
   if (!isLocked) {
@@ -716,9 +715,6 @@ BaseImageBuffer::loadFromFile(char const* filepath) {
     MY_LOGE("fail to open %s: %s", filepath, ::strerror(errno));
     goto lbExit;
   }
-  //
-  filesize = ::lseek(fd, 0, SEEK_END);
-  ::lseek(fd, 0, SEEK_SET);
   //
   for (MUINT i = 0; i < getPlaneCount(); i++) {
     MUINT8* pBuf = reinterpret_cast<MUINT8*>(getBufVA(i));

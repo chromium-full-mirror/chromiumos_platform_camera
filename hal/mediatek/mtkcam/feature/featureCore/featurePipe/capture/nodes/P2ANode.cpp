@@ -1039,10 +1039,8 @@ P2ANode::onRequestProcess(RequestPtr& pRequest) {
   IMetadata* pOMetaHal = pNodeReq->acquireMetadata(MID_MAIN_OUT_HAL);
 
   IMetadata* pIMetaHal2 = NULL;
-  IMetadata* pIMetaDynamic2 = NULL;
   if (hasSubSensor()) {
     pIMetaHal2 = pNodeReq->acquireMetadata(MID_SUB_IN_HAL);
-    pIMetaDynamic2 = pNodeReq->acquireMetadata(MID_SUB_IN_P1_DYNAMIC);
   }
 
   // 0-2. Get Data

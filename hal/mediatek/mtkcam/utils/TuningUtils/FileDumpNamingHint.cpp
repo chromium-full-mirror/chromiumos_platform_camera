@@ -54,7 +54,7 @@ bool extract(FILE_DUMP_NAMING_HINT* pHint, const IMetadata* pMetadata) {
   ret &= IMetadata::getEntry<int>(pMetadata, MTK_PIPELINE_EV_VALUE,
                                   &pHint->EvValue);
 
-  return true;
+  return ret;
 }
 
 bool extract(FILE_DUMP_NAMING_HINT* pHint, const IImageBuffer* pImgBuf) {

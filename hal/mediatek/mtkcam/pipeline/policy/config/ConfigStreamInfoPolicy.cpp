@@ -428,12 +428,6 @@ makePolicy_Configuration_StreamInfo_P1_Default() {
           return NO_INIT;
         }
 
-        MINT32 p1_out_buffer_size = 8;
-        int is_low_mem = property_get_int32("ro.config.low_ram", false);
-        if (is_low_mem) {
-          p1_out_buffer_size =
-              6;  // For low memory project, set buffer size to 6
-        }
         MINT32 P1_streamBufCnt = 10;  // ::property_get_int32(
                                       // "vendor.debug.camera.p1.streamBufCnt",
                                       // p1_out_buffer_size);

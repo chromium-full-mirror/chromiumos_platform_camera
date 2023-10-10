@@ -106,7 +106,8 @@ static auto parseAppStreamInfo(
       }
     }
 
-    // if (isOut) //[TODO] why only for output?
+    //[TODO] why only for output?
+    if ((true) || isOut)
     {
       if (maxStreamSize.size() <= pStreamInfo->getImgSize().size()) {
         maxStreamSize = pStreamInfo->getImgSize();

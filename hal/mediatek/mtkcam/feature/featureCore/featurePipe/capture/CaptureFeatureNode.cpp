@@ -212,7 +212,7 @@ MBOOL CaptureFeatureNode::loadData(std::shared_ptr<IImageBuffer> buffer,
     loadData(reinterpret_cast<char*>(buffer->getBufVA(0)), 0, filename);
     ret = MTRUE;
   }
-  return MFALSE;
+  return ret;
 }
 
 MUINT32 CaptureFeatureNode::loadData(char* buffer,
