@@ -1266,7 +1266,7 @@ MERROR read_from_buffer<IMetadata::Memory>(metadata_buffer_handle* handle,
     }
 
     s = *(reinterpret_cast<size_t*>(handle->current()));
-    handle->move(sizeof(MUINT32));
+    handle->move(sizeof(size_t));
 
     if (!handle->check_size(sizeof(MUINT8) * s)) {
       return NO_MEMORY;

@@ -363,7 +363,7 @@ void StdExif::updateStdExif(exifAPP1Info_s* exifApp1Info) {
   strftime(reinterpret_cast<char*>(exifApp1Info->strDateTime), 20,
            "%Y:%m:%d %H:%M:%S", &r_tm);
   snprintf(reinterpret_cast<char*>(exifApp1Info->strSubSecTime),
-           sizeof(reinterpret_cast<char*>(exifApp1Info->strSubSecTime)) - 1,
+           sizeof(exifApp1Info->strSubSecTime) - 1,
            "%02ld\n", tv.tv_usec);
   MY_LOGI("strDateTime(%s), strSubSecTime(%s)", exifApp1Info->strDateTime,
           exifApp1Info->strSubSecTime);
