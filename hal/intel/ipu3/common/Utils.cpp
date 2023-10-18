@@ -35,7 +35,7 @@ void getTokens(const char *s, const char delim, std::vector<std::string> &tokens
     std::stringstream ss(s);
     std::string item;
 
-    for (size_t i = 0; std::getline(ss, item, delim); i++) {
+    while (std::getline(ss, item, delim)) {
         tokens.push_back(item);
     }
 }
