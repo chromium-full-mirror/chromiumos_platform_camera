@@ -27,6 +27,7 @@
 #include "HALv3Utils.h"
 #include "ICamera.h"
 #include "Utils.h"
+#include "PlatformData.h"
 
 namespace camera3 {
 
@@ -642,6 +643,17 @@ int MetadataConvert::HALCapabilityToStaticMetadata(const icamera::Parameters& pa
     // ANDROID_DEPTH
 
     fillAdvancedFeatureStaticMetadata(parameter, meta, settings);
+
+    // Add static vendor tags
+    std::string moduleId;
+    std::string sensorId;
+    if ((icamera::PlatformData::getModuleInfo(cameraId, moduleId, sensorId)) == icamera::OK) {
+        settings->update(INTEL_VENDOR_CAMERA_MODULE_ID, reinterpret_cast<uint8_t*>(moduleId.data()),
+                         moduleId.length());
+
+        settings->update(INTEL_VENDOR_CAMERA_SENSOR_ID, reinterpret_cast<uint8_t*>(sensorId.data()),
+                         sensorId.length());
+    }
 
     return icamera::OK;
 }

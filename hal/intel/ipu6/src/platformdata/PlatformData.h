@@ -267,6 +267,8 @@ class PlatformData {
             int mNvmOverwrittenFileSize;
             std::string mNvmOverwrittenFile;  // overwrite NVM data
             std::string mCamModuleName;
+            std::string mModuleId;
+            std::string mSensorId;
             std::vector<std::string> mSupportModuleNames;
             /* key: camera module name, value: camera module info */
             std::unordered_map<std::string, CameraMetadata> mCameraModuleInfoMap;
@@ -375,6 +377,17 @@ class PlatformData {
      * \return int: the camera numbers in xml
      */
     static int getXmlCameraNumber();
+
+    /**
+     * get module info of sensor
+     *
+     * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
+     * \param moduleId: the module id of sensor
+     * \param sensorId: the sensor id of sensor
+     *
+     * \return int: return OK if has module info.
+     */
+    static int getModuleInfo(int cameraId, std::string& moduleId, std::string& sensorId);
 
     /**
      * get the sensor name

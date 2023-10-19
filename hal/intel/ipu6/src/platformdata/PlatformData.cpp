@@ -234,6 +234,17 @@ void PlatformData::releaseGraphConfigNodes() {
     }
 }
 
+int PlatformData::getModuleInfo(int cameraId, std::string& moduleId, std::string& sensorId) {
+    const StaticCfg::CameraInfo& pCam = getInstance()->mStaticCfg.mCameras[cameraId];
+
+    if (pCam.mModuleId.empty() || pCam.mSensorId.empty()) return NAME_NOT_FOUND;
+
+    moduleId = pCam.mModuleId;
+    sensorId = pCam.mSensorId;
+
+    return OK;
+}
+
 const char* PlatformData::getSensorName(int cameraId) {
     return getInstance()->mStaticCfg.mCameras[cameraId].sensorName.c_str();
 }
