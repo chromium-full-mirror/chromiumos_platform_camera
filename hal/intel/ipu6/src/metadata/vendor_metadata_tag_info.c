@@ -44,6 +44,7 @@ static tag_info_t intel_vendor_camera[INTEL_VENDOR_CAMERA_END - INTEL_VENDOR_CAM
     {"hdrRatio", ICAMERA_TYPE_FLOAT},
     {"moduleId", ICAMERA_TYPE_BYTE},
     {"sensorId", ICAMERA_TYPE_BYTE},
+    {"sensorMode", ICAMERA_TYPE_BYTE},
 };
 
 tag_info_t* vendor_tag_info[INTEL_VENDOR_SECTION_COUNT] = {
@@ -152,6 +153,21 @@ int vendor_metadata_enum_snprint(uint32_t tag, int32_t value, char* dst, size_t 
             break;
         }
         case INTEL_VENDOR_CAMERA_SENSOR_ID: {
+            break;
+        }
+        case INTEL_VENDOR_CAMERA_SENSOR_MODE: {
+            switch (value) {
+                case INTEL_VENDOR_CAMERA_SENSOR_MODE_FULL:
+                    msg = "FULL";
+                    ret = 0;
+                    break;
+                case INTEL_VENDOR_CAMERA_SENSOR_MODE_BINNING:
+                    msg = "BINNING";
+                    ret = 0;
+                    break;
+                default:
+                    msg = "error: enum value out of range";
+            }
             break;
         }
     }

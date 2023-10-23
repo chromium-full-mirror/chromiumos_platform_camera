@@ -1566,6 +1566,11 @@ int MetadataConvert::convertVendorTagParameter(const icamera::Parameters& parame
                          entry.count);
     }
 
+    entry = meta.find(INTEL_VENDOR_CAMERA_SENSOR_MODE);
+    if (entry.count == 1) {
+        settings->update(INTEL_VENDOR_CAMERA_SENSOR_MODE, entry.data.u8, entry.count);
+    }
+
     return icamera::OK;
 }
 
