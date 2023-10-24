@@ -621,7 +621,7 @@ void CameraParser::handleSensor(CameraParser* profiles, const char* name, const 
             val > 0 ? std::min(val, MAX_FACES_DETECTABLE) : MAX_FACES_DETECTABLE;
     } else if (strcmp(name, "tnrExtraFrameNum") == 0) {
         int val = atoi(atts[1]);
-        pCurrentCam->mTnrExtraFrameNum = val > 0 ? val : DEFAULT_TNR_EXTRA_FRAME_NUM;
+        pCurrentCam->mTnrExtraFrameNum = val > 0 ? val : 0;
     } else if (strcmp(name, "dummyStillSink") == 0) {
         pCurrentCam->mDummyStillSink = strcmp(atts[1], "true") == 0;
     } else if (strcmp(name, "useGpuTnr") == 0) {

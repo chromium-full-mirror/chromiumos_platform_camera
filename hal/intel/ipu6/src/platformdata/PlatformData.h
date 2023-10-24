@@ -56,8 +56,6 @@ namespace icamera {
 #define FACE_ENGINE_INTEL_PVL 0
 #define FACE_ENGINE_GOOGLE_FACESSD 1
 
-#define DEFAULT_TNR_EXTRA_FRAME_NUM 2
-
 /* Max number of the RAW buffer number is 32.
  * Max number size of the pipeline depth is 6.
  * Max setting count should be larger than raw buffer number + pipeline depth.
@@ -157,7 +155,7 @@ class PlatformData {
                       mSwProcessingAlignWithIsp(false),
                       mMaxNvmDataSize(0),
                       mNvmOverwrittenFileSize(0),
-                      mTnrExtraFrameNum(DEFAULT_TNR_EXTRA_FRAME_NUM),
+                      mTnrExtraFrameNum(0),
                       mDummyStillSink(false),
                       mGpuTnrEnabled(false),
                       mRemoveCacheFlushOutputBuffer(false),
