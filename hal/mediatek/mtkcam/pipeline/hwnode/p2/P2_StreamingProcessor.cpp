@@ -458,7 +458,7 @@ MVOID StreamingProcessor::makeSFPIOOuts(const std::shared_ptr<Payload>& payload,
             featureParam->mSFPIOManager.addLarge(sensorID, sfpIO);
             break;
           default:
-            MY_S_LOGE(payload->mLog, "unknow path(%d)", path);
+            MY_S_LOGE(payload->mLog, "unknow path(%d)", static_cast<int>(path));
         }
 
         found = MTRUE;
@@ -467,8 +467,8 @@ MVOID StreamingProcessor::makeSFPIOOuts(const std::shared_ptr<Payload>& payload,
     }
 
     if (!found) {
-      MY_S_LOGE(payload->mLog, "can not find path(%d) for sensor(%d) !!", path,
-                sensorID);
+      MY_S_LOGE(payload->mLog, "can not find path(%d) for sensor(%d) !!",
+                static_cast<int>(path), sensorID);
     }
   }
   TRACE_S_FUNC_EXIT(payload->mLog);

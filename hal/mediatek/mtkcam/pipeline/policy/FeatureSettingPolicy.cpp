@@ -1448,8 +1448,8 @@ auto NSCam::v3::pipeline::policy::featuresetting::FeatureSettingPolicy::
       MY_LOGD_IF(mVhdrInfo.bVhdrDebugMode,
                  "Iso-reconfig status: apphdrMode(%hhu) isothreshold(%d,%d) "
                  "recording(%d)",
-                 *apphdrMode, iIsoThresholdStable1, iIsoThresholdStable2,
-                 recodingMode);
+                 static_cast<unsigned char>(*apphdrMode), iIsoThresholdStable1,
+                 iIsoThresholdStable2, recodingMode);
 
       if (mVhdrInfo.IsoSwitchModeStatus == eSwitchMode_HighLightMode) {
         // when 3HDR feature on (from AP setting)
@@ -1461,11 +1461,11 @@ auto NSCam::v3::pipeline::policy::featuresetting::FeatureSettingPolicy::
                                           // iIsoThresholdStable2 for ISO5600
           mVhdrInfo.IsoSwitchModeStatus = eSwitchMode_LowLightLvMode;
           *apphdrMode = HDRMode::OFF;
-          MY_LOGD(
-              "need Iso-reconfig: IsoSwitchModeStatus_h->l (%d) "
-              "isothreshold(%d,%d) apphdrMode(%hhu)",
-              mVhdrInfo.IsoSwitchModeStatus, iIsoThresholdStable1,
-              iIsoThresholdStable2, *apphdrMode);
+          MY_LOGD("need Iso-reconfig: IsoSwitchModeStatus_h->l (%d) "
+                  "isothreshold(%d,%d) apphdrMode(%hhu)",
+                  mVhdrInfo.IsoSwitchModeStatus, iIsoThresholdStable1,
+                  iIsoThresholdStable2,
+                  static_cast<unsigned char>(*apphdrMode));
         }
       } else if (mVhdrInfo.IsoSwitchModeStatus == eSwitchMode_LowLightLvMode) {
         // when 3HDR feature on (from AP setting)
@@ -1479,19 +1479,18 @@ auto NSCam::v3::pipeline::policy::featuresetting::FeatureSettingPolicy::
                   // for ISO2800 (1:smaller than 2800)
           mVhdrInfo.IsoSwitchModeStatus = eSwitchMode_HighLightMode;
           *apphdrMode = HDRMode::ON;
-          MY_LOGD(
-              "need Iso-reconfig: IsoSwitchModeStatus_l->h (%d) "
-              "isothreshold(%d,%d) apphdrMode(%hhu)",
-              mVhdrInfo.IsoSwitchModeStatus, iIsoThresholdStable1,
-              iIsoThresholdStable1, *apphdrMode);
+          MY_LOGD("need Iso-reconfig: IsoSwitchModeStatus_l->h (%d) "
+                  "isothreshold(%d,%d) apphdrMode(%hhu)",
+                  mVhdrInfo.IsoSwitchModeStatus, iIsoThresholdStable1,
+                  iIsoThresholdStable1,
+                  static_cast<unsigned char>(*apphdrMode));
         }
       } else {
         mVhdrInfo.IsoSwitchModeStatus = eSwitchMode_HighLightMode;
-        MY_LOGD(
-            "not need Iso-reconfig: IsoSwitchModeStatus_Undefined (%d) "
-            "isothreshold(%d,%d) apphdrMode(%hhu)",
-            mVhdrInfo.IsoSwitchModeStatus, iIsoThresholdStable1,
-            iIsoThresholdStable1, *apphdrMode);
+        MY_LOGD("not need Iso-reconfig: IsoSwitchModeStatus_Undefined (%d) "
+                "isothreshold(%d,%d) apphdrMode(%hhu)",
+                mVhdrInfo.IsoSwitchModeStatus, iIsoThresholdStable1,
+                iIsoThresholdStable1, static_cast<unsigned char>(*apphdrMode));
       }
       return true;
     } else {
@@ -1655,8 +1654,10 @@ auto NSCam::v3::pipeline::policy::featuresetting::FeatureSettingPolicy::
       mVhdrInfo.bVhdrDebugMode,
       "updateStreamData vhdrMode:%d, lastAppHdrMode:%hhu, curAppHdrMode:%hhu, "
       "UiAppHdrMode:%hhu IsoSwitchModeStatus:%d iso:%d, exposureTime:%d ",
-      vhdrMode, mVhdrInfo.lastAppHdrMode, mVhdrInfo.curAppHdrMode,
-      mVhdrInfo.UiAppHdrMode, mVhdrInfo.IsoSwitchModeStatus, parsedInfo.realIso,
+      vhdrMode, static_cast<unsigned char>(mVhdrInfo.lastAppHdrMode),
+      static_cast<unsigned char>(mVhdrInfo.curAppHdrMode),
+      static_cast<unsigned char>(mVhdrInfo.UiAppHdrMode),
+      mVhdrInfo.IsoSwitchModeStatus, parsedInfo.realIso,
       parsedInfo.exposureTime);
 
   // update HDR mode to 3A
@@ -1728,22 +1729,24 @@ auto NSCam::v3::pipeline::policy::featuresetting::FeatureSettingPolicy::
     if (mVhdrInfo.curAppHdrMode == mVhdrInfo.lastAppHdrMode) {
       MY_LOGD_IF(mVhdrInfo.bVhdrDebugMode,
                  "App hdrMode no change: Last(%hhu) - Cur(%hhu)",
-                 mVhdrInfo.lastAppHdrMode, mVhdrInfo.curAppHdrMode);
+                 static_cast<unsigned char>(mVhdrInfo.lastAppHdrMode),
+                 static_cast<unsigned char>(mVhdrInfo.curAppHdrMode));
     } else {
       // app hdrMode change
       if (mVhdrInfo.curAppHdrMode == HDRMode::VIDEO_ON ||
           mVhdrInfo.curAppHdrMode == HDRMode::VIDEO_AUTO ||
           mVhdrInfo.lastAppHdrMode == HDRMode::VIDEO_ON ||
           mVhdrInfo.lastAppHdrMode == HDRMode::VIDEO_AUTO) {
-        MY_LOGD(
-            "App hdrMode change: Last(%hhu) - Cur(%hhu), need reconfig for "
-            "vhdr",
-            mVhdrInfo.lastAppHdrMode, mVhdrInfo.curAppHdrMode);
+        MY_LOGD("App hdrMode change: Last(%hhu) - Cur(%hhu), need reconfig for "
+                "vhdr",
+                static_cast<unsigned char>(mVhdrInfo.lastAppHdrMode),
+                static_cast<unsigned char>(mVhdrInfo.curAppHdrMode));
         out->needReconfiguration = true;
         out->reconfigCategory = ReCfgCtg::STREAMING;
       } else {
         MY_LOGD("App hdrMode change: Last(%hhu) - Cur(%hhu), no need reconfig",
-                mVhdrInfo.lastAppHdrMode, mVhdrInfo.curAppHdrMode);
+                static_cast<unsigned char>(mVhdrInfo.lastAppHdrMode),
+                static_cast<unsigned char>(mVhdrInfo.curAppHdrMode));
       }
     }
 #if 1  // check_later
@@ -1897,7 +1900,8 @@ auto NSCam::v3::pipeline::policy::featuresetting::FeatureSettingPolicy::
                  MTK_HDR_FEATURE_SESSION_PARAM_HDR_MODE, &hdrModeInt)) {
     appHdrMode = static_cast<HDRMode>((MUINT8)hdrModeInt);
     mVhdrInfo.curAppHdrMode = appHdrMode;
-    MY_LOGI("first config vhdr(%hhu)", mVhdrInfo.curAppHdrMode);
+    MY_LOGI("first config vhdr(%hhu)",
+            static_cast<unsigned char>(mVhdrInfo.curAppHdrMode));
   } else {
     MY_LOGI("Get appConfig sessionParams appHdrMode fail ");
   }
@@ -1907,11 +1911,11 @@ auto NSCam::v3::pipeline::policy::featuresetting::FeatureSettingPolicy::
       pParsedAppConfiguration->sessionParams.entryFor(
           MTK_HDR_FEATURE_SESSION_PARAM_HDR_MODE);
 
-  MY_LOGD(
-      "StreamConfig: bFirstConfig(%d) forceAppHdrMode(%d), "
-      "curAppHdrMode(%hhu), test_entry.count(%d), appHdrMode(%hhu)",
-      mVhdrInfo.bFirstConfig, forceAppHdrMode, mVhdrInfo.curAppHdrMode,
-      test_entry.count(), appHdrMode);
+  MY_LOGD("StreamConfig: bFirstConfig(%d) forceAppHdrMode(%d), "
+          "curAppHdrMode(%hhu), test_entry.count(%d), appHdrMode(%hhu)",
+          mVhdrInfo.bFirstConfig, forceAppHdrMode,
+          static_cast<unsigned char>(mVhdrInfo.curAppHdrMode),
+          test_entry.count(), static_cast<unsigned char>(appHdrMode));
 
   // getVHDRMode
   if (appHdrMode == HDRMode::VIDEO_ON || appHdrMode == HDRMode::VIDEO_AUTO) {

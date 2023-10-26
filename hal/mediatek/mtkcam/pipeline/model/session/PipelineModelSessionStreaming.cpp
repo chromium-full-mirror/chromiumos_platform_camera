@@ -98,7 +98,7 @@ auto PipelineModelSessionStreaming::processReconfiguration(
     // reconfigCategory is Stream
     if (processReconfigStream(rcfOutputParam, pConfigInfo2, requestNo) != OK) {
       MY_LOGE("reconfigCategory(%hhu): processReconfigStream Error",
-              rcfOutputParam->reconfigCategory);
+              static_cast<unsigned char>(rcfOutputParam->reconfigCategory));
       ret = BAD_VALUE;
     }
     ret = OK;

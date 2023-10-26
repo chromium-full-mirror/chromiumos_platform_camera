@@ -2322,11 +2322,10 @@ void P1NodeImp::ensureStartReady(MUINT8 infoType, MINT32 infoNum) {
       res = mStartCond.wait_for(
           lck, std::chrono::nanoseconds(P1NODE_START_READY_WAIT_INV_NS));
       needRetry--;
-      MY_LOGI(
-          "Type(%d) Num(%d) - EnStartCap(%d) EnInitReqRun(%d) - "
-          "StartState(%d) WaitStatus(%d) NeedRetry(%d)",
-          infoType, infoNum, EN_START_CAP, EN_INIT_REQ_RUN, getStartState(),
-          res, needRetry);
+      MY_LOGI("Type(%d) Num(%d) - EnStartCap(%d) EnInitReqRun(%d) - "
+              "StartState(%d) WaitStatus(%d) NeedRetry(%d)",
+              infoType, infoNum, EN_START_CAP, EN_INIT_REQ_RUN, getStartState(),
+              static_cast<int>(res), needRetry);
       if (!getActive()) {
         MY_LOGI("Not Active");
         break;
@@ -2338,14 +2337,13 @@ void P1NodeImp::ensureStartReady(MUINT8 infoType, MINT32 infoNum) {
     }
   }
   if ((getActive()) && (!getReady())) {
-    MY_LOGE(
-        "Wait StartReady Timeout (%d*%d ms) - "
-        "Type(%d) Num(%d) - EnStartCap(%d) EnInitReqRun(%d) - "
-        "StartState(%d) WaitStatus(%d) NeedRetry(%d)",
-        P1NODE_START_READY_WAIT_CNT_MAX,
-        (MUINT32)(P1NODE_START_READY_WAIT_INV_NS / ONE_MS_TO_NS), infoType,
-        infoNum, EN_START_CAP, EN_INIT_REQ_RUN, getStartState(), res,
-        needRetry);
+    MY_LOGE("Wait StartReady Timeout (%d*%d ms) - "
+            "Type(%d) Num(%d) - EnStartCap(%d) EnInitReqRun(%d) - "
+            "StartState(%d) WaitStatus(%d) NeedRetry(%d)",
+            P1NODE_START_READY_WAIT_CNT_MAX,
+            (MUINT32)(P1NODE_START_READY_WAIT_INV_NS / ONE_MS_TO_NS), infoType,
+            infoNum, EN_START_CAP, EN_INIT_REQ_RUN, getStartState(),
+            static_cast<int>(res), needRetry);
   }
   return;
 }
@@ -2953,10 +2951,9 @@ P1NodeImp::onProcessDequeFrame() {
       res = mTransferJobCond.wait_for(
           _ll, std::chrono::nanoseconds(P1NODE_TRANSFER_JOB_WAIT_INV_NS));
       needRetry--;
-      MY_LOGI(
-          "TransferJob(%d) ThisJob(%d) - WaitStatus(%d) "
-          "NeedRetry(%d)",
-          mTransferJobIdx, job.getIdx(), res, needRetry);
+      MY_LOGI("TransferJob(%d) ThisJob(%d) - WaitStatus(%d) "
+              "NeedRetry(%d)",
+              mTransferJobIdx, job.getIdx(), static_cast<int>(res), needRetry);
       if (res != std::cv_status::timeout) {
         MY_LOGI("Got Job");
         break;
@@ -2964,7 +2961,8 @@ P1NodeImp::onProcessDequeFrame() {
     }
     mTransferJobWaiting = MFALSE;
     if ((res == std::cv_status::timeout) && (mTransferJobIdx == job.getIdx())) {
-      MY_LOGE("TransferJob(%d) Not-Ready : (%d)", mTransferJobIdx, res);
+      MY_LOGE("TransferJob(%d) Not-Ready : (%d)", mTransferJobIdx,
+              static_cast<int>(res));
     }
   }
   onCheckDropFrame();  // must call after getProcessingFrame_ByAddr()
@@ -5258,7 +5256,8 @@ P1NodeImp::hardwareOps_enque(P1QueJob* job, ENQ_TYPE type, MINT64 data) {
           lck, std::chrono::nanoseconds(P1_CAPTURE_CHECK_INV_NS));
       P1_TRACE_C_END(SLG_S);  // "StartCapture wait"
       if (res == std::cv_status::timeout) {
-        MY_LOGI("StartCap(%d) Cnt(%d) Res(%d)", mStartCaptureState, cnt, res);
+        MY_LOGI("StartCap(%d) Cnt(%d) Res(%d)", mStartCaptureState, cnt,
+                static_cast<int>(res));
         mLogInfo.inspect(LogInfo::IT_WAIT_CATURE);
       } else {
         break;
