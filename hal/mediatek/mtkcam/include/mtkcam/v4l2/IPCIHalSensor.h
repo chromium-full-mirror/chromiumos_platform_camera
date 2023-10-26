@@ -32,6 +32,10 @@ namespace NSCam {
 //-----------------------------------------------------------------------------
 class VISIBILITY_PUBLIC IIPCHalSensor : public IHalSensor {
  public:
+   // Clang warns because `MSize` cannot be packed, as it's not a POD type by
+   // the C++ standard. That's fine here.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpacked-non-pod"
   struct DynamicInfo {
     MSize bin_size;
     MSize hbin_size;
@@ -45,6 +49,7 @@ class VISIBILITY_PUBLIC IIPCHalSensor : public IHalSensor {
           tg_size(MSize(0, 0)),
           tg_info(0) {}
   } __attribute__((packed));
+#pragma clang diagnostic pop
 
  public:
   // All information are sent by this method.
