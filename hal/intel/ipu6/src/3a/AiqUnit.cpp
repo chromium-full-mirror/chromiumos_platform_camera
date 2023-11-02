@@ -381,9 +381,7 @@ void AiqUnit::deinitIntelCcaHandle() {
         }
 
         intelCca->deinit();
-#ifndef ENABLE_SANDBOXING
         IntelCca::releaseInstance(mCameraId, mode);
-#endif
     }
 
     mCcaInitialized = false;
