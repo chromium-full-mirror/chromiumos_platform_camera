@@ -325,8 +325,10 @@ typedef struct
 {
     float32_t accurate_r_per_g;           /*!< Accurate White Point for the image. */
     float32_t accurate_b_per_g;           /*!< Accurate White Point for the image. */
+    float32_t final_r_per_g;              /*!< Final White Point, including color appearance modeling. */
+    float32_t final_b_per_g;              /*!< Final White Point, including color appearance modeling.*/
+    uint32_t cct_estimate;                /*!< Correlated Color Temperature estimate calculated from the accurate WP. */
     float32_t distance_from_convergence;  /*!< Range [0.0f, 1.0f]. Distance from convergence. Value 0.0f means converged. */
-    unsigned int cct_estimate;        /*!< Correlated Color Temperature estimate calculated from the accurate WP. */
 } cca_awb_results;
 
 /*!
@@ -468,6 +470,7 @@ typedef struct
     uint32_t gamma_lut_size;                        /*!< size of gamma LUT. */
     float32_t tone_map_lut[MAX_TONE_MAP_LUT_SIZE];      /*!< GTM LUT. */
     uint32_t tone_map_lut_size;                     /*!< size of GTM LUT. */
+    float32_t manual_gamma;                         /*!< Optional. manual gamma for GTM, Range[0.4, 2.6] */
 } cca_gbce_params;
 
 /*!

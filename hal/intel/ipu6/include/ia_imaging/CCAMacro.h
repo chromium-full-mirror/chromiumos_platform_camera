@@ -76,10 +76,13 @@ const uint32_t MAX_KERNEL_NUM_IN_PG = 128;
 const uint32_t MAX_PG_NUM = 5;
 const uint32_t MAX_PG_TERMINAL_NUM = 16;
 
+const float MIN_MANUAL_GAMMA = 0.4f;
+const float MAX_MANUAL_GAMMA = 2.6f;
+
 const uint32_t PDAF_STATS_GRID_WIDTH = 16;
 const uint32_t PDAF_STATS_GRID_HEIGHT = 12;
 const uint32_t PDAF_STATS_NUM_NONSVE = 1;
-const uint32_t MAX_STREAM_NUM = 11;
+const uint32_t MAX_STREAM_NUM = 15;
 const uint32_t MAX_RGBIR_MODELS = 3;
 
 const uint64_t INVALID_FRAME_ID = static_cast<uint64_t>(-1);
