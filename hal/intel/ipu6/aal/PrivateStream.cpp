@@ -32,7 +32,7 @@
 namespace camera3 {
 
 PrivateStream::PrivateStream(int cameraId, const icamera::stream_t& halStream,
-                             const camera3_stream_t& stream)
+                             const camera3_stream_t& stream, int maxBuf)
         : mCameraId(cameraId),
           mStreamState(false),
           mHALStream(halStream),
@@ -49,6 +49,7 @@ PrivateStream::PrivateStream(int cameraId, const icamera::stream_t& halStream,
     CheckAndLogError(ret != icamera::OK, VOID_VALUE, "[%p]@%s Failed to run thread.", this,
                      __func__);
 
+    mBuffers.resize(maxBuf);
     mBufferPool = std::unique_ptr<Camera3BufferPool>(new Camera3BufferPool());
     // Create the buffer pool with DMA handle buffer
     ret = mBufferPool->createBufferPool(mCameraId, mBuffers.size(), stream.width,
@@ -92,20 +93,6 @@ icamera::camera_buffer_t* PrivateStream::fetchRequestBuffers(uint32_t frameNumbe
          __func__, mHALStream.id, buf->data());
 
     return &mBuffers[mCurrentBufIdx];
-}
-
-void PrivateStream::returnBuffer(uint32_t frameNumber) {
-    CheckAndLogError(mInitialized == false, VOID_VALUE, "mInitialized is false");
-    LOG2("<fn%u>[%p]@%s", frameNumber, this, __func__);
-
-    // release buffer
-    if (mQueuedBuffer.find(frameNumber) != mQueuedBuffer.end()) {
-        LOG2("<id%d:req%u>@%s mHALStream.id:%d, return buf addr:%p", mCameraId, frameNumber,
-             __func__, mHALStream.id, mQueuedBuffer[frameNumber]->data());
-        // if HAL stream using buffer from pool to qbuf/dqbuf, return it
-        mBufferPool->returnBuffer(mQueuedBuffer[frameNumber]);
-        mQueuedBuffer.erase(frameNumber);
-    }
 }
 
 void PrivateStream::queueBufferDone(uint32_t frameNumber) {
@@ -155,8 +142,8 @@ bool PrivateStream::threadLoop() {
     }
     CheckAndLogError(ret != icamera::OK || !buffer, true, "[%p]failed to dequeue buffer, ret %d",
                      this, ret);
-    LOG2("<fn%u>[%p]@%s, buffer->timestamp:%lu addr %p", frameNumber, this, __func__,
-         buffer->timestamp, buffer->addr);
+    LOG2("<fn%u>[%p]@%s, buffer->timestamp:%lu addr %p, flags %x", frameNumber, this, __func__,
+         buffer->timestamp, buffer->addr, buffer->flags);
     std::shared_ptr<Camera3Buffer> outCam3Buf = nullptr;
     {
         std::unique_lock<std::mutex> lock(mLock);
@@ -167,26 +154,52 @@ bool PrivateStream::threadLoop() {
         CheckAndLogError(!outCam3Buf, true, "<fn%u>can't identify the buffer source", frameNumber);
     }
 
-    processFrame(frameNumber, outCam3Buf);
+    // Only flush buffer can be used to do post process
+    if (!(buffer->flags & icamera::BUFFER_FLAG_NO_FLUSH)) {
+        processFrame(frameNumber, outCam3Buf);
+    }
+
     outCam3Buf->dumpImage(frameNumber, icamera::DUMP_AAL_OUTPUT, V4L2_PIX_FMT_NV12);
 
     {
         std::unique_lock<std::mutex> lock(mLock);
-        returnBuffer(frameNumber);
+        // release buffer
+        if (mQueuedBuffer.find(frameNumber) != mQueuedBuffer.end()) {
+            LOG2("<id%d:req%u>@%s mHALStream.id:%d, return buf addr:%p", mCameraId, frameNumber,
+                 __func__, mHALStream.id, mQueuedBuffer[frameNumber]->data());
+            if (!isLocalBuf(outCam3Buf)) {
+                // if HAL stream using buffer from pool to qbuf/dqbuf, return it
+                mBufferPool->returnBuffer(mQueuedBuffer[frameNumber]);
+            }
+            mQueuedBuffer.erase(frameNumber);
+        }
     }
     return true;
 }
 
 PrivateStreamFD::PrivateStreamFD(int cameraId, const icamera::stream_t& halStream,
                                  const camera3_stream_t& stream)
-        : PrivateStream(cameraId, halStream, stream),
-          mFaceDetection(nullptr) {
+        : PrivateStream(cameraId, halStream, stream,
+                        icamera::PlatformData::faceEngineRunningInterval(cameraId)),
+          mFaceDetection(nullptr),
+          mFaceBuffer(nullptr) {
     LOG2("[%p]@%s, stream:%dx%d, format:%d, type:%d", this, __func__, mHALStream.width,
          mHALStream.height, mHALStream.format, stream.stream_type);
     unsigned int maxFacesNum = icamera::PlatformData::getMaxFaceDetectionNumber(mCameraId);
     mFaceDetection = icamera::FaceDetection::createInstance(mCameraId, maxFacesNum, mHALStream.id,
                                                             mHALStream.width, mHALStream.height,
                                                             stream.format, stream.usage);
+
+    mFaceBuffer = MemoryUtils::allocateHandleBuffer(stream.width, stream.height, stream.format,
+                                                    stream.usage, cameraId);
+    if (mFaceBuffer == nullptr) {
+        LOGE("Failed to alloc face buffer");
+        mInitialized = false;
+    } else if (mFaceBuffer->lock() != icamera::OK) {
+        mFaceBuffer = nullptr;
+        LOGE("Failed to init face buffer");
+        mInitialized = false;
+    }
 }
 
 PrivateStreamFD::~PrivateStreamFD() {
@@ -206,8 +219,51 @@ void PrivateStreamFD::processFrame(uint32_t frameNumber,
                                    const std::shared_ptr<Camera3Buffer>& ccBuf) {
     LOG2("<fn%u>@%s", frameNumber, __func__);
 
-    if (mFaceDetection && mFaceDetection->faceRunningByCondition()) {
+    if (mFaceDetection) {
         mFaceDetection->runFaceDetection(ccBuf, true);
     }
 }
+
+bool PrivateStreamFD::isLocalBuf(const std::shared_ptr<Camera3Buffer>& ccBuf) {
+    return ccBuf == mFaceBuffer;
+}
+
+// fetch the buffer will be queued to Hal
+icamera::camera_buffer_t* PrivateStreamFD::fetchRequestBuffers(uint32_t frameNumber) {
+    CheckAndLogError(mInitialized == false, nullptr, "mInitialized is false");
+
+    LOG2("<fn%u>[%p]@%s", frameNumber, this, __func__);
+
+    {
+    std::unique_lock<std::mutex> lock(mLock);
+    if (mQueuedBuffer.size() == mBuffers.size()) return nullptr;
+
+    // fetch local buffer once for mBuffers.size() times
+    if ((mCurrentBufIdx  + 1) % mBuffers.size() == 0) {
+        mCurrentBufIdx = (mCurrentBufIdx  + 1) % mBuffers.size();
+
+        mQueuedBuffer[frameNumber] = mFaceBuffer;
+
+        mBuffers[mCurrentBufIdx] = mFaceBuffer->getHalBuffer();
+        // Fill the specific setting
+        mBuffers[mCurrentBufIdx].s.usage = mHALStream.usage;
+        mBuffers[mCurrentBufIdx].s.id = mHALStream.id;
+        mBuffers[mCurrentBufIdx].requestId = frameNumber;
+
+        LOG2("<id%d:req%u>@%s, mHALStream.id:%d, fetch buf addr:%p", mCameraId, frameNumber,
+             __func__, mHALStream.id, mFaceBuffer->data());
+
+        return &mBuffers[mCurrentBufIdx];
+    }
+    }
+
+    auto buf = PrivateStream::fetchRequestBuffers(frameNumber);
+    CheckAndLogError(buf == nullptr, nullptr, "@%s no available internal buffer", __func__);
+
+    // set flag to disable flush
+    mBuffers[mCurrentBufIdx].flags |= icamera::BUFFER_FLAG_NO_FLUSH;
+
+    return &mBuffers[mCurrentBufIdx];
+}
+
 }  // namespace camera3

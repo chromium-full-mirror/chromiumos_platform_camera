@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Intel Corporation
+ * Copyright (C) 2021-2023 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,18 +37,19 @@ namespace camera3 {
  */
 class PrivateStream : public icamera::Thread {
  public:
-    PrivateStream(int cameraId, const icamera::stream_t& halStream, const camera3_stream_t& stream);
+    PrivateStream(int cameraId, const icamera::stream_t& halStream, const camera3_stream_t& stream,
+                  int maxBuf);
     virtual ~PrivateStream();
 
     virtual bool threadLoop();
     void queueBufferDone(uint32_t frameNumber);
-    icamera::camera_buffer_t* fetchRequestBuffers(uint32_t frameNumber);
+    virtual icamera::camera_buffer_t* fetchRequestBuffers(uint32_t frameNumber);
 
  protected:
-    void returnBuffer(uint32_t frameNumber);
     virtual void requestExit();
     virtual void processFrame(uint32_t frameNumber,
                               const std::shared_ptr<Camera3Buffer>& ccBuf) = 0;
+    virtual bool isLocalBuf(const std::shared_ptr<Camera3Buffer>& ccBuf) = 0;
 
  protected:
     int mCameraId;
@@ -60,14 +61,12 @@ class PrivateStream : public icamera::Thread {
     std::unique_ptr<Camera3BufferPool> mBufferPool;
 
     std::queue<uint32_t> mPrivateResult;
-    static const size_t kMaxPrivateStreamBufferNum = 8;
-    std::array<icamera::camera_buffer_t, kMaxPrivateStreamBufferNum> mBuffers;
+    std::vector<icamera::camera_buffer_t> mBuffers;
 
     // save buffer obj when HAL choose buffer from pool to do qbuf/dqbuf
     std::unordered_map<uint32_t, std::shared_ptr<Camera3Buffer>> mQueuedBuffer;
     const uint64_t kMaxDuration = 2000000000;  // 2000ms
 
- private:
     bool mInitialized;
     int mCurrentBufIdx;
 };
@@ -77,12 +76,15 @@ class PrivateStreamFD : public PrivateStream {
     PrivateStreamFD(int cameraId, const icamera::stream_t& halStream,
                     const camera3_stream_t& stream);
     virtual ~PrivateStreamFD();
+    virtual icamera::camera_buffer_t* fetchRequestBuffers(uint32_t frameNumber);
 
  protected:
     virtual void processFrame(uint32_t frameNumber, const std::shared_ptr<Camera3Buffer>& ccBuf);
+    virtual bool isLocalBuf(const std::shared_ptr<Camera3Buffer>& ccBuf);
 
  private:
     icamera::FaceDetection* mFaceDetection;
+    std::shared_ptr<Camera3Buffer> mFaceBuffer;
 };
 
 }  // namespace camera3
