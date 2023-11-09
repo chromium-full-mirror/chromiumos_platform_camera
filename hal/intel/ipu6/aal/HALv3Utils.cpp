@@ -208,6 +208,12 @@ std::vector<CrosCameraInfo> getCrosCameraInfo() {
     std::vector<CrosCameraInfo> infos;
     int cameraIdx = 0;
 
+    std::string modelName;
+    if (crosConfigReader.GetString("/", "name", &modelName)) {
+        LOGI("%s, model name %s", __func__, modelName.c_str());
+        icamera::PlatformData::setBoardName(modelName);
+    }
+
     // Get MIPI camera info from "devices" array in Chrome OS config. The structure looks like:
     //     camera - devices + 0 + interface (mipi, usb)
     //                      |   + facing (front, back)

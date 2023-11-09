@@ -373,6 +373,17 @@ void CameraParser::handleSensor(CameraParser* profiles, const char* name, const 
             // if same runnning rate of AE and AWB, stats running rate is supported
             pCurrentCam->mStatsRunningRate = true;
         }
+    } else if (strcmp(name, "disableHDRnetBoards") == 0) {
+        int size = strlen(atts[1]);
+        char src[size + 1];
+        MEMCPY_S(src, size, atts[1], size);
+        src[size] = '\0';
+        char* savePtr = nullptr;
+        char* tablePtr = strtok_r(src, ",", &savePtr);
+        while (tablePtr) {
+            pCurrentCam->mDisableHDRnetBoards.push_back(tablePtr);
+            tablePtr = strtok_r(nullptr, ",", &savePtr);
+        }
     } else if (strcmp(name, "useCrlModule") == 0) {
         pCurrentCam->mUseCrlModule = strcmp(atts[1], "true") == 0;
     } else if (strcmp(name, "skipFrameV4L2Error") == 0) {

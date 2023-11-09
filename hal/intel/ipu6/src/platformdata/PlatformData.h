@@ -61,7 +61,6 @@ namespace icamera {
  * Max setting count should be larger than raw buffer number + pipeline depth.
  */
 #define MAX_SETTING_COUNT 40
-#define CAMERA_PORT_NAME "CSI-2"
 
 #define MAX_CAMERA_NUMBER 2
 #define CAMERA_CACHE_DIR "/var/cache/camera/"
@@ -218,6 +217,7 @@ class PlatformData {
             std::vector<LardTagConfig> mLardTagsConfig;
             std::vector<ConfigMode> mConfigModesForAuto;
 
+            std::vector<std::string> mDisableHDRnetBoards;
             bool mUseCrlModule;
             int mOrientation;
             int mSensorOrientation;
@@ -294,6 +294,7 @@ class PlatformData {
         std::vector<CameraInfo> mCameras;
         std::vector<PolicyConfig> mPolicyConfig;
         CommonConfig mCommonConfig;
+        std::string mBoardName;
     };
 
  private:
@@ -394,6 +395,22 @@ class PlatformData {
      * \return char*: the sensor name string.
      */
     static const char* getSensorName(int cameraId);
+
+    /**
+     * set board name
+     *
+     * \param[in] boardName
+     */
+    static void setBoardName(const std::string& boardName);
+
+    /**
+     * get status if HDRnet tuning used
+     *
+     * \param[in] cameraId: [0, MAX_CAMERA_NUMBER - 1]
+     * \param[out] boardConfig: set true if configured
+     * \return true if HDRnet tuning used, otherwise return false.
+     */
+    static bool isHDRnetTuningUsed(int cameraId, bool& boardConfig);
 
     /**
      * get the sensor description

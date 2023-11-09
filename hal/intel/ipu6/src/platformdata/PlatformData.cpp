@@ -102,7 +102,7 @@ int PlatformData::init() {
         AiqInitData* aiqInitData = new AiqInitData(
             staticCfg->mCameras[i].sensorName, getCameraCfgPath(),
             staticCfg->mCameras[i].mSupportedTuningConfig, staticCfg->mCameras[i].mNvmDirectory,
-            staticCfg->mCameras[i].mMaxNvmDataSize, camModuleName);
+            staticCfg->mCameras[i].mMaxNvmDataSize, camModuleName, i);
         getInstance()->mAiqInitData.push_back(aiqInitData);
 
         staticCfg->getModuleInfoFromCmc(i);
@@ -143,7 +143,7 @@ void PlatformData::StaticCfg::getModuleInfoFromCmc(int cameraId) {
     IntelCca::releaseInstance(cameraId, tuningMode);
     CheckWarning(iaRet != ia_err_none, VOID_VALUE, "Get cmc data failed");
 
-    LOG1("%s: base iso %d, ag [%4.2f, %4.2f], ag [%4.2f, %4.2f], from aiqb", __func__, cmc.base_iso,
+    LOG1("%s: base iso %d, dg [%4.2f, %4.2f], ag [%4.2f, %4.2f], from aiqb", __func__, cmc.base_iso,
          cmc.min_dg, cmc.max_dg, cmc.min_ag, cmc.max_ag);
     LOG1("%s: focal_len %d, min_fd %d, ap %d", __func__, cmc.optics.effect_focal_length,
          cmc.optics.min_focus_distance, cmc.lut_apertures);
@@ -247,6 +247,28 @@ int PlatformData::getModuleInfo(int cameraId, std::string& moduleId, std::string
 
 const char* PlatformData::getSensorName(int cameraId) {
     return getInstance()->mStaticCfg.mCameras[cameraId].sensorName.c_str();
+}
+
+void PlatformData::setBoardName(const std::string& boardName) {
+    getInstance()->mStaticCfg.mBoardName = boardName;
+}
+
+bool PlatformData::isHDRnetTuningUsed(int cameraId, bool& boardConfig) {
+    auto& boards = getInstance()->mStaticCfg.mCameras[cameraId].mDisableHDRnetBoards;
+    auto& boardName = getInstance()->mStaticCfg.mBoardName;
+
+    if (!boards.empty()) boardConfig = true;
+
+    if (boardName.empty()) return true;
+
+    for (auto& board : boards) {
+        LOG2("mBoardName %s, board %s", boardName.c_str(), board.c_str());
+        if (board == boardName) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 const char* PlatformData::getSensorDescription(int cameraId) {
@@ -399,7 +421,6 @@ bool PlatformData::isDvsSupported(int cameraId) {
     auto entry = meta.find(CAMERA_SCALER_AVAILABLE_MAX_DIGITAL_ZOOM);
     if (entry.count > 0 && *entry.data.f > 1) supported = true;
 
-    LOG2("@%s, dvs supported:%d", __func__, supported);
     return supported;
 }
 
