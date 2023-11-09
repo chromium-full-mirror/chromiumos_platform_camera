@@ -568,6 +568,11 @@ int GPUExecutor::runTnrFrame(const std::shared_ptr<CameraBuffer>& inBuf,
 
     bool paramSyncUpdate = (mStreamId == VIDEO_STREAM_ID) ? false : true;
 
+#ifdef TNR7_LEVEL0
+    // no async param update in level0 tnr
+    paramSyncUpdate = true;
+#endif
+
     if (!paramSyncUpdate && mIntelTNR) {
         // request update tnr parameters before wait
         float totalGain = 0.0f;

@@ -241,11 +241,28 @@ IntelLevel0TNR::~IntelLevel0TNR() {
 
 int IntelLevel0TNR::init(int width, int height, TnrType type) {
     LOG1("<id%d> %s  %dx%d", mCameraId, __func__, width, height);
+
+    icamera::ICBMInitInfo initParam = {.cameraId = mCameraId,
+                                       .sessionType = icamera::ICBMFeatureType::LEVEL0_TNR,
+                                       .libPathHandle = -1};
+    std::string libPath = std::string(LIBFS_PATH);
+
+    uintptr_t personal = reinterpret_cast<uintptr_t>(this);
+    std::string initName = "/TnrLib" + std::to_string(personal) + "Shm";
+
+    ShmMemInfo libPathShm;
+    libPathShm.mName = initName.c_str();
+    libPathShm.mSize = strlen(libPath.c_str()) + 1;
+    bool retDlc =
+        mCommon.allocShmMem(libPathShm.mName, libPathShm.mSize, &libPathShm, GPU_ALGO_SHM);
+    CheckAndLogError(!retDlc, icamera::NO_INIT, "@%s, allocShmMem fails", __func__);
+    initParam.libPathHandle = libPathShm.mHandle;
+    snprintf((char*)libPathShm.mAddr, libPathShm.mSize, "%s", libPath.c_str());
+
     mWidth = width;
     mHeight = height;
     mIntelICBM = std::make_unique<IntelICBM>();
-    icamera::ICBMInitInfo initParam = {.cameraId = mCameraId,
-                                       .sessionType = icamera::ICBMFeatureType::LEVEL0_TNR};
+
     int ret = mIntelICBM->setup(&initParam);
     CheckAndLogError(ret != OK, ret, "%s: Init failed", __func__);
 

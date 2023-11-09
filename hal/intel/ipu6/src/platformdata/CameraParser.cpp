@@ -635,6 +635,10 @@ void CameraParser::handleSensor(CameraParser* profiles, const char* name, const 
         pCurrentCam->mTnrExtraFrameNum = val > 0 ? val : 0;
     } else if (strcmp(name, "dummyStillSink") == 0) {
         pCurrentCam->mDummyStillSink = strcmp(atts[1], "true") == 0;
+    } else if (strcmp(name, "tnrThresholdSizes") == 0) {
+        parseSizesList(atts[1], pCurrentCam->mTnrThresholdSizes);
+        for (const auto& s : pCurrentCam->mTnrThresholdSizes)
+            LOG2("@%s, mTnrThresholdSizes: width:%d, height:%d", __func__, s.width, s.height);
     } else if (strcmp(name, "useGpuTnr") == 0) {
         pCurrentCam->mGpuTnrEnabled = strcmp(atts[1], "true") == 0;
     } else if (!strcmp(name, "removeCacheFlushOutputBuffer")) {

@@ -126,7 +126,6 @@ exif_status ExifCreater::makeExif(void* exifOut, exif_attribute_t* exifInfo, siz
     }
 
     pNextIfdOffset = pCur;  // Skip a offset size for next IFD offset
-    pCur += OFFSET_SIZE;
 
     // 2 0th IFD Exif Private Tags
     pCur = pIfdStart + LongerTagOffset;

@@ -34,6 +34,7 @@ const char* IntelAlgoIpcCmdToString(IPC_CMD cmd) {
         "IPC_PG_PARAM_DECODE", "IPC_PG_PARAM_DEINIT", "IPC_GPU_TNR_INIT",
         "IPC_GPU_TNR_GET_SURFACE_INFO", "IPC_GPU_TNR_PREPARE_SURFACE", "IPC_GPU_TNR_RUN_FRAME",
         "IPC_GPU_TNR_PARAM_UPDATE", "IPC_GPU_TNR_DEINIT",
+        "IPC_ICBM_INIT", "IPC_ICBM_RUN_FRAME", "IPC_ICBM_DEINIT",
         "IPC_GPU_TNR_THREAD2_RUN_FRAME", "IPC_GPU_TNR_THREAD2_PARAM_UPDATE"};
 
     unsigned int num = sizeof(gIpcCmdMapping) / sizeof(gIpcCmdMapping[0]);
@@ -54,6 +55,8 @@ IPC_GROUP IntelAlgoIpcCmdToGroup(IPC_CMD cmd) {
         group = IPC_GROUP_GPU;
     } else if (cmd >= IPC_GPU_TNR_THREAD2_RUN_FRAME && cmd <= IPC_GPU_TNR_THREAD2_PARAM_UPDATE) {
         group = IPC_GROUP_GPU_THREAD2;
+    } else if (cmd >= IPC_ICBM_INIT && cmd <= IPC_ICBM_DEINIT) {
+        group = IPC_GROUP_GPU_ICBM;
     } else {
         group = IPC_GROUP_CPU_OTHER;
     }
@@ -70,6 +73,7 @@ const char* IntelAlgoServerThreadName(int index) {
     count = IPC_CPU_GROUP_NUM;
 #else
     static const char* gIpcCmdMapping[IPC_GPU_GROUP_NUM] = {"GPUAlgoServer",
+                                                            "GPUICBMServer",
                                                             "GPUAlgoServer2"};
     count = IPC_GPU_GROUP_NUM;
 #endif

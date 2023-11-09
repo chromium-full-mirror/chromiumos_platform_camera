@@ -273,6 +273,7 @@ class PlatformData {
             std::vector<IGraphType::ScalerInfo> mScalerInfo;
             int mTnrExtraFrameNum;
             bool mDummyStillSink;
+            std::vector<camera_resolution_t> mTnrThresholdSizes;
             bool mGpuTnrEnabled;
             bool mRemoveCacheFlushOutputBuffer;
             bool mPLCEnable;
@@ -1485,6 +1486,12 @@ class PlatformData {
      */
     static bool isDummyStillSink(int cameraId);
 
+    /**
+     * get the tnr resolution list
+     *
+     * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
+     */
+    static void getTnrThresholdSizes(int cameraId, std::vector<camera_resolution_t>& resolutions);
     /*
      * check if removing cache flush output buffer
      *

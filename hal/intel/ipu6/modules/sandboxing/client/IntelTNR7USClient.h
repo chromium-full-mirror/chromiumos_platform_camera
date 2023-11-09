@@ -91,6 +91,7 @@ class IntelLevel0TNR : public IntelTNR7US {
                             int fd = -1);
 
  private:
+    const char* LIBFS_PATH = "/usr/share/cros-camera/";
     std::unique_ptr<IntelICBM> mIntelICBM;
     int mWidth;
     int mHeight;

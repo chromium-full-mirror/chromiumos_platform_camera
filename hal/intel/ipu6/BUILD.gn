@@ -33,6 +33,11 @@ group("all") {
     ]
   }
 
+  if (use.ipu6epmtl) {
+    deps += [
+      ":libcam_algo_vendor_gpu",
+    ]
+  }
 }
 
 config("default_compiler_flags") {
@@ -341,12 +346,20 @@ shared_library("libcamhal") {
       "modules/ia_css/ipu6ep/src/ia_css_terminal.c",
       "modules/ia_css/ipu6ep/src/ia_css_program_group_data.c",
       "modules/ia_css/ipu6ep/src/ia_css_rbm.c",
+      "src/core/psysprocessor/GPUExecutor.cpp",
+      "modules/sandboxing/client/IntelTNR7USClient.cpp",
+      "modules/sandboxing/client/IntelICBMClient.cpp",
+      "src/icbm/ICBMThread.cpp",
     ]
     include_dirs += [
       "modules/ia_css/ipu6ep/include",
     ]
     defines += [
       "IPU_SYSVER_ipu6v6",
+      "TNR7_LEVEL0",
+    ]
+    libs += [
+      "broxton_ia_pal",
     ]
   } else {
     sources += [
@@ -460,6 +473,7 @@ shared_library("libcam_algo") {
     "rt",
     "perfetto_sdk",
   ]
+
   install_path = "lib"
   pkg_deps = [
     "libcros_camera",
@@ -630,6 +644,69 @@ if (use.ipu6epadln) {
     ]
   }
 }
+
+if (use.ipu6epmtl) {
+  shared_library("libcam_algo_vendor_gpu") {
+    sources = [
+      "src/iutils/Utils.cpp",
+      "src/iutils/Trace.cpp",
+      "src/iutils/Thread.cpp",
+      "src/iutils/CameraLog.cpp",
+      "src/iutils/ModuleTags.cpp",
+      "src/iutils/LogSink.cpp",
+      "modules/sandboxing/IPCCommon.cpp",
+      "modules/sandboxing/server/IntelAlgoServer.cpp",
+      "modules/sandboxing/server/IntelGPUAlgoServer.cpp",
+      "modules/sandboxing/server/IntelICBMServer.cpp",
+      "modules/algowrapper/IntelICBM.cpp",
+      "src/icbm/OnePunchIC2.cpp",
+      "src/icbm/MemoryChain.cpp",
+    ]
+    configs += [ ":default_compiler_flags" ]
+    include_dirs = [
+      ".",
+      "include",
+      "include/api",
+      "include/utils",
+      "include/linux",
+      "src",
+      "src/core",
+      "src/fd",
+      "src/platformdata",
+      "src/3a",
+      "src/platformdata/gc",
+      "src/iutils",
+      "src/metadata",
+      "src/v4l2",
+      "include/ia_imaging",
+      "include/gcss",
+    ]
+    defines = [
+      "CAL_BUILD",
+      "IPU_SYSVER_IPU6",
+      "HAVE_LINUX_OS",
+      "__STDC_FORMAT_MACROS",
+      "HAVE_PTHREADS",
+      "CAMERA_HAL_DEBUG",
+      "ENABLE_SANDBOXING",
+      "GPU_ALGO_SERVER",
+    ]
+    defines += [
+      "IPU_SYSVER_ipu6v6",
+      "TNR7_LEVEL0",
+    ]
+    libs = [
+      "ia_log",
+      "rt",
+    ]
+    install_path = "lib"
+    pkg_deps = [
+      "libcros_camera",
+      "libcros_camera_android_deps",
+      "libmojo",
+    ]
+  }
+ }
 
 install_config("install_intel_ipu6_so") {
   sources = [ "${root_out_dir}/lib/libcamhal.so" ]

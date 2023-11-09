@@ -22,6 +22,7 @@
 #include <sys/sysinfo.h>
 
 #include <memory>
+#include <vector>
 
 #include "CameraParser.h"
 #include "iutils/CameraLog.h"
@@ -1607,6 +1608,11 @@ int PlatformData::getSensorOrientation(int cameraId) {
 
 bool PlatformData::isDummyStillSink(int cameraId) {
     return getInstance()->mStaticCfg.mCameras[cameraId].mDummyStillSink;
+}
+
+void PlatformData::getTnrThresholdSizes(int cameraId,
+                                        std::vector<camera_resolution_t>& resolutions) {
+    resolutions = getInstance()->mStaticCfg.mCameras[cameraId].mTnrThresholdSizes;
 }
 
 bool PlatformData::isGpuTnrEnabled(int cameraId) {

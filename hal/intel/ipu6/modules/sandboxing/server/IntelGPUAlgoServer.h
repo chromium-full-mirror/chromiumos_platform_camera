@@ -33,6 +33,10 @@
 #include "modules/sandboxing/server/IntelTNRServer.h"
 #endif
 
+#ifdef TNR7_LEVEL0
+#include "modules/sandboxing/server/IntelICBMServer.h"
+#endif
+
 namespace icamera {
 
 class IntelGPUAlgoServer : public RequestHandler {
@@ -46,6 +50,10 @@ class IntelGPUAlgoServer : public RequestHandler {
     IntelTNRServer mTNR;
 #endif
 
+#ifdef TNR7_LEVEL0
+ private:
+    IntelICBMServer mICBMServer;
+#endif
 };
 
 }  // namespace icamera

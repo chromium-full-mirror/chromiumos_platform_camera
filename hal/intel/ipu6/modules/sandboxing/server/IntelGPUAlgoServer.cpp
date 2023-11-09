@@ -114,6 +114,67 @@ void IntelGPUAlgoServer::handleRequest(const MsgReq& msg) {
         }
 #endif
 
+#ifdef TNR7_LEVEL0
+        case IPC_ICBM_INIT: {
+            status = UNKNOWN_ERROR;
+            ICBMInitInfo* initInfo = reinterpret_cast<ICBMInitInfo*>(addr);
+
+            ShmInfo libPathShm = {};
+            if (initInfo->libPathHandle < 0) break;
+            status = getIntelAlgoServer()->getShmInfo(initInfo->libPathHandle, &libPathShm);
+            if (status != OK) {
+                LOGE("%s, the buffer handle DLC root path is invalid", __func__);
+                break;
+            }
+            initInfo->libPath = reinterpret_cast<char*>(libPathShm.addr);
+            status = mICBMServer.setup(initInfo);
+            break;
+        }
+
+        case IPC_ICBM_RUN_FRAME: {
+            status = UNKNOWN_ERROR;
+            ICBMReqInfo* runInfo = reinterpret_cast<ICBMReqInfo*>(addr);
+            ShmInfo inBuffer = {};
+            if (runInfo->inHandle < 0) break;
+            ShmInfo outBuffer = {};
+            if (runInfo->outHandle < 0) break;
+
+            status = getIntelAlgoServer()->getShmInfo(runInfo->inHandle, &inBuffer);
+            if (status != OK) {
+                LOGE("%s, the buffer handle for ICBM inBuffer data is invalid", __func__);
+                break;
+            }
+
+            status = getIntelAlgoServer()->getShmInfo(runInfo->outHandle, &outBuffer);
+            if (status != OK) {
+                LOGE("%s, the buffer handle for ICBM outBuffer data is invalid", __func__);
+                break;
+            }
+            if (runInfo->paramHandle >= 0) {
+                ShmInfo paramBuffer = {};
+                status = getIntelAlgoServer()->getShmInfo(runInfo->paramHandle, &paramBuffer);
+                if (status != OK) {
+                    LOGE("%s, the buffer handle for parameter is invalid", __func__);
+                    break;
+                }
+                runInfo->paramAddr = paramBuffer.addr;
+            }
+            runInfo->inII.bufAddr = inBuffer.addr;
+            runInfo->outII.bufAddr = outBuffer.addr;
+
+            status = mICBMServer.processFrame(*runInfo);
+
+            runInfo->inII.bufAddr = nullptr;
+            runInfo->outII.bufAddr = nullptr;
+            runInfo->paramAddr = nullptr;
+            break;
+        }
+        case IPC_ICBM_DEINIT: {
+            ICBMReqInfo* shutInfo = static_cast<ICBMReqInfo*>(addr);
+            status = mICBMServer.shutdown(*shutInfo);
+            break;
+        }
+#endif
         default:
             LOGE("@%s, req_id:%d is not defined", __func__, req_id);
             status = UNKNOWN_ERROR;
