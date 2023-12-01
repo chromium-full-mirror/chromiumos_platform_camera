@@ -980,7 +980,8 @@ void PSysProcessor::dispatchTask(CameraBufferPortMap& inBuf, CameraBufferPortMap
                 if (res != nullptr) {
                     auto exposure = res->mAeResults.exposures[0].exposure[0];
                     float totalGain = exposure.analog_gain * exposure.digital_gain;
-                    PlatformData::getEdgeNrSetting(mCameraId, totalGain, hdrRatio, edgeNrSetting);
+                    PlatformData::getEdgeNrSetting(mCameraId, totalGain, hdrRatio, mTuningMode,
+                                                   edgeNrSetting);
                     mIspSettings.eeSetting.strength += edgeNrSetting.edgeStrength;
                     mIspSettings.nrSetting.strength += edgeNrSetting.nrStrength;
                     LOG2("edgeStrength %d, nrStrength %d", edgeNrSetting.edgeStrength,
