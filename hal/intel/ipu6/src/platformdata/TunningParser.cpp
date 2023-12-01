@@ -130,7 +130,11 @@ void TunningParser::handleModule(TunningParser* profiles, const char* name, cons
     LOG2("@%s, name:%s, atts[0]:%s, sensor:%s", __func__, name, atts[0],
          profiles->mCurrentCam->sensorName.c_str());
 
-    if (strcmp(name, "edgeNrTable") == 0) {
+    if ((strcmp(name, "edgeNrTable") == 0) || (strcmp(name, "edgeNrTable-binning") == 0)) {
+        TuningMode mode = TUNING_MODE_VIDEO;
+        if (strcmp(name, "edgeNrTable-binning") == 0) mode = TUNING_MODE_VIDEO_BINNING;
+
+        auto& edgeNrMap = profiles->mCurrentCam->mTotalGainHdrRatioToEdgeNrMap[mode];
         EdgeNrSetting setting;
 
         int size = strlen(atts[1]);
@@ -152,7 +156,7 @@ void TunningParser::handleModule(TunningParser* profiles, const char* name, cons
             setting.nrStrength = atoi(nr);
             LOG3("Edge and Nr table: totalGain %f, hdrRatio %f, edge %d, nr %d", tg, hr,
                  setting.edgeStrength, setting.nrStrength);
-            auto& tmpMap = profiles->mCurrentCam->mTotalGainHdrRatioToEdgeNrMap[tg];
+            auto& tmpMap = edgeNrMap[tg];
             tmpMap[hr] = setting;
 
             totalGain = strtok_r(nullptr, ",", &savePtr);

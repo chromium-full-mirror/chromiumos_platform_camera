@@ -230,8 +230,12 @@ class PlatformData {
             std::map<int, stream_array_t> mStreamToMcMap;
             Parameters mCapability;
 
-            /* key: total gain, value: a map (key: hdr ratio, value: edge and noise settings) */
-            std::map<float, std::map<float, EdgeNrSetting>> mTotalGainHdrRatioToEdgeNrMap;
+            /* key: TuningMode,
+               value: map (key: total gain,
+                           value: map (key: hdr ratio,
+                                       value: edge and noise settings)) */
+            std::map<TuningMode,
+                     std::map<float, std::map<float, EdgeNrSetting>>> mTotalGainHdrRatioToEdgeNrMap;
             std::string mGraphSettingsFile;
             GraphSettingType mGraphSettingsType;
             std::vector<MultiExpRange> mMultiExpRanges;
@@ -259,7 +263,7 @@ class PlatformData {
             // a PG might be incorrect. To be removed after stream id mismatch issue fixed.
             std::map<int, int> mConfigModeToStreamId;
             std::vector<UserToPslOutputMap> mOutputMap;
-            std::vector<camera_resolution_t> mPreferStillOutput;
+            std::vector<camera_resolution_t> mPreferOutput;
             int mMaxNvmDataSize;
             std::string mNvmDirectory;
             int mNvmOverwrittenFileSize;
@@ -847,12 +851,13 @@ class PlatformData {
      * \param[in] cameraId: [0, MAX_CAMERA_NUMBER - 1]
      * \param[in] totalGain: total gain
      * \param[in] hdrRatio: hdr ratio
+     * \param[in] mode: TuningMode
      * \param[out] setting: EdgeNrSetting setting
      *
      * \return OK if setting is available, otherwise return NAME_NOT_FOUND.
      */
     static int getEdgeNrSetting(int cameraId, float totalGain, float hdrRatio,
-                                EdgeNrSetting& setting);
+                                TuningMode mode, EdgeNrSetting& setting);
 
     /**
      * Get the executor policy config.
@@ -1230,14 +1235,14 @@ class PlatformData {
     static camera_resolution_t* getPslOutputForRotation(int width, int height, int cameraId);
 
     /**
-     * Get preferred output size for still
+     * Get preferred output size
      *
      * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
      * \param width:    The width of user requirement
      * \param height:   The height of user requirement
      * \return the output resolution if provides it in xml file, otherwise return nullptr.
      */
-    const static camera_resolution_t* getPreferStillOutput(int width, int height, int cameraId);
+    const static camera_resolution_t* getPreferOutput(int width, int height, int cameraId);
 
     /**
      * Check if test pattern is supported or not
