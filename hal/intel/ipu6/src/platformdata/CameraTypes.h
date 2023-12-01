@@ -159,7 +159,7 @@ struct ExecutorDepth {
 typedef std::pair<std::string, int32_t> ShareReferIdDesc;
 
 struct PolicyConfig {
-    int graphId;
+    std::set<int> graphIds;
     std::string policyDescription;
     std::vector<ExecutorPolicy> pipeExecutorVec;
     std::vector<std::string> exclusivePgs;
@@ -168,7 +168,6 @@ struct PolicyConfig {
     bool enableBundleInSdv;
 
     PolicyConfig() {
-        graphId = -1;
         enableBundleInSdv = true;
     }
 };

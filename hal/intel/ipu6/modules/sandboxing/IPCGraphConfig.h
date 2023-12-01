@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2022 Intel Corporation.
+ * Copyright (C) 2019-2023 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ namespace icamera {
 #define MAX_STREAM (4)                             // Max stream number
 #define MAX_GRAPH_SETTINGS_SIZE (2 * 1024 * 1024)  // Max graph settings file size
 #define MAX_GRAPH_DESCRIPTOR_SIZE (512 * 1024)     // Max graph descriptor file size
+#define MAX_GRAPH_COUNT (2)                        // Max graph count: video, still
 #define MAX_PG_NUMBER (10)                         // Max pg number
 #define MAX_NAME_LENGTH (128)                      // Max length for name
 #define MAX_CONNECTION_COUNT (64)                  // Max connection count
@@ -89,7 +90,8 @@ struct GraphGetDataParams {
     GraphBaseInfo baseInfo;
 
     int mcId;
-    int graphId;
+    uint32_t graphNum;
+    int graphIds[MAX_GRAPH_COUNT];
 
     camera_resolution_t csiReso;
 
