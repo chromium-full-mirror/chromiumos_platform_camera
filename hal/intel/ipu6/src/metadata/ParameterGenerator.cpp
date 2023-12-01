@@ -556,6 +556,38 @@ int ParameterGenerator::updateCommonMetadata(Parameters* params, const AiqResult
         ParameterHelper::mergeTag(entry, params);
     }
 
+    if (aiqResult->mAnalogGainRange[0] > 0.0 && aiqResult->mAnalogGainRange[1] > 0.0) {
+        LOG2("analog gain range is [%f-%f]", aiqResult->mAnalogGainRange[0],
+             aiqResult->mAnalogGainRange[1]);
+        entry.tag = INTEL_VENDOR_CAMERA_ANALOG_GAIN_RANGE;
+        entry.type = ICAMERA_TYPE_FLOAT;
+        entry.count = 2;
+        entry.data.f = aiqResult->mAnalogGainRange;
+        ParameterHelper::mergeTag(entry, params);
+    }
+
+    if (aiqResult->mDigitalGainRange[0] > 0.0 && aiqResult->mDigitalGainRange[1] > 0.0) {
+        LOG2("digital gain range is [%f-%f]", aiqResult->mDigitalGainRange[0],
+             aiqResult->mDigitalGainRange[1]);
+        entry.tag = INTEL_VENDOR_CAMERA_DIGITAL_GAIN_RANGE;
+        entry.type = ICAMERA_TYPE_FLOAT;
+        entry.count = 2;
+        entry.data.f = aiqResult->mDigitalGainRange;
+        ParameterHelper::mergeTag(entry, params);
+    }
+
+    entry.tag = INTEL_VENDOR_CAMERA_ANALOG_GAIN;
+    entry.type = ICAMERA_TYPE_FLOAT;
+    entry.count = 1;
+    entry.data.f = &aiqResult->mAeResults.exposures[0].exposure[0].analog_gain;
+    ParameterHelper::mergeTag(entry, params);
+
+    entry.tag = INTEL_VENDOR_CAMERA_DIGITAL_GAIN;
+    entry.type = ICAMERA_TYPE_FLOAT;
+    entry.count = 1;
+    entry.data.f = &aiqResult->mAeResults.exposures[0].exposure[0].digital_gain;;
+    ParameterHelper::mergeTag(entry, params);
+
     bool callbackTmCurve = false;
     params->getCallbackTmCurve(&callbackTmCurve);
 
