@@ -862,11 +862,11 @@ class PlatformData {
     /**
      * Get the executor policy config.
      *
-     * \param[in] graphId: the graph id
+     * \param[in] graphIds: the graph ids
      *
      * \return PolicyConfig* object if found, otherwise return nullptr.
      */
-    static PolicyConfig* getExecutorPolicyConfig(int graphId);
+    static PolicyConfig* getExecutorPolicyConfig(const std::set<int>& graphIds);
 
     /**
      * According to stream info to select MC
