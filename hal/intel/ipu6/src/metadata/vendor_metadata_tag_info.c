@@ -45,6 +45,10 @@ static tag_info_t intel_vendor_camera[INTEL_VENDOR_CAMERA_END - INTEL_VENDOR_CAM
     {"moduleId", ICAMERA_TYPE_BYTE},
     {"sensorId", ICAMERA_TYPE_BYTE},
     {"sensorMode", ICAMERA_TYPE_BYTE},
+    {"analogGainRange", ICAMERA_TYPE_FLOAT},
+    {"digitalGainRange", ICAMERA_TYPE_FLOAT},
+    {"analogGain", ICAMERA_TYPE_FLOAT},
+    {"digitalGain", ICAMERA_TYPE_FLOAT},
 };
 
 tag_info_t* vendor_tag_info[INTEL_VENDOR_SECTION_COUNT] = {
@@ -168,6 +172,18 @@ int vendor_metadata_enum_snprint(uint32_t tag, int32_t value, char* dst, size_t 
                 default:
                     msg = "error: enum value out of range";
             }
+            break;
+        }
+        case INTEL_VENDOR_CAMERA_ANALOG_GAIN_RANGE: {
+            break;
+        }
+        case INTEL_VENDOR_CAMERA_DIGITAL_GAIN_RANGE: {
+            break;
+        }
+        case INTEL_VENDOR_CAMERA_ANALOG_GAIN: {
+            break;
+        }
+        case INTEL_VENDOR_CAMERA_DIGITAL_GAIN: {
             break;
         }
     }

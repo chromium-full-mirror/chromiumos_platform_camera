@@ -1566,6 +1566,26 @@ int MetadataConvert::convertVendorTagParameter(const icamera::Parameters& parame
                          entry.count);
     }
 
+    entry = meta.find(INTEL_VENDOR_CAMERA_DIGITAL_GAIN_RANGE);
+    if (entry.count == 2) {
+        settings->update(INTEL_VENDOR_CAMERA_DIGITAL_GAIN_RANGE, entry.data.f, entry.count);
+    }
+
+    entry = meta.find(INTEL_VENDOR_CAMERA_ANALOG_GAIN_RANGE);
+    if (entry.count == 2) {
+        settings->update(INTEL_VENDOR_CAMERA_ANALOG_GAIN_RANGE, entry.data.f, entry.count);
+    }
+
+    entry = meta.find(INTEL_VENDOR_CAMERA_DIGITAL_GAIN);
+    if (entry.count == 1) {
+        settings->update(INTEL_VENDOR_CAMERA_DIGITAL_GAIN, entry.data.f, entry.count);
+    }
+
+    entry = meta.find(INTEL_VENDOR_CAMERA_ANALOG_GAIN);
+    if (entry.count == 1) {
+        settings->update(INTEL_VENDOR_CAMERA_ANALOG_GAIN, entry.data.f, entry.count);
+    }
+
     entry = meta.find(INTEL_VENDOR_CAMERA_SENSOR_MODE);
     if (entry.count == 1) {
         settings->update(INTEL_VENDOR_CAMERA_SENSOR_MODE, entry.data.u8, entry.count);

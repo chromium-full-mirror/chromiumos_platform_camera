@@ -482,6 +482,10 @@ int AiqCore::runAiq(long requestId, AiqResult* aiqResult) {
 
     mLastEvShift = mIntel3AParameter->mAeParams.ev_shift;
     aiqResult->mTimestamp = mTimestamp;
+    aiqResult->mAnalogGainRange[0] = mIntel3AParameter->mCMC.min_ag;
+    aiqResult->mAnalogGainRange[1] = mIntel3AParameter->mCMC.max_ag;
+    aiqResult->mDigitalGainRange[0] = mIntel3AParameter->mCMC.min_dg;
+    aiqResult->mDigitalGainRange[1] = mIntel3AParameter->mCMC.max_dg;
 
     if (PlatformData::isStatsRunningRateSupport(mCameraId)) {
         bool bothConverged = (mLastAeResult.exposures[0].converged &&
