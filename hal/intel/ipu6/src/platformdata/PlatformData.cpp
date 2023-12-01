@@ -580,17 +580,31 @@ int PlatformData::getAnalogGainLag(int cameraId) {
     return getInstance()->mStaticCfg.mCameras[cameraId].mAnalogGainLag;
 }
 
-PolicyConfig* PlatformData::getExecutorPolicyConfig(int graphId) {
-    size_t i = 0;
+PolicyConfig* PlatformData::getExecutorPolicyConfig(const std::set<int>& graphIds) {
     PlatformData::StaticCfg* cfg = &getInstance()->mStaticCfg;
 
+    size_t i = 0;
+    size_t graphCount = graphIds.size();
     for (i = 0; i < cfg->mPolicyConfig.size(); i++) {
-        if (graphId == cfg->mPolicyConfig[i].graphId) {
-            return &(cfg->mPolicyConfig[i]);
+        PolicyConfig& policy = cfg->mPolicyConfig[i];
+        if (policy.graphIds.size() != graphCount) continue;
+
+        bool match = true;
+        for (auto it = graphIds.cbegin(); it != graphIds.cend(); ++it) {
+            if (policy.graphIds.find(*it) == policy.graphIds.end()) {
+                match = false;
+                break;
+            }
+        }
+        if (match) {
+            return &policy;
         }
     }
 
-    LOGW("Couldn't find the executor policy for graphId(%d), please check xml file", graphId);
+    LOGW("Couldn't find the executor policy in xml, need %d graphs:", graphIds.size());
+    for (auto it = graphIds.begin(); it != graphIds.end(); ++it) {
+        LOGW("    graph id %d", *it);
+    }
     return nullptr;
 }
 

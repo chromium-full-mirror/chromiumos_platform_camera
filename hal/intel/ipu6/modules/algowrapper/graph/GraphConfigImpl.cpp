@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2022 Intel Corporation
+ * Copyright (C) 2015-2023 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -637,7 +637,12 @@ status_t GraphConfigImpl::selectSetting(
 
 status_t GraphConfigImpl::getGraphConfigData(IGraphType::GraphConfigData* data) {
     // The graph id, csi output and sensor mode must be same if there are two graph config pipes
-    data->graphId = mGraphConfigPipe.begin()->second->getGraphId();
+    LOG1("Query graphs, count %d", mGraphConfigPipe.size());
+    for (auto& item : mGraphConfigPipe) {
+        LOG1("    Graph usage %d, graph id %d", item.first, item.second->getGraphId());
+        data->graphIds.insert(item.second->getGraphId());
+    }
+
     mGraphConfigPipe.begin()->second->getCSIOutputResolution(&(data->csiReso));
 
     data->mcId = mMcId;
