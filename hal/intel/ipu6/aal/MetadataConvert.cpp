@@ -1591,6 +1591,11 @@ int MetadataConvert::convertVendorTagParameter(const icamera::Parameters& parame
         settings->update(INTEL_VENDOR_CAMERA_SENSOR_MODE, entry.data.u8, entry.count);
     }
 
+    entry = meta.find(INTEL_VENDOR_CAMERA_SENSITIVITY_RANGE);
+    if (entry.count == 2) {
+        settings->update(INTEL_VENDOR_CAMERA_SENSITIVITY_RANGE, entry.data.i32, entry.count);
+    }
+
     return icamera::OK;
 }
 
