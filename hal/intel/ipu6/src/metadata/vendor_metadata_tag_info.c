@@ -49,6 +49,7 @@ static tag_info_t intel_vendor_camera[INTEL_VENDOR_CAMERA_END - INTEL_VENDOR_CAM
     {"digitalGainRange", ICAMERA_TYPE_FLOAT},
     {"analogGain", ICAMERA_TYPE_FLOAT},
     {"digitalGain", ICAMERA_TYPE_FLOAT},
+    {"sensitivityRange", ICAMERA_TYPE_INT32},
 };
 
 tag_info_t* vendor_tag_info[INTEL_VENDOR_SECTION_COUNT] = {
@@ -184,6 +185,9 @@ int vendor_metadata_enum_snprint(uint32_t tag, int32_t value, char* dst, size_t 
             break;
         }
         case INTEL_VENDOR_CAMERA_DIGITAL_GAIN: {
+            break;
+        }
+        case INTEL_VENDOR_CAMERA_SENSITIVITY_RANGE: {
             break;
         }
     }
