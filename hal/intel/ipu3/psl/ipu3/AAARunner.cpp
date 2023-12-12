@@ -19,6 +19,7 @@
 #include "AAARunner.h"
 
 #include <math.h>
+#include <memory>
 #include "LogHelper.h"
 #include "CameraMetadataHelper.h"
 #include "Intel3aCore.h"
@@ -767,7 +768,8 @@ status_t AAARunner::applyTonemaps(RequestCtrlState &reqState)
             // allocate a linear spaced lut for half the input size, discarding
             // in-values
             size_t srcLutSize = srcLenG / 2;
-            float srcLut[srcLutSize];
+            std::unique_ptr<float[]> srcLutPtr = std::make_unique<float[]>(srcLutSize);
+            float * srcLut = srcLutPtr.get();
             // pick the out-values in srcLut, skip the in-values, calculate sums
             float sumR = 0;
             float sumG = 0;
@@ -882,7 +884,7 @@ status_t AAARunner::updateNeutralColorPoint(RequestCtrlState &reqAiqCfg)
 {
     LOG2("@%s", __FUNCTION__);
     float whitePoint[] = { 1.0, 1.0, 1.0 };
-    int tableSize = sizeof(whitePoint) / sizeof(float);
+    const int tableSize = sizeof(whitePoint) / sizeof(float);
 
     ia_aiq_awb_results &awbResults =
                 reqAiqCfg.captureSettings->aiqResults.awbResults;

@@ -19,6 +19,7 @@
 #include <expat.h>
 #include <limits.h>
 #include <dirent.h>
+#include <memory>
 #include <system/camera_metadata.h>
 
 #include "LogHelper.h"
@@ -1568,7 +1569,8 @@ void CameraProfiles::handleSensorInfo(const char *name, const char **atts)
         info->mTestPatternBayerFormat = atts[1];
     } else if (strcmp(name, "sensor.testPatternMap") == 0) {
         int size = strlen(atts[1]);
-        char src[size + 1];
+        std::unique_ptr<char[]> srcPtr = std::make_unique<char[]>(size + 1);
+        char * src = srcPtr.get();
         memset(src, 0, sizeof(src));
         MEMCPY_S(src, size, atts[1], size);
         char *savePtr, *tablePtr;
@@ -1607,7 +1609,8 @@ void CameraProfiles::handleSensorInfo(const char *name, const char **atts)
         info->mAgMaxRatio = atoi(atts[1]);
     } else if (strcmp(name, "ag.smiaParameters") == 0) {
         int size = strlen(atts[1]);
-        char src[size + 1];
+        std::unique_ptr<char[]> srcPtr = std::make_unique<char[]>(size + 1);
+        char * src = srcPtr.get();
         memset(src, 0, sizeof(src));
         MEMCPY_S(src, size, atts[1], size);
         char *savePtr, *tablePtr;
