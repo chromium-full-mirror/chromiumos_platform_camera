@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2021 Intel Corporation
+ * Copyright (C) 2014-2023 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -186,7 +186,7 @@ status_t RequestThread::handleConfigureStreams(MessageConfigureStreams msg)
     // Mark all streams as NOT active
     for (unsigned int i = 0; i < mStreams.size(); i++) {
         s = (CameraStream *)(mStreams.at(i)->priv);
-        s->setActive(false);
+        if (s) s->setActive(false);
     }
 
     // Create for new streams
