@@ -112,11 +112,6 @@ int AiqCore::initAiqPlusParams() {
 int AiqCore::init() {
     initAiqPlusParams();
 
-#ifndef ENABLE_SANDBOXING
-    ia_env env = {&Log::ccaPrintInfo, &Log::ccaPrintError, &Log::ccaPrintInfo};
-    ia_log_init(&env);
-#endif
-
     mAiqState = AIQ_INIT;
 
     int ret = mIntel3AParameter->init();
@@ -132,10 +127,6 @@ int AiqCore::init() {
 }
 
 int AiqCore::deinit() {
-#ifndef ENABLE_SANDBOXING
-    ia_log_deinit();
-#endif
-
     mAiqState = AIQ_NOT_INIT;
 
     freeAiqResultMem();

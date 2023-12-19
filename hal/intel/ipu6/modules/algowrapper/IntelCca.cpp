@@ -42,6 +42,13 @@ IntelCca* IntelCca::getInstance(int cameraId, TuningMode mode) {
         }
     }
 
+#ifndef ENABLE_SANDBOXING
+    if (sCcaInstance.empty()) {
+        ia_env env = {&Log::ccaPrintInfo, &Log::ccaPrintError, &Log::ccaPrintInfo};
+        ia_log_init(&env);
+    }
+#endif
+
     IntelCca::CCAHandle handle = {};
     handle.cameraId = cameraId;
     handle.ccaHandle[mode] = new IntelCca(cameraId, mode);
@@ -133,7 +140,7 @@ ia_err IntelCca::runAIQ(uint64_t frameId, const cca::cca_aiq_params& params,
 
 ia_err IntelCca::runLTM(uint64_t frameId, const cca::cca_ltm_input_params& params) {
     ia_err ret = getIntelCCA()->runLTM(frameId, params);
-    LOG2("@%s, frameId: %u, ret:%d", __func__, frameId, ret);
+    LOG2("@%s, frameId: %lu, ret:%d", __func__, frameId, ret);
 
     return ret;
 }

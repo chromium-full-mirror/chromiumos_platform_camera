@@ -174,7 +174,7 @@ bool CameraScheduler::Executor::threadLoop() {
     if (!mActive) return false;
 
     for (auto& node : mNodes) {
-        LOG2("%s process %d", getName(), tick);
+        LOG2("%s process %ld", getName(), tick);
         bool ret = node->process(tick);
         CheckAndLogError(!ret, true, "%s: node %s process error", getName(), node->getName());
     }

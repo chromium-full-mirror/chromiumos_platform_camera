@@ -479,7 +479,7 @@ int PSysProcessor::processNewFrame() {
             ret = prepareTask(&srcBuffers, &dstBuffers);
             CheckAndLogError(ret != OK, UNKNOWN_ERROR, "%s, Failed to process frame", __func__);
         } else {
-            LOG2("<id%d>@%s, No available buffers, in %u, out %u", mCameraId, __func__,
+            LOG2("<id%d>@%s, No available buffers, in %lu, out %lu", mCameraId, __func__,
                  srcBuffers.size(), dstBuffers.size());
         }
 
