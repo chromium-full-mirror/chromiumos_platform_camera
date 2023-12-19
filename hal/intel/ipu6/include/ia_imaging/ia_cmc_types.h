@@ -156,6 +156,17 @@ typedef enum
 } cmc_color_space;
 
 /*!
+ * \brief LSC NVM interpolation/upscaling method.
+ */
+typedef enum
+{
+    cmc_nvm_interpolation_polynomial,
+    cmc_nvm_interpolation_bi_cubic,
+    cmc_nvm_interpolation_polynomial_crop_two_pixels
+} cmc_nvm_interpolation;
+
+
+/*!
  * \brief CMC names used in the record headers.
  */
 typedef enum
