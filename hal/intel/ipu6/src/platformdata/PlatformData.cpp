@@ -601,7 +601,7 @@ PolicyConfig* PlatformData::getExecutorPolicyConfig(const std::set<int>& graphId
         }
     }
 
-    LOGW("Couldn't find the executor policy in xml, need %d graphs:", graphIds.size());
+    LOGW("Couldn't find the executor policy in xml, need %lu graphs:", graphIds.size());
     for (auto it = graphIds.begin(); it != graphIds.end(); ++it) {
         LOGW("    graph id %d", *it);
     }
@@ -1428,8 +1428,7 @@ camera_resolution_t* PlatformData::getPslOutputForRotation(int width, int height
     return nullptr;
 }
 
-const camera_resolution_t* PlatformData::getPreferOutput(int width, int height,
-                                                         int cameraId) {
+const camera_resolution_t* PlatformData::getPreferOutput(int width, int height, int cameraId) {
     if (getInstance()->mStaticCfg.mCameras[cameraId].mPreferOutput.empty()) return nullptr;
 
     const std::vector<camera_resolution_t>& preferOutput =

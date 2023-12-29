@@ -77,6 +77,7 @@ class IntelAlgoServer {
     IntelAlgoServer();
     ~IntelAlgoServer();
     int parseReqHeader(const uint8_t req_header[], uint32_t size);
+    void getControlData(uint32_t req_id, int32_t buffer_handle);
 
  private:
     static IntelAlgoServer* mInstance;
@@ -100,6 +101,7 @@ class IntelAlgoServer {
     std::queue<int32_t> mHandlesQueue;
     std::mutex mRegisterBufMutex;
 
+    bool mRunAlgoInMainThread;
     DISALLOW_COPY_AND_ASSIGN(IntelAlgoServer);
 };
 } /* namespace icamera */

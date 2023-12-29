@@ -198,7 +198,7 @@ ia_err IntelCca::setStatsParams(const cca::cca_stats_params& params) {
 }
 
 ia_err IntelCca::runAEC(uint64_t frameId, const cca::cca_ae_input_params& params,
-                        cca::cca_ae_results* results) {
+                        cca::cca_ae_results* results, bool lowPower) {
     LOG2("<id%d:req%ld> @%s, tuningMode:%d, in params size:%zu, results size:%zu", mCameraId,
          frameId, __func__, mTuningMode, sizeof(cca::cca_ae_input_params),
          sizeof(cca::cca_ae_results));
@@ -210,6 +210,7 @@ ia_err IntelCca::runAEC(uint64_t frameId, const cca::cca_ae_input_params& params
     aecParams->tuningMode = mTuningMode;
     aecParams->frameId = frameId;
     aecParams->inParams = params;
+    aecParams->lowPower = lowPower;
 
     ia_err ret = mCommon.requestSyncCca(IPC_CCA_RUN_AEC, mMemAEC.mHandle);
     aecParams->hasStats = false;

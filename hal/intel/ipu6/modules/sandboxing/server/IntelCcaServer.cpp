@@ -70,7 +70,7 @@ status_t IntelCcaServer::runAEC(void* pData, int dataSize) {
                          ret);
     }
 
-    ia_err ret = mCca->runAEC(params->frameId, params->inParams, &params->results);
+    ia_err ret = mCca->runAEC(params->frameId, params->inParams, &params->results, false);
     CheckAndLogError(ret != ia_err_none, UNKNOWN_ERROR, "@%s, fails: %d", __func__, ret);
 
     return OK;

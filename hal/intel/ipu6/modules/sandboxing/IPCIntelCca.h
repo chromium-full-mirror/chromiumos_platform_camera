@@ -47,6 +47,7 @@ struct intel_cca_decode_stats_data {
 struct intel_cca_run_aec_data {
     int cameraId;
     TuningMode tuningMode;
+    bool lowPower;
 
     uint64_t frameId;
     cca::cca_ae_input_params inParams;

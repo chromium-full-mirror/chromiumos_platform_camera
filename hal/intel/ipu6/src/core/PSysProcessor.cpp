@@ -74,7 +74,9 @@ PSysProcessor::~PSysProcessor() {
      * before delete PipeExecutor in PSysDAG.
      */
     if (mScheduler) {
-        mPSysDAGs[mCurConfigMode]->unregisterNode();
+        if (mPSysDAGs.find(mCurConfigMode) != mPSysDAGs.end()) {
+            mPSysDAGs[mCurConfigMode]->unregisterNode();
+        }
         delete mScheduler;
     }
     mPSysDAGs.clear();

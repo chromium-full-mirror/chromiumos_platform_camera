@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2021 Intel Corporation.
+ * Copyright (C) 2019-2023 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@
 #else
 #include "modules/sandboxing/server/IntelGPUAlgoServer.h"
 #endif
+#include "modules/sandboxing/IPCIntelCca.h"
 
 namespace icamera {
 
@@ -48,7 +49,9 @@ void IntelAlgoServer::deInit() {
     mInstance = nullptr;
 }
 
-IntelAlgoServer::IntelAlgoServer() : mCallback(nullptr) {
+IntelAlgoServer::IntelAlgoServer() :
+    mCallback(nullptr),
+    mRunAlgoInMainThread(false) {
     ia_env env = {&Log::ccaPrintInfo, &Log::ccaPrintError, &Log::ccaPrintInfo};
     ia_log_init(&env);
 
@@ -131,6 +134,19 @@ status_t IntelAlgoServer::getShmInfo(const int32_t buffer_handle, ShmInfo* memIn
     return OK;
 }
 
+void IntelAlgoServer::getControlData(uint32_t req_id, int32_t buffer_handle) {
+    if (req_id == IPC_CCA_RUN_AEC) {
+        ShmInfo info = {};
+        if (getShmInfo(buffer_handle, &info) == OK) {
+            intel_cca_run_aec_data* p = static_cast<intel_cca_run_aec_data*>(info.addr);
+            if (p) {
+                // Run algos in main thread for low power case
+                mRunAlgoInMainThread = p->lowPower;
+            }
+        }
+    }
+}
+
 void IntelAlgoServer::handleRequest(const MsgReq& msg) {
     CheckAndLogError(!mRequestHandler, VOID_VALUE, "@%s, handler is null", __func__);
     mRequestHandler->handleRequest(msg);
@@ -138,8 +154,6 @@ void IntelAlgoServer::handleRequest(const MsgReq& msg) {
 
 void IntelAlgoServer::request(uint32_t req_id, const uint8_t req_header[], uint32_t size,
                               int32_t buffer_handle) {
-    IPC_GROUP group = IntelAlgoIpcCmdToGroup(static_cast<IPC_CMD>(req_id));
-
     int ret = parseReqHeader(req_header, size);
     if (ret != 0) {
         returnCallback(req_id, UNKNOWN_ERROR, buffer_handle);
@@ -148,6 +162,14 @@ void IntelAlgoServer::request(uint32_t req_id, const uint8_t req_header[], uint3
 
     MsgReq msg = {req_id, buffer_handle};
 
+    getControlData(req_id, buffer_handle);
+    if (mRunAlgoInMainThread) {
+        LOG2("%s, Run req_id %u in main thread", __func__, req_id);
+        handleRequest(msg);
+        return;
+    }
+
+    IPC_GROUP group = IntelAlgoIpcCmdToGroup(static_cast<IPC_CMD>(req_id));
 #ifndef GPU_ALGO_SERVER
     int threadId = group;
 #else

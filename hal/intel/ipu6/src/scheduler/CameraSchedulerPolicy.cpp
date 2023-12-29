@@ -79,7 +79,7 @@ int32_t CameraSchedulerPolicy::setConfig(const std::set<int32_t>& graphIds) {
         }
     }
 
-    LOGE("%s: no config for the following graphs %d: )", __func__, graphCount);
+    LOGE("%s: no config for the following graphs %lu: )", __func__, graphCount);
     for (auto it = graphIds.cbegin(); it != graphIds.cend(); ++it) {
         LOGE("    graph id %d", *it);
     }

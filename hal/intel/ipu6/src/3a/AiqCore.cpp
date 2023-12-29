@@ -44,6 +44,7 @@ AiqCore::AiqCore(int cameraId)
           mAiqRunTime(0),
           mAiqState(AIQ_NOT_INIT),
           mHyperFocalDistance(0.0f),
+          mLowPowerMode(false),
           mTuningMode(TUNING_MODE_MAX),
           mShadingMode(SHADING_MODE_FAST),
           mLensShadingMapMode(LENS_SHADING_MAP_MODE_OFF),
@@ -250,6 +251,8 @@ int AiqCore::updateParameter(const aiq_parameter_t& param) {
     mShadingMode = param.shadingMode;
     mLensShadingMapMode = param.lensShadingMapMode;
     mLensShadingMapSize = param.lensShadingMapSize;
+
+    mLowPowerMode = param.powerMode == CAMERA_LOW_POWER ? true : false;
 
     mGbceParams.ev_shift = param.evShift;
 
@@ -511,7 +514,8 @@ int AiqCore::runAEC(long requestId, cca::cca_ae_results* aeResults) {
     CheckAndLogError(!intelCca, UNKNOWN_ERROR, "%s, intelCca is null, m:%d", __func__, mTuningMode);
     {
         PERF_CAMERA_ATRACE_PARAM1_IMAGING("intelCca->runAEC", 1);
-        ia_err iaErr = intelCca->runAEC(requestId, mIntel3AParameter->mAeParams, newAeResults);
+        ia_err iaErr = intelCca->runAEC(requestId, mIntel3AParameter->mAeParams, newAeResults,
+                                        mLowPowerMode);
         ret = AiqUtils::convertError(iaErr);
         CheckAndLogError(ret != OK, ret, "Error running AE, ret: %d", ret);
     }

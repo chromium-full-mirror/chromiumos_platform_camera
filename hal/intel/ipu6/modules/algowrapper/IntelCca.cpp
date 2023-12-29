@@ -119,7 +119,7 @@ ia_err IntelCca::setStatsParams(const cca::cca_stats_params& params) {
 }
 
 ia_err IntelCca::runAEC(uint64_t frameId, const cca::cca_ae_input_params& params,
-                        cca::cca_ae_results* results) {
+                        cca::cca_ae_results* results, bool lowPower) {
     CheckAndLogError(!results, ia_err_argument, "@%s, results is nullptr", __func__);
 
     ia_err ret = getIntelCCA()->runAEC(frameId, params, results);
