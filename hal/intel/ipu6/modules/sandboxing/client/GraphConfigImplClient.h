@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2021 Intel Corporation
+ * Copyright (C) 2019-2024 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,8 @@ class GraphConfigImpl {
     void releaseGraphNodes();
 
     bool queryGraphSettings(const std::vector<HalStream*>& activeStreams);
-    status_t configStreams(const std::vector<HalStream*>& activeStreams, bool dummyStillSink);
+    status_t configStreams(const std::vector<HalStream*>& activeStreams, bool dummyStillSink,
+                           SensorMode sensorMode);
     status_t getGraphConfigData(IGraphType::GraphConfigData* data);
     status_t getPgIdForKernel(const uint32_t streamId, const int32_t kernelId, int32_t* pgId);
 

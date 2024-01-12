@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2023 Intel Corporation.
+ * Copyright (C) 2015-2024 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,6 +95,7 @@ class PlatformData {
                       sensorDescription("unset"),
                       mLensName(""),
                       mLensHwType(LENS_NONE_HW),
+                      mSensorMode(SENSOR_MODE_UNKNOWN),
                       mEnablePdaf(false),
                       mSensorAwb(false),
                       mSensorAe(false),
@@ -173,6 +174,7 @@ class PlatformData {
             std::string mLensName;
             int mLensHwType;
             std::map<TuningMode, SensitivityRange> mTuningModeToSensitivityMap;
+            SensorMode mSensorMode;
             bool mEnablePdaf;
             bool mSensorAwb;
             bool mSensorAe;
@@ -440,6 +442,30 @@ class PlatformData {
      * \return int: the Lens HW type
      */
     static int getLensHwType(int cameraId);
+
+    /**
+     * get sensor mode
+     *
+     * \param[in] cameraId: [0, MAX_CAMERA_NUMBER - 1]
+     * \return SensorMode.
+     */
+    static SensorMode getSensorMode(int cameraId);
+
+    /**
+     * set sensor mode
+     *
+     * \param[in] cameraId: [0, MAX_CAMERA_NUMBER - 1]
+     * \param[in] sensorMode: SensorMode
+     */
+    static void setSensorMode(int cameraId, SensorMode sensorMode);
+
+    /**
+     * check if binning mode supported
+     *
+     * \param[in] cameraId: [0, MAX_CAMERA_NUMBER - 1]
+     * \return true if binning mode supported, otherwise return false.
+     */
+    static bool isBinningModeSupport(int cameraId);
 
     /**
      * get sensitivity range by TuningMode

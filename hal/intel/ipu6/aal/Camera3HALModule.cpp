@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2023 Intel Corporation
+ * Copyright (C) 2017-2024 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -275,6 +275,22 @@ void hal_set_privacy_switch_state(bool on) {
     PrivacyControl::setPrivacyMode(on);
 }
 
+static int camera_device_open_ext(const hw_module_t* module, const char* name,
+                                   hw_device_t** device, cros::ClientType client_type) {
+    int camera_id = atoi(name);
+    CheckAndLogError(camera_id < 0 || camera_id >= hal_get_number_of_cameras(), -ENODEV,
+                     "<id%d>%s: Camera id is out of bounds, num. of cameras (%d)", camera_id,
+                     __func__, hal_get_number_of_cameras());
+
+    if (client_type == cros::ClientType::kAndroid) {
+        icamera::PlatformData::setSensorMode(camera_id, icamera::SENSOR_MODE_FULL);
+    } else {
+        icamera::PlatformData::setSensorMode(camera_id, icamera::SENSOR_MODE_UNKNOWN);
+    }
+
+    return hal_dev_open(module, name, device);
+}
+
 static struct hw_module_methods_t hal_module_methods = {.open = hal_dev_open};
 
 static hw_module_t camera_common = {.tag = HARDWARE_MODULE_TAG,
@@ -303,6 +319,7 @@ camera_module_t VISIBILITY_PUBLIC HAL_MODULE_INFO_SYM = {
 cros::cros_camera_hal_t VISIBILITY_PUBLIC CROS_CAMERA_HAL_INFO_SYM = {
     .set_up = hal_set_up,
     .tear_down = hal_tear_down,
+    .camera_device_open_ext = camera_device_open_ext,
     .set_face_detection_result_callback = set_face_detection_result_callback,
     .set_privacy_switch_state = hal_set_privacy_switch_state
 };

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 Intel Corporation
+ * Copyright (C) 2019-2024 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,7 +90,8 @@ bool IPCGraphConfig::serverUnflattenParse(void* pData, uint32_t size,
 
 bool IPCGraphConfig::clientFlattenConfigStreams(void* pData, uint32_t size, GraphBaseInfo info,
                                                 GraphSettingType type, bool dummyStillSink,
-                                                const std::vector<HalStream*>& streams) {
+                                                const std::vector<HalStream*>& streams,
+                                                SensorMode sensorMode) {
     LOG1("<id%d>@%s, pData: %p, configMode: %d, dummyStillSink: %d", info.cameraId, __func__, pData,
          info.configMode, dummyStillSink);
 
@@ -109,24 +110,25 @@ bool IPCGraphConfig::clientFlattenConfigStreams(void* pData, uint32_t size, Grap
         params->streamNum++;
     }
     params->dummyStillSink = dummyStillSink;
+    params->sensorMode = sensorMode;
     return true;
 }
 
 bool IPCGraphConfig::serverUnflattenConfigStreams(void* pData, uint32_t size, GraphBaseInfo* info,
                                                   GraphSettingType* type, bool* dummyStillSink,
-                                                  std::vector<HalStream*>* streams) {
+                                                  std::vector<HalStream*>* streams,
+                                                  SensorMode* sensorMode) {
     CheckAndLogError(!pData || size < sizeof(GraphConfigStreamParams) || !info || !type ||
-                         !streams || !dummyStillSink,
-                     false,
-                     "@%s, Wrong parameters, pData: %p, size: %u, info: %p, type: %p, streams: %p, "
-                     "dummyStillSink: %p",
-                     __func__, pData, size, info, type, streams, dummyStillSink);
+                     !streams || !dummyStillSink || !sensorMode, false,
+                     "@%s, pData:%p, size:%u, info:%p, type:%p, streams:%p, sink:%p, mode:%p",
+                     __func__, pData, size, info, type, streams, dummyStillSink, sensorMode);
 
     GraphConfigStreamParams* params = static_cast<GraphConfigStreamParams*>(pData);
 
     *info = params->baseInfo;
     *type = params->type;
     *dummyStillSink = params->dummyStillSink;
+    *sensorMode = params->sensorMode;
     for (uint32_t i = 0; i < params->streamNum; ++i) {
         params->streamCfg[i].mPrivate = static_cast<void*>(&(params->streamPriv[i]));
         streams->push_back(&(params->streamCfg[i]));

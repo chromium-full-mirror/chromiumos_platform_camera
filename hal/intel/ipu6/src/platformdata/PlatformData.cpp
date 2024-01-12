@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2023 Intel Corporation.
+ * Copyright (C) 2015-2024 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -329,6 +329,27 @@ const char* PlatformData::getLensName(int cameraId) {
 
 int PlatformData::getLensHwType(int cameraId) {
     return getInstance()->mStaticCfg.mCameras[cameraId].mLensHwType;
+}
+
+void PlatformData::setSensorMode(int cameraId, SensorMode sensorMode) {
+    // Only change sensor mode when binning mode supported
+    if (!PlatformData::isBinningModeSupport(cameraId)) return;
+    getInstance()->mStaticCfg.mCameras[cameraId].mSensorMode = sensorMode;
+}
+
+SensorMode PlatformData::getSensorMode(int cameraId) {
+    return getInstance()->mStaticCfg.mCameras[cameraId].mSensorMode;
+}
+
+bool PlatformData::isBinningModeSupport(int cameraId) {
+    auto pCam = &getInstance()->mStaticCfg.mCameras[cameraId];
+    for (auto& cfg : pCam->mSupportedTuningConfig) {
+        if (cfg.tuningMode == TUNING_MODE_VIDEO_BINNING) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 int PlatformData::getSensitivityRangeByTuningMode(int cameraId, TuningMode mode,
