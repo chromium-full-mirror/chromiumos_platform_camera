@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2023 Intel Corporation
+ * Copyright (C) 2015-2024 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -407,16 +407,42 @@ bool GraphConfigImpl::queryGraphSettings(const std::vector<HalStream*>& activeSt
     return ret == OK ? true : false;
 }
 
+void GraphConfigImpl::reorderQueryResults(std::map<int, std::vector<GCSS::IGraphConfig*>>& queryRes,
+                                          SensorMode sensorMode) {
+    if (sensorMode == SENSOR_MODE_UNKNOWN) return;
+
+    for (auto& result : queryRes) {
+        auto& settingVector = result.second;
+        if (settingVector.size() < 2) continue;
+
+        std::sort(settingVector.begin(), settingVector.end(),
+                  [&](GCSS::IGraphConfig* a, GCSS::IGraphConfig* b) {
+                      camera_resolution_t aRes, bRes;
+                      if (getRawInputSize(a, &aRes) == OK && getRawInputSize(b, &bRes) == OK) {
+                          if (aRes.width >= bRes.width && aRes.height >= bRes.height) {
+                              if (sensorMode == SENSOR_MODE_FULL) return true;
+                          } else {
+                              if (sensorMode == SENSOR_MODE_BINNING) return true;
+                          }
+                      }
+                      return false;
+                  });
+    }
+}
+
 /*
  * According to the stream list to query graph setting and create GraphConfigPipe
  */
 status_t GraphConfigImpl::configStreams(const vector<HalStream*>& activeStreams,
-                                        bool dummyStillSink) {
+                                        bool dummyStillSink, SensorMode sensorMode) {
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL1);
 
     map<int, vector<GCSS::IGraphConfig*>> useCaseToQueryResults;
     status_t ret = queryAllMatchedResults(activeStreams, dummyStillSink, &useCaseToQueryResults);
     CheckAndLogError(ret != OK, UNKNOWN_ERROR, "%s, Faild to queryAllMatchedResults", __func__);
+
+    reorderQueryResults(useCaseToQueryResults, sensorMode);
+
     // Filter the results with same isys output if there are
     // multiple items in useCaseToQueryResults map
     if (useCaseToQueryResults.size() > 1) {
@@ -460,7 +486,8 @@ status_t GraphConfigImpl::configStreams(const vector<HalStream*>& activeStreams,
     } else {
         // Use the query result with smallest isys output if there is only video pipe
         int resultIdx = 0;
-        if (useCaseToQueryResults.begin()->first == USE_CASE_VIDEO) {
+        if (useCaseToQueryResults.begin()->first == USE_CASE_VIDEO &&
+            sensorMode == SENSOR_MODE_UNKNOWN) {
             camera_resolution_t resultReso;
             getRawInputSize((useCaseToQueryResults.begin()->second)[0], &resultReso);
             for (size_t idx = 0; idx < (useCaseToQueryResults.begin()->second).size(); idx++) {

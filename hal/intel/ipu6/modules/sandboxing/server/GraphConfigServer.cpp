@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2021 Intel Corporation
+ * Copyright (C) 2019-2024 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,8 +65,9 @@ status_t GraphConfigServer::queryGraphSettings(void* pData, size_t dataSize) {
     GraphSettingType type;
     std::vector<HalStream*> streams;
     bool dummyStillSink;
-    bool ret =
-        mIpc.serverUnflattenConfigStreams(pData, dataSize, &info, &type, &dummyStillSink, &streams);
+    SensorMode sensorMode;
+    bool ret = mIpc.serverUnflattenConfigStreams(pData, dataSize, &info, &type, &dummyStillSink,
+                                                 &streams, &sensorMode);
     CheckAndLogError(ret == false, UNKNOWN_ERROR, "@%s, clientFlattenConfigStreams fails",
                      __func__);
 
@@ -85,8 +86,9 @@ status_t GraphConfigServer::configStreams(void* pData, size_t dataSize) {
     GraphSettingType type;
     std::vector<HalStream*> streams;
     bool dummyStillSink;
-    bool ret =
-        mIpc.serverUnflattenConfigStreams(pData, dataSize, &info, &type, &dummyStillSink, &streams);
+    SensorMode sensorMode;
+    bool ret = mIpc.serverUnflattenConfigStreams(pData, dataSize, &info, &type, &dummyStillSink,
+                                                 &streams, &sensorMode);
     CheckAndLogError(ret == false, UNKNOWN_ERROR, "@%s, serverUnflattenConfigStreams fails",
                      __func__);
 
@@ -99,7 +101,7 @@ status_t GraphConfigServer::configStreams(void* pData, size_t dataSize) {
          info.configMode, type, dummyStillSink);
     std::shared_ptr<GraphConfigImpl> graphConfigImpl =
         std::make_shared<GraphConfigImpl>(info.cameraId, info.configMode, type);
-    status_t rt = graphConfigImpl->configStreams(streams, dummyStillSink);
+    status_t rt = graphConfigImpl->configStreams(streams, dummyStillSink, sensorMode);
     CheckAndLogError(rt != OK, ret, "<id%d> @%s, Failed to configStreams, configMode: %d",
                      info.cameraId, __func__, info.configMode);
 
