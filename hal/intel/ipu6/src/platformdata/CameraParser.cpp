@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2023 Intel Corporation
+ * Copyright (C) 2015-2024 Intel Corporation
  * Copyright 2008-2017, The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -431,6 +431,12 @@ void CameraParser::handleSensor(CameraParser* profiles, const char* name, const 
             pCurrentCam->mTuningModeToSensitivityMap[mode] = range;
 
             tuningMode = strtok_r(nullptr, ",", &savePtr);
+        }
+    } else if (strcmp(name, "sensorMode") == 0) {
+        if (strcmp(atts[1], "binning") == 0) {
+            pCurrentCam->mSensorMode = SENSOR_MODE_BINNING;
+        } else if (strcmp(atts[1], "full") == 0) {
+            pCurrentCam->mSensorMode = SENSOR_MODE_FULL;
         }
     } else if (strcmp(name, "enablePdaf") == 0) {
         pCurrentCam->mEnablePdaf = strcmp(atts[1], "true") == 0;

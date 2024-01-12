@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 Intel Corporation.
+ * Copyright (C) 2019-2024 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,6 +79,7 @@ struct GraphConfigStreamParams {
     HalStream streamCfg[MAX_STREAM];
     stream_t streamPriv[MAX_STREAM];
     bool dummyStillSink;
+    SensorMode sensorMode;
 };
 
 struct GraphQueryGraphParams {
@@ -151,10 +152,10 @@ class IPCGraphConfig {
     bool serverUnflattenParse(void* pData, uint32_t size, GraphParseParams** parseParam);
     bool clientFlattenConfigStreams(void* pData, uint32_t size, GraphBaseInfo info,
                                     GraphSettingType type, bool dummyStillSink,
-                                    const std::vector<HalStream*>& streams);
+                                    const std::vector<HalStream*>& streams, SensorMode sensorMode);
     bool serverUnflattenConfigStreams(void* pData, uint32_t size, GraphBaseInfo* info,
                                       GraphSettingType* type, bool* dummyStillSink,
-                                      std::vector<HalStream*>* streams);
+                                      std::vector<HalStream*>* streams, SensorMode* sensorMode);
     bool clientFlattenGetGraphData(void* pData, uint32_t size, GraphBaseInfo info);
     bool serverUnflattenGetGraphData(void* pData, uint32_t size, GraphBaseInfo* info);
     bool serverFlattenGetGraphData(void* pData, uint32_t size,

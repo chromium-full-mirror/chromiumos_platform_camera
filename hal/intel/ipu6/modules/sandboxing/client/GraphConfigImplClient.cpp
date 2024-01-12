@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2021 Intel Corporation
+ * Copyright (C) 2019-2024 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -115,7 +115,7 @@ bool GraphConfigImpl::queryGraphSettings(const vector<HalStream*>& activeStreams
     GraphBaseInfo info = {mCameraId, mConfigMode};
     memset(mMemQueryGraphSettings.mAddr, 0, sizeof(GraphQueryGraphParams));
     bool ret = mIpc.clientFlattenConfigStreams(mMemQueryGraphSettings.mAddr, mMemConfig.mSize, info,
-                                               mType, false, activeStreams);
+                                               mType, false, activeStreams, SENSOR_MODE_UNKNOWN);
     CheckAndLogError(!ret, false, "clientFlattenConfigStreams fails");
 
     ret = mCommon.requestSync(IPC_GRAPH_QUERY_GRAPH_SETTINGS, mMemQueryGraphSettings.mHandle);
@@ -127,13 +127,13 @@ bool GraphConfigImpl::queryGraphSettings(const vector<HalStream*>& activeStreams
 }
 
 status_t GraphConfigImpl::configStreams(const vector<HalStream*>& activeStreams,
-                                        bool dummyStillSink) {
+                                        bool dummyStillSink, SensorMode sensorMode) {
     LOG1("<id%d> %s, dummyStillSink: %d", mCameraId, __func__, dummyStillSink);
     CheckAndLogError(!mInitialized, UNKNOWN_ERROR, "configStreams mInitialized is false");
 
     GraphBaseInfo info = {mCameraId, mConfigMode};
     bool ret = mIpc.clientFlattenConfigStreams(mMemConfig.mAddr, mMemConfig.mSize, info, mType,
-                                               dummyStillSink, activeStreams);
+                                               dummyStillSink, activeStreams, sensorMode);
     CheckAndLogError(!ret, UNKNOWN_ERROR, "clientFlattenConfigStreams fails");
 
     ret = mCommon.requestSync(IPC_GRAPH_CONFIG_STREAMS, mMemConfig.mHandle);
