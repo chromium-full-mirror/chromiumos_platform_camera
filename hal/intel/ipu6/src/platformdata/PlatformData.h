@@ -113,6 +113,7 @@ class PlatformData {
                       mCITMaxMargin(0),
                       mYuvColorRangeMode(CAMERA_FULL_MODE_YUV_COLOR_RANGE),
                       mInitialSkipFrame(0),
+                      mInitialPendingFrame(0),
                       mMaxRawDataNum(MAX_BUFFER_COUNT),
                       mTopBottomReverse(false),
                       mPsysContinueStats(false),
@@ -194,6 +195,7 @@ class PlatformData {
             int mCITMaxMargin;
             camera_yuv_color_range_mode_t mYuvColorRangeMode;
             unsigned int mInitialSkipFrame;
+            unsigned int mInitialPendingFrame;
             unsigned int mMaxRawDataNum;
             bool mTopBottomReverse;
             bool mPsysContinueStats;
@@ -679,6 +681,14 @@ class PlatformData {
      * \return the value of initial skip frame number
      */
     static unsigned int getInitialSkipFrame(int cameraId);
+
+    /**
+     * Get initial pending frame number
+     *
+     * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
+     * \return the value of initial pending frame number
+     */
+    static unsigned int getInitialPendingFrame(int cameraId);
 
     /**
      * Get max raw data number

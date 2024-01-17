@@ -561,6 +561,10 @@ unsigned int PlatformData::getInitialSkipFrame(int cameraId) {
     return getInstance()->mStaticCfg.mCameras[cameraId].mInitialSkipFrame;
 }
 
+unsigned int PlatformData::getInitialPendingFrame(int cameraId) {
+    return getInstance()->mStaticCfg.mCameras[cameraId].mInitialPendingFrame;
+}
+
 unsigned int PlatformData::getMaxRawDataNum(int cameraId) {
     return getInstance()->mStaticCfg.mCameras[cameraId].mMaxRawDataNum;
 }

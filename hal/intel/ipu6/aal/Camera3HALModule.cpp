@@ -276,7 +276,7 @@ void hal_set_privacy_switch_state(bool on) {
 }
 
 static int camera_device_open_ext(const hw_module_t* module, const char* name,
-                                   hw_device_t** device, cros::ClientType client_type) {
+                                  hw_device_t** device, cros::ClientType client_type) {
     int camera_id = atoi(name);
     CheckAndLogError(camera_id < 0 || camera_id >= hal_get_number_of_cameras(), -ENODEV,
                      "<id%d>%s: Camera id is out of bounds, num. of cameras (%d)", camera_id,

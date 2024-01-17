@@ -498,6 +498,8 @@ void CameraParser::handleSensor(CameraParser* profiles, const char* name, const 
         }
     } else if (strcmp(name, "initialSkipFrame") == 0) {
         pCurrentCam->mInitialSkipFrame = atoi(atts[1]);
+    } else if (strcmp(name, "initialPendingFrame") == 0) {
+        pCurrentCam->mInitialPendingFrame = atoi(atts[1]);
     } else if (strcmp(name, "maxRawDataNum") == 0) {
         pCurrentCam->mMaxRawDataNum = atoi(atts[1]);
     } else if (strcmp(name, "topBottomReverse") == 0) {
