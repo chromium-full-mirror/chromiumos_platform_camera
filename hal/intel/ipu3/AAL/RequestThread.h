@@ -91,6 +91,7 @@ private:  /* methods */
 
     bool areAllStreamsUnderMaxBuffers() const;
     void deleteStreams(bool inactiveOnly);
+    void deleteNilStreams();
 
 private:  /* members */
     int mCameraId;

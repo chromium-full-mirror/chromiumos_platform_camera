@@ -183,6 +183,8 @@ status_t RequestThread::handleConfigureStreams(MessageConfigureStreams msg)
         return BAD_VALUE;
     }
 
+    deleteNilStreams();
+
     // Mark all streams as NOT active
     for (unsigned int i = 0; i < mStreams.size(); i++) {
         s = (CameraStream *)(mStreams.at(i)->priv);
@@ -500,6 +502,19 @@ void RequestThread::deleteStreams(bool inactiveOnly)
         if (!inactiveOnly || !s->isActive()) {
             delete s;
             mStreams.at(i)->priv = nullptr;
+            mLocalStreams.erase(mLocalStreams.begin() + i);
+            mStreams.erase(mStreams.begin() + i);
+        } else {
+            ++i;
+        }
+    }
+}
+
+void RequestThread::deleteNilStreams()
+{
+    size_t i = 0;
+    while (i < mStreams.size()) {
+        if (!mStreams[i]->priv) {
             mLocalStreams.erase(mLocalStreams.begin() + i);
             mStreams.erase(mStreams.begin() + i);
         } else {
