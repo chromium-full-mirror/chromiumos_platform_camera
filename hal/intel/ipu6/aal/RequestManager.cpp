@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2023 Intel Corporation
+ * Copyright (C) 2017-2024 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -824,6 +824,8 @@ int RequestManager::waitProcessRequest() {
             lock, std::chrono::nanoseconds(kMaxDuration * SLOWLY_MULTIPLIER));
         if (ret == std::cv_status::timeout) {
             LOGW("%s, wait to process request time out", __func__);
+            icamera::camera_msg_data_t data = {icamera::CAMERA_DEVICE_ERROR, {}};
+            mResultProcessor->callbackNotify(data);
         }
     }
 
