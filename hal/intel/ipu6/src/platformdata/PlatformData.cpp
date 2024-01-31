@@ -610,10 +610,14 @@ PolicyConfig* PlatformData::getExecutorPolicyConfig(const std::set<int>& graphId
 
     size_t i = 0;
     size_t graphCount = graphIds.size();
+    PolicyConfig* pCfg = nullptr;
     for (i = 0; i < cfg->mPolicyConfig.size(); i++) {
         PolicyConfig& policy = cfg->mPolicyConfig[i];
-        if (policy.graphIds.size() != graphCount) continue;
+        // Previous platforms only support cfg with one graph id.
+        // Find cfg according to the first graphId for them
+        if (!graphIds.empty() && (*policy.graphIds.begin() == *graphIds.begin())) pCfg = &policy;
 
+        if (policy.graphIds.size() != graphCount) continue;
         bool match = true;
         for (auto it = graphIds.cbegin(); it != graphIds.cend(); ++it) {
             if (policy.graphIds.find(*it) == policy.graphIds.end()) {
@@ -630,7 +634,8 @@ PolicyConfig* PlatformData::getExecutorPolicyConfig(const std::set<int>& graphId
     for (auto it = graphIds.begin(); it != graphIds.end(); ++it) {
         LOGW("    graph id %d", *it);
     }
-    return nullptr;
+    if (pCfg) LOGW("%s: use cfg with graph id %d", __func__, *pCfg->graphIds.begin());
+    return pCfg;
 }
 
 int PlatformData::numberOfCameras() {
