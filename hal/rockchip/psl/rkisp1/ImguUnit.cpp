@@ -184,7 +184,7 @@ status_t ImguUnit::mapStreamWithDeviceNode()
     int videoIdx = -1;
     int previewIdx = -1;
     int listenerIdx = -1;
-    bool isVideoSnapshot = false;
+    __attribute__((unused)) bool isVideoSnapshot = false;
     NodeTypes listenToNode = IMGU_NODE_NULL;
 
     if (streamNum == 1) {

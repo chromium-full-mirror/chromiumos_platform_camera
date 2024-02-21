@@ -1547,7 +1547,7 @@ status_t GraphConfig::portGetPeerIdByName(string name,
 {
     uid_t stageId; // not used
     css_err_t ret;
-    status_t retErr;
+    __attribute__((unused)) status_t retErr;
     Node *portNode = nullptr;
     Node *peerNode = nullptr;
 

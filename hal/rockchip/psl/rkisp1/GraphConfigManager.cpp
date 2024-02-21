@@ -291,7 +291,7 @@ status_t GraphConfigManager::mapStreamToKey(const std::vector<camera3_stream_t*>
     // Secondary output produces small size frames
     int mainOutputIndex = -1;
     int secondaryOutputIndex = -1;
-    bool isVideoSnapshot = false;
+    __attribute__((unused)) bool isVideoSnapshot = false;
 
     if (availableStreams.size() == 1) {
         mainOutputIndex = 0;

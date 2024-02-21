@@ -167,7 +167,7 @@ status_t SettingsProcessor::processIspSettings(const CameraMetadata &settings,
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL2);
     camera_metadata_ro_entry entry;
     CLEAR(entry);
-    IspSettings *ispSettings = nullptr;
+    __attribute__((unused)) IspSettings *ispSettings = nullptr;
 
     if (reqAiqCfg.captureSettings) {
         ispSettings = &reqAiqCfg.captureSettings->ispSettings;
@@ -315,7 +315,7 @@ status_t SettingsProcessor::processImageEnhancementSettings(const CameraMetadata
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL2);
     camera_metadata_ro_entry entry;
     CLEAR(entry);
-    IspSettings *ispSettings = nullptr;
+    __attribute__((unused)) IspSettings *ispSettings = nullptr;
 
     if (reqAiqCfg.captureSettings) {
         ispSettings = &reqAiqCfg.captureSettings->ispSettings;

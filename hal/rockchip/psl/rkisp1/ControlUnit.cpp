@@ -189,7 +189,7 @@ ControlUnit::init()
     m3ARunner = new Rk3aRunner(mCameraId, m3aWrapper, mSettingsProcessor, mLensController.get());
 
     /* Set digi gain support */
-    bool supportDigiGain = false;
+    __attribute__((unused)) bool supportDigiGain = false;
     if (cap)
         supportDigiGain = cap->digiGainOnSensor();
 
