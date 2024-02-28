@@ -1807,8 +1807,8 @@ std::string CameraProfiles::getMediaDeviceByName(std::string driverName)
         media_device_info info;
         int ret = controller.getMediaDevInfo(info);
         if (ret != OK) {
-            LOGE("Cannot get media device information.");
-            return mediaDevicePath;
+            LOGD("Cannot get media device information: %s", candidate.c_str());
+            continue;
         }
 
         if (strncmp(info.driver, driverName.c_str(),
