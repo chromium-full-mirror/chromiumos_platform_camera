@@ -1802,6 +1802,9 @@ std::string CameraProfiles::getMediaDeviceByName(std::string driverName)
         if (retVal == PERMISSION_DENIED) {
             LOGD("Not enough permissions to access %s.", candidate.c_str());
             continue;
+        } else if (retVal != NO_ERROR) {
+            LOGD("open() failed on: %s", candidate.c_str());
+            continue;
         }
 
         media_device_info info;
@@ -1816,10 +1819,18 @@ std::string CameraProfiles::getMediaDeviceByName(std::string driverName)
                     driverName.size())) == 0) {
             LOGD("Found device that matches: %s", driverName.c_str());
             mediaDevicePath += candidate;
-            break;
+            return mediaDevicePath;
         }
     }
 
+    LOGE("Could not find media controller: %s", driverName.c_str());
+
+    /* This function is expected to find the devices it looks for.
+     * There is no way to signal failure, so in the interest of not
+     * breaking any further logic, let's keep its existing fallback
+     * return value: Whatever the default value of mediaDevicePath
+     * happens to be (usually "" as the default constructor).
+     */
     return mediaDevicePath;
 }
 

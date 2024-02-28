@@ -102,6 +102,10 @@ status_t MediaController::open()
             // Return permission denied, to allow skipping this device.
             // Our HAL may not want to really use this device at all.
             ret = PERMISSION_DENIED;
+        } else {
+            LOGD("Error opening media-ctl %s: %s", mPath.c_str(),
+                 strerror(errno));
+            ret = UNKNOWN_ERROR;
         }
     }
 
