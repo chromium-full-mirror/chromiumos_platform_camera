@@ -880,19 +880,24 @@ int IspParamAdaptor::runIspAdaptL(ia_isp_bxt_program_group* pgPtr, ia_isp_bxt_gd
     inputParams->stream_id = inputParams->program_group.base.run_kernels[0].stream_id;
 
     if (ispSettings) {
-        inputParams->nr_setting = ispSettings->nrSetting;
-        inputParams->ee_setting = ispSettings->eeSetting;
+        if (VIDEO_STREAM_ID == inputParams->stream_id) {
+            inputParams->nr_setting = ispSettings->nrSetting;
+            inputParams->ee_setting = ispSettings->eeSetting;
+        } else {
+            inputParams->nr_setting = ispSettings->nrStillSetting;
+            inputParams->ee_setting = ispSettings->eeStillSetting;
+        }
         LOG2("%s: ISP NR setting, level: %d, strength: %d", __func__,
-             static_cast<int>(ispSettings->nrSetting.feature_level),
-             static_cast<int>(ispSettings->nrSetting.strength));
+             static_cast<int>(inputParams->nr_setting.feature_level),
+             static_cast<int>(inputParams->nr_setting.strength));
+        LOG2("%s: ISP EE setting, level: %d, strength: %d", __func__,
+             inputParams->ee_setting.feature_level, inputParams->ee_setting.strength);
 
         inputParams->effects = ispSettings->effects;
         inputParams->manual_brightness = ispSettings->manualSettings.manualBrightness;
         inputParams->manual_contrast = ispSettings->manualSettings.manualContrast;
         inputParams->manual_hue = ispSettings->manualSettings.manualHue;
         inputParams->manual_saturation = ispSettings->manualSettings.manualSaturation;
-        LOG2("%s: ISP EE setting, level: %d, strength: %d", __func__,
-             ispSettings->eeSetting.feature_level, ispSettings->eeSetting.strength);
 
         if (ispSettings->palOverride) {
             CheckAndLogError(ispSettings->palOverride->size > cca::MAX_PAL_TUNING_SIZE, NO_MEMORY,

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016-2023 Intel Corporation.
+ * Copyright (C) 2016-2024 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -130,9 +130,14 @@ void TunningParser::handleModule(TunningParser* profiles, const char* name, cons
     LOG2("@%s, name:%s, atts[0]:%s, sensor:%s", __func__, name, atts[0],
          profiles->mCurrentCam->sensorName.c_str());
 
-    if ((strcmp(name, "edgeNrTable") == 0) || (strcmp(name, "edgeNrTable-binning") == 0)) {
+    if ((strcmp(name, "edgeNrTable") == 0) || (strcmp(name, "edgeNrTable-binning") == 0) ||
+        (strcmp(name, "edgeNrTable-still") == 0) ||
+        (strcmp(name, "edgeNrTable-still-binning") == 0)) {
+
         TuningMode mode = TUNING_MODE_VIDEO;
         if (strcmp(name, "edgeNrTable-binning") == 0) mode = TUNING_MODE_VIDEO_BINNING;
+        else if (strcmp(name, "edgeNrTable-still") == 0) mode = TUNING_MODE_STILL_CAPTURE;
+        else if (strcmp(name, "edgeNrTable-still-binning") == 0) mode = TUNING_MODE_VIDEO_ULL;
 
         auto& edgeNrMap = profiles->mCurrentCam->mTotalGainHdrRatioToEdgeNrMap[mode];
         EdgeNrSetting setting;
