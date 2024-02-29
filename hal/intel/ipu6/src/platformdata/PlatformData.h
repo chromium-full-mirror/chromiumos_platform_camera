@@ -109,6 +109,7 @@ class PlatformData {
                       mAiqRunningInterval(1),
                       mStatsRunningRate(false),
                       mEnableMkn(true),
+                      mIspTuningUpdate(false),
                       mSkipFrameV4L2Error(false),
                       mCITMaxMargin(0),
                       mYuvColorRangeMode(CAMERA_FULL_MODE_YUV_COLOR_RANGE),
@@ -189,6 +190,7 @@ class PlatformData {
             int mAiqRunningInterval;
             bool mStatsRunningRate;
             bool mEnableMkn;
+            bool mIspTuningUpdate;
             // first: one algo type in imaging_algorithm_t, second: running rate
             std::unordered_map<int, float> mAlgoRunningRateMap;
             bool mSkipFrameV4L2Error;
@@ -1463,8 +1465,10 @@ class PlatformData {
 
     /**
      * Check if support to update tuning data or not
+     *
+     * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
      */
-    static bool supportUpdateTuning();
+    static bool supportUpdateTuning(int cameraId);
 
     /**
      * Check if support hardware jpeg encode or not

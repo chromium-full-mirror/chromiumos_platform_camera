@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2023 Intel Corporation.
+ * Copyright (C) 2015-2024 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -244,7 +244,7 @@ int IspParamAdaptor::configure(const stream_t& stream, ConfigMode configMode, Tu
         CheckAndLogError(ret != OK, ret, "%s, Failed to allocate isp parameter buffers", __func__);
     }
 
-    if (PlatformData::supportUpdateTuning()) {
+    if (PlatformData::supportUpdateTuning(mCameraId)) {
         for (auto& ispParamIt : mStreamIdToIspParameterMap) {
             int ispTuningIndex = mGraphConfig->getTuningModeByStreamId(ispParamIt.first);
             // Use the tuning mode in graph to update the isp tuning data

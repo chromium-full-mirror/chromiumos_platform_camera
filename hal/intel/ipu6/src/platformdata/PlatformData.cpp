@@ -1652,8 +1652,12 @@ int PlatformData::getVideoStreamNum() {
     return getInstance()->mStaticCfg.mCommonConfig.videoStreamNum;
 }
 
-bool PlatformData::supportUpdateTuning() {
-    return getInstance()->mStaticCfg.mCommonConfig.supportIspTuningUpdate;
+bool PlatformData::supportUpdateTuning(int cameraId) {
+    // Check if support UpdateTuning per platform config
+    if (getInstance()->mStaticCfg.mCommonConfig.supportIspTuningUpdate) return true;
+
+    // check if support UpdateTuning per sensor config
+    return getInstance()->mStaticCfg.mCameras[cameraId].mIspTuningUpdate;
 }
 
 bool PlatformData::supportHwJpegEncode() {
