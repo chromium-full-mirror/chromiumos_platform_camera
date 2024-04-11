@@ -110,6 +110,7 @@ namespace Log {
 
 #define DEFAULT_LOG_SINK "GLOG"
 #define FILELOG_SINK "FILELOG"
+#define SYSLOG_SINK "SYSLOG"
 
 static void initLogSinks() {
     const char* sinkName = ::getenv("logSink");

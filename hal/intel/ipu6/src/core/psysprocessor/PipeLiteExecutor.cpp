@@ -61,7 +61,9 @@ PipeLiteExecutor::PipeLiteExecutor(int cameraId, const ExecutorPolicy& policy,
           mLastStatsSequence(-1),
           mExclusivePGs(exclusivePGs),
           mPSysDag(psysDag),
-          mkernelsCountWithStats(0) {
+          mkernelsCountWithStats(0),
+          mMsOfPsysAlignWithSystem(0) {
+    mMsOfPsysAlignWithSystem = PlatformData::getMsOfPsysAlignWithSystem(mCameraId);
 }
 
 PipeLiteExecutor::~PipeLiteExecutor() {
@@ -615,6 +617,25 @@ int PipeLiteExecutor::processNewFrame() {
     int64_t inBufSequence = inBuf->getSequence();
     v4l2_buffer_t inV4l2Buf = *inBuf->getV4L2Buffer().Get();
     TuningMode tuningMode = mPSysDag->getTuningMode(inBufSequence);
+
+    // Check if system scheduling
+// Allow +/- 3ms delay
+#define SYS_TRIGGER_DELTA    (3)
+    if (mMsOfPsysAlignWithSystem) {
+        timeval curTime;
+        gettimeofday(&curTime, nullptr);
+        int64_t ms = (curTime.tv_usec / 1000) % mMsOfPsysAlignWithSystem;
+        int64_t waitMs = 0;
+
+        if ((ms <= SYS_TRIGGER_DELTA) || ((mMsOfPsysAlignWithSystem - ms) <= SYS_TRIGGER_DELTA))
+            waitMs = 0;
+        else
+            waitMs  = mMsOfPsysAlignWithSystem - ms;
+
+        LOG1("%s: current %ld (%ld), need wait %ld to trigger", mName.c_str(),
+             curTime.tv_usec / 1000, ms, waitMs);
+        if (waitMs) usleep(waitMs * 1000);
+    }
 
     LOG2("%s:Id:%d run pipe start for buffer:%ld", mName.c_str(), mCameraId, inBufSequence);
 
