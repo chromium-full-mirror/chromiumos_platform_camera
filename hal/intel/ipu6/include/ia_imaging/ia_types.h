@@ -322,6 +322,7 @@ typedef enum
     FACEBOXES_FD,
     CENTERNET_FD,
     OS_FD,
+    GOOGLE_FD,
     UNKNOWN_FD
 } FD_IMPL_TYPE;
 
