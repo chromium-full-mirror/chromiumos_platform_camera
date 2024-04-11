@@ -2117,8 +2117,8 @@ void CameraParser::getNVMDirectory(CameraParser* profiles) {
                 int size = static_cast<int>(ftell(fp));
                 fseek(fp, 0, SEEK_SET);
                 std::unique_ptr<char[]> ptr(new char[size + 1]);
-                ptr[size] = 0;
                 size_t readSize = fread(ptr.get(), sizeof(char), size, fp);
+                ptr[readSize] = 0;
                 fclose(fp);
 
                 if (readSize > 0) {

@@ -133,7 +133,6 @@ void TunningParser::handleModule(TunningParser* profiles, const char* name, cons
     if ((strcmp(name, "edgeNrTable") == 0) || (strcmp(name, "edgeNrTable-binning") == 0) ||
         (strcmp(name, "edgeNrTable-still") == 0) ||
         (strcmp(name, "edgeNrTable-still-binning") == 0)) {
-
         TuningMode mode = TUNING_MODE_VIDEO;
         if (strcmp(name, "edgeNrTable-binning") == 0) mode = TUNING_MODE_VIDEO_BINNING;
         else if (strcmp(name, "edgeNrTable-still") == 0) mode = TUNING_MODE_STILL_CAPTURE;
