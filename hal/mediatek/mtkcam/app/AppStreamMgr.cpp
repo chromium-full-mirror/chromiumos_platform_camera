@@ -259,10 +259,8 @@ NSCam::v3::Imp::AppStreamMgr::checkStream(camera3_stream* stream) const {
     MY_LOGE("Invalid rotation value %d", stream->crop_rotate_scale_degrees);
     return -EINVAL;
   }
-  if (stream->rotation == CAMERA3_STREAM_ROTATION_0 &&
-      stream->crop_rotate_scale_degrees != CAMERA3_STREAM_ROTATION_0) {
-    stream->rotation = stream->crop_rotate_scale_degrees;
-  }
+
+
   switch (stream->data_space) {
     case HAL_DATASPACE_BT601_525:
     case HAL_DATASPACE_BT601_625:
