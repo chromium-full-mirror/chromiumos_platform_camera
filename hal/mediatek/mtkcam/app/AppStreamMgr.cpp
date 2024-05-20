@@ -359,6 +359,12 @@ NSCam::v3::Imp::AppStreamMgr::checkStreams(
   //
   for (size_t i = 0; i < stream_list->num_streams; i++) {
     camera3_stream* stream = stream_list->streams[i];
+    if (stream_list->streams[0]->crop_rotate_scale_degrees!=
+    stream_list->streams[i]->crop_rotate_scale_degrees) {
+      MY_LOGE("streams[%zu] crop_rotate_scale_degrees : %d inconsistency", i,
+      stream_list->streams[i]->crop_rotate_scale_degrees);
+      return -EINVAL;
+    }
     //
     MERROR err = checkStream(stream);
     if (OK != err) {
