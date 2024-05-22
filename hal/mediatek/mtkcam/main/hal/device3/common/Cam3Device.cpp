@@ -20,24 +20,6 @@
 #include <mtkcam/main/hal/Cam3Device.h>
 //
 using NSCam::Cam3Device;
-
-
-std::vector<int> BigCoreID = {4, 5, 6, 7};
-static void LockPerformance() {
-  cpu_set_t cpuset;
-  int bigCoreId = BigCoreID[0];
-  CPU_SET(bigCoreId, &cpuset);
-
-  int result =
-      pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset);
-  if (result != 0) {
-    MY_LOGE("Error setting thread affinity::%d", result);
-  } else {
-    MY_LOGE("Thread bound to big core::%d", bigCoreId);
-  }
-  return;
-}
-
 /******************************************************************************
  *
  ******************************************************************************/
@@ -156,7 +138,6 @@ Cam3Device::Cam3Device() : mpModuleCallbacks(NULL) {
   mDevice.ops = &mDeviceOps;
   mDeviceOps = gCameraDevOps;
   //
-  LockPerformance();
 }
 
 /******************************************************************************
