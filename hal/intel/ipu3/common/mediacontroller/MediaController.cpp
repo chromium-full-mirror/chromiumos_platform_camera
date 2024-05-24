@@ -53,6 +53,11 @@ status_t MediaController::init()
     LOG1("@%s %s", __FUNCTION__, mPath.c_str());
     status_t status = NO_ERROR;
 
+    if (mPath == "/dev/media") {
+        LOGW("Skipping /dev/media since it is assumed to be a directory. Please ignore warnings about this device.");
+        return BAD_INDEX;
+    }
+
     status = open();
     if (status != NO_ERROR) {
         LOGE("Error opening media device");
