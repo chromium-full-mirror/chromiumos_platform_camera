@@ -86,7 +86,6 @@ int RequestManager::init(const camera3_callback_ops_t* callback_ops) {
     icamera::Parameters parameter;
     int ret = icamera::camera_get_parameters(mCameraId, parameter);
     CheckAndLogError(ret != icamera::OK, ret, "failed to get parameters, ret %d", ret);
-    StaticCapability::getInstance(mCameraId);
 
     android::CameraMetadata defaultRequestSettings;
     // Get static metadata
@@ -138,8 +137,6 @@ int RequestManager::deinit() {
         mPrivacyControl->stop();
         mPrivacyStarted = false;
     }
-
-    StaticCapability::releaseInstance(mCameraId);
 
     return icamera::OK;
 }

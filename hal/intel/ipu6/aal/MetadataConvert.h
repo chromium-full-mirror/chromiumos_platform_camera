@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2023 Intel Corporation
+ * Copyright (C) 2017-2024 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -140,21 +140,12 @@ class MetadataConvert {
 
 class StaticCapability {
  public:
-    const icamera::CameraMetadata* getCapability() { return &mMetadata; }
-    static StaticCapability* getInstance(int cameraId);
-    static void releaseInstance(int cameraId);
+    static StaticCapability& getInstance();
+    const icamera::CameraMetadata* getCapability(int cameraId);
 
  private:
-    StaticCapability(int cameraId);
-    virtual ~StaticCapability();
-
- private:
-    // Guard for singleton instance creation.
-    static std::mutex sLock;
-    static std::unordered_map<int, StaticCapability*> sInstances;
-
-    icamera::CameraMetadata mMetadata;
-    int mCameraId;
+    std::mutex mLock;
+    std::unordered_map<int, icamera::CameraMetadata> mMetadataMap;
 };
 
 }  // namespace camera3

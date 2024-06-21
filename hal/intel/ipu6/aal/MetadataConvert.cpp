@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017-2023 Intel Corporation
+ * Copyright (C) 2017-2024 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@
 #include "ICamera.h"
 #include "Utils.h"
 #include "PlatformData.h"
+#include <base/no_destructor.h>
 
 namespace camera3 {
 
@@ -173,7 +174,7 @@ static bool isValueSupported(uint8_t mode, const icamera::CameraMetadata* caps, 
 
 int MetadataConvert::constructDefaultMetadata(int cameraId, android::CameraMetadata* settings) {
     LOG1("@%s", __func__);
-    const icamera::CameraMetadata* meta = StaticCapability::getInstance(cameraId)->getCapability();
+    const icamera::CameraMetadata* meta = StaticCapability::getInstance().getCapability(cameraId);
 
     // CAMERA_CONTROL_MAX_REGIONS: [AE, AWB, AF]
     uint32_t tag = CAMERA_CONTROL_MAX_REGIONS;
@@ -367,7 +368,7 @@ int MetadataConvert::constructDefaultMetadata(int cameraId, android::CameraMetad
 
 int MetadataConvert::updateDefaultRequestSettings(int32_t cameraId, int type,
                                                   android::CameraMetadata* settings) {
-    const icamera::CameraMetadata* caps = StaticCapability::getInstance(cameraId)->getCapability();
+    const icamera::CameraMetadata* caps = StaticCapability::getInstance().getCapability(cameraId);
 
     uint8_t intent = (type == CAMERA3_TEMPLATE_PREVIEW) ?
                          ANDROID_CONTROL_CAPTURE_INTENT_PREVIEW :
@@ -1325,7 +1326,7 @@ int MetadataConvert::convertVendorControlMetadata(const android::CameraMetadata&
 
 int MetadataConvert::convertRequestParameter(const icamera::Parameters& parameter,
                                              android::CameraMetadata* settings, int cameraId) {
-    const icamera::CameraMetadata* meta = StaticCapability::getInstance(cameraId)->getCapability();
+    const icamera::CameraMetadata* meta = StaticCapability::getInstance().getCapability(cameraId);
 
     uint32_t tag = CAMERA_REQUEST_PIPELINE_MAX_DEPTH;
     icamera_metadata_ro_entry entry = meta->find(tag);
@@ -2465,32 +2466,25 @@ void MetadataConvert::dumpMetadata(const camera_metadata_t* meta) {
     }
 }
 
-StaticCapability::StaticCapability(int cameraId) : mCameraId(cameraId) {
-    icamera::camera_info_t cameraInfo = {};
-    icamera::get_camera_info(mCameraId, cameraInfo);
-    icamera::ParameterHelper::copyMetadata(*cameraInfo.capability, &mMetadata);
+StaticCapability& StaticCapability::getInstance() {
+    static base::NoDestructor<StaticCapability> instance;
+
+    return *instance;
 }
 
-StaticCapability::~StaticCapability() {}
+const icamera::CameraMetadata* StaticCapability::getCapability(int cameraId) {
+    std::lock_guard<std::mutex> lock(mLock);
 
-std::mutex StaticCapability::sLock;
-std::unordered_map<int, StaticCapability*> StaticCapability::sInstances;
+    if (mMetadataMap.find(cameraId) == mMetadataMap.end()) {
+        icamera::camera_info_t cameraInfo = {};
+        icamera::CameraMetadata metadata;
+        icamera::get_camera_info(cameraId, cameraInfo);
+        icamera::ParameterHelper::copyMetadata(*cameraInfo.capability, &metadata);
 
-StaticCapability* StaticCapability::getInstance(int cameraId) {
-    std::lock_guard<std::mutex> lock(sLock);
-    if (sInstances.find(cameraId) == sInstances.end()) {
-        sInstances[cameraId] = new StaticCapability(cameraId);
+        mMetadataMap[cameraId] = metadata;
     }
 
-    return sInstances[cameraId];
+    return &mMetadataMap[cameraId];
 }
 
-void StaticCapability::releaseInstance(int cameraId) {
-    std::lock_guard<std::mutex> lock(sLock);
-    if (sInstances.find(cameraId) != sInstances.end()) {
-        StaticCapability* capability = sInstances[cameraId];
-        sInstances.erase(cameraId);
-        delete capability;
-    }
-}
 }  // namespace camera3

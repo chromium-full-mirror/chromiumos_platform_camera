@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2023 Intel Corporation
+ * Copyright (C) 2019-2024 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -105,7 +105,7 @@ int getRotationDegrees(const camera3_stream_t& stream) {
 }
 
 bool isSameRatioWithSensor(const icamera::stream_t* stream, int cameraId) {
-    const icamera::CameraMetadata* meta = StaticCapability::getInstance(cameraId)->getCapability();
+    const icamera::CameraMetadata* meta = StaticCapability::getInstance().getCapability(cameraId);
 
     float sensorRatio = 0.0f;
     icamera_metadata_ro_entry entry = meta->find(CAMERA_SENSOR_INFO_PIXEL_ARRAY_SIZE);
