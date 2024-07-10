@@ -31,6 +31,7 @@ class FaceDetectionResultCallbackManager {
     void setCallback(int cameraId, cros::FaceDetectionResultCallback callback);
     std::optional<cros::FaceDetectionResult> getFaceDetectionResult(int cameraId);
     void unsetCallback(int cameraId);
+    bool isUsingExternalFDResult(int cameraId);
 
  private:
     base::Lock mLock;

@@ -55,4 +55,9 @@ void FaceDetectionResultCallbackManager::unsetCallback(int cameraId) {
     }
 }
 
+bool FaceDetectionResultCallbackManager::isUsingExternalFDResult(int cameraId) {
+    base::AutoLock l(mLock);
+    return mCallbacks.count(cameraId) != 0;
+}
+
 }  // namespace camera3

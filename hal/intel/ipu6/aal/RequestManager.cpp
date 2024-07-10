@@ -31,6 +31,7 @@
 #include <vector>
 
 #include "Errors.h"
+#include "FaceDetectionResultCallbackManager.h"
 #include "HALv3Utils.h"
 #include "ICamera.h"
 #include "MetadataConvert.h"
@@ -306,7 +307,14 @@ int RequestManager::createHALStreams(camera3_stream_configuration_t* stream_list
         *userStreamForFd = choosePreviewStream(streamsNum, stream_list->streams);
         bool isIPUSupportFD = icamera::PlatformData::isIPUSupportFD(mCameraId) &&
                               (videoStreamNum < icamera::PlatformData::getVideoStreamNum());
-        if (*userStreamForFd && isIPUSupportFD) {
+
+        // Don't use additional stream for face detection as it will not be used when we
+        // use external FD result, e.g. from FaceDetectionStreamManipulator.
+        bool isUsingExternalFDResult =
+            camera3::FaceDetectionResultCallbackManager::getInstance().isUsingExternalFDResult(
+                mCameraId);
+
+        if (*userStreamForFd && isIPUSupportFD && !isUsingExternalFDResult) {
             if (RESOLUTION_VGA_WIDTH * (*userStreamForFd)->height !=
                 (*userStreamForFd)->width * RESOLUTION_VGA_HEIGHT) {
                 mFDStreamsInfo.height = VGA_360P;
