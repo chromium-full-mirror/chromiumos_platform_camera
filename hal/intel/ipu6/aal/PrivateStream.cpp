@@ -87,7 +87,7 @@ icamera::camera_buffer_t* PrivateStream::fetchRequestBuffers(uint32_t frameNumbe
     // Fill the specific setting
     mBuffers[mCurrentBufIdx].s.usage = mHALStream.usage;
     mBuffers[mCurrentBufIdx].s.id = mHALStream.id;
-    mBuffers[mCurrentBufIdx].requestId = frameNumber;
+    mBuffers[mCurrentBufIdx].frameNumber = frameNumber;
 
     LOG2("<id%d:req%u>@%s, mHALStream.id:%d, fetch buf addr:%p will run fd", mCameraId, frameNumber,
          __func__, mHALStream.id, buf->data());
@@ -248,7 +248,7 @@ icamera::camera_buffer_t* PrivateStreamFD::fetchRequestBuffers(uint32_t frameNum
         // Fill the specific setting
         mBuffers[mCurrentBufIdx].s.usage = mHALStream.usage;
         mBuffers[mCurrentBufIdx].s.id = mHALStream.id;
-        mBuffers[mCurrentBufIdx].requestId = frameNumber;
+        mBuffers[mCurrentBufIdx].frameNumber = frameNumber;
 
         LOG2("<id%d:req%u>@%s, mHALStream.id:%d, fetch buf addr:%p", mCameraId, frameNumber,
              __func__, mHALStream.id, mFaceBuffer->data());

@@ -118,10 +118,10 @@ bool Camera3StreamHAL::threadLoop() {
 
         {
             std::unique_lock<std::mutex> lock(mLock);
-            if (buffer->requestId != frameNumber &&
-                mCaptureResultMap.find(buffer->requestId) != mCaptureResultMap.end()) {
-                result = mCaptureResultMap[buffer->requestId];
-                frameNumber = buffer->requestId;
+            if (buffer->frameNumber != frameNumber &&
+                mCaptureResultMap.find(buffer->frameNumber) != mCaptureResultMap.end()) {
+                result = mCaptureResultMap[buffer->frameNumber];
+                frameNumber = buffer->frameNumber;
             }
             CheckAndLogError(buffer->addr != result->hCapture->cam3Buf->data(), true,
                              "can't identify the buffer source");
@@ -196,7 +196,7 @@ bool Camera3StreamHAL::fetchRequestBuffers(icamera::camera_buffer_t* buffer, uin
     // Fill the specific setting
     buffer->s.usage = mHALStream.usage;
     buffer->s.id = mHALStream.id;
-    buffer->requestId = frameNumber;
+    buffer->frameNumber = frameNumber;
 
     std::shared_ptr<StreamComInfo> hCapture = std::make_shared<StreamComInfo>();
     hCapture->cam3Buf = buf;

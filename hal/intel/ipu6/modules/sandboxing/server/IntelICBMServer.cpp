@@ -48,7 +48,6 @@ bool IntelICBMServer::loadIC2Library() {
 
     GET_FUNC_CALL(query_version, iaic_query_version);
     GET_FUNC_CALL(startup, iaic_startup);
-    GET_FUNC_CALL(shutdown, iaic_shutdown);
     GET_FUNC_CALL(query_features, iaic_query_features);
     GET_FUNC_CALL(set_loglevel, iaic_set_loglevel);
     GET_FUNC_CALL(create_session, iaic_create_session);

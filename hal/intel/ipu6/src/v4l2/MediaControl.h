@@ -259,6 +259,7 @@ class MediaControl {
     int resetAllLinks();
 
     int getLensName(std::string* lensName);
+    bool checkAvailableSensor(const std::string& sensorEntityName);
     bool checkAvailableSensor(const std::string& sensorEntityName,
                               const std::string& sinkEntityName);
     /**
@@ -290,6 +291,7 @@ class MediaControl {
     int getDevnameFromSysfs(MediaEntity* entity);
     MediaEntity* getEntityById(uint32_t id);
     MediaEntity* getEntityByName(const char* name);
+    bool checkHasSource(const MediaEntity* sink, const std::string& source);
 
     // set up entity link.
 

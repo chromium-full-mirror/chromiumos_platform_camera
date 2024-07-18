@@ -1192,7 +1192,7 @@ int PlatformData::getConfigModesByOperationMode(int cameraId, uint32_t operation
         return INVALID_OPERATION;
     }
 
-    CheckAndLogError(getInstance()->mStaticCfg.mCameras[cameraId].mSupportedTuningConfig.empty(),
+    CheckAndLog1(getInstance()->mStaticCfg.mCameras[cameraId].mSupportedTuningConfig.empty(),
                      INVALID_OPERATION, "@%s, the tuning config in xml does not exist", __func__);
 
     if (operationMode == CAMERA_STREAM_CONFIGURATION_MODE_AUTO) {

@@ -668,7 +668,7 @@ int RequestManager::processCaptureRequest(camera3_capture_request_t* request) {
     CLEAR(mCameraBufferInfo[index]);
 
     std::shared_ptr<Camera3Buffer> inputCam3Buf = nullptr;
-    icamera::sensor_raw_info_t opaqueRawInfo = {-1, 0};
+    icamera::sensor_data_info_t opaqueRawInfo = {-1, 0};
     if (request->input_buffer) {
         CheckAndLogError(request->input_buffer->status == CAMERA3_BUFFER_STATUS_ERROR,
                          icamera::BAD_VALUE, "Error status for input camera3 buffer");
