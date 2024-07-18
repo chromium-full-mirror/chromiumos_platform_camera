@@ -22,6 +22,7 @@
 #include <sstream>
 #include <unordered_map>
 #include <algorithm>
+#include <vector>
 
 #include "Errors.h"
 #include "HALv3Utils.h"
@@ -755,14 +756,32 @@ int MetadataConvert::convertColorCorrectionParameter(const icamera::Parameters& 
 int MetadataConvert::convertControlMetadata(const android::CameraMetadata& settings,
                                             icamera::Parameters* parameter) {
     int ret = icamera::OK;
-    int mode = 0;
-    uint32_t tag = ANDROID_CONTROL_AE_MODE;
+
+    uint32_t tag = ANDROID_CONTROL_MODE;
+    // auto 3A mode should be disabled when control mode is off
+    uint8_t controlMode = ANDROID_CONTROL_MODE_AUTO;
     camera_metadata_ro_entry entry = settings.find(tag);
     if (entry.count == 1) {
-        ret = getHalValue(entry.data.u8[0], aeModesTable, ARRAY_SIZE(aeModesTable), &mode);
-        if (ret == icamera::OK) {
-            parameter->setAeMode((icamera::camera_ae_mode_t)mode);
+        controlMode = entry.data.u8[0];
+    }
+
+    int mode = 0;
+    /* from spec, HAL should override it's prefers 3A mode in USE_SCENE_MODE for each scene mode
+    ** currently for all scene mode set AE AWB to AUTO, AF to OFF
+     */
+    if (controlMode == ANDROID_CONTROL_MODE_USE_SCENE_MODE) {
+        parameter->setAeMode(icamera::AE_MODE_AUTO);
+    } else if (controlMode == ANDROID_CONTROL_MODE_AUTO) {
+        tag = ANDROID_CONTROL_AE_MODE;
+        entry = settings.find(tag);
+        if (entry.count == 1) {
+            ret = getHalValue(entry.data.u8[0], aeModesTable, ARRAY_SIZE(aeModesTable), &mode);
+            if (ret == icamera::OK) {
+                parameter->setAeMode((icamera::camera_ae_mode_t)mode);
+            }
         }
+    } else {
+        parameter->setAeMode(icamera::AE_MODE_MANUAL);
     }
 
     tag = ANDROID_STATISTICS_FACE_DETECT_MODE;
@@ -820,13 +839,19 @@ int MetadataConvert::convertControlMetadata(const android::CameraMetadata& setti
         }
     }
 
-    tag = ANDROID_CONTROL_AF_MODE;
-    entry = settings.find(tag);
-    if (entry.count == 1) {
-        ret = getHalValue(entry.data.u8[0], afModesTable, ARRAY_SIZE(afModesTable), &mode);
-        if (ret == icamera::OK) {
-            parameter->setAfMode((icamera::camera_af_mode_t)mode);
+    if (controlMode == ANDROID_CONTROL_MODE_USE_SCENE_MODE) {
+        parameter->setAfMode(icamera::AF_MODE_AUTO);
+    } else if (controlMode == ANDROID_CONTROL_MODE_AUTO) {
+        tag = ANDROID_CONTROL_AF_MODE;
+        entry = settings.find(tag);
+        if (entry.count == 1) {
+            ret = getHalValue(entry.data.u8[0], afModesTable, ARRAY_SIZE(afModesTable), &mode);
+            if (ret == icamera::OK) {
+                parameter->setAfMode((icamera::camera_af_mode_t)mode);
+            }
         }
+    } else {
+        parameter->setAfMode(icamera::AF_MODE_OFF);
     }
 
     tag = ANDROID_CONTROL_AF_TRIGGER;
@@ -847,13 +872,19 @@ int MetadataConvert::convertControlMetadata(const android::CameraMetadata& setti
         }
     }
 
-    tag = ANDROID_CONTROL_AWB_MODE;
-    entry = settings.find(tag);
-    if (entry.count == 1) {
-        ret = getHalValue(entry.data.u8[0], awbModesTable, ARRAY_SIZE(awbModesTable), &mode);
-        if (ret == icamera::OK) {
-            parameter->setAwbMode((icamera::camera_awb_mode_t)mode);
+    if (controlMode == ANDROID_CONTROL_MODE_USE_SCENE_MODE) {
+        parameter->setAwbMode(icamera::AWB_MODE_AUTO);
+    } else if (controlMode == ANDROID_CONTROL_MODE_AUTO) {
+        tag = ANDROID_CONTROL_AWB_MODE;
+        entry = settings.find(tag);
+        if (entry.count == 1) {
+            ret = getHalValue(entry.data.u8[0], awbModesTable, ARRAY_SIZE(awbModesTable), &mode);
+            if (ret == icamera::OK) {
+                parameter->setAwbMode((icamera::camera_awb_mode_t)mode);
+            }
         }
+    } else {
+        parameter->setAwbMode(icamera::AWB_MODE_MANUAL_COLOR_TRANSFORM);
     }
 
     tag = ANDROID_CONTROL_AWB_LOCK;
@@ -2036,183 +2067,191 @@ void MetadataConvert::fillRequestStaticMetadata(const icamera::Parameters& param
     int32_t partialResultCount = 1;
     settings->update(ANDROID_REQUEST_PARTIAL_RESULT_COUNT, &partialResultCount, 1);
 
-    int32_t requestKeysBasic[] = {ANDROID_BLACK_LEVEL_LOCK,
-                                  ANDROID_COLOR_CORRECTION_ABERRATION_MODE,
-                                  ANDROID_COLOR_CORRECTION_GAINS,
-                                  ANDROID_COLOR_CORRECTION_TRANSFORM,
-                                  ANDROID_CONTROL_AE_ANTIBANDING_MODE,
-                                  ANDROID_CONTROL_AE_EXPOSURE_COMPENSATION,
-                                  ANDROID_CONTROL_AE_LOCK,
-                                  ANDROID_CONTROL_AE_MODE,
-                                  ANDROID_CONTROL_AE_TARGET_FPS_RANGE,
-                                  ANDROID_CONTROL_AF_MODE,
-                                  ANDROID_CONTROL_AE_REGIONS,
-                                  ANDROID_CONTROL_AF_TRIGGER,
-                                  ANDROID_CONTROL_AWB_LOCK,
-                                  ANDROID_CONTROL_AWB_MODE,
-                                  ANDROID_CONTROL_CAPTURE_INTENT,
-                                  ANDROID_CONTROL_EFFECT_MODE,
-                                  ANDROID_CONTROL_MODE,
-                                  ANDROID_CONTROL_SCENE_MODE,
-                                  ANDROID_CONTROL_VIDEO_STABILIZATION_MODE,
-                                  ANDROID_EDGE_MODE,
-                                  ANDROID_FLASH_MODE,
-                                  ANDROID_JPEG_ORIENTATION,
-                                  ANDROID_JPEG_QUALITY,
-                                  ANDROID_JPEG_THUMBNAIL_QUALITY,
-                                  ANDROID_JPEG_THUMBNAIL_SIZE,
-                                  ANDROID_SCALER_CROP_REGION,
-                                  ANDROID_STATISTICS_FACE_DETECT_MODE,
-                                  ANDROID_SENSOR_FRAME_DURATION,
-                                  ANDROID_SENSOR_EXPOSURE_TIME,
-                                  ANDROID_SENSOR_SENSITIVITY,
-                                  ANDROID_HOT_PIXEL_MODE,
-                                  ANDROID_LENS_APERTURE,
-                                  ANDROID_LENS_FOCAL_LENGTH,
-                                  ANDROID_LENS_FOCUS_DISTANCE,
-                                  ANDROID_LENS_FILTER_DENSITY,
-                                  ANDROID_LENS_OPTICAL_STABILIZATION_MODE,
-                                  ANDROID_NOISE_REDUCTION_MODE,
-                                  ANDROID_REQUEST_ID,
-                                  ANDROID_REQUEST_TYPE,
-                                  ANDROID_TONEMAP_MODE,
-                                  ANDROID_TONEMAP_PRESET_CURVE,
-                                  ANDROID_TONEMAP_GAMMA,
-                                  ANDROID_SHADING_MODE,
-                                  ANDROID_STATISTICS_LENS_SHADING_MAP_MODE};
-    // depends on CAMERA_CONTROL_MAX_REGIONS
-    int32_t requestKeysExtra[] = {ANDROID_CONTROL_AF_REGIONS};
+    std::vector<int32_t> requestKeysBasic = {
+        static_cast<int32_t>(ANDROID_BLACK_LEVEL_LOCK),
+        static_cast<int32_t>(ANDROID_COLOR_CORRECTION_ABERRATION_MODE),
+        static_cast<int32_t>(ANDROID_COLOR_CORRECTION_GAINS),
+        static_cast<int32_t>(ANDROID_COLOR_CORRECTION_TRANSFORM),
+        static_cast<int32_t>(ANDROID_CONTROL_AE_ANTIBANDING_MODE),
+        static_cast<int32_t>(ANDROID_CONTROL_AE_EXPOSURE_COMPENSATION),
+        static_cast<int32_t>(ANDROID_CONTROL_AE_LOCK),
+        static_cast<int32_t>(ANDROID_CONTROL_AE_MODE),
+        static_cast<int32_t>(ANDROID_CONTROL_AE_TARGET_FPS_RANGE),
+        static_cast<int32_t>(ANDROID_CONTROL_AF_MODE),
+        static_cast<int32_t>(ANDROID_CONTROL_AE_REGIONS),
+        static_cast<int32_t>(ANDROID_CONTROL_AF_TRIGGER),
+        static_cast<int32_t>(ANDROID_CONTROL_AWB_LOCK),
+        static_cast<int32_t>(ANDROID_CONTROL_AWB_MODE),
+        static_cast<int32_t>(ANDROID_CONTROL_CAPTURE_INTENT),
+        static_cast<int32_t>(ANDROID_CONTROL_EFFECT_MODE),
+        static_cast<int32_t>(ANDROID_CONTROL_MODE),
+        static_cast<int32_t>(ANDROID_CONTROL_SCENE_MODE),
+        static_cast<int32_t>(ANDROID_CONTROL_VIDEO_STABILIZATION_MODE),
+        static_cast<int32_t>(ANDROID_EDGE_MODE),
+        static_cast<int32_t>(ANDROID_FLASH_MODE),
+        static_cast<int32_t>(ANDROID_JPEG_ORIENTATION),
+        static_cast<int32_t>(ANDROID_JPEG_QUALITY),
+        static_cast<int32_t>(ANDROID_JPEG_THUMBNAIL_QUALITY),
+        static_cast<int32_t>(ANDROID_JPEG_THUMBNAIL_SIZE),
+        static_cast<int32_t>(ANDROID_SCALER_CROP_REGION),
+        static_cast<int32_t>(ANDROID_STATISTICS_FACE_DETECT_MODE),
+        static_cast<int32_t>(ANDROID_SENSOR_FRAME_DURATION),
+        static_cast<int32_t>(ANDROID_SENSOR_EXPOSURE_TIME),
+        static_cast<int32_t>(ANDROID_SENSOR_SENSITIVITY),
+        static_cast<int32_t>(ANDROID_HOT_PIXEL_MODE),
+        static_cast<int32_t>(ANDROID_LENS_APERTURE),
+        static_cast<int32_t>(ANDROID_LENS_FOCAL_LENGTH),
+        static_cast<int32_t>(ANDROID_LENS_FOCUS_DISTANCE),
+        static_cast<int32_t>(ANDROID_LENS_FILTER_DENSITY),
+        static_cast<int32_t>(ANDROID_LENS_OPTICAL_STABILIZATION_MODE),
+        static_cast<int32_t>(ANDROID_NOISE_REDUCTION_MODE),
+        static_cast<int32_t>(ANDROID_REQUEST_ID),
+        static_cast<int32_t>(ANDROID_REQUEST_TYPE),
+        static_cast<int32_t>(ANDROID_TONEMAP_MODE),
+        static_cast<int32_t>(ANDROID_TONEMAP_PRESET_CURVE),
+        static_cast<int32_t>(ANDROID_TONEMAP_GAMMA),
+        static_cast<int32_t>(ANDROID_SHADING_MODE),
+        static_cast<int32_t>(ANDROID_STATISTICS_LENS_SHADING_MAP_MODE)};
 
-    size_t basicKeysCnt = sizeof(requestKeysBasic) / sizeof(requestKeysBasic[0]);
-    size_t extraKeysCnt = sizeof(requestKeysExtra) / sizeof(requestKeysExtra[0]);
-    int32_t* totalRequestKeys = new int32_t[basicKeysCnt + extraKeysCnt];
-    MEMCPY_S(totalRequestKeys, sizeof(requestKeysBasic), requestKeysBasic,
-             sizeof(requestKeysBasic));
-    entry = meta.find(CAMERA_CONTROL_MAX_REGIONS);
-    if (entry.count == 3 && entry.data.i32[2] > 0) {
-        totalRequestKeys[basicKeysCnt] = ANDROID_CONTROL_AF_REGIONS;
-        basicKeysCnt++;
+    entry = meta.find(CAMERA_CONTROL_AVAILABLE_MODES);
+    for (int i = 0; i < entry.count; i++) {
+        /* WA, color correction CTS test will check control modes and scene modes, when scene mode
+        ** support FACE_PRIORITY mode, the control mode must support USE_SCENE_MODE. Should not
+        ** enable color correction test on devices that not support USE_SCENE_MODE
+        */
+        if (entry.data.u8[i] == ANDROID_CONTROL_MODE_USE_SCENE_MODE) {
+            requestKeysBasic.push_back(ANDROID_COLOR_CORRECTION_MODE);
+            break;
+        }
     }
-    settings->update(ANDROID_REQUEST_AVAILABLE_REQUEST_KEYS, totalRequestKeys, basicKeysCnt);
-    delete[] totalRequestKeys;
 
-    int32_t resultKeysBasic[] = {ANDROID_REQUEST_ID,
-                                 ANDROID_REQUEST_TYPE,
-                                 ANDROID_COLOR_CORRECTION_MODE,
-                                 ANDROID_COLOR_CORRECTION_GAINS,
-                                 ANDROID_COLOR_CORRECTION_TRANSFORM,
-                                 ANDROID_COLOR_CORRECTION_ABERRATION_MODE,
-                                 ANDROID_CONTROL_AE_ANTIBANDING_MODE,
-                                 ANDROID_CONTROL_AE_EXPOSURE_COMPENSATION,
-                                 ANDROID_CONTROL_AE_LOCK,
-                                 ANDROID_CONTROL_AE_MODE,
-                                 ANDROID_CONTROL_AE_TARGET_FPS_RANGE,
-                                 ANDROID_CONTROL_AF_MODE,
-                                 ANDROID_CONTROL_AE_REGIONS,
-                                 ANDROID_CONTROL_AF_REGIONS,
-                                 ANDROID_CONTROL_AF_TRIGGER,
-                                 ANDROID_CONTROL_AWB_LOCK,
-                                 ANDROID_CONTROL_AWB_MODE,
-                                 ANDROID_CONTROL_CAPTURE_INTENT,
-                                 ANDROID_CONTROL_EFFECT_MODE,
-                                 ANDROID_CONTROL_MODE,
-                                 ANDROID_CONTROL_SCENE_MODE,
-                                 ANDROID_CONTROL_VIDEO_STABILIZATION_MODE,
-                                 ANDROID_CONTROL_AE_STATE,
-                                 ANDROID_CONTROL_AF_STATE,
-                                 ANDROID_CONTROL_AWB_STATE,
-                                 ANDROID_SYNC_FRAME_NUMBER,
-                                 ANDROID_EDGE_MODE,
-                                 ANDROID_FLASH_MODE,
-                                 ANDROID_JPEG_ORIENTATION,
-                                 ANDROID_JPEG_QUALITY,
-                                 ANDROID_JPEG_THUMBNAIL_QUALITY,
-                                 ANDROID_JPEG_THUMBNAIL_SIZE,
-                                 ANDROID_LENS_APERTURE,
-                                 ANDROID_LENS_FOCAL_LENGTH,
-                                 ANDROID_LENS_FOCUS_DISTANCE,
-                                 ANDROID_LENS_FILTER_DENSITY,
-                                 ANDROID_LENS_FOCUS_RANGE,
-                                 ANDROID_LENS_STATE,
-                                 ANDROID_LENS_OPTICAL_STABILIZATION_MODE,
-                                 ANDROID_SCALER_CROP_REGION,
-                                 ANDROID_SENSOR_FRAME_DURATION,
-                                 ANDROID_SENSOR_EXPOSURE_TIME,
-                                 ANDROID_SENSOR_SENSITIVITY,
-                                 ANDROID_HOT_PIXEL_MODE,
-                                 ANDROID_REQUEST_PIPELINE_DEPTH,
-                                 ANDROID_SHADING_MODE,
-                                 ANDROID_STATISTICS_FACE_DETECT_MODE,
-                                 ANDROID_STATISTICS_HOT_PIXEL_MAP_MODE,
-                                 ANDROID_STATISTICS_LENS_SHADING_MAP_MODE,
-                                 ANDROID_STATISTICS_SCENE_FLICKER,
-                                 ANDROID_NOISE_REDUCTION_MODE,
-                                 ANDROID_TONEMAP_CURVE_RED,
-                                 ANDROID_TONEMAP_CURVE_BLUE,
-                                 ANDROID_TONEMAP_CURVE_GREEN};
-    size_t resultKeysCnt = sizeof(resultKeysBasic) / sizeof(resultKeysBasic[0]);
-    settings->update(ANDROID_REQUEST_AVAILABLE_RESULT_KEYS, resultKeysBasic, resultKeysCnt);
+    entry = meta.find(CAMERA_CONTROL_MAX_REGIONS);
+    // AF regions request keys depends on CAMERA_CONTROL_MAX_REGIONS
+    if (entry.count == 3 && entry.data.i32[2] > 0) {
+        requestKeysBasic.push_back(ANDROID_CONTROL_AF_REGIONS);
+    }
+    settings->update(ANDROID_REQUEST_AVAILABLE_REQUEST_KEYS, requestKeysBasic.data(),
+                     requestKeysBasic.size());
 
-    int32_t characteristicsKeysBasic[] = {ANDROID_COLOR_CORRECTION_AVAILABLE_ABERRATION_MODES,
-                                          ANDROID_CONTROL_AVAILABLE_MODES,
-                                          ANDROID_CONTROL_AE_AVAILABLE_ANTIBANDING_MODES,
-                                          ANDROID_CONTROL_AE_AVAILABLE_MODES,
-                                          ANDROID_CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES,
-                                          ANDROID_CONTROL_AE_COMPENSATION_RANGE,
-                                          ANDROID_CONTROL_AE_COMPENSATION_STEP,
-                                          ANDROID_CONTROL_AE_LOCK_AVAILABLE,
-                                          ANDROID_CONTROL_AF_AVAILABLE_MODES,
-                                          ANDROID_CONTROL_AVAILABLE_EFFECTS,
-                                          ANDROID_CONTROL_AVAILABLE_SCENE_MODES,
-                                          ANDROID_CONTROL_AVAILABLE_VIDEO_STABILIZATION_MODES,
-                                          ANDROID_CONTROL_AWB_AVAILABLE_MODES,
-                                          ANDROID_CONTROL_AWB_LOCK_AVAILABLE,
-                                          ANDROID_EDGE_AVAILABLE_EDGE_MODES,
-                                          ANDROID_FLASH_INFO_AVAILABLE,
-                                          ANDROID_HOT_PIXEL_AVAILABLE_HOT_PIXEL_MODES,
-                                          ANDROID_INFO_SUPPORTED_HARDWARE_LEVEL,
-                                          ANDROID_JPEG_AVAILABLE_THUMBNAIL_SIZES,
-                                          ANDROID_LENS_FACING,
-                                          ANDROID_LENS_INFO_AVAILABLE_APERTURES,
-                                          ANDROID_LENS_INFO_AVAILABLE_FILTER_DENSITIES,
-                                          ANDROID_LENS_INFO_AVAILABLE_OPTICAL_STABILIZATION,
-                                          ANDROID_LENS_INFO_FOCUS_DISTANCE_CALIBRATION,
-                                          ANDROID_LENS_INFO_HYPERFOCAL_DISTANCE,
-                                          ANDROID_LENS_INFO_MINIMUM_FOCUS_DISTANCE,
-                                          ANDROID_LENS_INFO_AVAILABLE_FOCAL_LENGTHS,
-                                          ANDROID_NOISE_REDUCTION_AVAILABLE_NOISE_REDUCTION_MODES,
-                                          ANDROID_REQUEST_AVAILABLE_CAPABILITIES,
-                                          ANDROID_REQUEST_MAX_NUM_INPUT_STREAMS,
-                                          ANDROID_REQUEST_MAX_NUM_OUTPUT_STREAMS,
-                                          ANDROID_REQUEST_PARTIAL_RESULT_COUNT,
-                                          ANDROID_REQUEST_PIPELINE_MAX_DEPTH,
-                                          ANDROID_REQUEST_AVAILABLE_REQUEST_KEYS,
-                                          ANDROID_REQUEST_AVAILABLE_RESULT_KEYS,
-                                          ANDROID_REQUEST_AVAILABLE_CHARACTERISTICS_KEYS,
-                                          ANDROID_SCALER_AVAILABLE_MAX_DIGITAL_ZOOM,
-                                          ANDROID_SCALER_AVAILABLE_STREAM_CONFIGURATIONS,
-                                          ANDROID_SCALER_CROPPING_TYPE,
-                                          ANDROID_SENSOR_BLACK_LEVEL_PATTERN,
-                                          ANDROID_SENSOR_ORIENTATION,
-                                          ANDROID_SENSOR_INFO_ACTIVE_ARRAY_SIZE,
-                                          ANDROID_SENSOR_INFO_COLOR_FILTER_ARRANGEMENT,
-                                          ANDROID_SENSOR_INFO_EXPOSURE_TIME_RANGE,
-                                          ANDROID_SENSOR_INFO_MAX_FRAME_DURATION,
-                                          ANDROID_SENSOR_INFO_PIXEL_ARRAY_SIZE,
-                                          ANDROID_SENSOR_INFO_SENSITIVITY_RANGE,
-                                          ANDROID_SENSOR_INFO_PHYSICAL_SIZE,
-                                          ANDROID_SENSOR_INFO_WHITE_LEVEL,
-                                          ANDROID_SENSOR_INFO_TIMESTAMP_SOURCE,
-                                          ANDROID_SENSOR_AVAILABLE_TEST_PATTERN_MODES,
-                                          ANDROID_SENSOR_MAX_ANALOG_SENSITIVITY,
-                                          ANDROID_SHADING_AVAILABLE_MODES,
-                                          ANDROID_STATISTICS_INFO_AVAILABLE_FACE_DETECT_MODES,
-                                          ANDROID_STATISTICS_INFO_MAX_FACE_COUNT,
-                                          ANDROID_SYNC_MAX_LATENCY,
-                                          ANDROID_TONEMAP_AVAILABLE_TONE_MAP_MODES,
-                                          ANDROID_TONEMAP_MAX_CURVE_POINTS};
-    settings->update(ANDROID_REQUEST_AVAILABLE_CHARACTERISTICS_KEYS, characteristicsKeysBasic,
-                     sizeof(characteristicsKeysBasic) / sizeof(int32_t));
+    std::vector<int32_t> resultKeysBasic = {
+        static_cast<int32_t>(ANDROID_REQUEST_ID),
+        static_cast<int32_t>(ANDROID_REQUEST_TYPE),
+        static_cast<int32_t>(ANDROID_COLOR_CORRECTION_MODE),
+        static_cast<int32_t>(ANDROID_COLOR_CORRECTION_GAINS),
+        static_cast<int32_t>(ANDROID_COLOR_CORRECTION_TRANSFORM),
+        static_cast<int32_t>(ANDROID_COLOR_CORRECTION_ABERRATION_MODE),
+        static_cast<int32_t>(ANDROID_CONTROL_AE_ANTIBANDING_MODE),
+        static_cast<int32_t>(ANDROID_CONTROL_AE_EXPOSURE_COMPENSATION),
+        static_cast<int32_t>(ANDROID_CONTROL_AE_LOCK),
+        static_cast<int32_t>(ANDROID_CONTROL_AE_MODE),
+        static_cast<int32_t>(ANDROID_CONTROL_AE_TARGET_FPS_RANGE),
+        static_cast<int32_t>(ANDROID_CONTROL_AF_MODE),
+        static_cast<int32_t>(ANDROID_CONTROL_AE_REGIONS),
+        static_cast<int32_t>(ANDROID_CONTROL_AF_REGIONS),
+        static_cast<int32_t>(ANDROID_CONTROL_AF_TRIGGER),
+        static_cast<int32_t>(ANDROID_CONTROL_AWB_LOCK),
+        static_cast<int32_t>(ANDROID_CONTROL_AWB_MODE),
+        static_cast<int32_t>(ANDROID_CONTROL_CAPTURE_INTENT),
+        static_cast<int32_t>(ANDROID_CONTROL_EFFECT_MODE),
+        static_cast<int32_t>(ANDROID_CONTROL_MODE),
+        static_cast<int32_t>(ANDROID_CONTROL_SCENE_MODE),
+        static_cast<int32_t>(ANDROID_CONTROL_VIDEO_STABILIZATION_MODE),
+        static_cast<int32_t>(ANDROID_CONTROL_AE_STATE),
+        static_cast<int32_t>(ANDROID_CONTROL_AF_STATE),
+        static_cast<int32_t>(ANDROID_CONTROL_AWB_STATE),
+        static_cast<int32_t>(ANDROID_SYNC_FRAME_NUMBER),
+        static_cast<int32_t>(ANDROID_EDGE_MODE),
+        static_cast<int32_t>(ANDROID_FLASH_MODE),
+        static_cast<int32_t>(ANDROID_JPEG_ORIENTATION),
+        static_cast<int32_t>(ANDROID_JPEG_QUALITY),
+        static_cast<int32_t>(ANDROID_JPEG_THUMBNAIL_QUALITY),
+        static_cast<int32_t>(ANDROID_JPEG_THUMBNAIL_SIZE),
+        static_cast<int32_t>(ANDROID_LENS_APERTURE),
+        static_cast<int32_t>(ANDROID_LENS_FOCAL_LENGTH),
+        static_cast<int32_t>(ANDROID_LENS_FOCUS_DISTANCE),
+        static_cast<int32_t>(ANDROID_LENS_FILTER_DENSITY),
+        static_cast<int32_t>(ANDROID_LENS_FOCUS_RANGE),
+        static_cast<int32_t>(ANDROID_LENS_STATE),
+        static_cast<int32_t>(ANDROID_LENS_OPTICAL_STABILIZATION_MODE),
+        static_cast<int32_t>(ANDROID_SCALER_CROP_REGION),
+        static_cast<int32_t>(ANDROID_SENSOR_FRAME_DURATION),
+        static_cast<int32_t>(ANDROID_SENSOR_EXPOSURE_TIME),
+        static_cast<int32_t>(ANDROID_SENSOR_SENSITIVITY),
+        static_cast<int32_t>(ANDROID_HOT_PIXEL_MODE),
+        static_cast<int32_t>(ANDROID_REQUEST_PIPELINE_DEPTH),
+        static_cast<int32_t>(ANDROID_SHADING_MODE),
+        static_cast<int32_t>(ANDROID_STATISTICS_FACE_DETECT_MODE),
+        static_cast<int32_t>(ANDROID_STATISTICS_HOT_PIXEL_MAP_MODE),
+        static_cast<int32_t>(ANDROID_STATISTICS_LENS_SHADING_MAP_MODE),
+        static_cast<int32_t>(ANDROID_STATISTICS_SCENE_FLICKER),
+        static_cast<int32_t>(ANDROID_NOISE_REDUCTION_MODE),
+        static_cast<int32_t>(ANDROID_TONEMAP_CURVE_RED),
+        static_cast<int32_t>(ANDROID_TONEMAP_CURVE_BLUE),
+        static_cast<int32_t>(ANDROID_TONEMAP_CURVE_GREEN)};
+    settings->update(ANDROID_REQUEST_AVAILABLE_RESULT_KEYS, resultKeysBasic.data(),
+                     resultKeysBasic.size());
+
+    std::vector<int32_t> characteristicsKeysBasic = {
+        static_cast<int32_t>(ANDROID_COLOR_CORRECTION_AVAILABLE_ABERRATION_MODES),
+        static_cast<int32_t>(ANDROID_CONTROL_AVAILABLE_MODES),
+        static_cast<int32_t>(ANDROID_CONTROL_AE_AVAILABLE_ANTIBANDING_MODES),
+        static_cast<int32_t>(ANDROID_CONTROL_AE_AVAILABLE_MODES),
+        static_cast<int32_t>(ANDROID_CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES),
+        static_cast<int32_t>(ANDROID_CONTROL_AE_COMPENSATION_RANGE),
+        static_cast<int32_t>(ANDROID_CONTROL_AE_COMPENSATION_STEP),
+        static_cast<int32_t>(ANDROID_CONTROL_AE_LOCK_AVAILABLE),
+        static_cast<int32_t>(ANDROID_CONTROL_AF_AVAILABLE_MODES),
+        static_cast<int32_t>(ANDROID_CONTROL_AVAILABLE_EFFECTS),
+        static_cast<int32_t>(ANDROID_CONTROL_AVAILABLE_SCENE_MODES),
+        static_cast<int32_t>(ANDROID_CONTROL_AVAILABLE_VIDEO_STABILIZATION_MODES),
+        static_cast<int32_t>(ANDROID_CONTROL_AWB_AVAILABLE_MODES),
+        static_cast<int32_t>(ANDROID_CONTROL_AWB_LOCK_AVAILABLE),
+        static_cast<int32_t>(ANDROID_EDGE_AVAILABLE_EDGE_MODES),
+        static_cast<int32_t>(ANDROID_FLASH_INFO_AVAILABLE),
+        static_cast<int32_t>(ANDROID_HOT_PIXEL_AVAILABLE_HOT_PIXEL_MODES),
+        static_cast<int32_t>(ANDROID_INFO_SUPPORTED_HARDWARE_LEVEL),
+        static_cast<int32_t>(ANDROID_JPEG_AVAILABLE_THUMBNAIL_SIZES),
+        static_cast<int32_t>(ANDROID_LENS_FACING),
+        static_cast<int32_t>(ANDROID_LENS_INFO_AVAILABLE_APERTURES),
+        static_cast<int32_t>(ANDROID_LENS_INFO_AVAILABLE_FILTER_DENSITIES),
+        static_cast<int32_t>(ANDROID_LENS_INFO_AVAILABLE_OPTICAL_STABILIZATION),
+        static_cast<int32_t>(ANDROID_LENS_INFO_FOCUS_DISTANCE_CALIBRATION),
+        static_cast<int32_t>(ANDROID_LENS_INFO_HYPERFOCAL_DISTANCE),
+        static_cast<int32_t>(ANDROID_LENS_INFO_MINIMUM_FOCUS_DISTANCE),
+        static_cast<int32_t>(ANDROID_LENS_INFO_AVAILABLE_FOCAL_LENGTHS),
+        static_cast<int32_t>(ANDROID_NOISE_REDUCTION_AVAILABLE_NOISE_REDUCTION_MODES),
+        static_cast<int32_t>(ANDROID_REQUEST_AVAILABLE_CAPABILITIES),
+        static_cast<int32_t>(ANDROID_REQUEST_MAX_NUM_INPUT_STREAMS),
+        static_cast<int32_t>(ANDROID_REQUEST_MAX_NUM_OUTPUT_STREAMS),
+        static_cast<int32_t>(ANDROID_REQUEST_PARTIAL_RESULT_COUNT),
+        static_cast<int32_t>(ANDROID_REQUEST_PIPELINE_MAX_DEPTH),
+        static_cast<int32_t>(ANDROID_REQUEST_AVAILABLE_REQUEST_KEYS),
+        static_cast<int32_t>(ANDROID_REQUEST_AVAILABLE_RESULT_KEYS),
+        static_cast<int32_t>(ANDROID_REQUEST_AVAILABLE_CHARACTERISTICS_KEYS),
+        static_cast<int32_t>(ANDROID_SCALER_AVAILABLE_MAX_DIGITAL_ZOOM),
+        static_cast<int32_t>(ANDROID_SCALER_AVAILABLE_STREAM_CONFIGURATIONS),
+        static_cast<int32_t>(ANDROID_SCALER_CROPPING_TYPE),
+        static_cast<int32_t>(ANDROID_SENSOR_BLACK_LEVEL_PATTERN),
+        static_cast<int32_t>(ANDROID_SENSOR_ORIENTATION),
+        static_cast<int32_t>(ANDROID_SENSOR_INFO_ACTIVE_ARRAY_SIZE),
+        static_cast<int32_t>(ANDROID_SENSOR_INFO_COLOR_FILTER_ARRANGEMENT),
+        static_cast<int32_t>(ANDROID_SENSOR_INFO_EXPOSURE_TIME_RANGE),
+        static_cast<int32_t>(ANDROID_SENSOR_INFO_MAX_FRAME_DURATION),
+        static_cast<int32_t>(ANDROID_SENSOR_INFO_PIXEL_ARRAY_SIZE),
+        static_cast<int32_t>(ANDROID_SENSOR_INFO_SENSITIVITY_RANGE),
+        static_cast<int32_t>(ANDROID_SENSOR_INFO_PHYSICAL_SIZE),
+        static_cast<int32_t>(ANDROID_SENSOR_INFO_WHITE_LEVEL),
+        static_cast<int32_t>(ANDROID_SENSOR_INFO_TIMESTAMP_SOURCE),
+        static_cast<int32_t>(ANDROID_SENSOR_AVAILABLE_TEST_PATTERN_MODES),
+        static_cast<int32_t>(ANDROID_SENSOR_MAX_ANALOG_SENSITIVITY),
+        static_cast<int32_t>(ANDROID_SHADING_AVAILABLE_MODES),
+        static_cast<int32_t>(ANDROID_STATISTICS_INFO_AVAILABLE_FACE_DETECT_MODES),
+        static_cast<int32_t>(ANDROID_STATISTICS_INFO_MAX_FACE_COUNT),
+        static_cast<int32_t>(ANDROID_SYNC_MAX_LATENCY),
+        static_cast<int32_t>(ANDROID_TONEMAP_AVAILABLE_TONE_MAP_MODES),
+        static_cast<int32_t>(ANDROID_TONEMAP_MAX_CURVE_POINTS)};
+    settings->update(ANDROID_REQUEST_AVAILABLE_CHARACTERISTICS_KEYS,
+                     characteristicsKeysBasic.data(), characteristicsKeysBasic.size());
 }
 
 void MetadataConvert::fillStatisticsStaticMetadata(const icamera::Parameters& parameter,
