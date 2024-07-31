@@ -49,6 +49,9 @@ config("default_compiler_flags") {
     # some build configurations. This causes false-positives for
     # -Wno-unused-but-set-variable.
     "-Wno-unused-but-set-variable",
+    # Similarly, this codebase makes use of VLAs in quite a few places. These
+    # are generally discouraged, but functionally speaking, won't go away.
+    "-Wno-vla-cxx-extension",
   ]
   cflags_c = default_cflags
   cflags_cc = default_cflags + [
