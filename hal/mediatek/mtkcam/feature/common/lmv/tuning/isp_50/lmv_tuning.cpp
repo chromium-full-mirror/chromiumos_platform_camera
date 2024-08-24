@@ -155,7 +155,7 @@ void LMVP1Cb::p1TuningNotify(MVOID* pInput, MVOID* pOutput) {
     _this->mImgHeight = aLmvInInfo->sTGOut.h;
     _this->mSensorType = LMV_YUV_SENSOR;
   }
-  if (UNLIKELY(gLogLevel > 0)) {
+  if (gLogLevel > 0) [[unlikely]] {
     CAM_LOGD("mImgWidth(%u),mImgHeight(%u),mSensorType(%d)", _this->mImgWidth,
              _this->mImgHeight, _this->mSensorType);
   }
@@ -190,7 +190,7 @@ void LMVP1Cb::p1TuningNotify(MVOID* pInput, MVOID* pOutput) {
   if (a_pLmvCfgData->bypassLMV == MTRUE) {
     _this->mLmvRegSetting.reg_lmv_prep_me_ctrl2 &= 0x07FFF;
 
-    if (UNLIKELY(gLogLevel > 2)) {
+    if (gLogLevel > 2) [[unlikely]] {
       CAM_LOGD("me_ctrl2(0x%08x)", _this->mLmvRegSetting.reg_lmv_prep_me_ctrl2);
     }
 
@@ -363,7 +363,7 @@ void LMVP1Cb::p1TuningNotify(MVOID* pInput, MVOID* pOutput) {
   rp_numH = ((win_sizeH - 1) / 16) - 1;
   rp_numV = ((win_sizeV - 1) / 16) - 1;
 
-  if (UNLIKELY(gLogLevel > 1)) {
+  if (gLogLevel > 1) [[unlikely]] {
     CAM_LOGD("first_win_left_corner(%u),first_win_top_corner(%u)",
              first_win_left_corner, first_win_top_corner);
     CAM_LOGD("active_sizeH(%u),active_sizeV(%u)", active_sizeH, active_sizeV);
@@ -380,7 +380,7 @@ void LMVP1Cb::p1TuningNotify(MVOID* pInput, MVOID* pOutput) {
   tempRpV = (win_numV > 4) ? std::min((MUINT32)4, tempRpV) : tempRpV;
   rp_numV = std::min(tempRpV, rp_numV);
 
-  if (UNLIKELY(gLogLevel > 1)) {
+  if (gLogLevel > 1) [[unlikely]] {
     CAM_LOGD("tempRpV(%u)", tempRpV);
   }
 
@@ -392,7 +392,7 @@ void LMVP1Cb::p1TuningNotify(MVOID* pInput, MVOID* pOutput) {
       (_this->mLmvRegSetting.reg_lmv_fl_offset & 0xFFF0000) >> 16;
   MINT32 temp_fl_offset_V = _this->mLmvRegSetting.reg_lmv_fl_offset & 0xFFF;
 
-  if (UNLIKELY(gLogLevel > 1)) {
+  if (gLogLevel > 1) [[unlikely]] {
     CAM_LOGD("temp_fl_offset_H(%d)", temp_fl_offset_H);
     CAM_LOGD("temp_fl_offset_V(%d)", temp_fl_offset_V);
   }
@@ -429,7 +429,7 @@ void LMVP1Cb::p1TuningNotify(MVOID* pInput, MVOID* pOutput) {
                           (rp_numV * 16) - 1 - (win_sizeV * (win_numV - 1));
   }
 
-  if (UNLIKELY(gLogLevel > 1)) {
+  if (gLogLevel > 1) [[unlikely]] {
     CAM_LOGD("ori rp_offset (H/V)=(%d/%d)", rp_offsetH, rp_offsetV);
     CAM_LOGD("bound: H(%d/%d),V(%d/%d)", offset_lowBound_H, offset_upperBound_H,
              offset_lowBound_V, offset_upperBound_V);
@@ -438,7 +438,7 @@ void LMVP1Cb::p1TuningNotify(MVOID* pInput, MVOID* pOutput) {
   _this->BoundaryCheck(&rp_offsetH, offset_upperBound_H, offset_lowBound_H);
   _this->BoundaryCheck(&rp_offsetV, offset_upperBound_V, offset_lowBound_V);
 
-  if (UNLIKELY(gLogLevel > 1)) {
+  if (gLogLevel > 1) [[unlikely]] {
     CAM_LOGD("final rp_offset (H/V)=(%d/%d)", rp_offsetH, rp_offsetV);
   }
 
@@ -472,7 +472,7 @@ void LMVP1Cb::p1TuningNotify(MVOID* pInput, MVOID* pOutput) {
                             (win_numV - 1);
   }
 
-  if (UNLIKELY(gLogLevel > 1)) {
+  if (gLogLevel > 1) [[unlikely]] {
     CAM_LOGD("ori win_size (H/V)=(%d/%d)", win_sizeH, win_sizeV);
     CAM_LOGD("bound: H(%d/%d),V(%d/%d)", interval_lowBound_H,
              interval_upperBound_H, interval_lowBound_V, interval_upperBound_V);
@@ -481,7 +481,7 @@ void LMVP1Cb::p1TuningNotify(MVOID* pInput, MVOID* pOutput) {
   _this->BoundaryCheck(&win_sizeH, interval_upperBound_H, interval_lowBound_H);
   _this->BoundaryCheck(&win_sizeV, interval_upperBound_V, interval_lowBound_V);
 
-  if (UNLIKELY(gLogLevel > 1)) {
+  if (gLogLevel > 1) [[unlikely]] {
     CAM_LOGD("final win_size (H/V)=(%d/%d)", win_sizeH, win_sizeV);
   }
 
@@ -520,7 +520,7 @@ void LMVP1Cb::p1TuningNotify(MVOID* pInput, MVOID* pOutput) {
 
   //====== Debug ======
 
-  if (UNLIKELY(gLogLevel > 0)) {
+  if (gLogLevel > 0) [[unlikely]] {
     CAM_LOGD("reg_lmv_prep_me_ctrl1(0x%08x)",
              _this->mLmvRegSetting.reg_lmv_prep_me_ctrl1);
     CAM_LOGD("win_numV:(0x%08x,0x%08x)", win_numV,
@@ -597,7 +597,7 @@ void SGG2P1Cb::p1TuningNotify(MVOID* /*pIn*/, MVOID* pOut) {
     sgg2_cfg->GMRC_1 = 0x63493527 /*RSTVAL*/;
     sgg2_cfg->GMRC_2 = 0x00FFBB88 /*RSTVAL*/;
 
-    if (UNLIKELY(gLogLevel > 2)) {
+    if (gLogLevel > 2) [[unlikely]] {
       CAM_LOGD(
           "bSGG2_Bypass(0x%x),bSGG2_EN(0x%x),PGN(0x%x),GMRC_1(0x%08x),GMRC_2("
           "0x%08x)",

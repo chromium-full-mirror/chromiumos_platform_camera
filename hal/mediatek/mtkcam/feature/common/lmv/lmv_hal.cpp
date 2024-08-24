@@ -169,7 +169,7 @@ MINT32 LMVHalImp::Uninit() {
       m_pLMVDrv = NULL;
     }
 
-    if (UNLIKELY(mDebugDump >= 2)) {
+    if (mDebugDump >= 2) [[unlikely]] {
       if (mSensorDynamicInfo.TgInfo != NSCam::CAM_TG_NONE) {
         MINT32 err =
             m_pEisAlg->EisFeatureCtrl(EIS_FEATURE_SAVE_LOG, NULL, NULL);
@@ -285,7 +285,7 @@ MINT32 LMVHalImp::ConfigLMV(const LMV_HAL_CONFIG_DATA& aLmvConfig) {
   }
   CAM_LOGD("mIsLmvConfig(%u)", mIsLmvConfig);
 
-  if (UNLIKELY(mDebugDump >= 1)) {
+  if (mDebugDump >= 1) [[unlikely]] {
     CAM_LOGD("mIsLmvConfig(%u)", mIsLmvConfig);
   }
 
@@ -343,11 +343,11 @@ MINT32 LMVHalImp::DoLMVCalc(QBufInfo const& pBufInfo) {
     return LMV_RETURN_EISO_MISS;
   }
 
-  if (UNLIKELY(mTsForAlgoDebug == 0)) {
+  if (mTsForAlgoDebug == 0) [[unlikely]] {
     mTsForAlgoDebug = aTimeStamp;
   }
 
-  if (UNLIKELY(mDebugDump >= 1)) {
+  if (mDebugDump >= 1) [[unlikely]] {
     CAM_LOGD("mSensorIdx=%u,mEisPass1Enabled(%u)", mSensorIdx,
              mEisPass1Enabled);
   }
@@ -392,7 +392,7 @@ MINT32 LMVHalImp::DoLMVCalc(QBufInfo const& pBufInfo) {
       mLmvAlgoProcData.eis_image_size_config.TargetHeight = mP1Target_H;
     }
 
-    if (UNLIKELY(mDebugDump >= 0)) {
+    if (mDebugDump >= 0) [[unlikely]] {
       CAM_LOGD("mEisPlusCropRatio(%u),mSensorIdx=%u,EisIn(%u,%u),P1T(%u,%u)",
                mEisPlusCropRatio, mSensorIdx, mLmvInput_W, mLmvInput_H,
                mP1Target_W, mP1Target_H);
@@ -404,7 +404,7 @@ MINT32 LMVHalImp::DoLMVCalc(QBufInfo const& pBufInfo) {
       CAM_LOGW("EISO data miss");
       return LMV_RETURN_NO_ERROR;
     }
-    if (UNLIKELY(mDebugDump == 3)) {
+    if (mDebugDump == 3) [[unlikely]] {
       DumpStatistic(mLmvAlgoProcData.eis_state);
     }
 
@@ -422,7 +422,7 @@ MINT32 LMVHalImp::DoLMVCalc(QBufInfo const& pBufInfo) {
       mLmvAlgoProcData.sensor_info.Gvalid = accValid;
     }
 
-    if (UNLIKELY(mDebugDump >= 1)) {
+    if (mDebugDump >= 1) [[unlikely]] {
       CAM_LOGD("EN:(Acc,Gyro)=(%d,%d)/Acc(%f,%f,%f)/Gyro(%f,%f,%f)", accValid,
                gyroValid, mLmvAlgoProcData.sensor_info.AcceInfo[0],
                mLmvAlgoProcData.sensor_info.AcceInfo[1],
@@ -501,7 +501,7 @@ MINT32 LMVHalImp::DoLMVCalc(QBufInfo const& pBufInfo) {
 
     mFrameCnt = m_pLMVDrv->GetFirstFrameInfo();
 
-    if (UNLIKELY(mDebugDump >= 1)) {
+    if (mDebugDump >= 1) [[unlikely]] {
       CAM_LOGD("mFrameCnt(%u)", mFrameCnt);
     }
     if (mFrameCnt == 0) {
@@ -516,7 +516,7 @@ MINT32 LMVHalImp::DoLMVCalc(QBufInfo const& pBufInfo) {
 }
 
 MVOID LMVHalImp::PrepareLmvResult(const MINT32& cmvX, const MINT32& cmvY) {
-  if (UNLIKELY(mDebugDump >= 1)) {
+  if (mDebugDump >= 1) [[unlikely]] {
     CAM_LOGD("cmvX(%d),cmvY(%d)", cmvX, cmvY);
   }
 
@@ -662,7 +662,7 @@ MVOID LMVHalImp::GetGmv(MINT32* aGMV_X,
     }
   }
 
-  if (UNLIKELY(mDebugDump >= 1)) {
+  if (mDebugDump >= 1) [[unlikely]] {
     if (confX && confY) {
       CAM_LOGD("GMV(%d,%d),Conf(%d,%d)", *aGMV_X, *aGMV_Y, *confX, *confY);
     } else {
@@ -765,7 +765,7 @@ MSize LMVHalImp::QueryMinSize(MBOOL isEISOn,
       }
     }
 
-    if (UNLIKELY(mDebugDump >= 1)) {
+    if (mDebugDump >= 1) [[unlikely]] {
       CAM_LOGD(
           "eis(%d), sensor: %d/%d, outputSize: %d/%d, videoSize: %d/%d, ret: "
           "%d/%d, crop %d",
@@ -787,7 +787,7 @@ MINT32 LMVHalImp::NotifyLMV(QBufInfo* pBufInfo) {
       retBuf.reset(pBufInfo->mvOut.at(i).mBuffer,
                    [](IImageBuffer* p) { MY_LOGI("release implement"); });
       mLMVOBufferList.push(retBuf);
-      if (UNLIKELY(mDebugDump >= 1)) {
+      if (mDebugDump >= 1) [[unlikely]] {
         CAM_LOGD("NotifyLMV : %zu", mLMVOBufferList.size());
       }
     }
@@ -801,7 +801,7 @@ MINT32 LMVHalImp::NotifyLMV(std::shared_ptr<NSCam::IImageBuffer> const& spBuf) {
 
   if (spBuf != 0) {
     mLMVOBufferList.push(spBuf);
-    if (UNLIKELY(mDebugDump >= 1)) {
+    if (mDebugDump >= 1) [[unlikely]] {
       CAM_LOGD("NotifyLMV : %zu - Drop", mLMVOBufferList.size());
     }
   }
