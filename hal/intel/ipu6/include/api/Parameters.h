@@ -254,7 +254,7 @@ typedef struct {
                            properties */
     uint64_t timestamp; /**< buffer timestamp, it's a time reference measured in nanosecond */
     uint32_t frameNumber;   /**< buffer frameNumber, it's an id of buffer */
-    void *priv;         /**< used to pass private data */
+    uint64_t privateHandle;   /**< used to pass private data */
     uint64_t reserved;  /**< reserved for future */
 } camera_buffer_t;
 

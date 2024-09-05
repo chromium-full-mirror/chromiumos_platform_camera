@@ -65,6 +65,7 @@ PlatformData::PlatformData() {
     MediaControl* mc = MediaControl::getInstance();
     if (mc) {
         mc->initEntities();
+        mStaticCfg.mMediaCfgId = mc->getMediaCfgId();
     }
 
     CameraParser CameraParser(mc, &mStaticCfg);
@@ -1361,7 +1362,8 @@ bool PlatformData::isCSIBackEndCapture(int cameraId) {
     for (const auto& node : mc->videoNodes) {
         if (node.videoNodeType == VIDEO_GENERIC &&
             (node.name.find("BE capture") != string::npos ||
-             node.name.find("BE SOC capture") != string::npos)) {
+             node.name.find("BE SOC capture") != string::npos ||
+             node.name.find("ISYS capture") != string::npos)) {
             isCsiBECapture = true;
             break;
         }
@@ -1377,7 +1379,9 @@ bool PlatformData::isCSIFrontEndCapture(int cameraId) {
 
     for (const auto& node : mc->videoNodes) {
         if (node.videoNodeType == VIDEO_GENERIC &&
-            (node.name.find("CSI-2") != string::npos || node.name.find("TPG") != string::npos)) {
+            (node.name.find("CSI-2") != string::npos ||
+             node.name.find("TPG") != string::npos ||
+             node.name.find("CSI2"))) {
             isCsiFeCapture = true;
             break;
         }
@@ -1749,6 +1753,10 @@ v4l2_buf_type PlatformData::getV4L2BufType(int cameraId) {
 
 void PlatformData::setV4L2BufType(int cameraId, v4l2_buf_type v4l2BufType) {
     getInstance()->mStaticCfg.mCameras[cameraId].mV4l2BufType = v4l2BufType;
+}
+
+int PlatformData::getMediaCfgId() {
+    return getInstance()->mStaticCfg.mMediaCfgId;
 }
 
 }  // namespace icamera

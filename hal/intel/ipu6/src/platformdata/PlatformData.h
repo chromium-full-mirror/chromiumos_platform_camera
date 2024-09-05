@@ -82,7 +82,8 @@ class PlatformData {
  public:
     class StaticCfg {
      public:
-        StaticCfg() { mCameras.clear(); }
+        StaticCfg()
+                  : mMediaCfgId(IPU6_DOWNSTREAM_MEDIA_CFG) { mCameras.clear(); }
         ~StaticCfg() {}  // not release resource by design
 
         /**
@@ -310,6 +311,7 @@ class PlatformData {
         std::vector<PolicyConfig> mPolicyConfig;
         CommonConfig mCommonConfig;
         std::string mBoardName;
+        int mMediaCfgId;
     };
 
  private:
@@ -1610,6 +1612,13 @@ class PlatformData {
      * \param v4l2BufType：V4L2 buffer type
      */
     static void setV4L2BufType(int cameraId, v4l2_buf_type v4l2BufType);
+
+    /**
+     * Get media configuration ID
+     *
+     * \return media configuration ID
+     */
+    static int getMediaCfgId();
 
 };
 } /* namespace icamera */
