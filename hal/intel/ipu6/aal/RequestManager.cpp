@@ -1084,7 +1084,11 @@ int RequestManager::chooseHALStreams(const uint32_t requestStreamNum, int* halSt
         if (it != videoHALStreamOrder.end()) continue;
 
         // 3: bind to the biggest stream
-        halStreamFlag[i] = videoHALStreamOrder.front().second;
+        /*
+         * The videoHALStreamOrder is sorted from small to big. Bind streams to the biggest
+         * stream for better IQ when downscaling streams.
+         */
+        halStreamFlag[i] = videoHALStreamOrder.back().second;
     }
 
     LOG1("has %d HAL Streams", activeHALNum);

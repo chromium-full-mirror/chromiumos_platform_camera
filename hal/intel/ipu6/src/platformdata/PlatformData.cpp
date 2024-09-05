@@ -1743,4 +1743,12 @@ int64_t PlatformData::getReqWaitTimeout(int cameraId) {
     return getInstance()->mStaticCfg.mCameras[cameraId].mReqWaitTimeout;
 }
 
+v4l2_buf_type PlatformData::getV4L2BufType(int cameraId) {
+    return getInstance()->mStaticCfg.mCameras[cameraId].mV4l2BufType;
+}
+
+void PlatformData::setV4L2BufType(int cameraId, v4l2_buf_type v4l2BufType) {
+    getInstance()->mStaticCfg.mCameras[cameraId].mV4l2BufType = v4l2BufType;
+}
+
 }  // namespace icamera
