@@ -38,8 +38,6 @@ CameraBuffer::CameraBuffer(int cameraId, int usage, int memory, uint32_t size, i
           mU(nullptr),
           mBufferUsage(usage),
           mSettingSequence(-1) {
-    int num_plane = 1;
-
     LOG2("<id%d>%s: construct buffer with usage:%d, memory:%d, size:%d, format:%d, index:%d",
          cameraId, __func__, usage, memory, size, format, index);
 
@@ -49,27 +47,10 @@ CameraBuffer::CameraBuffer(int cameraId, int usage, int memory, uint32_t size, i
     mU->flags = BUFFER_FLAG_INTERNAL;
     mU->sequence = -1;
 
-    switch (usage) {
-        case BUFFER_USAGE_PSYS_INPUT:
-            // follow through
-        case BUFFER_USAGE_PSYS_INTERNAL:
-        case BUFFER_USAGE_GENERAL:
-            if (PlatformData::isIsysEnabled(cameraId) &&
-                PlatformData::isCSIFrontEndCapture(cameraId)) {
-                num_plane = CameraUtils::getNumOfPlanes(format);
-            }
-            break;
-        case BUFFER_USAGE_MIPI_CAPTURE:
-        case BUFFER_USAGE_METADATA:
-            num_plane = CameraUtils::getNumOfPlanes(format);
-            break;
-        default:
-            LOGE("Not supported Usage");
-            break;
-    }
-
     CLEAR(mMmapAddrs);
     CLEAR(mDmaFd);
+
+    int num_plane = CameraUtils::getNumOfPlanes(format);
 
     initBuffer(memory, v4l2BufType, size, index, num_plane);
 }

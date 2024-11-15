@@ -630,6 +630,8 @@ void CameraParser::handleSensor(CameraParser* profiles, const char* name, const 
         }
     } else if (strcmp(name, "isISYSCompression") == 0) {
         pCurrentCam->mISYSCompression = strcmp(atts[1], "true") == 0;
+        if (mStaticCfg->mMediaCfgId == IPU6_UPSTREAM_MEDIA_CFG)
+            pCurrentCam->mISYSCompression = false;
     } else if (strcmp(name, "isPSACompression") == 0) {
         pCurrentCam->mPSACompression = strcmp(atts[1], "true") == 0;
     } else if (strcmp(name, "isOFSCompression") == 0) {
@@ -1291,7 +1293,6 @@ void CameraParser::parseLinkElement(CameraParser* profiles, const char* name, co
 
 void CameraParser::parseRouteElement(CameraParser* profiles, const char* name, const char** atts) {
     McRoute route;
-    MediaCtlConf& mc = profiles->pCurrentCam->mMediaCtlConfs.back();
     route.flag = MEDIA_LNK_FL_ENABLED;
 
     int idx = 0;
@@ -1317,8 +1318,6 @@ void CameraParser::parseRouteElement(CameraParser* profiles, const char* name, c
         }
         idx += 2;
     }
-
-    mc.routes.push_back(route);
 }
 
 void CameraParser::parseVideoElement(CameraParser* profiles, const char* name,

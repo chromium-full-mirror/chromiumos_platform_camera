@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2023 Intel Corporation.
+ * Copyright (C) 2018-2024 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,8 @@ DeviceBase::DeviceBase(int cameraId, VideoNodeType nodeType, VideoNodeDirection 
           mNeedSkipFrame(false),
           mDeviceCB(deviceCB),
           mMaxBufferNumber(MAX_BUFFER_COUNT),
-          mBufferQueuing(false) {
+          mBufferQueuing(false),
+          mBufType(V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE) {
     LOG1("<id%d>%s, device:%s", mCameraId, __func__, mName);
 
     mFrameSkipNum = PlatformData::getInitialSkipFrame(mCameraId);
@@ -66,7 +67,14 @@ DeviceBase::~DeviceBase() {
 int DeviceBase::openDevice() {
     LOG1("<id%d>%s, device:%s", mCameraId, __func__, mName);
 
-    return mDevice->Open(O_RDWR);
+    int ret = mDevice->Open(O_RDWR);
+    if (ret)
+        return ret;
+
+    mBufType = mDevice->GetBufferType();
+    PlatformData::setV4L2BufType(mCameraId, mBufType);
+
+    return OK;
 }
 
 void DeviceBase::closeDevice() {
@@ -130,6 +138,8 @@ int DeviceBase::queueBuffer(int64_t sequence) {
         buffer = mPendingBuffers.front();
         mBufferQueuing = true;
     }
+
+    buffer->getV4L2Buffer().SetType(mBufType);
 
     int ret = onQueueBuffer(sequence, buffer);
     if (ret == OK) {
@@ -259,8 +269,9 @@ MainDevice::MainDevice(int cameraId, VideoNodeType nodeType, DeviceCallback* dev
 MainDevice::~MainDevice() {}
 
 int MainDevice::createBufferPool(const stream_t& config) {
-    LOG1("<id%d>%s, fmt:%s(%dx%d) field:%d", mCameraId, __func__,
-         CameraUtils::pixelCode2String(config.format), config.width, config.height, config.field);
+    LOG1("<id%d>%s, fmt:%s(%dx%d) field:%d, mBufType:%d", mCameraId, __func__,
+         CameraUtils::pixelCode2String(config.format), config.width, config.height, config.field,
+         mBufType);
 
     // Pass down ISYS compression flag to driver, which is CSI-BE output compression
     bool isISYSCompression = PlatformData::getISYSCompression(mCameraId);
@@ -276,10 +287,10 @@ int MainDevice::createBufferPool(const stream_t& config) {
              csiBEDeviceNodeName.c_str(), ret);
     }
 
-    struct v4l2_format v4l2fmt;
+    struct v4l2_format v4l2fmt = {};
     v4l2fmt.fmt.pix_mp.field = config.field;
 
-    if (PlatformData::isCSIFrontEndCapture(mCameraId)) {
+    if (V4L2_TYPE_IS_MULTIPLANAR(mBufType)) {
         int planesNum = CameraUtils::getNumOfPlanes(config.format);
         LOG1("@%s Num of planes: %d, mCameraId:%d", __func__, planesNum, mCameraId);
 
@@ -299,7 +310,7 @@ int MainDevice::createBufferPool(const stream_t& config) {
         v4l2fmt.fmt.pix.sizeimage = 0;
     }
 
-    v4l2fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    v4l2fmt.type = mBufType;
     V4L2Format tmpbuf{v4l2fmt};
     int ret = mDevice->SetFormat(tmpbuf);
     CheckAndLogError(ret != OK, ret, "set v4l2 format failed ret=%d", ret);
@@ -333,8 +344,9 @@ int MainDevice::onDequeueBuffer(shared_ptr<CameraBuffer> buffer) {
 
     if (mNeedSkipFrame) return OK;
 
-    LOG2("<seq%d>@%s, field:%d, timestamp: sec=%ld, usec=%ld", buffer->getSequence(), __func__,
-         buffer->getField(), buffer->getTimestamp().tv_sec, buffer->getTimestamp().tv_usec);
+    LOG2("camera:%d, stream:%d, <seq%d>@%s, field:%d, timestamp: sec=%ld, usec=%ld", mCameraId,
+         buffer->getStreamId(), buffer->getSequence(), __func__, buffer->getField(),
+         buffer->getTimestamp().tv_sec, buffer->getTimestamp().tv_usec);
 
     for (auto& consumer : mConsumers) {
         consumer->onFrameAvailable(mPort, buffer);

@@ -68,6 +68,10 @@ namespace icamera {
 #define CAMERA_GRAPH_DESCRIPTOR_FILE "gcss/graph_descriptor.xml"
 #define CAMERA_GRAPH_SETTINGS_DIR "gcss/"
 
+#ifndef CAMERA_DEFAULT_CFG_PATH
+#error CAMERA_DEFAULT_CFG_PATH not defined
+#endif
+
 #define NVM_DATA_PATH "/sys/bus/i2c/devices/"
 
 #define TNR7US_RESTART_THRESHOLD 5

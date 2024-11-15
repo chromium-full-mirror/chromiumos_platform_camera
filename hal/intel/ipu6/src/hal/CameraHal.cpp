@@ -98,7 +98,6 @@ int CameraHal::deviceOpen(int cameraId, int vcNum) {
     }
 
     mCameraDevices[cameraId] = new CameraDevice(cameraId);
-
     mCameraOpenNum++;
 
     if (mCameraOpenNum == 1) {
@@ -122,7 +121,6 @@ void CameraHal::deviceClose(int cameraId) {
         mCameraDevices[cameraId]->deinit();
         delete mCameraDevices[cameraId];
         mCameraDevices[cameraId] = nullptr;
-
         mCameraOpenNum--;
     }
 }
