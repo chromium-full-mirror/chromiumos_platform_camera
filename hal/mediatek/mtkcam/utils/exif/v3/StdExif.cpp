@@ -147,9 +147,11 @@ StdExif::init(ExifParams const& rExifParams, MBOOL const enableDbgExif) {
   MY_LOGI(
       "GPS(%d), Altitude(%d), Latitude(%s), Longitude(%s), TimeStamp(%s), "
       "ProcessingMethod(%s)",
-      mExifParam.u4GpsIsOn, mExifParam.u4GPSAltitude, mExifParam.uGPSLatitude,
-      mExifParam.uGPSLongitude, mExifParam.uGPSTimeStamp,
-      mExifParam.uGPSProcessingMethod);
+      mExifParam.u4GpsIsOn, mExifParam.u4GPSAltitude,
+      reinterpret_cast<const char*>(mExifParam.uGPSLatitude),
+      reinterpret_cast<const char*>(mExifParam.uGPSLongitude),
+      reinterpret_cast<const char*>(mExifParam.uGPSTimeStamp),
+      reinterpret_cast<const char*>(mExifParam.uGPSProcessingMethod));
 
   // DebugExif: reset debug information
   mDbgInfo.clear();
@@ -365,8 +367,9 @@ void StdExif::updateStdExif(exifAPP1Info_s* exifApp1Info) {
   snprintf(reinterpret_cast<char*>(exifApp1Info->strSubSecTime),
            sizeof(exifApp1Info->strSubSecTime) - 1,
            "%02ld\n", tv.tv_usec);
-  MY_LOGI("strDateTime(%s), strSubSecTime(%s)", exifApp1Info->strDateTime,
-          exifApp1Info->strSubSecTime);
+  MY_LOGI("strDateTime(%s), strSubSecTime(%s)",
+          reinterpret_cast<const char*>(exifApp1Info->strDateTime),
+          reinterpret_cast<const char*>(exifApp1Info->strSubSecTime));
 
   // [digital zoom ratio]
   exifApp1Info->digitalZoomRatio[0] = (unsigned int)mExifParam.u4ZoomRatio;

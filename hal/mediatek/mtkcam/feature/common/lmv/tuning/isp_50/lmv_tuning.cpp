@@ -293,8 +293,9 @@ void LMVP1Cb::p1TuningNotify(MVOID* pInput, MVOID* pOutput) {
       CAM_LOGD(
           "[%s] (w,h)=(%d,%d), (DivH, DivV)=(%d,%d), (winH, winV)=(%d,%d), "
           "MaxGmv(%d)",
-          table_name, _this->mImgWidth, _this->mImgHeight, _this->mLmvDivH,
-          _this->mLmvDivV, win_numH, win_numV, max_range);
+          reinterpret_cast<const char*>(table_name), _this->mImgWidth,
+          _this->mImgHeight, _this->mLmvDivH, _this->mLmvDivV, win_numH,
+          win_numV, max_range);
     }
 
     break;

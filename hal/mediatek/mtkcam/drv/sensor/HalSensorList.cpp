@@ -739,8 +739,10 @@ const char* HalSensorList::getSensorName(IMGSENSOR_SENSOR_IDX idx) {
   for (i = 0; i < num; i++) {
     psensor_list = getSensorList(i);
     if (sensor_id == psensor_list->id) {
-      CAM_LOGI("sensorName %d %d %s", idx, i, psensor_list->name);
-      return reinterpret_cast<char*>(psensor_list->name);
+      const char* sensor_name =
+          reinterpret_cast<const char*>(psensor_list->name);
+      CAM_LOGI("sensorName %d %d %s", idx, i, sensor_name);
+      return sensor_name;
     }
   }
   return NULL;

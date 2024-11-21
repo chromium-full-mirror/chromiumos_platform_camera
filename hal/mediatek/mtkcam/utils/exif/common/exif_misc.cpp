@@ -205,7 +205,8 @@ unsigned int ExifUtils::exifIFDValueSizeof(uint16_t type, unsigned int count) {
 /*****************************************************************************
  *
  ******************************************************************************/
-void ExifUtils::exifErrPrint(unsigned char* pname, unsigned int err) {
+void ExifUtils::exifErrPrint(unsigned char* pname_in, unsigned int err) {
+  const char* pname = reinterpret_cast<const char*>(pname_in);
   switch (err) {
     case EXIF_NO_ERROR:
       break;

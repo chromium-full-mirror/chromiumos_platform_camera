@@ -134,7 +134,7 @@ bool CamProfile::print(char const* const fmt /*= ""*/, ...) const {
     va_start(args, fmt);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wformat-nonliteral"
-    std::string result(base::StringPrintf(fmt, args));
+    std::string result(base::StringPrintV(fmt, args));
 #pragma clang diagnostic pop
 
     va_end(args);
@@ -149,7 +149,7 @@ bool CamProfile::print(char const* const fmt /*= ""*/, ...) const {
     va_start(args, fmt);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wformat-nonliteral"
-    std::string result(base::StringPrintf(fmt, args));
+    std::string result(base::StringPrintV(fmt, args));
 #pragma clang diagnostic pop
     va_end(args);
     //
@@ -187,7 +187,7 @@ bool CamProfile::print_overtime(int32_t const msTimeInterval,
       va_start(args, fmt);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wformat-nonliteral"
-      std::string result(base::StringPrintf(fmt, args));
+      std::string result(base::StringPrintV(fmt, args));
 #pragma clang diagnostic pop
 
       va_end(args);
@@ -208,7 +208,7 @@ bool CamProfile::print_overtime(int32_t const msTimeInterval,
       va_start(args, fmt);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wformat-nonliteral"
-      std::string result(base::StringPrintf(fmt, args));
+      std::string result(base::StringPrintV(fmt, args));
 #pragma clang diagnostic pop
       va_end(args);
       //
