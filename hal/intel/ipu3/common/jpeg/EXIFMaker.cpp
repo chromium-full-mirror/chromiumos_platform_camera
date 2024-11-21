@@ -403,7 +403,8 @@ void EXIFMaker::initializeLocation(ExifMetaData& metadata)
     exifAttributes.gps_latitude[2].den = 100;
     exifAttributes.enableGps |= EXIF_GPS_LATITUDE;
     LOG1("EXIF: latitude, ref:%s, dd:%d, mm:%d, ss:%d",
-         exifAttributes.gps_latitude_ref, exifAttributes.gps_latitude[0].num,
+         reinterpret_cast<const char*>(exifAttributes.gps_latitude_ref),
+         exifAttributes.gps_latitude[0].num,
          exifAttributes.gps_latitude[1].num, exifAttributes.gps_latitude[2].num);
 
     // longitude, for example, 116.407413 degrees, E
@@ -427,7 +428,8 @@ void EXIFMaker::initializeLocation(ExifMetaData& metadata)
     exifAttributes.gps_longitude[2].den = 100;
     exifAttributes.enableGps |= EXIF_GPS_LONGITUDE;
     LOG1("EXIF: longitude, ref:%s, dd:%d, mm:%d, ss:%d",
-         exifAttributes.gps_longitude_ref, exifAttributes.gps_longitude[0].num,
+         reinterpret_cast<const char*>(exifAttributes.gps_longitude_ref),
+         exifAttributes.gps_longitude[0].num,
          exifAttributes.gps_longitude[1].num, exifAttributes.gps_longitude[2].num);
 
     // altitude
@@ -482,7 +484,8 @@ void EXIFMaker::initializeLocation(ExifMetaData& metadata)
     exifAttributes.gps_processing_method[sizeof(exifAttributes.gps_processing_method) - 1] = 0;
 
     exifAttributes.enableGps |= EXIF_GPS_PROCMETHOD;
-    LOG1("EXIF: GPS processing method:%s", exifAttributes.gps_processing_method);
+    LOG1("EXIF: GPS processing method:%s",
+         reinterpret_cast<const char*>(exifAttributes.gps_processing_method));
 }
 
 void EXIFMaker::setSensorAeConfig(const SensorAeConfig& aeConfig)
