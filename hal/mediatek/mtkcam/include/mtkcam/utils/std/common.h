@@ -20,14 +20,31 @@
  *
  ******************************************************************************/
 //
-#include "Misc.h"
 #include "Format.h"
+#include "Misc.h"
 #include "Profile.h"
 #include "Time.h"
 
 #include <base/threading/thread.h>
 
-#define gettid() base::PlatformThread::CurrentId()
+namespace {
+
+template <typename T> pid_t GetThreadId(T value) {
+  static_assert(std::is_same_v<T, int> || std::is_class_v<T>);
+  if constexpr (std::is_class_v<T>) {
+    return value.raw();
+  } else {
+    return value;
+  }
+}
+
+} // namespace
+
+#define gettid()                                                               \
+  ([]() {                                                                      \
+    auto id_object_or_value = base::PlatformThread::CurrentId();               \
+    return GetThreadId(id_object_or_value);                                    \
+  })()
 
 #ifndef __unused
 #define __unused __attribute__((__unused__))
@@ -61,58 +78,58 @@
  *
  ******************************************************************************/
 #ifndef RETURN_NULLPTR_IF_NULLPTR
-#define RETURN_NULLPTR_IF_NULLPTR(_expr_, ...) \
-  do {                                         \
-    if (CC_UNLIKELY((_expr_) == nullptr)) {    \
-      MY_LOGE(__VA_ARGS__);                    \
-      return nullptr;                          \
-    }                                          \
+#define RETURN_NULLPTR_IF_NULLPTR(_expr_, ...)                                 \
+  do {                                                                         \
+    if (CC_UNLIKELY((_expr_) == nullptr)) {                                    \
+      MY_LOGE(__VA_ARGS__);                                                    \
+      return nullptr;                                                          \
+    }                                                                          \
   } while (0)
 #endif
 
 #ifndef RETURN_NULLPTR_IF_NOT_OK
-#define RETURN_NULLPTR_IF_NOT_OK(_expr_, fmt, arg...)             \
-  do {                                                            \
-    int const err = (_expr_);                                     \
-    if (CC_UNLIKELY(err != 0)) {                                  \
-      MY_LOGE("err:%d(%s) - " fmt, err, ::strerror(-err), ##arg); \
-      return nullptr;                                             \
-    }                                                             \
+#define RETURN_NULLPTR_IF_NOT_OK(_expr_, fmt, arg...)                          \
+  do {                                                                         \
+    int const err = (_expr_);                                                  \
+    if (CC_UNLIKELY(err != 0)) {                                               \
+      MY_LOGE("err:%d(%s) - " fmt, err, ::strerror(-err), ##arg);              \
+      return nullptr;                                                          \
+    }                                                                          \
   } while (0)
 #endif
 
 #ifndef RETURN_ERROR_IF_NULLPTR
-#define RETURN_ERROR_IF_NULLPTR(_expr_, _err_, ...) \
-  do {                                              \
-    if (CC_UNLIKELY((_expr_) == nullptr)) {         \
-      MY_LOGE(__VA_ARGS__);                         \
-      return (_err_);                               \
-    }                                               \
+#define RETURN_ERROR_IF_NULLPTR(_expr_, _err_, ...)                            \
+  do {                                                                         \
+    if (CC_UNLIKELY((_expr_) == nullptr)) {                                    \
+      MY_LOGE(__VA_ARGS__);                                                    \
+      return (_err_);                                                          \
+    }                                                                          \
   } while (0)
 #endif
 
 #ifndef RETURN_ERROR_IF_NOT_OK
-#define RETURN_ERROR_IF_NOT_OK(_expr_, fmt, arg...)               \
-  do {                                                            \
-    int const err = (_expr_);                                     \
-    if (CC_UNLIKELY(err != 0)) {                                  \
-      MY_LOGE("err:%d(%s) - " fmt, err, ::strerror(-err), ##arg); \
-      return err;                                                 \
-    }                                                             \
+#define RETURN_ERROR_IF_NOT_OK(_expr_, fmt, arg...)                            \
+  do {                                                                         \
+    int const err = (_expr_);                                                  \
+    if (CC_UNLIKELY(err != 0)) {                                               \
+      MY_LOGE("err:%d(%s) - " fmt, err, ::strerror(-err), ##arg);              \
+      return err;                                                              \
+    }                                                                          \
   } while (0)
 #endif
 
-#define RETURN_IF_ERROR(_expr_, fmt, arg...)                      \
-  do {                                                            \
-    int const err = (_expr_);                                     \
-    if (CC_UNLIKELY(err != 0)) {                                  \
-      MY_LOGE("err:%d(%s) - " fmt, err, ::strerror(-err), ##arg); \
-      return err;                                                 \
-    }                                                             \
+#define RETURN_IF_ERROR(_expr_, fmt, arg...)                                   \
+  do {                                                                         \
+    int const err = (_expr_);                                                  \
+    if (CC_UNLIKELY(err != 0)) {                                               \
+      MY_LOGE("err:%d(%s) - " fmt, err, ::strerror(-err), ##arg);              \
+      return err;                                                              \
+    }                                                                          \
   } while (0)
 
 //
 /******************************************************************************
  *
  ******************************************************************************/
-#endif  // CAMERA_HAL_MEDIATEK_MTKCAM_INCLUDE_MTKCAM_UTILS_STD_COMMON_H_
+#endif // CAMERA_HAL_MEDIATEK_MTKCAM_INCLUDE_MTKCAM_UTILS_STD_COMMON_H_
