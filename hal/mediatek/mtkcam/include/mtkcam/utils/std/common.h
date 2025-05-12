@@ -27,24 +27,7 @@
 
 #include <base/threading/thread.h>
 
-namespace {
-
-template <typename T> pid_t GetThreadId(T value) {
-  static_assert(std::is_same_v<T, int> || std::is_class_v<T>);
-  if constexpr (std::is_class_v<T>) {
-    return value.raw();
-  } else {
-    return value;
-  }
-}
-
-} // namespace
-
-#define gettid()                                                               \
-  ([]() {                                                                      \
-    auto id_object_or_value = base::PlatformThread::CurrentId();               \
-    return GetThreadId(id_object_or_value);                                    \
-  })()
+#define gettid() base::PlatformThread::CurrentId().raw()
 
 #ifndef __unused
 #define __unused __attribute__((__unused__))
