@@ -540,7 +540,7 @@ camera3_stream_t* RequestManager::choosePreviewStream(uint32_t streamsNum,
             preStreamNum = i;
         }
 
-        if (s->format == HAL_PIXEL_FORMAT_YCbCr_420_888) {
+        if (s->format == HAL_PIXEL_FORMAT_YCbCr_420_888 && !IS_STILL_USAGE(s->usage)) {
             if (yuvStream && yuvStream->width * yuvStream->height <= s->width * s->height) {
                 continue;
             }
