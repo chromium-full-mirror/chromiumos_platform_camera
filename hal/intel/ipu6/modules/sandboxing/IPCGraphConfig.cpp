@@ -99,8 +99,7 @@ bool IPCGraphConfig::clientFlattenConfigStreams(void* pData, uint32_t size, Grap
                      "@%s, Wrong parameters, pData: %p, size: %u, streams count: %d", __func__,
                      pData, size, streams.size());
 
-    GraphConfigStreamParams* params = static_cast<GraphConfigStreamParams*>(pData);
-    CLEAR(*params);
+    GraphConfigStreamParams* params = new (pData) GraphConfigStreamParams();
 
     params->baseInfo = info;
     params->type = type;
@@ -397,8 +396,8 @@ bool IPCGraphConfig::clientFlattenGetConnection(void* pData, uint32_t size, Grap
                                                 const std::vector<std::string>& pgList) {
     CheckAndLogError(!pData || size < sizeof(GraphGetConnectionParams), false,
                      "@%s, Wrong parameters, pData: %p, size: %u", __func__, pData, size);
-    GraphGetConnectionParams* params = static_cast<GraphGetConnectionParams*>(pData);
-    CLEAR(*params);
+
+    GraphGetConnectionParams* params = new (pData) GraphGetConnectionParams();
 
     params->baseInfo = info;
     params->pgListNum = pgList.size();

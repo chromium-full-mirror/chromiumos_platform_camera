@@ -93,7 +93,7 @@ AiqInputParams &AiqInputParams::operator=(const AiqInputParams &other)
     if (this == &other)
         return *this;
 
-    MEMCPY_S(this,
+    MEMCPY_S(static_cast<void*>(this),
              sizeof(AiqInputParams),
              &other,
              sizeof(AiqInputParams));

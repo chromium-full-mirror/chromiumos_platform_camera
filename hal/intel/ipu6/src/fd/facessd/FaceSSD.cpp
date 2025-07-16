@@ -34,7 +34,7 @@ namespace icamera {
 FaceSSD::FaceSSD(int cameraId, unsigned int maxFaceNum, int32_t halStreamId, int width, int height,
                  int gfxFmt, int usage)
         : FaceDetection(cameraId, maxFaceNum, halStreamId, width, height) {
-    CLEAR(mResult);
+    mResult = {}; // zero-initialize member with default constructors
 
     mFaceDetector = cros::FaceDetector::Create();
     CheckAndLogError(!mFaceDetector, VOID_VALUE, "mFaceDetector is nullptr");
@@ -49,7 +49,7 @@ FaceSSD::~FaceSSD() {
 void FaceSSD::faceDetectResult(cros::FaceDetectResult ret,
                                std::vector<human_sensing::CrosFace> faces) {
     AutoMutex l(mFaceResultLock);
-    CLEAR(mResult);
+    mResult = {}; // zero-initialize member with default constructors
 
     if (ret == cros::FaceDetectResult::kDetectOk) {
         std::vector<human_sensing::CrosFace> sortFaces = faces;

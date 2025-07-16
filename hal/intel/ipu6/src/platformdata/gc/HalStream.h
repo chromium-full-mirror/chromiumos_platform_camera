@@ -41,6 +41,8 @@ struct streamProps {
 
 class HalStream {
  public:
+    HalStream() = default;
+
     HalStream(struct streamProps& props, void* priv)
             : mWidth(props.width),
               mHeight(props.height),

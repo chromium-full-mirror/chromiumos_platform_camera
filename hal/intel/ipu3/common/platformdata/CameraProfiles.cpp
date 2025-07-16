@@ -1571,7 +1571,6 @@ void CameraProfiles::handleSensorInfo(const char *name, const char **atts)
         int size = strlen(atts[1]);
         std::unique_ptr<char[]> srcPtr = std::make_unique<char[]>(size + 1);
         char * src = srcPtr.get();
-        memset(src, 0, sizeof(src));
         MEMCPY_S(src, size, atts[1], size);
         char *savePtr, *tablePtr;
         int mode = ANDROID_SENSOR_TEST_PATTERN_MODE_OFF;
@@ -1611,7 +1610,7 @@ void CameraProfiles::handleSensorInfo(const char *name, const char **atts)
         int size = strlen(atts[1]);
         std::unique_ptr<char[]> srcPtr = std::make_unique<char[]>(size + 1);
         char * src = srcPtr.get();
-        memset(src, 0, sizeof(src));
+        memset(static_cast<void*>(src), 0, sizeof(src));
         MEMCPY_S(src, size, atts[1], size);
         char *savePtr, *tablePtr;
         bool smiaError = false;
