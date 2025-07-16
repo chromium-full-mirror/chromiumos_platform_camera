@@ -21,7 +21,6 @@
 
 #ifdef __clang__
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Werror"
 #pragma clang diagnostic ignored "-Wformat-nonliteral"
 #pragma clang diagnostic ignored "-Wformat-security"
 #endif
