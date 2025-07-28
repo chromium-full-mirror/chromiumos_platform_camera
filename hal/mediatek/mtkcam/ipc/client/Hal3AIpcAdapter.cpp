@@ -906,7 +906,7 @@ MINT32 Hal3AIpcAdapter::send3ACtrl(E3ACtrl_T e3ACtrl,
     case E3ACtrl_IPC_Set_MetaStaticInfo:
       pIpcMetaStaticInfo = reinterpret_cast<IpcMetaStaticInfo_T*>(i4Arg1);
       if (pIpcMetaStaticInfo) {
-        memcpy(&params->arg1.ipcMetaStaticInfo, pIpcMetaStaticInfo,
+        memcpy(static_cast<void*>(&params->arg1.ipcMetaStaticInfo), pIpcMetaStaticInfo,
                sizeof(IpcMetaStaticInfo_T));
       } else {
         IPC_LOGE("IPC Sensor Meta Statistical Info is NULL");
