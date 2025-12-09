@@ -17,6 +17,7 @@
 #ifndef CAMERA_HAL_MEDIATEK_MTKCAM_DRV_SENSOR_HALSENSOR_H_
 #define CAMERA_HAL_MEDIATEK_MTKCAM_DRV_SENSOR_HALSENSOR_H_
 //
+#include <atomic>
 #include <mtkcam/drv/IHalSensor.h>
 #include <map>
 #include <memory>
