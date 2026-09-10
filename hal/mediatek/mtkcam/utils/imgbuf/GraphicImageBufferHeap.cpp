@@ -274,6 +274,11 @@ GraphicImageBufferHeap::impLockBuf(char const* szCallerName,
       cros::CameraBufferManager::GetInstance();
   int v4l2Fmt = bufManager->GetV4L2PixelFormat(getBufferHandle());
   uint32_t planeNum = bufManager->GetNumPlanes(getBufferHandle());
+  if (planeNum > rvBufInfo.size()) {
+    MY_LOGE("@%s: live planeNum(%u) > rvBufInfo.size()(%zu); refusing lock",
+            __FUNCTION__, planeNum, rvBufInfo.size());
+    return MFALSE;
+  }
   int ret = 0;
 
   if (planeNum == 1) {
