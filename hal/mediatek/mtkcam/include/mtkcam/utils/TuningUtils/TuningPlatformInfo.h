@@ -41,6 +41,7 @@ class VISIBILITY_PUBLIC TuningPlatformInfo {
  public:
   TuningPlatformInfo();
   void getTuningInfo(PlatformInfo* info);
+  void getTuningInfo(PlatformInfo* info, const std::string& config_path);
 };
 
 int VISIBILITY_PUBLIC GetTuningIndex(int sensor_id);

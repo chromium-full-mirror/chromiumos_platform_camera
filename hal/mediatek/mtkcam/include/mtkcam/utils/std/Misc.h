@@ -100,6 +100,11 @@ bool VISIBILITY_PUBLIC saveBufToFile(char const* const fname,
                                      unsigned char* const buf,
                                      unsigned int const size);
 
+bool VISIBILITY_PUBLIC saveBufToFileAt(int dir_fd,
+                                       char const* const fname,
+                                       unsigned char* const buf,
+                                       unsigned int const size);
+
 /******************************************************************************
  * @brief load the file to the buffer
  *

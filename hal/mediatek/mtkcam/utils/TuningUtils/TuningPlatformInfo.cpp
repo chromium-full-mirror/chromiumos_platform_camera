@@ -47,14 +47,54 @@ int GetTuningIndex(int sensor_id) {
 }
 
 void TuningPlatformInfo::getTuningInfo(PlatformInfo* info) {
-  std::unique_ptr<cros::CameraConfig> camera_config;
+  getTuningInfo(info, "");
+}
 
-  base::FilePath cros_config_path("/run/camera/camera_config_path");
-  if (base::PathExists(cros_config_path))
-    camera_config =
-        cros::CameraConfig::Create("/run/camera/camera_config_path");
-  else
-    camera_config = cros::CameraConfig::Create("/etc/camera/camera_info.json");
+void TuningPlatformInfo::getTuningInfo(PlatformInfo* info,
+                                       const std::string& config_path) {
+  if (info == nullptr) {
+    return;
+  }
+
+  std::unique_ptr<cros::CameraConfig> camera_config;
+  if (!config_path.empty()) {
+    base::FilePath explicit_path(config_path);
+    if (explicit_path.IsAbsolute() && !explicit_path.ReferencesParent() &&
+        base::PathExists(explicit_path)) {
+      camera_config = cros::CameraConfig::Create(config_path);
+    }
+    if (!camera_config) {
+      camera_config =
+          cros::CameraConfig::Create("/etc/camera/camera_info.json");
+    }
+  } else {
+    base::FilePath cros_config_path("/run/camera/camera_config_path");
+    if (base::PathExists(cros_config_path)) {
+      camera_config =
+          cros::CameraConfig::Create("/run/camera/camera_config_path");
+    }
+    if (!camera_config) {
+      camera_config =
+          cros::CameraConfig::Create("/etc/camera/camera_info.json");
+    }
+  }
+
+  if (!camera_config) {
+    CAM_LOGE("%s: failed to load camera config, using defaults", __func__);
+    info->wf_sensor.tuning_module_id = 0;
+    info->wf_sensor.mirror = 0;
+    info->wf_sensor.flip = 0;
+    info->wf_sensor.eeprom_path = "/sys/bus/nvmem/devices/2-00500/nvmem";
+    info->wf_sensor.orientation = 0;
+    info->wf_sensor.minFocusDistance = 0;
+    info->uf_sensor.tuning_module_id = 0;
+    info->uf_sensor.mirror = 0;
+    info->uf_sensor.flip = 0;
+    info->uf_sensor.eeprom_path = "/sys/bus/nvmem/devices/4-00500/nvmem";
+    info->uf_sensor.orientation = 0;
+    info->uf_sensor.minFocusDistance = 0;
+    return;
+  }
 
   info->wf_sensor.tuning_module_id =
       camera_config->GetInteger("wf_sensor_tuning_module_id", 0);

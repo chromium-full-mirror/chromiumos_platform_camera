@@ -20,12 +20,19 @@
 //
 #include <errno.h>
 #include <fcntl.h>
+#include <sched.h>
+#include <string.h>
+#include <sys/resource.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 #include <mutex>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include <property_service/property.h>
 #include <property_service/property_lib.h>
-#include <sched.h>
-#include <sys/stat.h>
-#include <sys/resource.h>
 
 /******************************************************************************
  *
@@ -33,6 +40,44 @@
 
 namespace NSCam {
 namespace Utils {
+namespace {
+
+class ScopedFd {
+ public:
+  explicit ScopedFd(int fd = -1) : fd_(fd) {}
+  ~ScopedFd() { reset(); }
+  ScopedFd(const ScopedFd&) = delete;
+  ScopedFd& operator=(const ScopedFd&) = delete;
+  ScopedFd(ScopedFd&& other) noexcept : fd_(other.release()) {}
+  ScopedFd& operator=(ScopedFd&& other) noexcept {
+    if (this != &other) {
+      reset(other.release());
+    }
+    return *this;
+  }
+
+  int get() const { return fd_; }
+  bool valid() const { return fd_ >= 0; }
+
+  int release() {
+    int fd = fd_;
+    fd_ = -1;
+    return fd;
+  }
+
+  void reset(int fd = -1) {
+    if (fd_ >= 0) {
+      ::close(fd_);
+    }
+    fd_ = fd;
+  }
+
+ private:
+  int fd_;
+};
+
+}  // namespace
+
 /******************************************************************************
  *
  ******************************************************************************/
@@ -48,10 +93,14 @@ void dumpCallStack(char const* prefix) {}
 static bool do_mkdir(char const* const path, unsigned int const mode) {
   struct stat st;
   //
-  if (0 != ::stat(path, &st)) {
+  if (0 != ::lstat(path, &st)) {
     //  Directory does not exist.
     if (0 != ::mkdir(path, mode) && EEXIST != errno) {
       MY_LOGE("fail to mkdir [%s]: %d[%s]", path, errno, ::strerror(errno));
+      return false;
+    }
+    if (0 != ::lstat(path, &st) || !S_ISDIR(st.st_mode)) {
+      MY_LOGE("!S_ISDIR");
       return false;
     }
   } else if (!S_ISDIR(st.st_mode)) {
@@ -96,6 +145,75 @@ bool makePath(char const* const path, unsigned int const mode) {
   return ret;
 }
 
+bool saveBufToFileAt(int dir_fd,
+                     char const* const fname,
+                     unsigned char* const buf,
+                     unsigned int const size) {
+  if (dir_fd < 0 || fname == nullptr || fname[0] == '\0' ||
+      ::strchr(fname, '/') != nullptr || ::strcmp(fname, ".") == 0 ||
+      ::strcmp(fname, "..") == 0) {
+    MY_LOGE("invalid arguments for saveBufToFileAt");
+    return false;
+  }
+  if (size > 0 && buf == nullptr) {
+    MY_LOGE("null buffer with non-zero size for [%s]", fname);
+    return false;
+  }
+
+  struct stat dir_st;
+  if (::fstat(dir_fd, &dir_st) != 0 || !S_ISDIR(dir_st.st_mode)) {
+    MY_LOGE("invalid parent directory fd for [%s]", fname);
+    return false;
+  }
+
+  if (::unlinkat(dir_fd, fname, 0) != 0 && errno != ENOENT) {
+    MY_LOGE("failed to unlink existing [%s]: %s", fname, ::strerror(errno));
+    return false;
+  }
+
+  constexpr mode_t kFileMode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
+  MY_LOGD("opening file [%s]", fname);
+  ScopedFd fd(::openat(dir_fd, fname,
+                       O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW | O_CLOEXEC,
+                       kFileMode));
+  if (!fd.valid()) {
+    MY_LOGE("failed to create file [%s]: %s", fname, ::strerror(errno));
+    return false;
+  }
+  if (::fchmod(fd.get(), kFileMode) != 0) {
+    MY_LOGE("failed to set mode on [%s]: %s", fname, ::strerror(errno));
+    fd.reset();
+    ::unlinkat(dir_fd, fname, 0);
+    return false;
+  }
+
+  uint32_t written = 0;
+  int cnt = 0;
+  MY_LOGD("writing %d bytes to file [%s]", size, fname);
+  while (written < size) {
+    ssize_t nw = ::write(fd.get(), buf + written, size - written);
+    if (nw < 0) {
+      if (errno == EINTR) {
+        continue;
+      }
+      MY_LOGE("failed to write to file [%s]: %s", fname, ::strerror(errno));
+      fd.reset();
+      ::unlinkat(dir_fd, fname, 0);
+      return false;
+    }
+    written += static_cast<uint32_t>(nw);
+    cnt++;
+  }
+  MY_LOGD("done writing %d bytes to file [%s] in %d passes", size, fname, cnt);
+  int raw_fd = fd.release();
+  if (::close(raw_fd) != 0) {
+    MY_LOGE("failed to close file [%s]: %s", fname, ::strerror(errno));
+    ::unlinkat(dir_fd, fname, 0);
+    return false;
+  }
+  return true;
+}
+
 /******************************************************************************
  * @brief save the buffer to the file
  *
@@ -114,29 +232,66 @@ bool makePath(char const* const path, unsigned int const mode) {
 bool saveBufToFile(char const* const fname,
                    unsigned char* const buf,
                    unsigned int const size) {
-  int nw, cnt = 0;
-  uint32_t written = 0;
-
-  MY_LOGD("opening file [%s]", fname);
-  int fd = ::open(fname, O_RDWR | O_CREAT | O_TRUNC, S_IRWXU);
-  if (fd < 0) {
-    MY_LOGE("failed to create file [%s]: %s", fname, ::strerror(errno));
+  if (fname == nullptr || fname[0] == '\0') {
+    MY_LOGE("empty file path");
+    return false;
+  }
+  size_t path_len = ::strlen(fname);
+  if (fname[path_len - 1] == '/') {
+    MY_LOGE("file path [%s] ends with slash", fname);
     return false;
   }
 
-  MY_LOGD("writing %d bytes to file [%s]", size, fname);
-  while (written < size) {
-    nw = ::write(fd, buf + written, size - written);
-    if (nw < 0) {
-      MY_LOGE("failed to write to file [%s]: %s", fname, ::strerror(errno));
+  std::vector<std::string> segments;
+  const char* p = fname;
+  while (*p != '\0') {
+    while (*p == '/') {
+      ++p;
+    }
+    if (*p == '\0') {
       break;
     }
-    written += nw;
-    cnt++;
+    const char* end = ::strchr(p, '/');
+    std::string seg =
+        (end == nullptr) ? std::string(p) : std::string(p, end - p);
+    if (seg == "..") {
+      MY_LOGE("parent traversal rejected in [%s]", fname);
+      return false;
+    }
+    if (seg != ".") {
+      segments.push_back(std::move(seg));
+    }
+    if (end == nullptr) {
+      break;
+    }
+    p = end;
   }
-  MY_LOGD("done writing %d bytes to file [%s] in %d passes", size, fname, cnt);
-  ::close(fd);
-  return true;
+
+  if (segments.empty()) {
+    MY_LOGE("no leaf filename in [%s]", fname);
+    return false;
+  }
+
+  ScopedFd dir_fd(::open(fname[0] == '/' ? "/" : ".",
+                         O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC));
+  if (!dir_fd.valid()) {
+    MY_LOGE("failed to open base directory for [%s]: %s", fname,
+            ::strerror(errno));
+    return false;
+  }
+
+  for (size_t i = 0; i + 1 < segments.size(); ++i) {
+    ScopedFd next_fd(::openat(dir_fd.get(), segments[i].c_str(),
+                              O_RDONLY | O_DIRECTORY | O_NOFOLLOW | O_CLOEXEC));
+    if (!next_fd.valid()) {
+      MY_LOGE("failed to traverse segment [%s] in [%s]: %s",
+              segments[i].c_str(), fname, ::strerror(errno));
+      return false;
+    }
+    dir_fd = std::move(next_fd);
+  }
+
+  return saveBufToFileAt(dir_fd.get(), segments.back().c_str(), buf, size);
 }
 
 /******************************************************************************
@@ -156,34 +311,46 @@ bool saveBufToFile(char const* const fname,
 unsigned int loadFileToBuf(char const* const fname,
                            unsigned char* const buf,
                            unsigned int const capacity) {
-  int nr, cnt = 0;
+  int cnt = 0;
   uint32_t readCnt = 0;
   unsigned int size = capacity;
 
+  if (fname == nullptr || buf == nullptr) {
+    return 0;
+  }
+
   MY_LOGD("opening file [%s]", fname);
-  int fd = ::open(fname, O_RDONLY);
-  if (fd < 0) {
-    MY_LOGE("failed to create file [%s]: %s", fname, strerror(errno));
+  ScopedFd fd(::open(fname, O_RDONLY | O_NOFOLLOW | O_CLOEXEC));
+  if (!fd.valid()) {
+    MY_LOGE("failed to open file [%s]: %s", fname, strerror(errno));
     return readCnt;
   }
   //
   if (size == 0) {
-    size = ::lseek(fd, 0, SEEK_END);
-    ::lseek(fd, 0, SEEK_SET);
+    off_t end_pos = ::lseek(fd.get(), 0, SEEK_END);
+    if (end_pos < 0 || ::lseek(fd.get(), 0, SEEK_SET) < 0) {
+      return 0;
+    }
+    size = static_cast<unsigned int>(end_pos);
   }
   //
   MY_LOGD("read %d bytes from file [%s]", size, fname);
   while (readCnt < size) {
-    nr = ::read(fd, buf + readCnt, size - readCnt);
+    ssize_t nr = ::read(fd.get(), buf + readCnt, size - readCnt);
     if (nr < 0) {
+      if (errno == EINTR) {
+        continue;
+      }
       MY_LOGE("failed to read from file [%s]: %s", fname, strerror(errno));
       break;
     }
-    readCnt += nr;
+    if (nr == 0) {
+      break;
+    }
+    readCnt += static_cast<uint32_t>(nr);
     cnt++;
   }
   MY_LOGD("done reading %d bytes to file [%s] in %d passes", size, fname, cnt);
-  ::close(fd);
 
   return readCnt;
 }
