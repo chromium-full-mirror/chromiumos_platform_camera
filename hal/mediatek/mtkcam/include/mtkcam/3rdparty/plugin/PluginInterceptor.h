@@ -21,6 +21,7 @@
 #include <mtkcam/def/common.h>
 
 #include <algorithm>
+#include <atomic>
 #include <iostream>
 #include <map>
 #include <memory>
